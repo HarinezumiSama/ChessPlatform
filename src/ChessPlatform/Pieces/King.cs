@@ -17,5 +17,16 @@ namespace ChessPlatform.Pieces
 
         #endregion
 
+        #region Protected Properties
+
+        protected override char BaseFenChar
+        {
+            get
+            {
+                return 'K';
+            }
+        }
+
+        #endregion
     }
 }

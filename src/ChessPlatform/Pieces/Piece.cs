@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 
 namespace ChessPlatform.Pieces
 {
@@ -36,7 +37,33 @@ namespace ChessPlatform.Pieces
 
         #region Public Methods
 
-        public static Piece CreatePiece(Type pieceType, PieceColor color, Position position)
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0} {1}", this.Color.GetName(), GetType().Name);
+        }
+
+        public char GetFenChar()
+        {
+            return this.Color == PieceColor.White
+                ? char.ToUpperInvariant(this.BaseFenChar)
+                : char.ToLowerInvariant(this.BaseFenChar);
+        }
+
+        #endregion
+
+        #region Protected Properties
+
+        //// TODO [vmcl] Use attribute instead of abstract property
+        protected abstract char BaseFenChar
+        {
+            get;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static Piece CreatePiece(Type pieceType, PieceColor color, Position position)
         {
             #region Argument Check
 
@@ -64,16 +91,29 @@ namespace ChessPlatform.Pieces
 
             #endregion
 
-            var result = (Piece)Activator.CreateInstance(pieceType);
+            //// TODO [vmcl] Cache constructors, if needed
+            var constructorInfo = pieceType.GetConstructor(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                null,
+                Type.EmptyTypes,
+                null);
+
+            var result = (Piece)constructorInfo.Invoke(null);
             result.Initialize(color, position);
             return result;
         }
 
+        internal static TPiece CreatePiece<TPiece>(PieceColor color, Position position)
+            where TPiece : Piece
+        {
+            return (TPiece)CreatePiece(typeof(TPiece), color, position);
+        }
+
         #endregion
 
-        #region Internal Methods
+        #region Private Methods
 
-        internal void Initialize(PieceColor color, Position position)
+        private void Initialize(PieceColor color, Position position)
         {
             #region Argument Check
 
