@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.Pieces
 {
+    [BaseFenChar('B')]
     public sealed class Bishop : Piece
     {
         #region Constructors
@@ -13,18 +14,6 @@ namespace ChessPlatform.Pieces
         internal Bishop()
         {
             // Nothing to do
-        }
-
-        #endregion
-
-        #region Protected Properties
-
-        protected override char BaseFenChar
-        {
-            get
-            {
-                return 'B';
-            }
         }
 
         #endregion

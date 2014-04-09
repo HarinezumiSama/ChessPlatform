@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using ChessPlatform.Pieces;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
@@ -53,15 +54,16 @@ namespace ChessPlatform
         {
             var resultBuilder = new StringBuilder((ChessConstants.FileCount + 1) * ChessConstants.RankCount + 20);
 
-            var emptySquareCount = 0;
-            Action writeEmptyCount = () =>
-            {
-                if (emptySquareCount > 0)
+            var emptySquareCount = new ValueContainer<int>(0);
+            Action writeEmptyCount =
+                () =>
                 {
-                    resultBuilder.Append(emptySquareCount);
-                    emptySquareCount = 0;
-                }
-            };
+                    if (emptySquareCount.Value > 0)
+                    {
+                        resultBuilder.Append(emptySquareCount.Value);
+                        emptySquareCount.Value = 0;
+                    }
+                };
 
             for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
             {
@@ -75,7 +77,7 @@ namespace ChessPlatform
                     var piece = GetPiece(new Position(file, rank));
                     if (piece == null)
                     {
-                        emptySquareCount++;
+                        emptySquareCount.Value++;
                         continue;
                     }
 
@@ -183,7 +185,7 @@ namespace ChessPlatform
             _pieces[offset] = piece;
         }
 
-        private void SetPiece([NotNull] Position position, [CanBeNull] Piece piece)
+        private Piece SetPiece([NotNull] Position position, [CanBeNull] Piece piece)
         {
             #region Argument Check
 
@@ -208,6 +210,8 @@ namespace ChessPlatform
             {
                 piece.Position = position;
             }
+
+            return oldPiece;
         }
 
         private Piece GetPiece([NotNull] Position position)

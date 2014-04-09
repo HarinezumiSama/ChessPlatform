@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.Pieces
 {
+    [BaseFenChar('P')]
     public sealed class Pawn : Piece
     {
         #region Constructors
@@ -13,18 +14,6 @@ namespace ChessPlatform.Pieces
         internal Pawn()
         {
             // Nothing to do
-        }
-
-        #endregion
-
-        #region Protected Properties
-
-        protected override char BaseFenChar
-        {
-            get
-            {
-                return 'P';
-            }
         }
 
         #endregion

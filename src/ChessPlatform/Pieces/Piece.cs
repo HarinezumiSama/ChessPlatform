@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Pieces
 {
@@ -44,19 +45,11 @@ namespace ChessPlatform.Pieces
 
         public char GetFenChar()
         {
+            var baseFenChar = GetBaseFenChar(GetType());
+
             return this.Color == PieceColor.White
-                ? char.ToUpperInvariant(this.BaseFenChar)
-                : char.ToLowerInvariant(this.BaseFenChar);
-        }
-
-        #endregion
-
-        #region Protected Properties
-
-        //// TODO [vmcl] Use attribute instead of abstract property
-        protected abstract char BaseFenChar
-        {
-            get;
+                ? char.ToUpperInvariant(baseFenChar)
+                : char.ToLowerInvariant(baseFenChar);
         }
 
         #endregion
@@ -112,6 +105,12 @@ namespace ChessPlatform.Pieces
         #endregion
 
         #region Private Methods
+
+        private static char GetBaseFenChar([NotNull] Type pieceType)
+        {
+            var attribute = pieceType.GetSingleCustomAttribute<BaseFenCharAttribute>(false);
+            return attribute.BaseFenChar;
+        }
 
         private void Initialize(PieceColor color, Position position)
         {
