@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform
 {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
     internal sealed class BaseFenCharAttribute : Attribute
     {
         #region Constructors

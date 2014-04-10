@@ -11,6 +11,9 @@ namespace ChessPlatform
         public const int FileCount = 8;
         public const int RankCount = 8;
 
+        public const int WhitePawnPromotionRank = RankCount - 1;
+        public const int BlackPawnPromotionRank = 0;
+
         internal const int X88Length = FileCount * RankCount * 2;
 
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
