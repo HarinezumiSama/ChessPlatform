@@ -60,7 +60,7 @@ namespace ChessPlatform
             return result;
         }
 
-        public static string GetString(this Piece piece)
+        public static string GetDescription(this Piece piece)
         {
             #region Argument Check
 

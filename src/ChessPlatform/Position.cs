@@ -1,12 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
 namespace ChessPlatform
 {
-    public sealed class Position
+    public struct Position : IEquatable<Position>
     {
+        #region Constants and Fields
+
+        private readonly int _file;
+        private readonly int _rank;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -40,8 +48,8 @@ namespace ChessPlatform
 
             #endregion
 
-            this.File = file;
-            this.Rank = rank;
+            _file = file;
+            _rank = rank;
         }
 
         #endregion
@@ -50,14 +58,20 @@ namespace ChessPlatform
 
         public int File
         {
-            get;
-            private set;
+            [DebuggerStepThrough]
+            get
+            {
+                return _file;
+            }
         }
 
         public int Rank
         {
-            get;
-            private set;
+            [DebuggerStepThrough]
+            get
+            {
+                return _rank;
+            }
         }
 
         #endregion
@@ -67,6 +81,16 @@ namespace ChessPlatform
         public static implicit operator Position(string algebraicNotation)
         {
             return FromAlgebraic(algebraicNotation);
+        }
+
+        public static bool operator ==(Position left, Position right)
+        {
+            return EqualityComparer<Position>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(Position left, Position right)
+        {
+            return !(left == right);
         }
 
         #endregion
@@ -144,6 +168,25 @@ namespace ChessPlatform
         {
             //// TODO [vmcl] Cache, if needed
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}", (char)('a' + this.File), this.Rank + 1);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Position && Equals((Position)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _file.CombineHashCodes(_rank);
+        }
+
+        #endregion
+
+        #region IEquatable<Position> Members
+
+        public bool Equals(Position other)
+        {
+            return other._file == _file && other._rank == _rank;
         }
 
         #endregion

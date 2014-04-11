@@ -115,7 +115,7 @@ namespace ChessPlatform
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The promoted piece type is not specified for promoted {0}.",
-                            movingPiece.GetString()),
+                            movingPiece.GetDescription()),
                         "promotedPieceType");
                 }
 
@@ -219,17 +219,8 @@ namespace ChessPlatform
             return new Piece[ChessConstants.X88Length];
         }
 
-        private static int GetOffset([NotNull] Position position)
+        private static int GetOffset(Position position)
         {
-            #region Argument Check
-
-            if (position == null)
-            {
-                throw new ArgumentNullException("position");
-            }
-
-            #endregion
-
             return (position.Rank << 4) + position.File;
         }
 
@@ -265,17 +256,8 @@ namespace ChessPlatform
             return PieceColor.White;
         }
 
-        private void SetupNewPiece(PieceType pieceType, PieceColor color, [NotNull] Position position)
+        private void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
         {
-            #region Argument Check
-
-            if (position == null)
-            {
-                throw new ArgumentNullException("position");
-            }
-
-            #endregion
-
             var offset = GetOffset(position);
             var existingPiece = _pieces[offset];
             if (existingPiece != Piece.None)
@@ -292,17 +274,8 @@ namespace ChessPlatform
             _pieces[offset] = piece;
         }
 
-        private Piece SetPiece([NotNull] Position position, Piece piece)
+        private Piece SetPiece(Position position, Piece piece)
         {
-            #region Argument Check
-
-            if (position == null)
-            {
-                throw new ArgumentNullException("position");
-            }
-
-            #endregion
-
             var offset = GetOffset(position);
             var oldPiece = _pieces[offset];
             _pieces[offset] = piece;
@@ -310,17 +283,8 @@ namespace ChessPlatform
             return oldPiece;
         }
 
-        private Piece GetPiece([NotNull] Position position)
+        private Piece GetPiece(Position position)
         {
-            #region Argument Check
-
-            if (position == null)
-            {
-                throw new ArgumentNullException("position");
-            }
-
-            #endregion
-
             var offset = GetOffset(position);
             return _pieces[offset];
         }
