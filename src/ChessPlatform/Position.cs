@@ -10,8 +10,8 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private readonly int _file;
-        private readonly int _rank;
+        private readonly byte _file;
+        private readonly byte _rank;
 
         #endregion
 
@@ -20,7 +20,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="Position"/> class.
         /// </summary>
-        public Position(int file, int rank)
+        public Position(byte file, byte rank)
         {
             #region Argument Check
 
@@ -52,11 +52,29 @@ namespace ChessPlatform
             _rank = rank;
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Position"/> class.
+        /// </summary>
+        public Position(byte x88Value)
+        {
+            #region Argument Check
+
+            if (!IsValidX88Value(x88Value))
+            {
+                throw new ArgumentException("Out of the board 0x88 value.", "x88Value");
+            }
+
+            #endregion
+
+            _file = (byte)(x88Value & 7);
+            _rank = (byte)(x88Value >> 4);
+        }
+
         #endregion
 
         #region Public Properties
 
-        public int File
+        public byte File
         {
             [DebuggerStepThrough]
             get
@@ -65,12 +83,21 @@ namespace ChessPlatform
             }
         }
 
-        public int Rank
+        public byte Rank
         {
             [DebuggerStepThrough]
             get
             {
                 return _rank;
+            }
+        }
+
+        public byte X88Value
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return (byte)((_rank << 4) + _file);
             }
         }
 
@@ -115,10 +142,10 @@ namespace ChessPlatform
 
             var file = algebraicNotation[0] - 'a';
             var rank = algebraicNotation[1] - '1';
-            return new Position(file, rank);
+            return new Position(Convert.ToByte(file), Convert.ToByte(rank));
         }
 
-        public static Position[] GenerateFile(int file)
+        public static Position[] GenerateFile(byte file)
         {
             #region Argument Check
 
@@ -135,16 +162,19 @@ namespace ChessPlatform
 
             #endregion
 
-            return Enumerable.Range(0, ChessConstants.RankCount).Select(rank => new Position(file, rank)).ToArray();
+            return Enumerable
+                .Range(0, ChessConstants.RankCount)
+                .Select(rank => new Position(file, (byte)rank))
+                .ToArray();
         }
 
         public static Position[] GenerateFile(char file)
         {
             var fileValue = file - 'a';
-            return GenerateFile(fileValue);
+            return GenerateFile(Convert.ToByte(fileValue));
         }
 
-        public static Position[] GenerateRank(int rank)
+        public static Position[] GenerateRank(byte rank)
         {
             #region Argument Check
 
@@ -161,7 +191,10 @@ namespace ChessPlatform
 
             #endregion
 
-            return Enumerable.Range(0, ChessConstants.FileCount).Select(file => new Position(file, rank)).ToArray();
+            return Enumerable
+                .Range(0, ChessConstants.FileCount)
+                .Select(file => new Position((byte)file, rank))
+                .ToArray();
         }
 
         public override string ToString()
@@ -178,6 +211,15 @@ namespace ChessPlatform
         public override int GetHashCode()
         {
             return _file.CombineHashCodes(_rank);
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static bool IsValidX88Value(byte x88Value)
+        {
+            return (x88Value & 0x88) == 0;
         }
 
         #endregion

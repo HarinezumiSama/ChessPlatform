@@ -15,6 +15,13 @@ namespace ChessPlatform
 
         private readonly Piece[] _pieces;
         private readonly PieceColor _activeColor;
+        private readonly PieceColor? _colorInCheck;
+        private readonly bool _isStalemate;
+        private readonly PieceColor? _checkmatingColor;
+        private readonly CastlingOptions _castlingOptions;
+        private readonly ReadOnlySet<PieceMove> _validMoves;
+
+        //// TODO [vmcl] Castling options for both sides
 
         #endregion
 
@@ -27,8 +34,12 @@ namespace ChessPlatform
         {
             _pieces = CreatePieces();
             _activeColor = SetupDefault();
+            _castlingOptions = CastlingOptions.All;
 
             Validate();
+
+            _colorInCheck = GetColorInCheck();
+            _validMoves = GetValidMoves();
         }
 
         /// <summary>
@@ -49,13 +60,21 @@ namespace ChessPlatform
 
             _pieces = CreatePieces();
 
+            //// TODO [vmcl] Initialize according to the specified FEN
+            ////_castlingOptions=...
+
+            Validate();
+
+            _colorInCheck = GetColorInCheck();
+            _validMoves = GetValidMoves();
+
             throw new NotImplementedException();
         }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="BoardState"/> class.
         /// </summary>
-        internal BoardState(
+        private BoardState(
             [NotNull] BoardState previousState,
             [NotNull] PieceMove move,
             [CanBeNull] PieceType? promotedPieceType)
@@ -76,6 +95,7 @@ namespace ChessPlatform
 
             _pieces = previousState._pieces.Copy();
             _activeColor = previousState._activeColor.Invert();
+            _castlingOptions = previousState._castlingOptions;
 
             var movingPiece = SetPiece(move.From, Piece.None);
 
@@ -127,6 +147,8 @@ namespace ChessPlatform
             #endregion
 
             SetPiece(move.To, movingPiece);
+
+            //// TODO [vmcl] Adjust castling options
         }
 
         #endregion
@@ -175,7 +197,7 @@ namespace ChessPlatform
 
                 for (var file = 0; file < ChessConstants.FileCount; file++)
                 {
-                    var piece = GetPiece(new Position(file, rank));
+                    var piece = GetPiece(new Position((byte)file, (byte)rank));
                     if (piece == Piece.None)
                     {
                         emptySquareCount.Value++;
@@ -219,20 +241,13 @@ namespace ChessPlatform
             return new Piece[ChessConstants.X88Length];
         }
 
-        private static int GetOffset(Position position)
-        {
-            return (position.Rank << 4) + position.File;
-        }
-
         private void Validate()
         {
-            //// TODO [vmcl] (1) Count kings, (2) no kings near each other (3) etc.
+            //// TODO [vmcl] (1) Count kings, (2) no kings near each other, (3) no 2 kings under check, (4) no more than 16 pieces of each color, (5) etc.
         }
 
         private PieceColor SetupDefault()
         {
-            Clear();
-
             SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
             SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
             SetupNewPiece(PieceType.Bishop, PieceColor.White, "c1");
@@ -258,7 +273,7 @@ namespace ChessPlatform
 
         private void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
         {
-            var offset = GetOffset(position);
+            var offset = position.X88Value;
             var existingPiece = _pieces[offset];
             if (existingPiece != Piece.None)
             {
@@ -276,7 +291,7 @@ namespace ChessPlatform
 
         private Piece SetPiece(Position position, Piece piece)
         {
-            var offset = GetOffset(position);
+            var offset = position.X88Value;
             var oldPiece = _pieces[offset];
             _pieces[offset] = piece;
 
@@ -285,19 +300,55 @@ namespace ChessPlatform
 
         private Piece GetPiece(Position position)
         {
-            var offset = GetOffset(position);
+            var offset = position.X88Value;
             return _pieces[offset];
         }
 
-        private void Clear()
+        private PieceColor? GetColorInCheck()
         {
-            for (var rank = 0; rank < ChessConstants.RankCount; rank++)
+            throw new NotImplementedException();
+        }
+
+        private ReadOnlySet<PieceMove> GetValidMoves()
+        {
+            GetPotentialMoves("a1").ToString();
+
+            throw new NotImplementedException();
+        }
+
+        private PieceMove[] GetPotentialMoves(Position position)
+        {
+            var piece = GetPiece(position);
+            var pieceType = piece.GetPieceType();
+            var color = piece.GetColor();
+
+            Position[] positions;
+            switch (pieceType)
             {
-                for (var file = 0; file < ChessConstants.FileCount; file++)
-                {
-                    SetPiece(new Position(file, rank), Piece.None);
-                }
+                case PieceType.King:
+                    var kingOffsets = new byte[]
+                    {
+                        0xFF,
+                        0x01,
+                        0xF0,
+                        0x10,
+                        0x1F,
+                        0xF1,
+                        0x11,
+                        0xEF,
+                        (byte)(_castlingOptions.IsAnySet(CastlingOptions.WhiteKingSide) ? 0x02 : 0),
+                        (byte)(_castlingOptions.IsAnySet(CastlingOptions.WhiteQueenSide) ? 0xFE : 0)
+                    };
+
+                    positions = position.GetValidPositions(kingOffsets);
+                    break;
+
+                default:
+                    throw pieceType.CreateEnumValueNotImplementedException();
             }
+
+            var result = positions.Select(item => new PieceMove(position, item)).ToArray();
+            return result;
         }
 
         #endregion
