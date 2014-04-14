@@ -23,10 +23,21 @@ namespace ChessPlatform
                     new RayInfo(0xF0, true),
                     new RayInfo(0x10, true),
                     new RayInfo(0x0F, false),
-                    new RayInfo(0xF1, false),
                     new RayInfo(0x11, false),
-                    new RayInfo(0xEF, false)
+                    new RayInfo(0xEF, false),
+                    new RayInfo(0xF1, false)
                 });
+
+        private static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
+            new ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>>(
+                new Dictionary<PieceColor, ReadOnlySet<byte>>
+                {
+                    { PieceColor.White, new byte[] { 0x0F, 0x11 }.ToHashSet().AsReadOnly() },
+                    { PieceColor.Black, new byte[] { 0xEF, 0xF1 }.ToHashSet().AsReadOnly() }
+                });
+
+        private static readonly ReadOnlySet<byte> KingAttackOffsets =
+            AllRayOffsets.Select(item => item.Offset).ToHashSet().AsReadOnly();
 
         private static readonly ReadOnlySet<PieceType> ValidPromotions =
             new HashSet<PieceType>(new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight })
@@ -361,9 +372,28 @@ namespace ChessPlatform
                         || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
                     {
                         resultList.Add(new Position(currentX88Value));
+                        break;
                     }
 
-                    //// TODO [vmcl] Consider Pawns and King
+                    var difference = (byte)(targetPosition.X88Value - currentX88Value);
+                    switch (pieceType)
+                    {
+                        case PieceType.Pawn:
+                            if (PawnAttackOffsetMap[attackingColor].Contains(difference))
+                            {
+                                resultList.Add(new Position(currentX88Value));
+                            }
+                            break;
+
+                        case PieceType.King:
+                            if (KingAttackOffsets.Contains(difference))
+                            {
+                                resultList.Add(new Position(currentX88Value));
+                            }
+                            break;
+                    }
+
+                    break;
                 }
             }
 

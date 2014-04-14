@@ -66,7 +66,7 @@ namespace ChessPlatform
 
             #endregion
 
-            _file = (byte)(x88Value & 7);
+            _file = (byte)(x88Value & 0x07);
             _rank = (byte)(x88Value >> 4);
         }
 
