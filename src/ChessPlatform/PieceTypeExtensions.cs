@@ -49,6 +49,16 @@ namespace ChessPlatform
             return result;
         }
 
+        public static bool IsSlidingDiagonally(this PieceType pieceType)
+        {
+            return pieceType.IsAllSet(PieceType.SlidingDiagonallyMask);
+        }
+
+        public static bool IsSlidingStraight(this PieceType pieceType)
+        {
+            return pieceType.IsAllSet(PieceType.SlidingStraightMask);
+        }
+
         #endregion
     }
 }

@@ -23,6 +23,14 @@ namespace ChessPlatform
         Rook = 0x06,
 
         [BaseFenChar('Q')]
-        Queen = 0x07
+        Queen = 0x07,
+
+        SlidingMask = 0x04,
+
+        SlidingDiagonallyMask = SlidingMask | 0x01,
+
+        SlidingStraightMask = SlidingMask | 0x02,
+
+        SlidingAllWaysMask = SlidingDiagonallyMask | SlidingStraightMask
     }
 }

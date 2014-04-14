@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -12,6 +13,24 @@ namespace ChessPlatform
     public sealed class BoardState
     {
         #region Constants and Fields
+
+        private static readonly ReadOnlyCollection<RayInfo> AllRayOffsets =
+            new ReadOnlyCollection<RayInfo>(
+                new[]
+                {
+                    new RayInfo(0xFF, true),
+                    new RayInfo(0x01, true),
+                    new RayInfo(0xF0, true),
+                    new RayInfo(0x10, true),
+                    new RayInfo(0x0F, false),
+                    new RayInfo(0xF1, false),
+                    new RayInfo(0x11, false),
+                    new RayInfo(0xEF, false)
+                });
+
+        private static readonly ReadOnlySet<PieceType> ValidPromotions =
+            new HashSet<PieceType>(new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight })
+                .AsReadOnly();
 
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
@@ -127,12 +146,12 @@ namespace ChessPlatform
                 && (pieceColor == PieceColor.White && move.To.Rank == ChessConstants.WhitePawnPromotionRank
                     || pieceColor == PieceColor.Black && move.To.Rank == ChessConstants.BlackPawnPromotionRank))
             {
-                if (!promotedPieceType.HasValue)
+                if (!promotedPieceType.HasValue || !ValidPromotions.Contains(promotedPieceType.Value))
                 {
                     throw new ArgumentException(
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            "The promoted piece type is not specified for promoted {0}.",
+                            "The promoted piece type is not specified or is invalid for promoted {0}.",
                             movingPiece.GetDescription()),
                         "promotedPieceType");
                 }
@@ -308,6 +327,49 @@ namespace ChessPlatform
             return new BoardState(this, move, promotedPieceType);
         }
 
+        public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
+        {
+            var resultList = new List<Position>();
+
+            var attackingKnights = targetPosition
+                .GetValidKnightPositionsAround()
+                .Where(p => _pieces[p.X88Value].GetColor() == attackingColor)
+                .ToArray();
+
+            resultList.AddRange(attackingKnights);
+
+            foreach (var rayOffset in AllRayOffsets)
+            {
+                for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
+                    Position.IsValidX88Value(currentX88Value);
+                    currentX88Value += rayOffset.Offset)
+                {
+                    var piece = _pieces[currentX88Value];
+                    var color = piece.GetColor();
+                    if (piece == Piece.None || !color.HasValue)
+                    {
+                        continue;
+                    }
+
+                    if (color.Value != attackingColor)
+                    {
+                        break;
+                    }
+
+                    var pieceType = piece.GetPieceType();
+                    if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
+                        || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
+                    {
+                        resultList.Add(new Position(currentX88Value));
+                    }
+
+                    //// TODO [vmcl] Consider Pawns and King
+                }
+            }
+
+            return resultList.ToArray();
+        }
+
         #endregion
 
         #region Private Methods
@@ -343,6 +405,13 @@ namespace ChessPlatform
             out bool isStalemate,
             out PieceColor? checkmatingColor)
         {
+            var activeKing = PieceType.King.ToPiece(_activeColor);
+            var activeKingPosition = new Position(_pieceOffsetMap[activeKing].Single());
+
+            colorInCheck = GetAttacks(activeKingPosition, _activeColor.Invert()).Length == 0
+                ? (PieceColor?)null
+                : _activeColor;
+
             var activePairs = _pieceOffsetMap
                 .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
                 .ToArray();
@@ -351,8 +420,6 @@ namespace ChessPlatform
             {
                 ;
             }
-
-            GetPotentialMoves("a1").ToString();
 
             throw new NotImplementedException();
         }
@@ -426,39 +493,51 @@ namespace ChessPlatform
             return _pieces[offset];
         }
 
-        private PieceMove[] GetPotentialMoves(Position position)
+        #endregion
+
+        #region RayInfo Class
+
+        private struct RayInfo
         {
-            var piece = GetPiece(position);
-            var pieceType = piece.GetPieceType();
-            var color = piece.GetColor();
+            #region Constructors
 
-            Position[] positions;
-            switch (pieceType)
+            internal RayInfo(byte offset, bool isStraight)
+                : this()
             {
-                case PieceType.King:
-                    var kingOffsets = new byte[]
-                    {
-                        0xFF,
-                        0x01,
-                        0xF0,
-                        0x10,
-                        0x1F,
-                        0xF1,
-                        0x11,
-                        0xEF,
-                        (byte)(CastlingOptions.IsAnySet(CastlingOptions.WhiteKingSide) ? 0x02 : 0),
-                        (byte)(CastlingOptions.IsAnySet(CastlingOptions.WhiteQueenSide) ? 0xFE : 0)
-                    };
-
-                    positions = position.GetValidPositions(kingOffsets);
-                    break;
-
-                default:
-                    throw pieceType.CreateEnumValueNotImplementedException();
+                this.Offset = offset;
+                this.IsStraight = isStraight;
             }
 
-            var result = positions.Select(item => new PieceMove(position, item)).ToArray();
-            return result;
+            #endregion
+
+            #region Public Properties
+
+            public byte Offset
+            {
+                get;
+                private set;
+            }
+
+            public bool IsStraight
+            {
+                get;
+                private set;
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public override string ToString()
+            {
+                return string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{{0x{0:X2}, {1}}}",
+                    this.Offset,
+                    this.IsStraight ? "straight" : "diagonal");
+            }
+
+            #endregion
         }
 
         #endregion

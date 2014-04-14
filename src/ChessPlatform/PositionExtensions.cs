@@ -6,6 +6,22 @@ namespace ChessPlatform
 {
     public static class PositionExtensions
     {
+        #region Constants and Fields
+
+        private static readonly byte[] KnightX88Offsets =
+        {
+            0x21,
+            0x1F,
+            0xE1,
+            0xDF,
+            0x12,
+            0x0E,
+            0xEE,
+            0xF2
+        };
+
+        #endregion
+
         #region Public Methods
 
         public static Position[] GetValidPositions(this Position position, IList<byte> x88Offsets)
@@ -39,6 +55,11 @@ namespace ChessPlatform
             }
 
             return result.ToArray();
+        }
+
+        public static Position[] GetValidKnightPositionsAround(this Position position)
+        {
+            return GetValidPositions(position, KnightX88Offsets);
         }
 
         #endregion
