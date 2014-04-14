@@ -14,14 +14,15 @@ namespace ChessPlatform
         #region Constants and Fields
 
         private readonly Piece[] _pieces;
+        private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
+
         private readonly PieceColor _activeColor;
         private readonly PieceColor? _colorInCheck;
         private readonly bool _isStalemate;
         private readonly PieceColor? _checkmatingColor;
         private readonly CastlingOptions _castlingOptions;
+        private readonly Position? _enPassantTarget;
         private readonly ReadOnlySet<PieceMove> _validMoves;
-
-        //// TODO [vmcl] Castling options for both sides
 
         #endregion
 
@@ -32,14 +33,10 @@ namespace ChessPlatform
         /// </summary>
         internal BoardState()
         {
-            _pieces = CreatePieces();
-            _activeColor = SetupDefault();
-            _castlingOptions = CastlingOptions.All;
-
+            CreatePieces(out _pieces, out _pieceOffsetMap);
+            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantTarget);
+            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
             Validate();
-
-            _colorInCheck = GetColorInCheck();
-            _validMoves = GetValidMoves();
         }
 
         /// <summary>
@@ -58,17 +55,16 @@ namespace ChessPlatform
 
             #endregion
 
-            _pieces = CreatePieces();
+            CreatePieces(out _pieces, out _pieceOffsetMap);
 
-            //// TODO [vmcl] Initialize according to the specified FEN
-            ////_castlingOptions=...
+            //// TODO [vmcl] Initialize board with the specified FEN
 
+            //// _activeColor = ...
+            //// _castlingOptions = ...
+            ////_enPassantTarget = ...
+
+            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
             Validate();
-
-            _colorInCheck = GetColorInCheck();
-            _validMoves = GetValidMoves();
-
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -94,20 +90,24 @@ namespace ChessPlatform
             #endregion
 
             _pieces = previousState._pieces.Copy();
+            _pieceOffsetMap = CopyPieceOffsetMap(previousState._pieceOffsetMap);
             _activeColor = previousState._activeColor.Invert();
-            _castlingOptions = previousState._castlingOptions;
+            _castlingOptions = previousState.CastlingOptions;
 
             var movingPiece = SetPiece(move.From, Piece.None);
-
-            #region Argument Check
 
             movingPiece.EnsureDefined();
 
             var color = movingPiece.GetColor();
-
             if (movingPiece == Piece.None || !color.HasValue)
             {
                 throw new ArgumentException("The move starting position contains no piece.", "move");
+            }
+
+            var removed = _pieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
+            if (!removed)
+            {
+                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
             }
 
             var pieceColor = color.Value;
@@ -127,8 +127,6 @@ namespace ChessPlatform
                 && (pieceColor == PieceColor.White && move.To.Rank == ChessConstants.WhitePawnPromotionRank
                     || pieceColor == PieceColor.Black && move.To.Rank == ChessConstants.BlackPawnPromotionRank))
             {
-                #region Argument Check
-
                 if (!promotedPieceType.HasValue)
                 {
                     throw new ArgumentException(
@@ -139,16 +137,45 @@ namespace ChessPlatform
                         "promotedPieceType");
                 }
 
-                #endregion
-
                 movingPiece = promotedPieceType.Value.ToPiece(pieceColor);
             }
 
-            #endregion
+            var capturedPiece = SetPiece(move.To, movingPiece);
+            if (capturedPiece != Piece.None)
+            {
+                if (capturedPiece.GetColor() == pieceColor)
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The move destination position performs a capture of the same color ({0}).",
+                            pieceColor),
+                        "move");
+                }
 
-            SetPiece(move.To, movingPiece);
+                var capturedRemoved = _pieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
+                if (!capturedRemoved)
+                {
+                    throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+                }
+            }
 
-            //// TODO [vmcl] Adjust castling options
+            var added = _pieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
+            if (!added)
+            {
+                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+            }
+
+            if (CastlingOptions != CastlingOptions.None)
+            {
+                //// TODO [vmcl] Adjust castling options
+            }
+
+            //// TODO [vmcl] Set en passant target, if applicable
+            //enPassantTarget=...
+
+            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
+            Validate();
         }
 
         #endregion
@@ -161,6 +188,60 @@ namespace ChessPlatform
             get
             {
                 return _activeColor;
+            }
+        }
+
+        public PieceColor? ColorInCheck
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _colorInCheck;
+            }
+        }
+
+        public bool IsStalemate
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _isStalemate;
+            }
+        }
+
+        public PieceColor? CheckmatingColor
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _checkmatingColor;
+            }
+        }
+
+        public CastlingOptions CastlingOptions
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _castlingOptions;
+            }
+        }
+
+        public Position? EnPassantTarget
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _enPassantTarget;
+            }
+        }
+
+        public ReadOnlySet<PieceMove> ValidMoves
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _validMoves;
             }
         }
 
@@ -215,17 +296,14 @@ namespace ChessPlatform
             //// TODO [vmcl] Consider actual: (a) castling availability; (b) en passant target; (c) half move clock; (d) full move number
             resultBuilder.AppendFormat(
                 CultureInfo.InvariantCulture,
-                " {0} - - 0 1",
-                _activeColor == PieceColor.White ? 'w' : 'b');
+                " {0} {1} - 0 1",
+                _activeColor == PieceColor.White ? 'w' : 'b',
+                _castlingOptions.GetFenSnippet());
 
             return resultBuilder.ToString();
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        internal BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
+        public BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
         {
             return new BoardState(this, move, promotedPieceType);
         }
@@ -234,11 +312,24 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static Piece[] CreatePieces()
+        private static void CreatePieces(out Piece[] pieces, out Dictionary<Piece, HashSet<byte>> pieceOffsetMap)
         {
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
-            return new Piece[ChessConstants.X88Length];
+            pieces = new Piece[ChessConstants.X88Length];
+            pieceOffsetMap = new Dictionary<Piece, HashSet<byte>>();
+        }
+
+        private static Dictionary<Piece, HashSet<byte>> CopyPieceOffsetMap(
+            ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
+        {
+            var result = new Dictionary<Piece, HashSet<byte>>(pieceOffsetMap.Count);
+            foreach (var pair in pieceOffsetMap)
+            {
+                result.Add(pair.Key, new HashSet<byte>(pair.Value));
+            }
+
+            return result;
         }
 
         private void Validate()
@@ -246,7 +337,30 @@ namespace ChessPlatform
             //// TODO [vmcl] (1) Count kings, (2) no kings near each other, (3) no 2 kings under check, (4) no more than 16 pieces of each color, (5) etc.
         }
 
-        private PieceColor SetupDefault()
+        private void PostInitialize(
+            out PieceColor? colorInCheck,
+            out ReadOnlySet<PieceMove> validMoves,
+            out bool isStalemate,
+            out PieceColor? checkmatingColor)
+        {
+            var activePairs = _pieceOffsetMap
+                .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
+                .ToArray();
+
+            foreach (var pair in activePairs)
+            {
+                ;
+            }
+
+            GetPotentialMoves("a1").ToString();
+
+            throw new NotImplementedException();
+        }
+
+        private void SetupDefault(
+            out PieceColor activeColor,
+            out CastlingOptions castlingOptions,
+            out Position? enPassantTarget)
         {
             SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
             SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
@@ -268,7 +382,9 @@ namespace ChessPlatform
             SetupNewPiece(PieceType.Knight, PieceColor.Black, "g8");
             SetupNewPiece(PieceType.Rook, PieceColor.Black, "h8");
 
-            return PieceColor.White;
+            activeColor = PieceColor.White;
+            castlingOptions = CastlingOptions.All;
+            enPassantTarget = null;
         }
 
         private void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
@@ -287,6 +403,12 @@ namespace ChessPlatform
 
             var piece = pieceType.ToPiece(color);
             _pieces[offset] = piece;
+
+            var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(offset);
+            if (!added)
+            {
+                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+            }
         }
 
         private Piece SetPiece(Position position, Piece piece)
@@ -302,18 +424,6 @@ namespace ChessPlatform
         {
             var offset = position.X88Value;
             return _pieces[offset];
-        }
-
-        private PieceColor? GetColorInCheck()
-        {
-            throw new NotImplementedException();
-        }
-
-        private ReadOnlySet<PieceMove> GetValidMoves()
-        {
-            GetPotentialMoves("a1").ToString();
-
-            throw new NotImplementedException();
         }
 
         private PieceMove[] GetPotentialMoves(Position position)
@@ -336,8 +446,8 @@ namespace ChessPlatform
                         0xF1,
                         0x11,
                         0xEF,
-                        (byte)(_castlingOptions.IsAnySet(CastlingOptions.WhiteKingSide) ? 0x02 : 0),
-                        (byte)(_castlingOptions.IsAnySet(CastlingOptions.WhiteQueenSide) ? 0xFE : 0)
+                        (byte)(CastlingOptions.IsAnySet(CastlingOptions.WhiteKingSide) ? 0x02 : 0),
+                        (byte)(CastlingOptions.IsAnySet(CastlingOptions.WhiteQueenSide) ? 0xFE : 0)
                     };
 
                     positions = position.GetValidPositions(kingOffsets);

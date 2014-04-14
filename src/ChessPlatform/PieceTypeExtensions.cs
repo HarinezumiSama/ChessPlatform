@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace ChessPlatform
 {
@@ -26,7 +25,9 @@ namespace ChessPlatform
             char result;
             lock (BaseFenCharCache)
             {
-                result = BaseFenCharCache.GetValueOrCreate(pieceType, GetBaseFenCharNonCached);
+                result = BaseFenCharCache.GetValueOrCreate(
+                    pieceType,
+                    item => BaseFenCharAttribute.GetBaseFenCharNonCached(item));
             }
 
             return result;
@@ -46,20 +47,6 @@ namespace ChessPlatform
                 | (color == PieceColor.Black ? Piece.BlackColor : Piece.WhiteColor);
 
             return result;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private static char GetBaseFenCharNonCached(PieceType pieceType)
-        {
-            var field = pieceType.GetType()
-                .GetField(pieceType.GetName(), BindingFlags.Static | BindingFlags.Public)
-                .EnsureNotNull();
-
-            var attribute = field.GetSingleCustomAttribute<BaseFenCharAttribute>(false);
-            return attribute.BaseFenChar;
         }
 
         #endregion

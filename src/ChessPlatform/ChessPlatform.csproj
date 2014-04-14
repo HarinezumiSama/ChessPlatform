@@ -49,6 +49,7 @@
     <Compile Include="BaseFenCharAttribute.cs" />
     <Compile Include="BoardState.cs" />
     <Compile Include="CastlingOptions.cs" />
+    <Compile Include="CastlingOptionsExtensions.cs" />
     <Compile Include="ChessConstants.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="PieceExtensions.cs" />

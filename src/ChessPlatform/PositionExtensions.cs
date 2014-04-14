@@ -21,6 +21,8 @@ namespace ChessPlatform
 
             var result = new List<Position>(x88Offsets.Count);
 
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            // ReSharper disable once ForCanBeConvertedToForeach
             for (var index = 0; index < x88Offsets.Count; index++)
             {
                 var x88Offset = x88Offsets[index];
@@ -36,7 +38,7 @@ namespace ChessPlatform
                 }
             }
 
-            return result;
+            return result.ToArray();
         }
 
         #endregion

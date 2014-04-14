@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 
 namespace ChessPlatform
 {
@@ -33,6 +34,21 @@ namespace ChessPlatform
         {
             get;
             private set;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static char GetBaseFenCharNonCached(Enum enumValue)
+        {
+            var field = enumValue
+                .GetType()
+                .GetField(enumValue.GetName(), BindingFlags.Static | BindingFlags.Public)
+                .EnsureNotNull();
+
+            var attribute = field.GetSingleCustomAttribute<BaseFenCharAttribute>(false);
+            return attribute.BaseFenChar;
         }
 
         #endregion
