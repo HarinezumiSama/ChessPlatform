@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Omnifactotum;
 
@@ -16,8 +17,14 @@ namespace ChessPlatform
 
         internal const byte X88Length = FileCount * RankCount * 2;
 
+        internal const int MaxPieceCountPerColor = 16;
+        internal const int MaxPawnCountPerColor = 8;
+
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
+
+        internal static readonly ReadOnlyCollection<PieceColor> PieceColors =
+            new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
 
         #endregion
     }

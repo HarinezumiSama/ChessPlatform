@@ -43,6 +43,9 @@ namespace ChessPlatform
             new HashSet<PieceType>(new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight })
                 .AsReadOnly();
 
+        private static readonly ReadOnlyCollection<Piece> BothKings =
+            new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
+
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
 
@@ -333,6 +336,35 @@ namespace ChessPlatform
             return resultBuilder.ToString();
         }
 
+        public Piece GetPiece(Position position)
+        {
+            var offset = position.X88Value;
+            return _pieces[offset];
+        }
+
+        public Position[] GetPiecePositions(Piece piece)
+        {
+            #region Argument Check
+
+            piece.EnsureDefined();
+
+            if (piece == Piece.None || piece.GetPieceType() == PieceType.None)
+            {
+                throw new ArgumentException("Invalid piece.", "piece");
+            }
+
+            #endregion
+
+            var offsets = _pieceOffsetMap.GetValueOrDefault(piece);
+            if (offsets == null)
+            {
+                return new Position[0];
+            }
+
+            var result = offsets.Select(item => new Position(item)).ToArray();
+            return result;
+        }
+
         public BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
         {
             return new BoardState(this, move, promotedPieceType);
@@ -426,7 +458,67 @@ namespace ChessPlatform
 
         private void Validate()
         {
-            //// TODO [vmcl] (1) Count kings, (2) no kings near each other, (3) no 2 kings under check, (4) no more than 16 pieces of each color, (5) etc.
+            foreach (var king in BothKings)
+            {
+                var count = _pieceOffsetMap.GetValueOrCreate(king).Count;
+                if (count != 1)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The number of the '{0}' piece is {1}. Must be exactly one.",
+                            king.GetDescription(),
+                            count));
+                }
+            }
+
+            var inactiveKing = PieceType.King.ToPiece(_activeColor.Invert());
+            var inactiveKingPosition = new Position(_pieceOffsetMap[inactiveKing].Single());
+
+            if (GetAttacks(inactiveKingPosition, _activeColor).Length != 0)
+            {
+                throw new InvalidOperationException("Inactive king is under check.");
+            }
+
+            foreach (var pieceColor in ChessConstants.PieceColors)
+            {
+                var color = pieceColor;
+                var pairs = _pieceOffsetMap
+                    .Where(pair => pair.Key.GetColor() == color)
+                    .Select(pair => KeyValuePair.Create(pair.Key.GetPieceType(), pair.Value.Count))
+                    .ToArray();
+
+                var counts = pairs
+                    .Aggregate(
+                        new { AllCount = 0, PawnCount = 0 },
+                        (accumulator, pair) => new
+                        {
+                            AllCount = accumulator.AllCount + pair.Value,
+                            PawnCount = accumulator.PawnCount + (pair.Key == PieceType.Pawn ? pair.Value : 0)
+                        });
+
+                if (counts.PawnCount > ChessConstants.MaxPawnCountPerColor)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Too many '{0}' ({1}).",
+                            PieceType.Pawn.ToPiece(color).GetDescription(),
+                            counts.PawnCount));
+                }
+
+                if (counts.AllCount > ChessConstants.MaxPieceCountPerColor)
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Too many pieces of the color {0} ({1}).",
+                            color.GetName(),
+                            counts.PawnCount));
+                }
+            }
+
+            //// TODO [vmcl] (1) No non-promoted pawns at their last rank, (X) etc.
         }
 
         private void PostInitialize(
@@ -515,12 +607,6 @@ namespace ChessPlatform
             _pieces[offset] = piece;
 
             return oldPiece;
-        }
-
-        private Piece GetPiece(Position position)
-        {
-            var offset = position.X88Value;
-            return _pieces[offset];
         }
 
         #endregion

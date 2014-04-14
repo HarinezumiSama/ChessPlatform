@@ -34,7 +34,9 @@ namespace ChessPlatform
             #endregion
 
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
-            return (PieceType)(piece & Piece.TypeMask);
+            var result = (PieceType)(piece & Piece.TypeMask);
+            result.EnsureDefined();
+            return result;
         }
 
         public static char GetFenChar(this Piece piece)
