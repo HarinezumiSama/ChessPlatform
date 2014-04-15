@@ -10,19 +10,28 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        public static readonly ReadOnlyCollection<RayInfo> AllRayOffsets =
+        public static readonly ReadOnlyCollection<RayInfo> StraightRays =
             new ReadOnlyCollection<RayInfo>(
                 new[]
                 {
                     new RayInfo(0xFF, true),
                     new RayInfo(0x01, true),
                     new RayInfo(0xF0, true),
-                    new RayInfo(0x10, true),
+                    new RayInfo(0x10, true)
+                });
+
+        public static readonly ReadOnlyCollection<RayInfo> DiagonalRays =
+            new ReadOnlyCollection<RayInfo>(
+                new[]
+                {
                     new RayInfo(0x0F, false),
                     new RayInfo(0x11, false),
                     new RayInfo(0xEF, false),
                     new RayInfo(0xF1, false)
                 });
+
+        public static readonly ReadOnlyCollection<RayInfo> AllRays =
+            new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
 
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
             new ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>>(
@@ -33,7 +42,7 @@ namespace ChessPlatform
                 });
 
         public static readonly ReadOnlySet<byte> KingAttackOffsets =
-            AllRayOffsets.Select(item => item.Offset).ToHashSet().AsReadOnly();
+            AllRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
 
         public static readonly ReadOnlySet<byte> KnightAttackOffsets =
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
@@ -127,7 +136,7 @@ namespace ChessPlatform
 
             resultList.AddRange(attackingKnights);
 
-            foreach (var rayOffset in AllRayOffsets)
+            foreach (var rayOffset in AllRays)
             {
                 for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
                     Position.IsValidX88Value(currentX88Value);
@@ -232,14 +241,14 @@ namespace ChessPlatform
                 return null;
             }
 
-            if (color.Value == PieceColor.White 
+            if (color.Value == PieceColor.White
                 && move.From.Rank == ChessConstants.WhiteEnPassantStartRank
                 && move.To.Rank == ChessConstants.WhiteEnPassantEndRank)
             {
                 return new Position(move.From.File, ChessConstants.WhiteEnPassantTargetRank);
             }
 
-            if (color.Value == PieceColor.Black 
+            if (color.Value == PieceColor.Black
                 && move.From.Rank == ChessConstants.BlackEnPassantStartRank
                 && move.To.Rank == ChessConstants.BlackEnPassantEndRank)
             {
@@ -257,7 +266,7 @@ namespace ChessPlatform
 
             #endregion
 
-            var piece = pieces[sourcePosition.X88Value];
+            var piece = GetPiece(pieces, sourcePosition);
 
             var pieceType = piece.GetPieceType();
             var color = piece.GetColor();
@@ -268,12 +277,40 @@ namespace ChessPlatform
 
             if (pieceType == PieceType.Knight)
             {
-                return GetKnightMovePositions(sourcePosition);
+                var result = GetKnightMovePositions(sourcePosition)
+                    .Where(p => GetPiece(pieces, p).GetColor() != color.Value)
+                    .ToArray();
+
+                return result;
             }
 
-            //// TODO [vmcl] Consider en passant capture
+            if (pieceType == PieceType.King)
+            {
+                //// TODO [vmcl] Implement GetPotentialMovePositions for King
+                //// TODO [vmcl] Consider castling availability
+                throw new NotImplementedException();
+            }
 
-            throw new NotImplementedException();
+            if (pieceType == PieceType.Pawn)
+            {
+                //// TODO [vmcl] Implement GetPotentialMovePositions for Pawn
+                //// TODO [vmcl] Consider en passant move and capture
+                throw new NotImplementedException();
+            }
+
+            var resultList = new List<Position>();
+
+            if (pieceType.IsSlidingStraight())
+            {
+                GetPotentialMovePositionsByRays(pieces, sourcePosition, color.Value, StraightRays, resultList);
+            }
+
+            if (pieceType.IsSlidingDiagonally())
+            {
+                GetPotentialMovePositionsByRays(pieces, sourcePosition, color.Value, DiagonalRays, resultList);
+            }
+
+            return resultList.ToArray();
         }
 
         #endregion
@@ -309,6 +346,39 @@ namespace ChessPlatform
             }
 
             return result.ToArray();
+        }
+
+        private static void GetPotentialMovePositionsByRays(
+            IList<Piece> pieces,
+            Position sourcePosition,
+            PieceColor sourceColor,
+            IEnumerable<RayInfo> rays,
+            ICollection<Position> resultCollection)
+        {
+            foreach (var ray in rays)
+            {
+                for (var currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset);
+                    Position.IsValidX88Value(currentX88Value);
+                    currentX88Value += ray.Offset)
+                {
+                    var currentPosition = new Position(currentX88Value);
+
+                    var currentPiece = pieces[currentPosition.X88Value];
+                    var currentColor = currentPiece.GetColor();
+                    if (currentPiece == Piece.None || !currentColor.HasValue)
+                    {
+                        resultCollection.Add(currentPosition);
+                        continue;
+                    }
+
+                    if (currentColor.Value != sourceColor)
+                    {
+                        resultCollection.Add(currentPosition);
+                    }
+
+                    break;
+                }
+            }
         }
 
         #endregion
