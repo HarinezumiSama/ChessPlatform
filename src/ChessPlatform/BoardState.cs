@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -14,45 +13,11 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private static readonly ReadOnlyCollection<RayInfo> AllRayOffsets =
-            new ReadOnlyCollection<RayInfo>(
-                new[]
-                {
-                    new RayInfo(0xFF, true),
-                    new RayInfo(0x01, true),
-                    new RayInfo(0xF0, true),
-                    new RayInfo(0x10, true),
-                    new RayInfo(0x0F, false),
-                    new RayInfo(0x11, false),
-                    new RayInfo(0xEF, false),
-                    new RayInfo(0xF1, false)
-                });
-
-        private static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
-            new ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>>(
-                new Dictionary<PieceColor, ReadOnlySet<byte>>
-                {
-                    { PieceColor.White, new byte[] { 0x0F, 0x11 }.ToHashSet().AsReadOnly() },
-                    { PieceColor.Black, new byte[] { 0xEF, 0xF1 }.ToHashSet().AsReadOnly() }
-                });
-
-        private static readonly ReadOnlySet<byte> KingAttackOffsets =
-            AllRayOffsets.Select(item => item.Offset).ToHashSet().AsReadOnly();
-
-        private static readonly ReadOnlySet<PieceType> ValidPromotions =
-            new HashSet<PieceType>(new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight })
-                .AsReadOnly();
-
-        private static readonly ReadOnlyCollection<Piece> BothKings =
-            new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
-
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
 
         private readonly PieceColor _activeColor;
-        private readonly PieceColor? _colorInCheck;
-        private readonly bool _isStalemate;
-        private readonly PieceColor? _checkmatingColor;
+        private readonly GameState _state;
         private readonly CastlingOptions _castlingOptions;
         private readonly Position? _enPassantTarget;
         private readonly ReadOnlySet<PieceMove> _validMoves;
@@ -68,7 +33,7 @@ namespace ChessPlatform
         {
             CreatePieces(out _pieces, out _pieceOffsetMap);
             SetupDefault(out _activeColor, out _castlingOptions, out _enPassantTarget);
-            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
+            PostInitialize(out _validMoves, out _state);
             Validate();
         }
 
@@ -96,7 +61,7 @@ namespace ChessPlatform
             //// _castlingOptions = ...
             ////_enPassantTarget = ...
 
-            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
+            PostInitialize(out _validMoves, out _state);
             Validate();
         }
 
@@ -123,7 +88,7 @@ namespace ChessPlatform
             #endregion
 
             _pieces = previousState._pieces.Copy();
-            _pieceOffsetMap = CopyPieceOffsetMap(previousState._pieceOffsetMap);
+            _pieceOffsetMap = ChessHelper.CopyPieceOffsetMap(previousState._pieceOffsetMap);
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
@@ -160,7 +125,7 @@ namespace ChessPlatform
                 && (pieceColor == PieceColor.White && move.To.Rank == ChessConstants.WhitePawnPromotionRank
                     || pieceColor == PieceColor.Black && move.To.Rank == ChessConstants.BlackPawnPromotionRank))
             {
-                if (!promotedPieceType.HasValue || !ValidPromotions.Contains(promotedPieceType.Value))
+                if (!promotedPieceType.HasValue || !ChessConstants.ValidPromotions.Contains(promotedPieceType.Value))
                 {
                     throw new ArgumentException(
                         string.Format(
@@ -207,7 +172,7 @@ namespace ChessPlatform
             //// TODO [vmcl] Set en passant target, if applicable
             //enPassantTarget=...
 
-            PostInitialize(out _colorInCheck, out _validMoves, out _isStalemate, out _checkmatingColor);
+            PostInitialize(out _validMoves, out _state);
             Validate();
         }
 
@@ -224,30 +189,12 @@ namespace ChessPlatform
             }
         }
 
-        public PieceColor? ColorInCheck
+        public GameState State
         {
             [DebuggerStepThrough]
             get
             {
-                return _colorInCheck;
-            }
-        }
-
-        public bool IsStalemate
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return _isStalemate;
-            }
-        }
-
-        public PieceColor? CheckmatingColor
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return _checkmatingColor;
+                return _state;
             }
         }
 
@@ -326,20 +273,20 @@ namespace ChessPlatform
                 writeEmptyCount();
             }
 
-            //// TODO [vmcl] Consider actual: (a) castling availability; (b) en passant target; (c) half move clock; (d) full move number
+            //// TODO [vmcl] Consider actual: (*) half move clock; (*) full move number
             resultBuilder.AppendFormat(
                 CultureInfo.InvariantCulture,
-                " {0} {1} - 0 1",
-                _activeColor == PieceColor.White ? 'w' : 'b',
-                _castlingOptions.GetFenSnippet());
+                " {0} {1} {2} 0 1",
+                _activeColor.GetFenSnippet(),
+                _castlingOptions.GetFenSnippet(),
+                _enPassantTarget.HasValue ? _enPassantTarget.Value.ToString() : "-");
 
             return resultBuilder.ToString();
         }
 
         public Piece GetPiece(Position position)
         {
-            var offset = position.X88Value;
-            return _pieces[offset];
+            return ChessHelper.GetPiece(_pieces, position);
         }
 
         public Position[] GetPiecePositions(Piece piece)
@@ -372,64 +319,7 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            var resultList = new List<Position>();
-
-            var attackingKnights = targetPosition
-                .GetValidKnightPositionsAround()
-                .Where(p => _pieces[p.X88Value].GetColor() == attackingColor)
-                .ToArray();
-
-            resultList.AddRange(attackingKnights);
-
-            foreach (var rayOffset in AllRayOffsets)
-            {
-                for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
-                    Position.IsValidX88Value(currentX88Value);
-                    currentX88Value += rayOffset.Offset)
-                {
-                    var piece = _pieces[currentX88Value];
-                    var color = piece.GetColor();
-                    if (piece == Piece.None || !color.HasValue)
-                    {
-                        continue;
-                    }
-
-                    if (color.Value != attackingColor)
-                    {
-                        break;
-                    }
-
-                    var pieceType = piece.GetPieceType();
-                    if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
-                        || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
-                    {
-                        resultList.Add(new Position(currentX88Value));
-                        break;
-                    }
-
-                    var difference = (byte)(targetPosition.X88Value - currentX88Value);
-                    switch (pieceType)
-                    {
-                        case PieceType.Pawn:
-                            if (PawnAttackOffsetMap[attackingColor].Contains(difference))
-                            {
-                                resultList.Add(new Position(currentX88Value));
-                            }
-                            break;
-
-                        case PieceType.King:
-                            if (KingAttackOffsets.Contains(difference))
-                            {
-                                resultList.Add(new Position(currentX88Value));
-                            }
-                            break;
-                    }
-
-                    break;
-                }
-            }
-
-            return resultList.ToArray();
+            return ChessHelper.GetAttacks(_pieces, targetPosition, attackingColor);
         }
 
         #endregion
@@ -444,21 +334,9 @@ namespace ChessPlatform
             pieceOffsetMap = new Dictionary<Piece, HashSet<byte>>();
         }
 
-        private static Dictionary<Piece, HashSet<byte>> CopyPieceOffsetMap(
-            ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
-        {
-            var result = new Dictionary<Piece, HashSet<byte>>(pieceOffsetMap.Count);
-            foreach (var pair in pieceOffsetMap)
-            {
-                result.Add(pair.Key, new HashSet<byte>(pair.Value));
-            }
-
-            return result;
-        }
-
         private void Validate()
         {
-            foreach (var king in BothKings)
+            foreach (var king in ChessConstants.BothKings)
             {
                 var count = _pieceOffsetMap.GetValueOrCreate(king).Count;
                 if (count != 1)
@@ -472,10 +350,7 @@ namespace ChessPlatform
                 }
             }
 
-            var inactiveKing = PieceType.King.ToPiece(_activeColor.Invert());
-            var inactiveKingPosition = new Position(_pieceOffsetMap[inactiveKing].Single());
-
-            if (GetAttacks(inactiveKingPosition, _activeColor).Length != 0)
+            if (ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor.Invert()))
             {
                 throw new InvalidOperationException("Inactive king is under check.");
             }
@@ -518,32 +393,39 @@ namespace ChessPlatform
                 }
             }
 
-            //// TODO [vmcl] (1) No non-promoted pawns at their last rank, (X) etc.
+            //// TODO [vmcl] (*) No non-promoted pawns at their last rank, (*) etc.
         }
 
-        private void PostInitialize(
-            out PieceColor? colorInCheck,
-            out ReadOnlySet<PieceMove> validMoves,
-            out bool isStalemate,
-            out PieceColor? checkmatingColor)
+        private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
         {
-            var activeKing = PieceType.King.ToPiece(_activeColor);
-            var activeKingPosition = new Position(_pieceOffsetMap[activeKing].Single());
+            var isInCheck = ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor);
 
-            colorInCheck = GetAttacks(activeKingPosition, _activeColor.Invert()).Length == 0
-                ? (PieceColor?)null
-                : _activeColor;
-
-            var activePairs = _pieceOffsetMap
+            var activePieceOffsets = _pieceOffsetMap
                 .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
+                .SelectMany(pair => pair.Value)
                 .ToArray();
 
-            foreach (var pair in activePairs)
+            var validMoveSet = new HashSet<PieceMove>();
+            var moveHelper = new MoveHelper(_pieces, _pieceOffsetMap);
+            foreach (var offset in activePieceOffsets)
             {
-                ;
+                var sourcePosition = new Position(offset);
+
+                var potentialMovePositions = ChessHelper.GetPotentialMovePositions(_pieces, sourcePosition);
+                foreach (var destinationPosition in potentialMovePositions)
+                {
+                    var move = new PieceMove(sourcePosition, destinationPosition);
+                    moveHelper.MakeMove(move);
+
+                    throw new NotImplementedException();
+                }
             }
 
-            throw new NotImplementedException();
+            validMoves = validMoveSet.AsReadOnly();
+
+            state = validMoves.Count == 0
+                ? (isInCheck ? GameState.Checkmate : GameState.Stalemate)
+                : (isInCheck ? GameState.Check : GameState.Default);
         }
 
         private void SetupDefault(
@@ -602,58 +484,7 @@ namespace ChessPlatform
 
         private Piece SetPiece(Position position, Piece piece)
         {
-            var offset = position.X88Value;
-            var oldPiece = _pieces[offset];
-            _pieces[offset] = piece;
-
-            return oldPiece;
-        }
-
-        #endregion
-
-        #region RayInfo Class
-
-        private struct RayInfo
-        {
-            #region Constructors
-
-            internal RayInfo(byte offset, bool isStraight)
-                : this()
-            {
-                this.Offset = offset;
-                this.IsStraight = isStraight;
-            }
-
-            #endregion
-
-            #region Public Properties
-
-            public byte Offset
-            {
-                get;
-                private set;
-            }
-
-            public bool IsStraight
-            {
-                get;
-                private set;
-            }
-
-            #endregion
-
-            #region Public Methods
-
-            public override string ToString()
-            {
-                return string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{{0x{0:X2}, {1}}}",
-                    this.Offset,
-                    this.IsStraight ? "straight" : "diagonal");
-            }
-
-            #endregion
+            return ChessHelper.SetPiece(_pieces, position, piece);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Omnifactotum;
@@ -15,6 +16,9 @@ namespace ChessPlatform
         public const byte WhitePawnPromotionRank = RankCount - 1;
         public const byte BlackPawnPromotionRank = 0;
 
+        public const byte WhiteEnPassantStartRank = 1;
+        public const byte BlackEnPassantStartRank = RankCount - 2;
+
         internal const byte X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;
@@ -22,6 +26,12 @@ namespace ChessPlatform
 
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
+
+        public static readonly ReadOnlySet<PieceType> ValidPromotions =
+            new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight }.ToHashSet().AsReadOnly();
+
+        public static readonly ReadOnlyCollection<Piece> BothKings =
+            new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
 
         internal static readonly ReadOnlyCollection<PieceColor> PieceColors =
             new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
