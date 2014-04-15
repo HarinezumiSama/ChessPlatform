@@ -42,7 +42,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        public static Position[] GetValidKnightMovePositions(Position position)
+        public static Position[] GetKnightMovePositions(Position position)
         {
             return GetValidPositions(position, KnightAttackOffsets);
         }
@@ -121,7 +121,7 @@ namespace ChessPlatform
 
             var resultList = new List<Position>();
 
-            var attackingKnights = GetValidKnightMovePositions(targetPosition)
+            var attackingKnights = GetKnightMovePositions(targetPosition)
                 .Where(p => pieces[p.X88Value].GetColor() == attackingColor)
                 .ToArray();
 
@@ -206,6 +206,49 @@ namespace ChessPlatform
             return GetAttacks(pieces, kingPosition, kingColor.Invert()).Length != 0;
         }
 
+        internal static Position? GetEnPassantTarget(IList<Piece> pieces, PieceMove move)
+        {
+            #region Argument Check
+
+            ValidatePieces(pieces);
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            var piece = GetPiece(pieces, move.From);
+            var pieceType = piece.GetPieceType();
+            var color = piece.GetColor();
+            if (pieceType == PieceType.None || !color.HasValue)
+            {
+                throw new ArgumentException("The move starting position contains no piece.", "move");
+            }
+
+            if (pieceType != PieceType.Pawn || move.From.File != move.To.File)
+            {
+                return null;
+            }
+
+            if (color.Value == PieceColor.White 
+                && move.From.Rank == ChessConstants.WhiteEnPassantStartRank
+                && move.To.Rank == ChessConstants.WhiteEnPassantEndRank)
+            {
+                return new Position(move.From.File, ChessConstants.WhiteEnPassantTargetRank);
+            }
+
+            if (color.Value == PieceColor.Black 
+                && move.From.Rank == ChessConstants.BlackEnPassantStartRank
+                && move.To.Rank == ChessConstants.BlackEnPassantEndRank)
+            {
+                return new Position(move.From.File, ChessConstants.BlackEnPassantTargetRank);
+            }
+
+            return null;
+        }
+
         internal static Position[] GetPotentialMovePositions(IList<Piece> pieces, Position sourcePosition)
         {
             #region Argument Check
@@ -225,7 +268,7 @@ namespace ChessPlatform
 
             if (pieceType == PieceType.Knight)
             {
-                return GetValidKnightMovePositions(sourcePosition);
+                return GetKnightMovePositions(sourcePosition);
             }
 
             //// TODO [vmcl] Consider en passant capture

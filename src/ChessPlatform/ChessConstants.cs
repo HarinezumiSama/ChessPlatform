@@ -17,7 +17,12 @@ namespace ChessPlatform
         public const byte BlackPawnPromotionRank = 0;
 
         public const byte WhiteEnPassantStartRank = 1;
+        public const byte WhiteEnPassantTargetRank = WhiteEnPassantStartRank + 1;
+        public const byte WhiteEnPassantEndRank = WhiteEnPassantTargetRank + 1;
+
         public const byte BlackEnPassantStartRank = RankCount - 2;
+        public const byte BlackEnPassantTargetRank = BlackEnPassantStartRank - 1;
+        public const byte BlackEnPassantEndRank = BlackEnPassantTargetRank - 1;
 
         internal const byte X88Length = FileCount * RankCount * 2;
 

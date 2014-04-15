@@ -92,6 +92,8 @@ namespace ChessPlatform
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
+            _enPassantTarget = ChessHelper.GetEnPassantTarget(_pieces, move);
+
             var movingPiece = SetPiece(move.From, Piece.None);
 
             movingPiece.EnsureDefined();
@@ -99,25 +101,24 @@ namespace ChessPlatform
             var color = movingPiece.GetColor();
             if (movingPiece == Piece.None || !color.HasValue)
             {
-                throw new ArgumentException("The move starting position contains no piece.", "move");
+                throw new ChessPlatformException("The move starting position contains no piece.");
             }
 
             var removed = _pieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
             if (!removed)
             {
-                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
             }
 
             var pieceColor = color.Value;
 
             if (pieceColor != previousState._activeColor)
             {
-                throw new ArgumentException(
+                throw new ChessPlatformException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The move starting position specifies piece of invalid color (expected: {0}).",
-                        previousState._activeColor),
-                    "move");
+                        previousState._activeColor));
             }
 
             var pieceType = movingPiece.GetPieceType();
@@ -127,12 +128,11 @@ namespace ChessPlatform
             {
                 if (!promotedPieceType.HasValue || !ChessConstants.ValidPromotions.Contains(promotedPieceType.Value))
                 {
-                    throw new ArgumentException(
+                    throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The promoted piece type is not specified or is invalid for promoted {0}.",
-                            movingPiece.GetDescription()),
-                        "promotedPieceType");
+                            movingPiece.GetDescription()));
                 }
 
                 movingPiece = promotedPieceType.Value.ToPiece(pieceColor);
@@ -143,34 +143,32 @@ namespace ChessPlatform
             {
                 if (capturedPiece.GetColor() == pieceColor)
                 {
-                    throw new ArgumentException(
+                    throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The move destination position performs a capture of the same color ({0}).",
-                            pieceColor),
-                        "move");
+                            pieceColor));
                 }
 
                 var capturedRemoved = _pieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
                 if (!capturedRemoved)
                 {
-                    throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+                    throw new ChessPlatformException("Inconsistent state of the piece offset map.");
                 }
             }
 
             var added = _pieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
             if (!added)
             {
-                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
             }
+
+            //// TODO [vmcl] Consider castling move!
 
             if (CastlingOptions != CastlingOptions.None)
             {
                 //// TODO [vmcl] Adjust castling options
             }
-
-            //// TODO [vmcl] Set en passant target, if applicable
-            //enPassantTarget=...
 
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -279,7 +277,7 @@ namespace ChessPlatform
                 " {0} {1} {2} 0 1",
                 _activeColor.GetFenSnippet(),
                 _castlingOptions.GetFenSnippet(),
-                _enPassantTarget.HasValue ? _enPassantTarget.Value.ToString() : "-");
+                _enPassantTarget.ToStringSafely("-"));
 
             return resultBuilder.ToString();
         }
@@ -341,7 +339,7 @@ namespace ChessPlatform
                 var count = _pieceOffsetMap.GetValueOrCreate(king).Count;
                 if (count != 1)
                 {
-                    throw new InvalidOperationException(
+                    throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "The number of the '{0}' piece is {1}. Must be exactly one.",
@@ -352,7 +350,7 @@ namespace ChessPlatform
 
             if (ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor.Invert()))
             {
-                throw new InvalidOperationException("Inactive king is under check.");
+                throw new ChessPlatformException("Inactive king is under check.");
             }
 
             foreach (var pieceColor in ChessConstants.PieceColors)
@@ -374,7 +372,7 @@ namespace ChessPlatform
 
                 if (counts.PawnCount > ChessConstants.MaxPawnCountPerColor)
                 {
-                    throw new InvalidOperationException(
+                    throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Too many '{0}' ({1}).",
@@ -384,7 +382,7 @@ namespace ChessPlatform
 
                 if (counts.AllCount > ChessConstants.MaxPieceCountPerColor)
                 {
-                    throw new InvalidOperationException(
+                    throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Too many pieces of the color {0} ({1}).",
@@ -464,7 +462,7 @@ namespace ChessPlatform
             var existingPiece = _pieces[offset];
             if (existingPiece != Piece.None)
             {
-                throw new InvalidOperationException(
+                throw new ChessPlatformException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The board square '{0}' is already occupied by '{1}'.",
@@ -478,7 +476,7 @@ namespace ChessPlatform
             var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(offset);
             if (!added)
             {
-                throw new InvalidOperationException("Inconsistent state of the piece offset map.");
+                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
             }
         }
 
