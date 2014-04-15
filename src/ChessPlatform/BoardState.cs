@@ -236,40 +236,7 @@ namespace ChessPlatform
         {
             var resultBuilder = new StringBuilder((ChessConstants.FileCount + 1) * ChessConstants.RankCount + 20);
 
-            var emptySquareCount = new ValueContainer<int>(0);
-            Action writeEmptyCount =
-                () =>
-                {
-                    if (emptySquareCount.Value > 0)
-                    {
-                        resultBuilder.Append(emptySquareCount.Value);
-                        emptySquareCount.Value = 0;
-                    }
-                };
-
-            for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
-            {
-                if (rank < ChessConstants.RankCount - 1)
-                {
-                    resultBuilder.Append('/');
-                }
-
-                for (var file = 0; file < ChessConstants.FileCount; file++)
-                {
-                    var piece = GetPiece(new Position((byte)file, (byte)rank));
-                    if (piece == Piece.None)
-                    {
-                        emptySquareCount.Value++;
-                        continue;
-                    }
-
-                    writeEmptyCount();
-                    var fenChar = piece.GetFenChar();
-                    resultBuilder.Append(fenChar);
-                }
-
-                writeEmptyCount();
-            }
+            ChessHelper.GetFenSnippet(_pieces, resultBuilder);
 
             //// TODO [vmcl] Consider actual: (*) half move clock; (*) full move number
             resultBuilder.AppendFormat(
@@ -409,13 +376,23 @@ namespace ChessPlatform
             {
                 var sourcePosition = new Position(offset);
 
-                var potentialMovePositions = ChessHelper.GetPotentialMovePositions(_pieces, sourcePosition);
+                var potentialMovePositions = ChessHelper.GetPotentialMovePositions(
+                    _pieces,
+                    _castlingOptions,
+                    _enPassantTarget,
+                    sourcePosition);
+
                 foreach (var destinationPosition in potentialMovePositions)
                 {
                     var move = new PieceMove(sourcePosition, destinationPosition);
                     moveHelper.MakeMove(move);
 
-                    throw new NotImplementedException();
+                    if (!ChessHelper.IsInCheck(moveHelper.Pieces, moveHelper.PieceOffsetMap, _activeColor))
+                    {
+                        validMoveSet.Add(move);
+                    }
+
+                    moveHelper.UndoMove();
                 }
             }
 

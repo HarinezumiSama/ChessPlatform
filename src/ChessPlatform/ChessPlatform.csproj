@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="BaseFenCharAttribute.cs" />
     <Compile Include="BoardState.cs" />
+    <Compile Include="CastlingInfo.cs" />
     <Compile Include="CastlingOptions.cs" />
     <Compile Include="CastlingOptionsExtensions.cs" />
     <Compile Include="ChessConstants.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="PieceColor.cs" />
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
+    <Compile Include="PieceTypeMask.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RayInfo.cs" />

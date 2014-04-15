@@ -38,7 +38,22 @@ namespace ChessPlatform
         public static readonly ReadOnlyCollection<Piece> BothKings =
             new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
 
-        internal static readonly ReadOnlyCollection<PieceColor> PieceColors =
+        public static readonly Position WhiteKingInitialPosition = "e1";
+        public static readonly Position BlackKingInitialPosition = "e8";
+
+        public static readonly CastlingInfo WhiteCastlingKingSide =
+            new CastlingInfo(new PieceMove(WhiteKingInitialPosition, "g1"), "f1", "g1");
+
+        public static readonly CastlingInfo WhiteCastlingQueenSide =
+            new CastlingInfo(new PieceMove(WhiteKingInitialPosition, "c1"), "b1", "c1", "d1");
+
+        public static readonly CastlingInfo BlackCastlingKingSide =
+            new CastlingInfo(new PieceMove(BlackKingInitialPosition, "g8"), "f8", "g8");
+
+        public static readonly CastlingInfo BlackCastlingQueenSide =
+            new CastlingInfo(new PieceMove(BlackKingInitialPosition, "c8"), "b8", "c8", "d8");
+
+        public static readonly ReadOnlyCollection<PieceColor> PieceColors =
             new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
 
         #endregion

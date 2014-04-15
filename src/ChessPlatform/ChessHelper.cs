@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 using Omnifactotum;
 
 namespace ChessPlatform
@@ -33,19 +34,54 @@ namespace ChessPlatform
         public static readonly ReadOnlyCollection<RayInfo> AllRays =
             new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
 
-        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
-            new ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>>(
-                new Dictionary<PieceColor, ReadOnlySet<byte>>
+        public static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
+            new ReadOnlyDictionary<PieceColor, RayInfo>(
+                new Dictionary<PieceColor, RayInfo>
                 {
-                    { PieceColor.White, new byte[] { 0x0F, 0x11 }.ToHashSet().AsReadOnly() },
-                    { PieceColor.Black, new byte[] { 0xEF, 0xF1 }.ToHashSet().AsReadOnly() }
+                    { PieceColor.White, new RayInfo(0x10, true) },
+                    { PieceColor.Black, new RayInfo(0xF0, true) }
                 });
 
+        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
+            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
+                {
+                    {
+                        PieceColor.White,
+                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+                    },
+                    {
+                        PieceColor.Black,
+                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+                    }
+                });
+
+        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
+            PawnAttackRayMap.ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
+
+        public static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
+
         public static readonly ReadOnlySet<byte> KingAttackOffsets =
-            AllRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
+            KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
 
         public static readonly ReadOnlySet<byte> KnightAttackOffsets =
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
+
+        private const int MaxSlidingPieceDistance = 8;
+        private const int MaxPawnAttackDistance = 1;
+        private const int MaxKingMoveDistance = 1;
+
+        private static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingInfos =
+            new ReadOnlyDictionary<CastlingOptions, CastlingInfo>(
+                new Dictionary<CastlingOptions, CastlingInfo>
+                {
+                    { CastlingOptions.WhiteKingSide, ChessConstants.WhiteCastlingKingSide },
+                    { CastlingOptions.WhiteQueenSide, ChessConstants.WhiteCastlingQueenSide },
+                    { CastlingOptions.BlackKingSide, ChessConstants.BlackCastlingKingSide },
+                    { CastlingOptions.BlackQueenSide, ChessConstants.BlackCastlingQueenSide }
+                });
 
         #endregion
 
@@ -118,6 +154,62 @@ namespace ChessPlatform
             pieces[offset] = piece;
 
             return oldPiece;
+        }
+
+        internal static void GetFenSnippet(IList<Piece> pieces, StringBuilder resultBuilder)
+        {
+            #region Argument Check
+
+            ValidatePieces(pieces);
+
+            if (resultBuilder == null)
+            {
+                throw new ArgumentNullException("resultBuilder");
+            }
+
+            #endregion
+
+            var emptySquareCount = new ValueContainer<int>(0);
+            Action writeEmptySquareCount =
+                () =>
+                {
+                    if (emptySquareCount.Value > 0)
+                    {
+                        resultBuilder.Append(emptySquareCount.Value);
+                        emptySquareCount.Value = 0;
+                    }
+                };
+
+            for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
+            {
+                if (rank < ChessConstants.RankCount - 1)
+                {
+                    resultBuilder.Append('/');
+                }
+
+                for (var file = 0; file < ChessConstants.FileCount; file++)
+                {
+                    var piece = GetPiece(pieces, new Position((byte)file, (byte)rank));
+                    if (piece == Piece.None)
+                    {
+                        emptySquareCount.Value++;
+                        continue;
+                    }
+
+                    writeEmptySquareCount();
+                    var fenChar = piece.GetFenChar();
+                    resultBuilder.Append(fenChar);
+                }
+
+                writeEmptySquareCount();
+            }
+        }
+
+        internal static string GetFenSnippet(IList<Piece> pieces)
+        {
+            var resultBuilder = new StringBuilder();
+            GetFenSnippet(pieces, resultBuilder);
+            return resultBuilder.ToString();
         }
 
         internal static Position[] GetAttacks(IList<Piece> pieces, Position targetPosition, PieceColor attackingColor)
@@ -258,7 +350,11 @@ namespace ChessPlatform
             return null;
         }
 
-        internal static Position[] GetPotentialMovePositions(IList<Piece> pieces, Position sourcePosition)
+        internal static Position[] GetPotentialMovePositions(
+            IList<Piece> pieces,
+            CastlingOptions castlingOptions,
+            Position? enPassantTarget,
+            Position sourcePosition)
         {
             #region Argument Check
 
@@ -284,30 +380,57 @@ namespace ChessPlatform
                 return result;
             }
 
+            var resultList = new List<Position>();
+
             if (pieceType == PieceType.King)
             {
-                //// TODO [vmcl] Implement GetPotentialMovePositions for King
-                //// TODO [vmcl] Consider castling availability
-                throw new NotImplementedException();
+                GetPotentialMovePositionsByRays(
+                    pieces,
+                    sourcePosition,
+                    color.Value,
+                    KingAttackRays,
+                    MaxKingMoveDistance,
+                    resultList);
+
+                GetPotentialCastlingsMovePositions(
+                    pieces,
+                    sourcePosition,
+                    color.Value,
+                    castlingOptions,
+                    resultList);
+
+                return resultList.ToArray();
             }
 
             if (pieceType == PieceType.Pawn)
             {
                 //// TODO [vmcl] Implement GetPotentialMovePositions for Pawn
+
                 //// TODO [vmcl] Consider en passant move and capture
+
                 throw new NotImplementedException();
             }
 
-            var resultList = new List<Position>();
-
             if (pieceType.IsSlidingStraight())
             {
-                GetPotentialMovePositionsByRays(pieces, sourcePosition, color.Value, StraightRays, resultList);
+                GetPotentialMovePositionsByRays(
+                    pieces,
+                    sourcePosition,
+                    color.Value,
+                    StraightRays,
+                    MaxSlidingPieceDistance,
+                    resultList);
             }
 
             if (pieceType.IsSlidingDiagonally())
             {
-                GetPotentialMovePositionsByRays(pieces, sourcePosition, color.Value, DiagonalRays, resultList);
+                GetPotentialMovePositionsByRays(
+                    pieces,
+                    sourcePosition,
+                    color.Value,
+                    DiagonalRays,
+                    MaxSlidingPieceDistance,
+                    resultList);
             }
 
             return resultList.ToArray();
@@ -353,13 +476,14 @@ namespace ChessPlatform
             Position sourcePosition,
             PieceColor sourceColor,
             IEnumerable<RayInfo> rays,
+            int maxDistance,
             ICollection<Position> resultCollection)
         {
             foreach (var ray in rays)
             {
-                for (var currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset);
-                    Position.IsValidX88Value(currentX88Value);
-                    currentX88Value += ray.Offset)
+                for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
+                    Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
+                    currentX88Value += ray.Offset, distance++)
                 {
                     var currentPosition = new Position(currentX88Value);
 
@@ -378,6 +502,80 @@ namespace ChessPlatform
 
                     break;
                 }
+            }
+        }
+
+        private static void GetPotentialCastlingsMovePositions(
+            IList<Piece> pieces,
+            Position sourcePosition,
+            PieceColor color,
+            CastlingOptions castlingOptions,
+            ICollection<Position> resultCollection)
+        {
+            switch (color)
+            {
+                case PieceColor.White:
+                    {
+                        GetPotentialCastlingMove(
+                            pieces,
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.WhiteKingSide,
+                            resultCollection);
+
+                        GetPotentialCastlingMove(
+                            pieces,
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.WhiteQueenSide,
+                            resultCollection);
+                    }
+                    break;
+
+                case PieceColor.Black:
+                    {
+                        GetPotentialCastlingMove(
+                            pieces,
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.BlackKingSide,
+                            resultCollection);
+
+                        GetPotentialCastlingMove(
+                            pieces,
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.BlackQueenSide,
+                            resultCollection);
+                    }
+                    break;
+
+                default:
+                    throw color.CreateEnumValueNotSupportedException();
+            }
+        }
+
+        private static bool CheckSquares(IList<Piece> pieces, Piece expectedPiece, IEnumerable<Position> positions)
+        {
+            return positions.All(position => GetPiece(pieces, position) == expectedPiece);
+        }
+
+        private static void GetPotentialCastlingMove(
+            IList<Piece> pieces,
+            Position sourcePosition,
+            CastlingOptions castlingOptions,
+            CastlingOptions option,
+            ICollection<Position> resultCollection)
+        {
+            var castlingInfo = CastlingInfos[option];
+
+            var isPotentiallyPossible = (castlingOptions & option) == option
+                && sourcePosition == castlingInfo.CastlingMove.From
+                && CheckSquares(pieces, Piece.None, castlingInfo.EmptySquares);
+
+            if (isPotentiallyPossible)
+            {
+                resultCollection.Add(castlingInfo.CastlingMove.To);
             }
         }
 

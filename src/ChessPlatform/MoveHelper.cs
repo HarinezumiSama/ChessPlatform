@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 
 namespace ChessPlatform
 {
@@ -69,13 +71,13 @@ namespace ChessPlatform
 
             if (_move != null)
             {
-                throw new InvalidOperationException("The previous move must be undone first.");
+                throw new ChessPlatformException("The previous move must be undone first.");
             }
 
             _movingPiece = ChessHelper.SetPiece(this.Pieces, move.From, Piece.None);
             if (_movingPiece == Piece.None)
             {
-                throw new InvalidOperationException(
+                throw new ChessPlatformException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "No piece at the source position '{0}'.",
@@ -88,7 +90,7 @@ namespace ChessPlatform
             _capturedPiece = ChessHelper.SetPiece(this.Pieces, move.To, _movingPiece);
             if (_capturedPiece.GetColor() == _movingPiece.GetColor())
             {
-                throw new InvalidOperationException("Cannot capture a piece of the same color.");
+                throw new ChessPlatformException("Cannot capture a piece of the same color.");
             }
 
             if (_capturedPiece != Piece.None)
@@ -99,13 +101,18 @@ namespace ChessPlatform
             movingPieceOffsets.Add(move.To.X88Value);
 
             _move = move;
+
+            Trace.TraceInformation(
+                "Executed {0}: {1}",
+                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                ChessHelper.GetFenSnippet(this.Pieces));
         }
 
         public void UndoMove()
         {
             if (_move == null)
             {
-                throw new InvalidOperationException("No move has been made.");
+                throw new ChessPlatformException("No move has been made.");
             }
 
             ChessHelper.SetPiece(this.Pieces, _move.From, _movingPiece);
@@ -122,6 +129,11 @@ namespace ChessPlatform
             _movingPiece = Piece.None;
             _capturedPiece = Piece.None;
             _move = null;
+
+            Trace.TraceInformation(
+                "Executed {0}: {1}",
+                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                ChessHelper.GetFenSnippet(this.Pieces));
         }
 
         #endregion
