@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -40,6 +41,20 @@ namespace ChessPlatform
         {
             get;
             private set;
+        }
+
+        #endregion
+
+        #region Operators
+
+        public static bool operator ==(PieceMove left, PieceMove right)
+        {
+            return EqualityComparer<PieceMove>.Default.Equals(left, right);
+        }
+
+        public static bool operator !=(PieceMove left, PieceMove right)
+        {
+            return !(left == right);
         }
 
         #endregion

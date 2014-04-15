@@ -13,8 +13,28 @@ namespace ChessPlatform
         /// </summary>
         internal CastlingInfo(PieceMove castlingMove, params Position[] emptySquares)
         {
-            this.CastlingMove = castlingMove.EnsureNotNull();
-            this.EmptySquares = emptySquares.EnsureNotNull().AsReadOnly();
+            #region Argument Check
+
+            if (castlingMove == null)
+            {
+                throw new ArgumentNullException("castlingMove");
+            }
+
+            if (emptySquares == null)
+            {
+                throw new ArgumentNullException("emptySquares");
+            }
+
+            if (Math.Abs(castlingMove.From.X88Value - castlingMove.To.X88Value) != 2)
+            {
+                throw new ArgumentException("Invalid castling move.", "castlingMove");
+            }
+
+            #endregion
+
+            this.CastlingMove = castlingMove;
+            this.EmptySquares = emptySquares.AsReadOnly();
+            this.PassedPosition = new Position((byte)((castlingMove.From.X88Value + castlingMove.To.X88Value) / 2));
         }
 
         #endregion
@@ -28,6 +48,12 @@ namespace ChessPlatform
         }
 
         public ReadOnlyCollection<Position> EmptySquares
+        {
+            get;
+            private set;
+        }
+
+        public Position PassedPosition
         {
             get;
             private set;

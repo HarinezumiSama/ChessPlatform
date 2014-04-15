@@ -83,6 +83,25 @@ namespace ChessPlatform
                     { CastlingOptions.BlackQueenSide, ChessConstants.BlackCastlingQueenSide }
                 });
 
+        private static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
+            ColorToCastlingOptionsMap =
+                new ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
+                    new Dictionary<PieceColor, ReadOnlySet<CastlingOptions>>
+                    {
+                        {
+                            PieceColor.White,
+                            new[] { CastlingOptions.WhiteKingSide, CastlingOptions.WhiteQueenSide }
+                                .ToHashSet()
+                                .AsReadOnly()
+                        },
+                        {
+                            PieceColor.Black,
+                            new[] { CastlingOptions.BlackKingSide, CastlingOptions.BlackQueenSide }
+                                .ToHashSet()
+                                .AsReadOnly()
+                        }
+                    });
+
         #endregion
 
         #region Public Methods
@@ -283,6 +302,38 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
+        internal static bool IsUnderAttack(IList<Piece> pieces, Position targetPosition, PieceColor attackingColor)
+        {
+            #region Argument Check
+
+            ValidatePieces(pieces);
+
+            #endregion
+
+            var attacks = GetAttacks(pieces, targetPosition, attackingColor);
+            return attacks.Length != 0;
+        }
+
+        internal static bool IsAnyUnderAttack(
+            IList<Piece> pieces,
+            IEnumerable<Position> targetPositions,
+            PieceColor attackingColor)
+        {
+            #region Argument Check
+
+            ValidatePieces(pieces);
+
+            if (targetPositions == null)
+            {
+                throw new ArgumentNullException("targetPositions");
+            }
+
+            #endregion
+
+            var result = targetPositions.Any(p => IsUnderAttack(pieces, p, attackingColor));
+            return result;
+        }
+
         internal static bool IsInCheck(
             IList<Piece> pieces,
             IDictionary<Piece, HashSet<byte>> pieceOffsetMap,
@@ -304,7 +355,7 @@ namespace ChessPlatform
             var king = PieceType.King.ToPiece(kingColor);
             var kingPosition = new Position(pieceOffsetMap[king].Single());
 
-            return GetAttacks(pieces, kingPosition, kingColor.Invert()).Length != 0;
+            return IsUnderAttack(pieces, kingPosition, kingColor.Invert());
         }
 
         internal static Position? GetEnPassantTarget(IList<Piece> pieces, PieceMove move)
@@ -434,6 +485,24 @@ namespace ChessPlatform
             }
 
             return resultList.ToArray();
+        }
+
+        internal static CastlingInfo CheckCastlingMove(IList<Piece> pieces, PieceMove move)
+        {
+            var piece = GetPiece(pieces, move.From);
+            var color = piece.GetColor();
+            if (piece.GetPieceType() != PieceType.King || !color.HasValue)
+            {
+                return null;
+            }
+
+            var castlingOptions = ColorToCastlingOptionsMap[color.Value];
+
+            var result = CastlingInfos
+                .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.CastlingMove == move)
+                .Value;
+
+            return result;
         }
 
         #endregion

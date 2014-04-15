@@ -364,6 +364,7 @@ namespace ChessPlatform
         private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
         {
             var isInCheck = ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor);
+            var oppositeColor = _activeColor.Invert();
 
             var activePieceOffsets = _pieceOffsetMap
                 .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
@@ -385,6 +386,17 @@ namespace ChessPlatform
                 foreach (var destinationPosition in potentialMovePositions)
                 {
                     var move = new PieceMove(sourcePosition, destinationPosition);
+
+                    var castlingMove = ChessHelper.CheckCastlingMove(_pieces, move);
+                    if (castlingMove != null)
+                    {
+                        if (isInCheck
+                            || ChessHelper.IsUnderAttack(_pieces, castlingMove.PassedPosition, oppositeColor))
+                        {
+                            continue;
+                        }
+                    }
+
                     moveHelper.MakeMove(move);
 
                     if (!ChessHelper.IsInCheck(moveHelper.Pieces, moveHelper.PieceOffsetMap, _activeColor))
