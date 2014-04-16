@@ -10,6 +10,12 @@ namespace ChessPlatform
 {
     internal sealed class PieceData
     {
+        #region Constants and Fields
+
+        private readonly Stack<UndoMoveData> _undoMoveDatas = new Stack<UndoMoveData>();
+
+        #endregion
+
         #region Constructors
 
         internal PieceData()
@@ -89,7 +95,7 @@ namespace ChessPlatform
             return result;
         }
 
-        public Position? GetEnPassantCaptureTarget(PieceMove move)
+        public EnPassantCaptureInfo GetEnPassantCaptureTarget(PieceMove move)
         {
             #region Argument Check
 
@@ -108,20 +114,51 @@ namespace ChessPlatform
 
             var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
             var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
-
-            return isEnPassant ? new Position(move.From.File, enPassantInfo.CaptureTargetRank) : null;
-        }
-
-        public CastlingInfo CheckCastlingMove(PieceMove move)
-        {
-            var piece = GetPiece(move.From);
-            var color = piece.GetColor();
-            if (piece.GetPieceType() != PieceType.King || !color.HasValue)
+            if (!isEnPassant)
             {
                 return null;
             }
 
-            var castlingOptions = ChessHelper.ColorToCastlingOptionsMap[color.Value];
+            var capturePosition = new Position(move.From.File, enPassantInfo.CaptureTargetRank);
+            var targetPiecePosition = new Position(move.From.File, enPassantInfo.EndRank);
+
+            return new EnPassantCaptureInfo(capturePosition, targetPiecePosition);
+        }
+
+        public bool IsEnPassantCapture(PieceMove move, EnPassantCaptureInfo enPassantCaptureInfo)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            if (enPassantCaptureInfo == null)
+            {
+                return false;
+            }
+
+            var targetPieceInfo = GetPieceInfo(enPassantCaptureInfo.TargetPiecePosition);
+            var pieceInfo = GetPieceInfo(move.From);
+
+            var result = pieceInfo.PieceType == PieceType.Pawn && targetPieceInfo.PieceType == PieceType.Pawn
+                && enPassantCaptureInfo.CapturePosition == move.To;
+
+            return result;
+        }
+
+        public CastlingInfo CheckCastlingMove(PieceMove move)
+        {
+            var pieceInfo = GetPieceInfo(move.From);
+            if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Color.HasValue)
+            {
+                return null;
+            }
+
+            var castlingOptions = ChessHelper.ColorToCastlingOptionsMap[pieceInfo.Color.Value];
 
             var result = ChessHelper.CastlingOptionToInfoMap
                 .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.KingMove == move)
@@ -308,6 +345,7 @@ namespace ChessPlatform
             }
         }
 
+        //// TODO [vmcl] Remove SetPiece method
         internal Piece SetPiece(Position position, Piece piece)
         {
             var offset = position.X88Value;
@@ -315,6 +353,134 @@ namespace ChessPlatform
             this.Pieces[offset] = piece;
 
             return oldPiece;
+        }
+
+        internal UndoMoveData MakeMove(PieceMove move, EnPassantCaptureInfo enPassantCaptureInfo)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            PieceMove castlingRookMove = null;
+            var moveData = MovePieceInternal(move);
+            var capturedPiece = moveData.CapturedPiece;
+
+            var isEnPassantCapture = IsEnPassantCapture(move, enPassantCaptureInfo);
+            if (isEnPassantCapture)
+            {
+                capturedPiece = RemovePieceInternal(enPassantCaptureInfo.TargetPiecePosition);
+                if (capturedPiece.GetPieceType() != PieceType.Pawn)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+            }
+            else
+            {
+                var castlingInfo = CheckCastlingMove(move);
+                if (castlingInfo != null)
+                {
+                    castlingRookMove = castlingInfo.RookMove;
+                    var rookMoveData = MovePieceInternal(castlingRookMove);
+                    if (rookMoveData.CapturedPiece != Piece.None)
+                    {
+                        throw ChessPlatformException.CreateInconsistentStateError();
+                    }
+                }
+            }
+
+            var undoMoveData = new UndoMoveData(move, capturedPiece, castlingRookMove);
+            _undoMoveDatas.Push(undoMoveData);
+
+            return undoMoveData;
+        }
+
+        internal bool CanUndoMove()
+        {
+            return _undoMoveDatas.Count != 0;
+        }
+
+        internal void UndoMove()
+        {
+            if (!CanUndoMove())
+            {
+                throw new InvalidOperationException("Undo cannot performed: no moves.");
+            }
+
+            var undoMoveData = _undoMoveDatas.Pop();
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private MovePieceData MovePieceInternal(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            var movedPiece = this.Pieces[move.From.X88Value];
+            if (movedPiece == Piece.None)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The source square of the move {{{0}}} is empty.",
+                        move));
+            }
+
+            var capturedPiece = this.Pieces[move.To.X88Value];
+            if (capturedPiece != Piece.None)
+            {
+                if (!this.PieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value))
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+            }
+
+            var movedPieceOffsets = this.PieceOffsetMap.GetValueOrCreate(movedPiece);
+
+            if (!movedPieceOffsets.Remove(move.From.X88Value))
+            {
+                throw ChessPlatformException.CreateInconsistentStateError();
+            }
+
+            if (!movedPieceOffsets.Add(move.To.X88Value))
+            {
+                throw ChessPlatformException.CreateInconsistentStateError();
+            }
+
+            return new MovePieceData(movedPiece, capturedPiece);
+        }
+
+        private Piece RemovePieceInternal(Position position)
+        {
+            var x88Value = position.X88Value;
+            var piece = this.Pieces[x88Value];
+
+            if (piece != Piece.None)
+            {
+                this.Pieces[x88Value] = Piece.None;
+
+                var removed = this.PieceOffsetMap.GetValueOrCreate(piece).Remove(x88Value);
+                if (!removed)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+            }
+
+            return piece;
         }
 
         #endregion

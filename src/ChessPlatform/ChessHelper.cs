@@ -169,7 +169,7 @@ namespace ChessPlatform
         internal static Position[] GetPotentialMovePositions(
             IList<Piece> pieces,
             CastlingOptions castlingOptions,
-            Position? enPassantCaptureTarget,
+            EnPassantCaptureInfo enPassantCaptureTarget,
             Position sourcePosition)
         {
             #region Argument Check
@@ -441,7 +441,7 @@ namespace ChessPlatform
 
         private static Position[] GetPawnPotentialMovePositions(
             IList<Piece> pieces,
-            Position? enPassantCaptureTarget,
+            EnPassantCaptureInfo enPassantCaptureTarget,
             Position sourcePosition,
             PieceColor pieceColor)
         {
@@ -471,7 +471,7 @@ namespace ChessPlatform
             {
                 var attackedPieceInfo = GetPieceInfo(pieces, attackPosition);
                 if (attackedPieceInfo.Color == oppositeColor
-                    || (enPassantCaptureTarget.HasValue && attackPosition == enPassantCaptureTarget.Value))
+                    || (enPassantCaptureTarget != null && attackPosition == enPassantCaptureTarget.CapturePosition))
                 {
                     resultList.Add(attackPosition);
                 }

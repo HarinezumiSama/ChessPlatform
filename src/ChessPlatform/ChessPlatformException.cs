@@ -28,5 +28,14 @@ namespace ChessPlatform
         }
 
         #endregion
+
+        #region Internal Methods
+
+        internal static ChessPlatformException CreateInconsistentStateError()
+        {
+            return new ChessPlatformException("Inconsistent state of the piece data.");
+        }
+
+        #endregion
     }
 }

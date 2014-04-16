@@ -19,7 +19,7 @@ namespace ChessPlatform
         private readonly PieceColor _activeColor;
         private readonly GameState _state;
         private readonly CastlingOptions _castlingOptions;
-        private readonly Position? _enPassantCaptureTarget;
+        private readonly EnPassantCaptureInfo _enPassantCaptureTarget;
         private readonly ReadOnlySet<PieceMove> _validMoves;
 
         #endregion
@@ -114,7 +114,7 @@ namespace ChessPlatform
             var removed = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
             if (!removed)
             {
-                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
+                throw ChessPlatformException.CreateInconsistentStateError();
             }
 
             var pieceColor = color.Value;
@@ -161,14 +161,14 @@ namespace ChessPlatform
                     _pieceData.PieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
                 if (!capturedRemoved)
                 {
-                    throw new ChessPlatformException("Inconsistent state of the piece offset map.");
+                    throw ChessPlatformException.CreateInconsistentStateError();
                 }
             }
 
             var added = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
             if (!added)
             {
-                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
+                throw ChessPlatformException.CreateInconsistentStateError();
             }
 
             if (castlingInfo != null)
@@ -213,7 +213,7 @@ namespace ChessPlatform
             }
         }
 
-        public Position? EnPassantCaptureTarget
+        public EnPassantCaptureInfo EnPassantCaptureTarget
         {
             [DebuggerStepThrough]
             get
@@ -399,7 +399,7 @@ namespace ChessPlatform
         private void SetupDefault(
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
-            out Position? enPassantTarget)
+            out EnPassantCaptureInfo enPassantTarget)
         {
             _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
             _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
@@ -432,7 +432,7 @@ namespace ChessPlatform
             string inputFen,
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
-            out Position? enPassantCaptureTarget)
+            out EnPassantCaptureInfo enPassantCaptureTarget)
         {
             var fen = inputFen.Trim();
             Trace.TraceInformation("[{0}] '{1}'", MethodBase.GetCurrentMethod().GetQualifiedName(), fen);
