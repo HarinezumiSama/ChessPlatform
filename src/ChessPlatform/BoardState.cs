@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Omnifactotum;
 using Omnifactotum.Annotations;
@@ -428,11 +429,15 @@ namespace ChessPlatform
         }
 
         private void SetupByFen(
-            string fen,
+            string inputFen,
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
             out Position? enPassantCaptureTarget)
         {
+            var fen = inputFen.Trim();
+            Trace.TraceInformation("[{0}] '{1}'", MethodBase.GetCurrentMethod().GetQualifiedName(), fen);
+
+            //// TODO [vmcl] Parse FEN
             throw new NotImplementedException();
         }
 
