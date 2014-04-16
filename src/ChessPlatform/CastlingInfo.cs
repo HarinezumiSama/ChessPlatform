@@ -11,13 +11,27 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="CastlingInfo"/> class.
         /// </summary>
-        internal CastlingInfo(PieceMove castlingMove, params Position[] emptySquares)
+        internal CastlingInfo(
+            CastlingOptions option,
+            PieceMove kingMove,
+            PieceMove rookMove,
+            params Position[] emptySquares)
         {
             #region Argument Check
 
-            if (castlingMove == null)
+            if (!option.IsAnySet(CastlingOptions.WhiteMask) && !option.IsAnySet(CastlingOptions.BlackMask))
             {
-                throw new ArgumentNullException("castlingMove");
+                throw new ArgumentException("Invalid castling option.", "option");
+            }
+
+            if (kingMove == null)
+            {
+                throw new ArgumentNullException("kingMove");
+            }
+
+            if (rookMove == null)
+            {
+                throw new ArgumentNullException("rookMove");
             }
 
             if (emptySquares == null)
@@ -25,23 +39,37 @@ namespace ChessPlatform
                 throw new ArgumentNullException("emptySquares");
             }
 
-            if (Math.Abs(castlingMove.From.X88Value - castlingMove.To.X88Value) != 2)
+            if (Math.Abs(kingMove.From.X88Value - kingMove.To.X88Value) != 2)
             {
-                throw new ArgumentException("Invalid castling move.", "castlingMove");
+                throw new ArgumentException("Invalid castling move.", "kingMove");
             }
 
             #endregion
 
-            this.CastlingMove = castlingMove;
+            this.Option = option;
+            this.KingMove = kingMove;
+            this.RookMove = rookMove;
             this.EmptySquares = emptySquares.AsReadOnly();
-            this.PassedPosition = new Position((byte)((castlingMove.From.X88Value + castlingMove.To.X88Value) / 2));
+            this.PassedPosition = new Position((byte)((kingMove.From.X88Value + kingMove.To.X88Value) / 2));
         }
 
         #endregion
 
         #region Public Properties
 
-        public PieceMove CastlingMove
+        public CastlingOptions Option
+        {
+            get;
+            private set;
+        }
+
+        public PieceMove KingMove
+        {
+            get;
+            private set;
+        }
+
+        public PieceMove RookMove
         {
             get;
             private set;

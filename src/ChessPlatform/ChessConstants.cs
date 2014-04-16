@@ -36,17 +36,37 @@ namespace ChessPlatform
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
 
-        public static readonly CastlingInfo WhiteCastlingKingSide =
-            new CastlingInfo(new PieceMove(WhiteKingInitialPosition, "g1"), "f1", "g1");
-
-        public static readonly CastlingInfo WhiteCastlingQueenSide =
-            new CastlingInfo(new PieceMove(WhiteKingInitialPosition, "c1"), "b1", "c1", "d1");
-
-        public static readonly CastlingInfo BlackCastlingKingSide =
-            new CastlingInfo(new PieceMove(BlackKingInitialPosition, "g8"), "f8", "g8");
-
-        public static readonly CastlingInfo BlackCastlingQueenSide =
-            new CastlingInfo(new PieceMove(BlackKingInitialPosition, "c8"), "b8", "c8", "d8");
+        public static readonly ReadOnlyCollection<CastlingInfo> AllCastlingInfos =
+            new ReadOnlyCollection<CastlingInfo>(
+                new[]
+                {
+                    new CastlingInfo(
+                        CastlingOptions.WhiteKingSide,
+                        new PieceMove(WhiteKingInitialPosition, "g1"),
+                        new PieceMove("h1", "f1"),
+                        "f1",
+                        "g1"),
+                    new CastlingInfo(
+                        CastlingOptions.WhiteQueenSide,
+                        new PieceMove(WhiteKingInitialPosition, "c1"),
+                        new PieceMove("a1", "d1"),
+                        "b1",
+                        "c1",
+                        "d1"),
+                    new CastlingInfo(
+                        CastlingOptions.BlackKingSide,
+                        new PieceMove(BlackKingInitialPosition, "g8"),
+                        new PieceMove("h8", "f8"),
+                        "f8",
+                        "g8"),
+                    new CastlingInfo(
+                        CastlingOptions.BlackQueenSide,
+                        new PieceMove(BlackKingInitialPosition, "c8"),
+                        new PieceMove("a8", "d8"),
+                        "b8",
+                        "c8",
+                        "d8")
+                });
 
         public static readonly ReadOnlyDictionary<PieceColor, EnPassantInfo> ColorToEnPassantInfoMap =
             new ReadOnlyDictionary<PieceColor, EnPassantInfo>(

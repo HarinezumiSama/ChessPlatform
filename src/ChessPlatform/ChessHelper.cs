@@ -77,21 +77,10 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<byte> KnightAttackOffsets =
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
 
-        private const int MaxSlidingPieceDistance = 8;
-        private const int MaxPawnAttackOrMoveDistance = 1;
-        private const int MaxKingMoveDistance = 1;
+        public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
+            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
 
-        private static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingInfos =
-            new ReadOnlyDictionary<CastlingOptions, CastlingInfo>(
-                new Dictionary<CastlingOptions, CastlingInfo>
-                {
-                    { CastlingOptions.WhiteKingSide, ChessConstants.WhiteCastlingKingSide },
-                    { CastlingOptions.WhiteQueenSide, ChessConstants.WhiteCastlingQueenSide },
-                    { CastlingOptions.BlackKingSide, ChessConstants.BlackCastlingKingSide },
-                    { CastlingOptions.BlackQueenSide, ChessConstants.BlackCastlingQueenSide }
-                });
-
-        private static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
+        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
             ColorToCastlingOptionsMap =
                 new ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
                     new Dictionary<PieceColor, ReadOnlySet<CastlingOptions>>
@@ -109,6 +98,10 @@ namespace ChessPlatform
                                 .AsReadOnly()
                         }
                     });
+
+        private const int MaxSlidingPieceDistance = 8;
+        private const int MaxPawnAttackOrMoveDistance = 1;
+        private const int MaxKingMoveDistance = 1;
 
         #endregion
 
@@ -478,8 +471,8 @@ namespace ChessPlatform
 
             var castlingOptions = ColorToCastlingOptionsMap[color.Value];
 
-            var result = CastlingInfos
-                .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.CastlingMove == move)
+            var result = CastlingOptionToInfoMap
+                .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.KingMove == move)
                 .Value;
 
             return result;
@@ -649,15 +642,15 @@ namespace ChessPlatform
             CastlingOptions option,
             ICollection<Position> resultCollection)
         {
-            var castlingInfo = CastlingInfos[option];
+            var castlingInfo = CastlingOptionToInfoMap[option];
 
             var isPotentiallyPossible = (castlingOptions & option) == option
-                && sourcePosition == castlingInfo.CastlingMove.From
+                && sourcePosition == castlingInfo.KingMove.From
                 && CheckSquares(pieces, Piece.None, castlingInfo.EmptySquares);
 
             if (isPotentiallyPossible)
             {
-                resultCollection.Add(castlingInfo.CastlingMove.To);
+                resultCollection.Add(castlingInfo.KingMove.To);
             }
         }
 

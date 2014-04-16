@@ -54,13 +54,7 @@ namespace ChessPlatform
             #endregion
 
             CreatePieces(out _pieces, out _pieceOffsetMap);
-
-            //// TODO [vmcl] Initialize board with the specified FEN
-
-            //// _activeColor = ...
-            //// _castlingOptions = ...
-            ////_enPassantCaptureTarget = ...
-
+            SetupByFen(fen, out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -93,6 +87,20 @@ namespace ChessPlatform
             _castlingOptions = previousState.CastlingOptions;
 
             _enPassantCaptureTarget = ChessHelper.GetEnPassantCaptureTarget(_pieces, move);
+
+            var castlingInfo = ChessHelper.CheckCastlingMove(_pieces, move);
+            if (castlingInfo != null)
+            {
+                if (!_castlingOptions.IsAllSet(castlingInfo.Option))
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The castling {{{0}}} ({1}) is not allowed.",
+                            move,
+                            castlingInfo.Option.GetName()));
+                }
+            }
 
             var movingPiece = SetPiece(move.From, Piece.None);
 
@@ -131,7 +139,7 @@ namespace ChessPlatform
                     throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            "The promoted piece type is not specified or is invalid for promoted {0}.",
+                            "The promoted piece type is not specified or is invalid for the promoted piece {0}.",
                             movingPiece.GetDescription()));
                 }
 
@@ -163,11 +171,11 @@ namespace ChessPlatform
                 throw new ChessPlatformException("Inconsistent state of the piece offset map.");
             }
 
-            //// TODO [vmcl] Consider castling move!
-
-            if (CastlingOptions != CastlingOptions.None)
+            if (castlingInfo != null)
             {
-                //// TODO [vmcl] Adjust castling options
+                _castlingOptions &= ~castlingInfo.Option;
+                //// TODO [vmcl] Move Rook
+                throw new NotImplementedException();
             }
 
             PostInitialize(out _validMoves, out _state);
@@ -443,6 +451,15 @@ namespace ChessPlatform
             activeColor = PieceColor.White;
             castlingOptions = CastlingOptions.All;
             enPassantTarget = null;
+        }
+
+        private void SetupByFen(
+            string fen,
+            out PieceColor activeColor,
+            out CastlingOptions castlingOptions,
+            out Position? enPassantCaptureTarget)
+        {
+            throw new NotImplementedException();
         }
 
         private void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
