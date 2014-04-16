@@ -54,11 +54,13 @@
     <Compile Include="ChessConstants.cs" />
     <Compile Include="ChessHelper.cs" />
     <Compile Include="ChessPlatformException.cs" />
+    <Compile Include="EnPassantInfo.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="MoveHelper.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
+    <Compile Include="PieceInfo.cs" />
     <Compile Include="PieceMove.cs" />
     <Compile Include="PieceColor.cs" />
     <Compile Include="PieceType.cs" />

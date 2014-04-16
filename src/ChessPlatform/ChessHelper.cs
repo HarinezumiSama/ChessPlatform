@@ -42,6 +42,14 @@ namespace ChessPlatform
                     { PieceColor.Black, new RayInfo(0xF0, true) }
                 });
 
+        public static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
+            new ReadOnlyDictionary<PieceColor, RayInfo>(
+                new Dictionary<PieceColor, RayInfo>
+                {
+                    { PieceColor.White, new RayInfo(0x20, true) },
+                    { PieceColor.Black, new RayInfo(0xE0, true) }
+                });
+
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
             new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
                 new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
@@ -70,7 +78,7 @@ namespace ChessPlatform
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
 
         private const int MaxSlidingPieceDistance = 8;
-        private const int MaxPawnAttackDistance = 1;
+        private const int MaxPawnAttackOrMoveDistance = 1;
         private const int MaxKingMoveDistance = 1;
 
         private static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingInfos =
@@ -108,7 +116,7 @@ namespace ChessPlatform
 
         public static Position[] GetKnightMovePositions(Position position)
         {
-            return GetValidPositions(position, KnightAttackOffsets);
+            return GetOnboardPositions(position, KnightAttackOffsets);
         }
 
         #endregion
@@ -158,6 +166,12 @@ namespace ChessPlatform
             #endregion
 
             return pieces[position.X88Value];
+        }
+
+        internal static PieceInfo GetPieceInfo(IList<Piece> pieces, Position position)
+        {
+            var piece = GetPiece(pieces, position);
+            return new PieceInfo(piece);
         }
 
         internal static Piece SetPiece(IList<Piece> pieces, Position position, Piece piece)
@@ -358,7 +372,7 @@ namespace ChessPlatform
             return IsUnderAttack(pieces, kingPosition, kingColor.Invert());
         }
 
-        internal static Position? GetEnPassantTarget(IList<Piece> pieces, PieceMove move)
+        internal static Position? GetEnPassantCaptureTarget(IList<Piece> pieces, PieceMove move)
         {
             #region Argument Check
 
@@ -371,40 +385,22 @@ namespace ChessPlatform
 
             #endregion
 
-            var piece = GetPiece(pieces, move.From);
-            var pieceType = piece.GetPieceType();
-            var color = piece.GetColor();
-            if (pieceType == PieceType.None || !color.HasValue)
-            {
-                throw new ArgumentException("The move starting position contains no piece.", "move");
-            }
-
-            if (pieceType != PieceType.Pawn || move.From.File != move.To.File)
+            var pieceInfo = GetPieceInfo(pieces, move.From);
+            if (!pieceInfo.Color.HasValue || pieceInfo.PieceType != PieceType.Pawn || move.From.File != move.To.File)
             {
                 return null;
             }
 
-            if (color.Value == PieceColor.White
-                && move.From.Rank == ChessConstants.WhiteEnPassantStartRank
-                && move.To.Rank == ChessConstants.WhiteEnPassantEndRank)
-            {
-                return new Position(move.From.File, ChessConstants.WhiteEnPassantTargetRank);
-            }
+            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
 
-            if (color.Value == PieceColor.Black
-                && move.From.Rank == ChessConstants.BlackEnPassantStartRank
-                && move.To.Rank == ChessConstants.BlackEnPassantEndRank)
-            {
-                return new Position(move.From.File, ChessConstants.BlackEnPassantTargetRank);
-            }
-
-            return null;
+            return isEnPassant ? new Position(move.From.File, enPassantInfo.CaptureTargetRank) : null;
         }
 
         internal static Position[] GetPotentialMovePositions(
             IList<Piece> pieces,
             CastlingOptions castlingOptions,
-            Position? enPassantTarget,
+            Position? enPassantCaptureTarget,
             Position sourcePosition)
         {
             #region Argument Check
@@ -413,74 +409,58 @@ namespace ChessPlatform
 
             #endregion
 
-            var piece = GetPiece(pieces, sourcePosition);
-
-            var pieceType = piece.GetPieceType();
-            var color = piece.GetColor();
-            if (pieceType == PieceType.None || !color.HasValue)
+            var pieceInfo = GetPieceInfo(pieces, sourcePosition);
+            if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Color.HasValue)
             {
-                throw new ArgumentException("No piece at the specified offset.", "sourcePosition");
+                throw new ArgumentException("No piece at the source position.", "sourcePosition");
             }
 
-            if (pieceType == PieceType.Knight)
+            var pieceColor = pieceInfo.Color.Value;
+
+            if (pieceInfo.PieceType == PieceType.Knight)
             {
                 var result = GetKnightMovePositions(sourcePosition)
-                    .Where(p => GetPiece(pieces, p).GetColor() != color.Value)
+                    .Where(position => GetPiece(pieces, position).GetColor() != pieceColor)
                     .ToArray();
 
                 return result;
             }
 
+            if (pieceInfo.PieceType == PieceType.King)
+            {
+                var result = GetKingPotentialMovePositions(pieces, castlingOptions, sourcePosition, pieceColor);
+                return result;
+            }
+
+            if (pieceInfo.PieceType == PieceType.Pawn)
+            {
+                var result = GetPawnPotentialMovePositions(pieces, enPassantCaptureTarget, sourcePosition, pieceColor);
+                return result;
+            }
+
             var resultList = new List<Position>();
 
-            if (pieceType == PieceType.King)
+            if (pieceInfo.PieceType.IsSlidingStraight())
             {
                 GetPotentialMovePositionsByRays(
                     pieces,
                     sourcePosition,
-                    color.Value,
-                    KingAttackRays,
-                    MaxKingMoveDistance,
-                    resultList);
-
-                GetPotentialCastlingsMovePositions(
-                    pieces,
-                    sourcePosition,
-                    color.Value,
-                    castlingOptions,
-                    resultList);
-
-                return resultList.ToArray();
-            }
-
-            if (pieceType == PieceType.Pawn)
-            {
-                //// TODO [vmcl] Implement GetPotentialMovePositions for Pawn
-
-                //// TODO [vmcl] Consider en passant move and capture
-
-                throw new NotImplementedException();
-            }
-
-            if (pieceType.IsSlidingStraight())
-            {
-                GetPotentialMovePositionsByRays(
-                    pieces,
-                    sourcePosition,
-                    color.Value,
+                    pieceColor,
                     StraightRays,
                     MaxSlidingPieceDistance,
+                    true,
                     resultList);
             }
 
-            if (pieceType.IsSlidingDiagonally())
+            if (pieceInfo.PieceType.IsSlidingDiagonally())
             {
                 GetPotentialMovePositionsByRays(
                     pieces,
                     sourcePosition,
-                    color.Value,
+                    pieceColor,
                     DiagonalRays,
                     MaxSlidingPieceDistance,
+                    true,
                     resultList);
             }
 
@@ -505,11 +485,38 @@ namespace ChessPlatform
             return result;
         }
 
+        internal static PieceMove GetEnPassantMove(IList<Piece> pieces, Position sourcePosition)
+        {
+            #region Argument Check
+
+            ValidatePieces(pieces);
+
+            #endregion
+
+            var pieceInfo = GetPieceInfo(pieces, sourcePosition);
+            if (pieceInfo.PieceType != PieceType.Pawn || !pieceInfo.Color.HasValue)
+            {
+                return null;
+            }
+
+            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            if (sourcePosition.Rank != enPassantInfo.StartRank)
+            {
+                return null;
+            }
+
+            var destinationPosition = new Position(sourcePosition.File, enPassantInfo.EndRank);
+            var intermediatePosition = new Position(sourcePosition.File, enPassantInfo.CaptureTargetRank);
+            var isEnPassant = CheckSquares(pieces, Piece.None, intermediatePosition, destinationPosition);
+
+            return isEnPassant ? new PieceMove(sourcePosition, destinationPosition) : null;
+        }
+
         #endregion
 
         #region Private Methods
 
-        private static Position[] GetValidPositions(Position position, ICollection<byte> x88Offsets)
+        private static Position[] GetOnboardPositions(Position position, ICollection<byte> x88Offsets)
         {
             #region Argument Check
 
@@ -546,6 +553,7 @@ namespace ChessPlatform
             PieceColor sourceColor,
             IEnumerable<RayInfo> rays,
             int maxDistance,
+            bool allowCapturing,
             ICollection<Position> resultCollection)
         {
             foreach (var ray in rays)
@@ -564,7 +572,7 @@ namespace ChessPlatform
                         continue;
                     }
 
-                    if (currentColor.Value != sourceColor)
+                    if (currentColor.Value != sourceColor && allowCapturing)
                     {
                         resultCollection.Add(currentPosition);
                     }
@@ -574,7 +582,7 @@ namespace ChessPlatform
             }
         }
 
-        private static void GetPotentialCastlingsMovePositions(
+        private static void GetPotentialCastlingMovePositions(
             IList<Piece> pieces,
             Position sourcePosition,
             PieceColor color,
@@ -629,6 +637,11 @@ namespace ChessPlatform
             return positions.All(position => GetPiece(pieces, position) == expectedPiece);
         }
 
+        private static bool CheckSquares(IList<Piece> pieces, Piece expectedPiece, params Position[] positions)
+        {
+            return CheckSquares(pieces, expectedPiece, (IEnumerable<Position>)positions);
+        }
+
         private static void GetPotentialCastlingMove(
             IList<Piece> pieces,
             Position sourcePosition,
@@ -646,6 +659,74 @@ namespace ChessPlatform
             {
                 resultCollection.Add(castlingInfo.CastlingMove.To);
             }
+        }
+
+        private static Position[] GetKingPotentialMovePositions(
+            IList<Piece> pieces,
+            CastlingOptions castlingOptions,
+            Position sourcePosition,
+            PieceColor pieceColor)
+        {
+            var resultList = new List<Position>();
+
+            GetPotentialMovePositionsByRays(
+                pieces,
+                sourcePosition,
+                pieceColor,
+                KingAttackRays,
+                MaxKingMoveDistance,
+                true,
+                resultList);
+
+            GetPotentialCastlingMovePositions(
+                pieces,
+                sourcePosition,
+                pieceColor,
+                castlingOptions,
+                resultList);
+
+            return resultList.ToArray();
+        }
+
+        private static Position[] GetPawnPotentialMovePositions(
+            IList<Piece> pieces,
+            Position? enPassantCaptureTarget,
+            Position sourcePosition,
+            PieceColor pieceColor)
+        {
+            var resultList = new List<Position>();
+
+            GetPotentialMovePositionsByRays(
+                pieces,
+                sourcePosition,
+                pieceColor,
+                PawnMoveRayMap[pieceColor].AsCollection(),
+                MaxPawnAttackOrMoveDistance,
+                false,
+                resultList);
+
+            var enPassantMove = GetEnPassantMove(pieces, sourcePosition);
+            if (enPassantMove != null)
+            {
+                resultList.Add(enPassantMove.To);
+            }
+
+            var pawnAttackOffsets = PawnAttackOffsetMap[pieceColor];
+            var attackPositions = GetOnboardPositions(sourcePosition, pawnAttackOffsets);
+            var oppositeColor = pieceColor.Invert();
+
+            //// ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var attackPosition in attackPositions)
+            {
+                var attackedPieceInfo = GetPieceInfo(pieces, attackPosition);
+                if (attackedPieceInfo.Color == oppositeColor
+                    || (enPassantCaptureTarget.HasValue && attackPosition == enPassantCaptureTarget.Value))
+                {
+                    resultList.Add(attackPosition);
+                }
+            }
+
+            return resultList.ToArray();
         }
 
         #endregion

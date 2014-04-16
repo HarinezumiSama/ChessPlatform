@@ -19,7 +19,7 @@ namespace ChessPlatform
         private readonly PieceColor _activeColor;
         private readonly GameState _state;
         private readonly CastlingOptions _castlingOptions;
-        private readonly Position? _enPassantTarget;
+        private readonly Position? _enPassantCaptureTarget;
         private readonly ReadOnlySet<PieceMove> _validMoves;
 
         #endregion
@@ -32,7 +32,7 @@ namespace ChessPlatform
         internal BoardState()
         {
             CreatePieces(out _pieces, out _pieceOffsetMap);
-            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantTarget);
+            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -59,7 +59,7 @@ namespace ChessPlatform
 
             //// _activeColor = ...
             //// _castlingOptions = ...
-            ////_enPassantTarget = ...
+            ////_enPassantCaptureTarget = ...
 
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -92,7 +92,7 @@ namespace ChessPlatform
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
-            _enPassantTarget = ChessHelper.GetEnPassantTarget(_pieces, move);
+            _enPassantCaptureTarget = ChessHelper.GetEnPassantCaptureTarget(_pieces, move);
 
             var movingPiece = SetPiece(move.From, Piece.None);
 
@@ -205,12 +205,12 @@ namespace ChessPlatform
             }
         }
 
-        public Position? EnPassantTarget
+        public Position? EnPassantCaptureTarget
         {
             [DebuggerStepThrough]
             get
             {
-                return _enPassantTarget;
+                return _enPassantCaptureTarget;
             }
         }
 
@@ -244,7 +244,7 @@ namespace ChessPlatform
                 " {0} {1} {2} 0 1",
                 _activeColor.GetFenSnippet(),
                 _castlingOptions.GetFenSnippet(),
-                _enPassantTarget.ToStringSafely("-"));
+                _enPassantCaptureTarget.ToStringSafely("-"));
 
             return resultBuilder.ToString();
         }
@@ -380,7 +380,7 @@ namespace ChessPlatform
                 var potentialMovePositions = ChessHelper.GetPotentialMovePositions(
                     _pieces,
                     _castlingOptions,
-                    _enPassantTarget,
+                    _enPassantCaptureTarget,
                     sourcePosition);
 
                 foreach (var destinationPosition in potentialMovePositions)

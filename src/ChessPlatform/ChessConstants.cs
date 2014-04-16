@@ -16,14 +16,6 @@ namespace ChessPlatform
         public const byte WhitePawnPromotionRank = RankCount - 1;
         public const byte BlackPawnPromotionRank = 0;
 
-        public const byte WhiteEnPassantStartRank = 1;
-        public const byte WhiteEnPassantTargetRank = WhiteEnPassantStartRank + 1;
-        public const byte WhiteEnPassantEndRank = WhiteEnPassantTargetRank + 1;
-
-        public const byte BlackEnPassantStartRank = RankCount - 2;
-        public const byte BlackEnPassantTargetRank = BlackEnPassantStartRank - 1;
-        public const byte BlackEnPassantEndRank = BlackEnPassantTargetRank - 1;
-
         internal const byte X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;
@@ -37,6 +29,9 @@ namespace ChessPlatform
 
         public static readonly ReadOnlyCollection<Piece> BothKings =
             new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
+
+        public static readonly ReadOnlyCollection<PieceColor> PieceColors =
+            new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
 
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
@@ -53,8 +48,13 @@ namespace ChessPlatform
         public static readonly CastlingInfo BlackCastlingQueenSide =
             new CastlingInfo(new PieceMove(BlackKingInitialPosition, "c8"), "b8", "c8", "d8");
 
-        public static readonly ReadOnlyCollection<PieceColor> PieceColors =
-            new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
+        public static readonly ReadOnlyDictionary<PieceColor, EnPassantInfo> ColorToEnPassantInfoMap =
+            new ReadOnlyDictionary<PieceColor, EnPassantInfo>(
+                new Dictionary<PieceColor, EnPassantInfo>
+                {
+                    { PieceColor.White, new EnPassantInfo(true) },
+                    { PieceColor.Black, new EnPassantInfo(false) }
+                });
 
         #endregion
     }
