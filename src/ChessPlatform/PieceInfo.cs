@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
+using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -44,6 +46,20 @@ namespace ChessPlatform
         {
             get;
             private set;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{{{0}, {1}, {2}}}",
+                this.Piece.GetName(),
+                this.PieceType.GetName(),
+                this.Color.ToStringSafely("null"));
         }
 
         #endregion
