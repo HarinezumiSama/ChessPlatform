@@ -19,36 +19,25 @@ namespace ChessPlatform
 
         #region Constructors
 
-        public MoveHelper(
-            Piece[] originalPieces,
-            ICollection<KeyValuePair<Piece, HashSet<byte>>> originalPieceOffsetMap)
+        public MoveHelper(PieceData pieceData)
         {
             #region Argument Check
 
-            ChessHelper.ValidatePieces(originalPieces);
-
-            if (originalPieceOffsetMap == null)
+            if (pieceData == null)
             {
-                throw new ArgumentNullException("originalPieceOffsetMap");
+                throw new ArgumentNullException("pieceData");
             }
 
             #endregion
 
-            this.Pieces = originalPieces.Copy();
-            this.PieceOffsetMap = ChessHelper.CopyPieceOffsetMap(originalPieceOffsetMap);
+            this.PieceData = pieceData;
         }
 
         #endregion
 
         #region Public Properties
 
-        public Piece[] Pieces
-        {
-            get;
-            private set;
-        }
-
-        public Dictionary<Piece, HashSet<byte>> PieceOffsetMap
+        public PieceData PieceData
         {
             get;
             private set;
@@ -74,7 +63,7 @@ namespace ChessPlatform
                 throw new ChessPlatformException("The previous move must be undone first.");
             }
 
-            _movingPiece = ChessHelper.SetPiece(this.Pieces, move.From, Piece.None);
+            _movingPiece = this.PieceData.SetPiece(move.From, Piece.None);
             if (_movingPiece == Piece.None)
             {
                 throw new ChessPlatformException(
@@ -84,10 +73,10 @@ namespace ChessPlatform
                         move.From));
             }
 
-            var movingPieceOffsets = this.PieceOffsetMap[_movingPiece];
+            var movingPieceOffsets = this.PieceData.PieceOffsetMap[_movingPiece];
             movingPieceOffsets.Remove(move.From.X88Value);
 
-            _capturedPiece = ChessHelper.SetPiece(this.Pieces, move.To, _movingPiece);
+            _capturedPiece = this.PieceData.SetPiece(move.To, _movingPiece);
             if (_capturedPiece.GetColor() == _movingPiece.GetColor())
             {
                 throw new ChessPlatformException("Cannot capture a piece of the same color.");
@@ -95,7 +84,7 @@ namespace ChessPlatform
 
             if (_capturedPiece != Piece.None)
             {
-                this.PieceOffsetMap[_capturedPiece].Remove(move.To.X88Value);
+                this.PieceData.PieceOffsetMap[_capturedPiece].Remove(move.To.X88Value);
             }
 
             movingPieceOffsets.Add(move.To.X88Value);
@@ -105,7 +94,7 @@ namespace ChessPlatform
             Trace.TraceInformation(
                 "Executed {0}: {1}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
-                ChessHelper.GetFenSnippet(this.Pieces));
+                this.PieceData.GetFenSnippet());
         }
 
         public void UndoMove()
@@ -115,15 +104,15 @@ namespace ChessPlatform
                 throw new ChessPlatformException("No move has been made.");
             }
 
-            ChessHelper.SetPiece(this.Pieces, _move.From, _movingPiece);
-            var movingPieceOffsets = this.PieceOffsetMap[_movingPiece];
+            this.PieceData.SetPiece(_move.From, _movingPiece);
+            var movingPieceOffsets = this.PieceData.PieceOffsetMap[_movingPiece];
             movingPieceOffsets.Remove(_move.To.X88Value);
             movingPieceOffsets.Add(_move.From.X88Value);
 
-            ChessHelper.SetPiece(this.Pieces, _move.To, _capturedPiece);
+            this.PieceData.SetPiece(_move.To, _capturedPiece);
             if (_capturedPiece != Piece.None)
             {
-                this.PieceOffsetMap[_capturedPiece].Add(_move.To.X88Value);
+                this.PieceData.PieceOffsetMap[_capturedPiece].Add(_move.To.X88Value);
             }
 
             _movingPiece = Piece.None;
@@ -133,7 +122,7 @@ namespace ChessPlatform
             Trace.TraceInformation(
                 "Executed {0}: {1}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
-                ChessHelper.GetFenSnippet(this.Pieces));
+                this.PieceData.GetFenSnippet());
         }
 
         #endregion

@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Text;
+using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -34,15 +37,15 @@ namespace ChessPlatform
 
         #endregion
 
-        #region Public Properties
+        #region Internal Properties
 
-        public Piece[] Pieces
+        internal Piece[] Pieces
         {
             get;
             private set;
         }
 
-        public Dictionary<Piece, HashSet<byte>> PieceOffsetMap
+        internal Dictionary<Piece, HashSet<byte>> PieceOffsetMap
         {
             get;
             private set;
@@ -66,6 +69,252 @@ namespace ChessPlatform
         {
             var piece = GetPiece(position);
             return new PieceInfo(piece);
+        }
+
+        public Position[] GetPiecePositions(Piece piece)
+        {
+            #region Argument Check
+
+            piece.EnsureDefined();
+
+            #endregion
+
+            var offsets = this.PieceOffsetMap.GetValueOrDefault(piece);
+            if (offsets == null)
+            {
+                return new Position[0];
+            }
+
+            var result = offsets.Select(item => new Position(item)).ToArray();
+            return result;
+        }
+
+        public Position? GetEnPassantCaptureTarget(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            var pieceInfo = GetPieceInfo(move.From);
+            if (!pieceInfo.Color.HasValue || pieceInfo.PieceType != PieceType.Pawn || move.From.File != move.To.File)
+            {
+                return null;
+            }
+
+            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
+
+            return isEnPassant ? new Position(move.From.File, enPassantInfo.CaptureTargetRank) : null;
+        }
+
+        public CastlingInfo CheckCastlingMove(PieceMove move)
+        {
+            var piece = GetPiece(move.From);
+            var color = piece.GetColor();
+            if (piece.GetPieceType() != PieceType.King || !color.HasValue)
+            {
+                return null;
+            }
+
+            var castlingOptions = ChessHelper.ColorToCastlingOptionsMap[color.Value];
+
+            var result = ChessHelper.CastlingOptionToInfoMap
+                .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.KingMove == move)
+                .Value;
+
+            return result;
+        }
+
+        public void GetFenSnippet(StringBuilder resultBuilder)
+        {
+            #region Argument Check
+
+            if (resultBuilder == null)
+            {
+                throw new ArgumentNullException("resultBuilder");
+            }
+
+            #endregion
+
+            var emptySquareCount = new ValueContainer<int>(0);
+            Action writeEmptySquareCount =
+                () =>
+                {
+                    if (emptySquareCount.Value > 0)
+                    {
+                        resultBuilder.Append(emptySquareCount.Value);
+                        emptySquareCount.Value = 0;
+                    }
+                };
+
+            for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
+            {
+                if (rank < ChessConstants.RankCount - 1)
+                {
+                    resultBuilder.Append('/');
+                }
+
+                for (var file = 0; file < ChessConstants.FileCount; file++)
+                {
+                    var piece = GetPiece(new Position((byte)file, (byte)rank));
+                    if (piece == Piece.None)
+                    {
+                        emptySquareCount.Value++;
+                        continue;
+                    }
+
+                    writeEmptySquareCount();
+                    var fenChar = piece.GetFenChar();
+                    resultBuilder.Append(fenChar);
+                }
+
+                writeEmptySquareCount();
+            }
+        }
+
+        public string GetFenSnippet()
+        {
+            var resultBuilder = new StringBuilder();
+            GetFenSnippet(resultBuilder);
+            return resultBuilder.ToString();
+        }
+
+        public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
+        {
+            var resultList = new List<Position>();
+
+            var attackingKnights = ChessHelper.GetKnightMovePositions(targetPosition)
+                .Where(p => this.Pieces[p.X88Value].GetColor() == attackingColor)
+                .ToArray();
+
+            resultList.AddRange(attackingKnights);
+
+            foreach (var rayOffset in ChessHelper.AllRays)
+            {
+                for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
+                    Position.IsValidX88Value(currentX88Value);
+                    currentX88Value += rayOffset.Offset)
+                {
+                    var currentPosition = new Position(currentX88Value);
+
+                    var piece = this.Pieces[currentPosition.X88Value];
+                    var color = piece.GetColor();
+                    if (piece == Piece.None || !color.HasValue)
+                    {
+                        continue;
+                    }
+
+                    if (color.Value != attackingColor)
+                    {
+                        break;
+                    }
+
+                    var pieceType = piece.GetPieceType();
+                    if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
+                        || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
+                    {
+                        resultList.Add(currentPosition);
+                        break;
+                    }
+
+                    var difference = (byte)(targetPosition.X88Value - currentX88Value);
+                    switch (pieceType)
+                    {
+                        case PieceType.Pawn:
+                            if (ChessHelper.PawnAttackOffsetMap[attackingColor].Contains(difference))
+                            {
+                                resultList.Add(currentPosition);
+                            }
+
+                            break;
+
+                        case PieceType.King:
+                            if (ChessHelper.KingAttackOffsets.Contains(difference))
+                            {
+                                resultList.Add(currentPosition);
+                            }
+
+                            break;
+                    }
+
+                    break;
+                }
+            }
+
+            return resultList.ToArray();
+        }
+
+        public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
+        {
+            var attacks = GetAttacks(targetPosition, attackingColor);
+            return attacks.Length != 0;
+        }
+
+        public bool IsAnyUnderAttack(
+            IEnumerable<Position> targetPositions,
+            PieceColor attackingColor)
+        {
+            #region Argument Check
+
+            if (targetPositions == null)
+            {
+                throw new ArgumentNullException("targetPositions");
+            }
+
+            #endregion
+
+            var result = targetPositions.Any(targetPosition => IsUnderAttack(targetPosition, attackingColor));
+            return result;
+        }
+
+        public bool IsInCheck(PieceColor kingColor)
+        {
+            var king = PieceType.King.ToPiece(kingColor);
+            var kingPosition = new Position(this.PieceOffsetMap[king].Single());
+
+            return IsUnderAttack(kingPosition, kingColor.Invert());
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
+        {
+            var offset = position.X88Value;
+            var existingPiece = this.Pieces[offset];
+            if (existingPiece != Piece.None)
+            {
+                throw new ChessPlatformException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The board square '{0}' is already occupied by '{1}'.",
+                        position,
+                        existingPiece));
+            }
+
+            var piece = pieceType.ToPiece(color);
+            this.Pieces[offset] = piece;
+
+            var added = this.PieceOffsetMap.GetValueOrCreate(piece).Add(offset);
+            if (!added)
+            {
+                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
+            }
+        }
+
+        internal Piece SetPiece(Position position, Piece piece)
+        {
+            var offset = position.X88Value;
+            var oldPiece = this.Pieces[offset];
+            this.Pieces[offset] = piece;
+
+            return oldPiece;
         }
 
         #endregion

@@ -13,8 +13,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private readonly Piece[] _pieces;
-        private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
+        private readonly PieceData _pieceData;
 
         private readonly PieceColor _activeColor;
         private readonly GameState _state;
@@ -31,7 +30,7 @@ namespace ChessPlatform
         /// </summary>
         internal BoardState()
         {
-            CreatePieces(out _pieces, out _pieceOffsetMap);
+            _pieceData = new PieceData();
             SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -53,7 +52,7 @@ namespace ChessPlatform
 
             #endregion
 
-            CreatePieces(out _pieces, out _pieceOffsetMap);
+            _pieceData = new PieceData();
             SetupByFen(fen, out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -81,14 +80,13 @@ namespace ChessPlatform
 
             #endregion
 
-            _pieces = previousState._pieces.Copy();
-            _pieceOffsetMap = ChessHelper.CopyPieceOffsetMap(previousState._pieceOffsetMap);
+            _pieceData = previousState._pieceData.Copy();
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
-            _enPassantCaptureTarget = ChessHelper.GetEnPassantCaptureTarget(_pieces, move);
+            _enPassantCaptureTarget = _pieceData.GetEnPassantCaptureTarget(move);
 
-            var castlingInfo = ChessHelper.CheckCastlingMove(_pieces, move);
+            var castlingInfo = _pieceData.CheckCastlingMove(move);
             if (castlingInfo != null)
             {
                 if (!_castlingOptions.IsAllSet(castlingInfo.Option))
@@ -102,7 +100,7 @@ namespace ChessPlatform
                 }
             }
 
-            var movingPiece = SetPiece(move.From, Piece.None);
+            var movingPiece = _pieceData.SetPiece(move.From, Piece.None);
 
             movingPiece.EnsureDefined();
 
@@ -112,7 +110,7 @@ namespace ChessPlatform
                 throw new ChessPlatformException("The move starting position contains no piece.");
             }
 
-            var removed = _pieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
+            var removed = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
             if (!removed)
             {
                 throw new ChessPlatformException("Inconsistent state of the piece offset map.");
@@ -146,7 +144,7 @@ namespace ChessPlatform
                 movingPiece = promotedPieceType.Value.ToPiece(pieceColor);
             }
 
-            var capturedPiece = SetPiece(move.To, movingPiece);
+            var capturedPiece = _pieceData.SetPiece(move.To, movingPiece);
             if (capturedPiece != Piece.None)
             {
                 if (capturedPiece.GetColor() == pieceColor)
@@ -158,14 +156,15 @@ namespace ChessPlatform
                             pieceColor));
                 }
 
-                var capturedRemoved = _pieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
+                var capturedRemoved =
+                    _pieceData.PieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
                 if (!capturedRemoved)
                 {
                     throw new ChessPlatformException("Inconsistent state of the piece offset map.");
                 }
             }
 
-            var added = _pieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
+            var added = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
             if (!added)
             {
                 throw new ChessPlatformException("Inconsistent state of the piece offset map.");
@@ -244,7 +243,7 @@ namespace ChessPlatform
         {
             var resultBuilder = new StringBuilder((ChessConstants.FileCount + 1) * ChessConstants.RankCount + 20);
 
-            ChessHelper.GetFenSnippet(_pieces, resultBuilder);
+            _pieceData.GetFenSnippet(resultBuilder);
 
             //// TODO [vmcl] Consider actual: (*) half move clock; (*) full move number
             resultBuilder.AppendFormat(
@@ -259,30 +258,12 @@ namespace ChessPlatform
 
         public Piece GetPiece(Position position)
         {
-            return ChessHelper.GetPiece(_pieces, position);
+            return _pieceData.GetPiece(position);
         }
 
         public Position[] GetPiecePositions(Piece piece)
         {
-            #region Argument Check
-
-            piece.EnsureDefined();
-
-            if (piece == Piece.None || piece.GetPieceType() == PieceType.None)
-            {
-                throw new ArgumentException("Invalid piece.", "piece");
-            }
-
-            #endregion
-
-            var offsets = _pieceOffsetMap.GetValueOrDefault(piece);
-            if (offsets == null)
-            {
-                return new Position[0];
-            }
-
-            var result = offsets.Select(item => new Position(item)).ToArray();
-            return result;
+            return _pieceData.GetPiecePositions(piece);
         }
 
         public BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
@@ -292,26 +273,18 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            return ChessHelper.GetAttacks(_pieces, targetPosition, attackingColor);
+            return _pieceData.GetAttacks(targetPosition, attackingColor);
         }
 
         #endregion
 
         #region Private Methods
 
-        private static void CreatePieces(out Piece[] pieces, out Dictionary<Piece, HashSet<byte>> pieceOffsetMap)
-        {
-            Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
-
-            pieces = new Piece[ChessConstants.X88Length];
-            pieceOffsetMap = new Dictionary<Piece, HashSet<byte>>();
-        }
-
         private void Validate()
         {
             foreach (var king in ChessConstants.BothKings)
             {
-                var count = _pieceOffsetMap.GetValueOrCreate(king).Count;
+                var count = _pieceData.PieceOffsetMap.GetValueOrCreate(king).Count;
                 if (count != 1)
                 {
                     throw new ChessPlatformException(
@@ -323,7 +296,7 @@ namespace ChessPlatform
                 }
             }
 
-            if (ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor.Invert()))
+            if (_pieceData.IsInCheck(_activeColor.Invert()))
             {
                 throw new ChessPlatformException("Inactive king is under check.");
             }
@@ -331,7 +304,7 @@ namespace ChessPlatform
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
                 var color = pieceColor;
-                var pairs = _pieceOffsetMap
+                var pairs = _pieceData.PieceOffsetMap
                     .Where(pair => pair.Key.GetColor() == color)
                     .Select(pair => KeyValuePair.Create(pair.Key.GetPieceType(), pair.Value.Count))
                     .ToArray();
@@ -371,22 +344,22 @@ namespace ChessPlatform
 
         private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
         {
-            var isInCheck = ChessHelper.IsInCheck(_pieces, _pieceOffsetMap, _activeColor);
+            var isInCheck = _pieceData.IsInCheck(_activeColor);
             var oppositeColor = _activeColor.Invert();
 
-            var activePieceOffsets = _pieceOffsetMap
+            var activePieceOffsets = _pieceData.PieceOffsetMap
                 .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
                 .SelectMany(pair => pair.Value)
                 .ToArray();
 
             var validMoveSet = new HashSet<PieceMove>();
-            var moveHelper = new MoveHelper(_pieces, _pieceOffsetMap);
+            var moveHelper = new MoveHelper(_pieceData);
             foreach (var offset in activePieceOffsets)
             {
                 var sourcePosition = new Position(offset);
 
                 var potentialMovePositions = ChessHelper.GetPotentialMovePositions(
-                    _pieces,
+                    _pieceData.Pieces,
                     _castlingOptions,
                     _enPassantCaptureTarget,
                     sourcePosition);
@@ -395,11 +368,10 @@ namespace ChessPlatform
                 {
                     var move = new PieceMove(sourcePosition, destinationPosition);
 
-                    var castlingMove = ChessHelper.CheckCastlingMove(_pieces, move);
+                    var castlingMove = _pieceData.CheckCastlingMove(move);
                     if (castlingMove != null)
                     {
-                        if (isInCheck
-                            || ChessHelper.IsUnderAttack(_pieces, castlingMove.PassedPosition, oppositeColor))
+                        if (isInCheck || _pieceData.IsUnderAttack(castlingMove.PassedPosition, oppositeColor))
                         {
                             continue;
                         }
@@ -407,7 +379,7 @@ namespace ChessPlatform
 
                     moveHelper.MakeMove(move);
 
-                    if (!ChessHelper.IsInCheck(moveHelper.Pieces, moveHelper.PieceOffsetMap, _activeColor))
+                    if (!moveHelper.PieceData.IsInCheck(_activeColor))
                     {
                         validMoveSet.Add(move);
                     }
@@ -428,25 +400,27 @@ namespace ChessPlatform
             out CastlingOptions castlingOptions,
             out Position? enPassantTarget)
         {
-            SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
-            SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
-            SetupNewPiece(PieceType.Bishop, PieceColor.White, "c1");
-            SetupNewPiece(PieceType.Queen, PieceColor.White, "d1");
-            SetupNewPiece(PieceType.King, PieceColor.White, "e1");
-            SetupNewPiece(PieceType.Bishop, PieceColor.White, "f1");
-            SetupNewPiece(PieceType.Knight, PieceColor.White, "g1");
-            SetupNewPiece(PieceType.Rook, PieceColor.White, "h1");
-            Position.GenerateRank(1).DoForEach(position => SetupNewPiece(PieceType.Pawn, PieceColor.White, position));
+            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
+            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
+            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.White, "c1");
+            _pieceData.SetupNewPiece(PieceType.Queen, PieceColor.White, "d1");
+            _pieceData.SetupNewPiece(PieceType.King, PieceColor.White, "e1");
+            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.White, "f1");
+            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "g1");
+            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "h1");
+            Position.GenerateRank(1)
+                .DoForEach(position => _pieceData.SetupNewPiece(PieceType.Pawn, PieceColor.White, position));
 
-            Position.GenerateRank(6).DoForEach(position => SetupNewPiece(PieceType.Pawn, PieceColor.Black, position));
-            SetupNewPiece(PieceType.Rook, PieceColor.Black, "a8");
-            SetupNewPiece(PieceType.Knight, PieceColor.Black, "b8");
-            SetupNewPiece(PieceType.Bishop, PieceColor.Black, "c8");
-            SetupNewPiece(PieceType.Queen, PieceColor.Black, "d8");
-            SetupNewPiece(PieceType.King, PieceColor.Black, "e8");
-            SetupNewPiece(PieceType.Bishop, PieceColor.Black, "f8");
-            SetupNewPiece(PieceType.Knight, PieceColor.Black, "g8");
-            SetupNewPiece(PieceType.Rook, PieceColor.Black, "h8");
+            Position.GenerateRank(6)
+                .DoForEach(position => _pieceData.SetupNewPiece(PieceType.Pawn, PieceColor.Black, position));
+            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.Black, "a8");
+            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.Black, "b8");
+            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.Black, "c8");
+            _pieceData.SetupNewPiece(PieceType.Queen, PieceColor.Black, "d8");
+            _pieceData.SetupNewPiece(PieceType.King, PieceColor.Black, "e8");
+            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.Black, "f8");
+            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.Black, "g8");
+            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.Black, "h8");
 
             activeColor = PieceColor.White;
             castlingOptions = CastlingOptions.All;
@@ -460,35 +434,6 @@ namespace ChessPlatform
             out Position? enPassantCaptureTarget)
         {
             throw new NotImplementedException();
-        }
-
-        private void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
-        {
-            var offset = position.X88Value;
-            var existingPiece = _pieces[offset];
-            if (existingPiece != Piece.None)
-            {
-                throw new ChessPlatformException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The board square '{0}' is already occupied by '{1}'.",
-                        position,
-                        existingPiece));
-            }
-
-            var piece = pieceType.ToPiece(color);
-            _pieces[offset] = piece;
-
-            var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(offset);
-            if (!added)
-            {
-                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
-            }
-        }
-
-        private Piece SetPiece(Position position, Piece piece)
-        {
-            return ChessHelper.SetPiece(_pieces, position, piece);
         }
 
         #endregion
