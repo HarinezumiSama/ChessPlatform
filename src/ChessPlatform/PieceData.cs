@@ -367,12 +367,15 @@ namespace ChessPlatform
             #endregion
 
             PieceMove castlingRookMove = null;
+            Position? enPassantCapturedPiecePosition = null;
+
             var moveData = MovePieceInternal(move);
             var capturedPiece = moveData.CapturedPiece;
 
             var isEnPassantCapture = IsEnPassantCapture(move, enPassantCaptureInfo);
             if (isEnPassantCapture)
             {
+                enPassantCapturedPiecePosition = enPassantCaptureInfo.TargetPiecePosition;
                 capturedPiece = RemovePieceInternal(enPassantCaptureInfo.TargetPiecePosition);
                 if (capturedPiece.GetPieceType() != PieceType.Pawn)
                 {
@@ -393,7 +396,7 @@ namespace ChessPlatform
                 }
             }
 
-            var undoMoveData = new UndoMoveData(move, capturedPiece, castlingRookMove);
+            var undoMoveData = new UndoMoveData(move, capturedPiece, castlingRookMove, enPassantCapturedPiecePosition);
             _undoMoveDatas.Push(undoMoveData);
 
             return undoMoveData;

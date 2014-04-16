@@ -8,7 +8,11 @@ namespace ChessPlatform
     {
         #region Constructors
 
-        internal UndoMoveData([NotNull] PieceMove move, Piece capturedPiece, PieceMove castlingRookMove)
+        internal UndoMoveData(
+            [NotNull] PieceMove move,
+            Piece capturedPiece,
+            [CanBeNull] PieceMove castlingRookMove,
+            [CanBeNull] Position? enPassantCapturedPiecePosition)
         {
             #region Argument Check
 
@@ -22,6 +26,7 @@ namespace ChessPlatform
             this.Move = move;
             this.CapturedPiece = capturedPiece;
             this.CastlingRookMove = castlingRookMove;
+            this.EnPassantCapturedPiecePosition = enPassantCapturedPiecePosition;
         }
 
         #endregion
@@ -41,6 +46,12 @@ namespace ChessPlatform
         }
 
         public PieceMove CastlingRookMove
+        {
+            get;
+            private set;
+        }
+
+        public Position? EnPassantCapturedPiecePosition
         {
             get;
             private set;
