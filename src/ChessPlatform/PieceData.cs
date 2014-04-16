@@ -38,7 +38,7 @@ namespace ChessPlatform
             #endregion
 
             this.Pieces = other.Pieces.Copy();
-            this.PieceOffsetMap = ChessHelper.CopyPieceOffsetMap(other.PieceOffsetMap);
+            this.PieceOffsetMap = CopyPieceOffsetMap(other.PieceOffsetMap);
         }
 
         #endregion
@@ -503,6 +503,27 @@ namespace ChessPlatform
         #endregion
 
         #region Private Methods
+
+        private static Dictionary<Piece, HashSet<byte>> CopyPieceOffsetMap(
+            ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
+        {
+            #region Argument Check
+
+            if (pieceOffsetMap == null)
+            {
+                throw new ArgumentNullException("pieceOffsetMap");
+            }
+
+            #endregion
+
+            var result = new Dictionary<Piece, HashSet<byte>>(pieceOffsetMap.Count);
+            foreach (var pair in pieceOffsetMap)
+            {
+                result.Add(pair.Key, new HashSet<byte>(pair.Value.EnsureNotNull()));
+            }
+
+            return result;
+        }
 
         private MovePieceData MovePieceInternal(PieceMove move)
         {

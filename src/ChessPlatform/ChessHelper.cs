@@ -115,57 +115,6 @@ namespace ChessPlatform
 
         #region Internal Methods
 
-        internal static void ValidatePieces(ICollection<Piece> pieces)
-        {
-            if (pieces == null)
-            {
-                throw new ArgumentNullException("pieces");
-            }
-
-            if (pieces.Count != ChessConstants.X88Length)
-            {
-                throw new ArgumentException("Invalid count.", "pieces");
-            }
-        }
-
-        internal static Dictionary<Piece, HashSet<byte>> CopyPieceOffsetMap(
-            ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
-        {
-            #region Argument Check
-
-            if (pieceOffsetMap == null)
-            {
-                throw new ArgumentNullException("pieceOffsetMap");
-            }
-
-            #endregion
-
-            var result = new Dictionary<Piece, HashSet<byte>>(pieceOffsetMap.Count);
-            foreach (var pair in pieceOffsetMap)
-            {
-                result.Add(pair.Key, new HashSet<byte>(pair.Value.EnsureNotNull()));
-            }
-
-            return result;
-        }
-
-        internal static Piece GetPiece(IList<Piece> pieces, Position position)
-        {
-            #region Argument Check
-
-            ValidatePieces(pieces);
-
-            #endregion
-
-            return pieces[position.X88Value];
-        }
-
-        internal static PieceInfo GetPieceInfo(IList<Piece> pieces, Position position)
-        {
-            var piece = GetPiece(pieces, position);
-            return new PieceInfo(piece);
-        }
-
         internal static Position[] GetOnboardPositions(Position position, ICollection<byte> x88Offsets)
         {
             #region Argument Check
@@ -196,11 +145,6 @@ namespace ChessPlatform
 
             return result.ToArray();
         }
-
-        #endregion
-
-        #region Private Methods
-
 
         #endregion
     }
