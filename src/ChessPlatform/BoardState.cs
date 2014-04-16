@@ -359,8 +359,7 @@ namespace ChessPlatform
             {
                 var sourcePosition = new Position(offset);
 
-                var potentialMovePositions = ChessHelper.GetPotentialMovePositions(
-                    _pieceData.Pieces,
+                var potentialMovePositions = _pieceData.GetPotentialMovePositions(
                     _castlingOptions,
                     _enPassantCaptureTarget,
                     sourcePosition);

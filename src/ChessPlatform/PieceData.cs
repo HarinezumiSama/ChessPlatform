@@ -317,6 +317,88 @@ namespace ChessPlatform
             return IsUnderAttack(kingPosition, kingColor.Invert());
         }
 
+        public Position[] GetPotentialMovePositions(
+            CastlingOptions castlingOptions,
+            EnPassantCaptureInfo enPassantCaptureTarget,
+            Position sourcePosition)
+        {
+            var pieceInfo = GetPieceInfo(sourcePosition);
+            if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Color.HasValue)
+            {
+                throw new ArgumentException("No piece at the source position.", "sourcePosition");
+            }
+
+            var pieceColor = pieceInfo.Color.Value;
+
+            if (pieceInfo.PieceType == PieceType.Knight)
+            {
+                var result = ChessHelper.GetKnightMovePositions(sourcePosition)
+                    .Where(position => GetPiece(position).GetColor() != pieceColor)
+                    .ToArray();
+
+                return result;
+            }
+
+            if (pieceInfo.PieceType == PieceType.King)
+            {
+                var result = GetKingPotentialMovePositions(castlingOptions, sourcePosition, pieceColor);
+                return result;
+            }
+
+            if (pieceInfo.PieceType == PieceType.Pawn)
+            {
+                var result = GetPawnPotentialMovePositions(enPassantCaptureTarget, sourcePosition, pieceColor);
+                return result;
+            }
+
+            var resultList = new List<Position>();
+
+            if (pieceInfo.PieceType.IsSlidingStraight())
+            {
+                GetPotentialMovePositionsByRays(
+                    sourcePosition,
+                    pieceColor,
+                    ChessHelper.StraightRays,
+                    ChessHelper.MaxSlidingPieceDistance,
+                    true,
+                    resultList);
+            }
+
+            if (pieceInfo.PieceType.IsSlidingDiagonally())
+            {
+                GetPotentialMovePositionsByRays(
+                    sourcePosition,
+                    pieceColor,
+                    ChessHelper.DiagonalRays,
+                    ChessHelper.MaxSlidingPieceDistance,
+                    true,
+                    resultList);
+            }
+
+            return resultList.ToArray();
+        }
+
+        public PieceMove GetEnPassantMove(Position sourcePosition)
+        {
+            var pieceInfo = GetPieceInfo(sourcePosition);
+            if (pieceInfo.PieceType != PieceType.Pawn || !pieceInfo.Color.HasValue)
+            {
+                return null;
+            }
+
+            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            if (sourcePosition.Rank != enPassantInfo.StartRank)
+            {
+                return null;
+            }
+
+            var destinationPosition = new Position(sourcePosition.File, enPassantInfo.EndRank);
+            var intermediatePosition = new Position(sourcePosition.File, enPassantInfo.CaptureTargetRank);
+            var isEnPassant = CheckSquares(Piece.None, intermediatePosition, destinationPosition);
+
+            return isEnPassant ? new PieceMove(sourcePosition, destinationPosition) : null;
+        }
+
         #endregion
 
         #region Internal Methods
@@ -484,6 +566,176 @@ namespace ChessPlatform
             }
 
             return piece;
+        }
+
+        private void GetPotentialMovePositionsByRays(
+            Position sourcePosition,
+            PieceColor sourceColor,
+            IEnumerable<RayInfo> rays,
+            int maxDistance,
+            bool allowCapturing,
+            ICollection<Position> resultCollection)
+        {
+            foreach (var ray in rays)
+            {
+                for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
+                    Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
+                    currentX88Value += ray.Offset, distance++)
+                {
+                    var currentPosition = new Position(currentX88Value);
+
+                    var currentPiece = this.Pieces[currentPosition.X88Value];
+                    var currentColor = currentPiece.GetColor();
+                    if (currentPiece == Piece.None || !currentColor.HasValue)
+                    {
+                        resultCollection.Add(currentPosition);
+                        continue;
+                    }
+
+                    if (currentColor.Value != sourceColor && allowCapturing)
+                    {
+                        resultCollection.Add(currentPosition);
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        private void GetPotentialCastlingMovePositions(
+            Position sourcePosition,
+            PieceColor color,
+            CastlingOptions castlingOptions,
+            ICollection<Position> resultCollection)
+        {
+            switch (color)
+            {
+                case PieceColor.White:
+                    {
+                        GetPotentialCastlingMove(
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.WhiteKingSide,
+                            resultCollection);
+
+                        GetPotentialCastlingMove(
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.WhiteQueenSide,
+                            resultCollection);
+                    }
+                    break;
+
+                case PieceColor.Black:
+                    {
+                        GetPotentialCastlingMove(
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.BlackKingSide,
+                            resultCollection);
+
+                        GetPotentialCastlingMove(
+                            sourcePosition,
+                            castlingOptions,
+                            CastlingOptions.BlackQueenSide,
+                            resultCollection);
+                    }
+                    break;
+
+                default:
+                    throw color.CreateEnumValueNotSupportedException();
+            }
+        }
+
+        private bool CheckSquares(Piece expectedPiece, IEnumerable<Position> positions)
+        {
+            return positions.All(position => GetPiece(position) == expectedPiece);
+        }
+
+        private bool CheckSquares(Piece expectedPiece, params Position[] positions)
+        {
+            return CheckSquares(expectedPiece, (IEnumerable<Position>)positions);
+        }
+
+        private void GetPotentialCastlingMove(
+            Position sourcePosition,
+            CastlingOptions castlingOptions,
+            CastlingOptions option,
+            ICollection<Position> resultCollection)
+        {
+            var castlingInfo = ChessHelper.CastlingOptionToInfoMap[option];
+
+            var isPotentiallyPossible = (castlingOptions & option) == option
+                && sourcePosition == castlingInfo.KingMove.From
+                && CheckSquares(Piece.None, castlingInfo.EmptySquares);
+
+            if (isPotentiallyPossible)
+            {
+                resultCollection.Add(castlingInfo.KingMove.To);
+            }
+        }
+
+        private Position[] GetKingPotentialMovePositions(
+            CastlingOptions castlingOptions,
+            Position sourcePosition,
+            PieceColor pieceColor)
+        {
+            var resultList = new List<Position>();
+
+            GetPotentialMovePositionsByRays(
+                sourcePosition,
+                pieceColor,
+                ChessHelper.KingAttackRays,
+                ChessHelper.MaxKingMoveDistance,
+                true,
+                resultList);
+
+            GetPotentialCastlingMovePositions(
+                sourcePosition,
+                pieceColor,
+                castlingOptions,
+                resultList);
+
+            return resultList.ToArray();
+        }
+
+        private Position[] GetPawnPotentialMovePositions(
+            EnPassantCaptureInfo enPassantCaptureTarget,
+            Position sourcePosition,
+            PieceColor pieceColor)
+        {
+            var resultList = new List<Position>();
+
+            GetPotentialMovePositionsByRays(
+                sourcePosition,
+                pieceColor,
+                ChessHelper.PawnMoveRayMap[pieceColor].AsCollection(),
+                ChessHelper.MaxPawnAttackOrMoveDistance,
+                false,
+                resultList);
+
+            var enPassantMove = GetEnPassantMove(sourcePosition);
+            if (enPassantMove != null)
+            {
+                resultList.Add(enPassantMove.To);
+            }
+
+            var pawnAttackOffsets = ChessHelper.PawnAttackOffsetMap[pieceColor];
+            var attackPositions = ChessHelper.GetOnboardPositions(sourcePosition, pawnAttackOffsets);
+            var oppositeColor = pieceColor.Invert();
+
+            //// ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var attackPosition in attackPositions)
+            {
+                var attackedPieceInfo = GetPieceInfo(attackPosition);
+                if (attackedPieceInfo.Color == oppositeColor
+                    || (enPassantCaptureTarget != null && attackPosition == enPassantCaptureTarget.CapturePosition))
+                {
+                    resultList.Add(attackPosition);
+                }
+            }
+
+            return resultList.ToArray();
         }
 
         #endregion
