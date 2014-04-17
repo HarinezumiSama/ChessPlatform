@@ -252,7 +252,7 @@ namespace ChessPlatform
                 " {0} {1} {2} 0 1",
                 _activeColor.GetFenSnippet(),
                 _castlingOptions.GetFenSnippet(),
-                _enPassantCaptureTarget.ToStringSafely("-"));
+                _enPassantCaptureTarget == null ? "-" : _enPassantCaptureTarget.CapturePosition.ToString());
 
             return resultBuilder.ToString();
         }
