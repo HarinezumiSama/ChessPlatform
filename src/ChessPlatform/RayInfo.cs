@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ChessPlatform
 {
-    public struct RayInfo
+    internal struct RayInfo
     {
         #region Constructors
 

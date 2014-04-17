@@ -6,75 +6,9 @@ using Omnifactotum;
 
 namespace ChessPlatform
 {
-    internal static class ChessHelper
+    public static class ChessHelper
     {
         #region Constants and Fields
-
-        public static readonly ReadOnlyCollection<RayInfo> StraightRays =
-            new ReadOnlyCollection<RayInfo>(
-                new[]
-                {
-                    new RayInfo(0xFF, true),
-                    new RayInfo(0x01, true),
-                    new RayInfo(0xF0, true),
-                    new RayInfo(0x10, true)
-                });
-
-        public static readonly ReadOnlyCollection<RayInfo> DiagonalRays =
-            new ReadOnlyCollection<RayInfo>(
-                new[]
-                {
-                    new RayInfo(0x0F, false),
-                    new RayInfo(0x11, false),
-                    new RayInfo(0xEF, false),
-                    new RayInfo(0xF1, false)
-                });
-
-        public static readonly ReadOnlyCollection<RayInfo> AllRays =
-            new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
-
-        public static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
-            new ReadOnlyDictionary<PieceColor, RayInfo>(
-                new Dictionary<PieceColor, RayInfo>
-                {
-                    { PieceColor.White, new RayInfo(0x10, true) },
-                    { PieceColor.Black, new RayInfo(0xF0, true) }
-                });
-
-        public static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
-            new ReadOnlyDictionary<PieceColor, RayInfo>(
-                new Dictionary<PieceColor, RayInfo>
-                {
-                    { PieceColor.White, new RayInfo(0x20, true) },
-                    { PieceColor.Black, new RayInfo(0xE0, true) }
-                });
-
-        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
-            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-                {
-                    {
-                        PieceColor.White,
-                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-                    },
-                    {
-                        PieceColor.Black,
-                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-                    }
-                });
-
-        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
-            PawnAttackRayMap.ToDictionary(
-                pair => pair.Key,
-                pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
-
-        public static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
-
-        public static readonly ReadOnlySet<byte> KingAttackOffsets =
-            KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
-
-        public static readonly ReadOnlySet<byte> KnightAttackOffsets =
-            new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
 
         public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
@@ -117,13 +51,79 @@ namespace ChessPlatform
         internal const int MaxPawnAttackOrMoveDistance = 1;
         internal const int MaxKingMoveDistance = 1;
 
+        internal static readonly ReadOnlyCollection<RayInfo> StraightRays =
+            new ReadOnlyCollection<RayInfo>(
+                new[]
+                {
+                    new RayInfo(0xFF, true),
+                    new RayInfo(0x01, true),
+                    new RayInfo(0xF0, true),
+                    new RayInfo(0x10, true)
+                });
+
+        internal static readonly ReadOnlyCollection<RayInfo> DiagonalRays =
+            new ReadOnlyCollection<RayInfo>(
+                new[]
+                {
+                    new RayInfo(0x0F, false),
+                    new RayInfo(0x11, false),
+                    new RayInfo(0xEF, false),
+                    new RayInfo(0xF1, false)
+                });
+
+        internal static readonly ReadOnlyCollection<RayInfo> AllRays =
+            new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
+
+        internal static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
+            new ReadOnlyDictionary<PieceColor, RayInfo>(
+                new Dictionary<PieceColor, RayInfo>
+                {
+                    { PieceColor.White, new RayInfo(0x10, true) },
+                    { PieceColor.Black, new RayInfo(0xF0, true) }
+                });
+
+        internal static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
+            new ReadOnlyDictionary<PieceColor, RayInfo>(
+                new Dictionary<PieceColor, RayInfo>
+                {
+                    { PieceColor.White, new RayInfo(0x20, true) },
+                    { PieceColor.Black, new RayInfo(0xE0, true) }
+                });
+
+        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
+            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
+                {
+                    {
+                        PieceColor.White,
+                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+                    },
+                    {
+                        PieceColor.Black,
+                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+                    }
+                });
+
+        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
+            PawnAttackRayMap.ToDictionary(
+                pair => pair.Key,
+                pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
+
+        internal static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
+
+        internal static readonly ReadOnlySet<byte> KingAttackOrMoveOffsets =
+            KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
+
+        internal static readonly ReadOnlySet<byte> KnightAttackOrMoveOffsets =
+            new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
+
         #endregion
 
         #region Public Methods
 
         public static Position[] GetKnightMovePositions(Position position)
         {
-            return GetOnboardPositions(position, KnightAttackOffsets);
+            return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
         }
 
         #endregion

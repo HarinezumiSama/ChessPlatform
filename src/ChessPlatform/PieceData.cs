@@ -300,7 +300,7 @@ namespace ChessPlatform
                             break;
 
                         case PieceType.King:
-                            if (ChessHelper.KingAttackOffsets.Contains(difference))
+                            if (ChessHelper.KingAttackOrMoveOffsets.Contains(difference))
                             {
                                 resultList.Add(currentPosition);
                             }
