@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform", "ChessPlatform\ChessPlatform.csproj", "{AA84E743-3651-4436-BD27-CDD81D525D3E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Tests", "ChessPlatform.Tests\ChessPlatform.Tests.csproj", "{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{AA84E743-3651-4436-BD27-CDD81D525D3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA84E743-3651-4436-BD27-CDD81D525D3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA84E743-3651-4436-BD27-CDD81D525D3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
