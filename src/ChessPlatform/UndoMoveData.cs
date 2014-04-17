@@ -10,6 +10,7 @@ namespace ChessPlatform
 
         internal UndoMoveData(
             [NotNull] PieceMove move,
+            Piece movedPiece,
             Piece capturedPiece,
             [CanBeNull] PieceMove castlingRookMove,
             [CanBeNull] Position? enPassantCapturedPiecePosition)
@@ -21,12 +22,31 @@ namespace ChessPlatform
                 throw new ArgumentNullException("move");
             }
 
+            if (movedPiece == Piece.None)
+            {
+                throw new ArgumentException("Invalid moved piece.", "movedPiece");
+            }
+
+            if (castlingRookMove != null && enPassantCapturedPiecePosition.HasValue)
+            {
+                throw new ArgumentException("Castling and en passant capture could not occur simultaneously.");
+            }
+
+            if (castlingRookMove != null && capturedPiece != Piece.None)
+            {
+                throw new ArgumentException("Castling and capture could not occur simultaneously.");
+            }
+
             #endregion
 
             this.Move = move;
+            this.MovedPiece = movedPiece;
             this.CapturedPiece = capturedPiece;
             this.CastlingRookMove = castlingRookMove;
-            this.EnPassantCapturedPiecePosition = enPassantCapturedPiecePosition;
+
+            this.CapturedPiecePosition = enPassantCapturedPiecePosition.HasValue
+                ? enPassantCapturedPiecePosition.Value
+                : move.To;
         }
 
         #endregion
@@ -34,6 +54,12 @@ namespace ChessPlatform
         #region Public Properties
 
         public PieceMove Move
+        {
+            get;
+            private set;
+        }
+
+        public Piece MovedPiece
         {
             get;
             private set;
@@ -51,7 +77,7 @@ namespace ChessPlatform
             private set;
         }
 
-        public Position? EnPassantCapturedPiecePosition
+        public Position CapturedPiecePosition
         {
             get;
             private set;

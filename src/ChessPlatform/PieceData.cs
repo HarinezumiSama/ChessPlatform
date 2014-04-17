@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
@@ -13,6 +14,8 @@ namespace ChessPlatform
         #region Constants and Fields
 
         private readonly Stack<UndoMoveData> _undoMoveDatas = new Stack<UndoMoveData>();
+        private readonly Piece[] _pieces;
+        private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
 
         #endregion
 
@@ -22,8 +25,11 @@ namespace ChessPlatform
         {
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
-            this.Pieces = new Piece[ChessConstants.X88Length];
-            this.PieceOffsetMap = new Dictionary<Piece, HashSet<byte>>();
+            _pieces = new Piece[ChessConstants.X88Length];
+            _pieceOffsetMap = new Dictionary<Piece, HashSet<byte>>
+            {
+                { Piece.None, ChessHelper.AllPositions.Select(position => position.X88Value).ToHashSet() }
+            };
         }
 
         private PieceData(PieceData other)
@@ -37,29 +43,18 @@ namespace ChessPlatform
 
             #endregion
 
-            this.Pieces = other.Pieces.Copy();
-            this.PieceOffsetMap = CopyPieceOffsetMap(other.PieceOffsetMap);
-        }
-
-        #endregion
-
-        #region Internal Properties
-
-        internal Piece[] Pieces
-        {
-            get;
-            private set;
-        }
-
-        internal Dictionary<Piece, HashSet<byte>> PieceOffsetMap
-        {
-            get;
-            private set;
+            _pieces = other._pieces.Copy();
+            _pieceOffsetMap = CopyPieceOffsetMap(other._pieceOffsetMap);
         }
 
         #endregion
 
         #region Public Methods
+
+        public void EnsureConsistency()
+        {
+            EnsureConsistencyInternal();
+        }
 
         public PieceData Copy()
         {
@@ -68,7 +63,7 @@ namespace ChessPlatform
 
         public Piece GetPiece(Position position)
         {
-            return this.Pieces[position.X88Value];
+            return _pieces[position.X88Value];
         }
 
         public PieceInfo GetPieceInfo(Position position)
@@ -85,17 +80,27 @@ namespace ChessPlatform
 
             #endregion
 
-            var offsets = this.PieceOffsetMap.GetValueOrDefault(piece);
-            if (offsets == null)
-            {
-                return new Position[0];
-            }
+            var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
 
-            var result = offsets.Select(item => new Position(item)).ToArray();
+            var result = x88Values == null ? new Position[0] : x88Values.Select(item => new Position(item)).ToArray();
             return result;
         }
 
-        public EnPassantCaptureInfo GetEnPassantCaptureTarget(PieceMove move)
+        public int GetPieceCount(Piece piece)
+        {
+            #region Argument Check
+
+            piece.EnsureDefined();
+
+            #endregion
+
+            var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
+
+            var result = x88Values.Morph(obj => obj.Count, 0);
+            return result;
+        }
+
+        public EnPassantCaptureInfo GetEnPassantCaptureInfo(PieceMove move)
         {
             #region Argument Check
 
@@ -146,6 +151,30 @@ namespace ChessPlatform
 
             var result = pieceInfo.PieceType == PieceType.Pawn && targetPieceInfo.PieceType == PieceType.Pawn
                 && enPassantCaptureInfo.CapturePosition == move.To;
+
+            return result;
+        }
+
+        public bool IsPawnPromotion(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            if (move.From.File != move.To.File)
+            {
+                return false;
+            }
+
+            var pieceInfo = GetPieceInfo(move.From);
+
+            var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
+                && move.To.Rank == ChessHelper.ColorToPawnPromotionRankMap[pieceInfo.Color.Value];
 
             return result;
         }
@@ -226,7 +255,7 @@ namespace ChessPlatform
             var resultList = new List<Position>();
 
             var attackingKnights = ChessHelper.GetKnightMovePositions(targetPosition)
-                .Where(p => this.Pieces[p.X88Value].GetColor() == attackingColor)
+                .Where(position => GetPiece(position).GetColor() == attackingColor)
                 .ToArray();
 
             resultList.AddRange(attackingKnights);
@@ -239,7 +268,7 @@ namespace ChessPlatform
                 {
                     var currentPosition = new Position(currentX88Value);
 
-                    var piece = this.Pieces[currentPosition.X88Value];
+                    var piece = GetPiece(currentPosition);
                     var color = piece.GetColor();
                     if (piece == Piece.None || !color.HasValue)
                     {
@@ -312,7 +341,7 @@ namespace ChessPlatform
         public bool IsInCheck(PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = new Position(this.PieceOffsetMap[king].Single());
+            var kingPosition = GetPiecePositions(king).Single();
 
             return IsUnderAttack(kingPosition, kingColor.Invert());
         }
@@ -405,8 +434,7 @@ namespace ChessPlatform
 
         internal void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
         {
-            var offset = position.X88Value;
-            var existingPiece = this.Pieces[offset];
+            var existingPiece = GetPiece(position);
             if (existingPiece != Piece.None)
             {
                 throw new ChessPlatformException(
@@ -418,32 +446,27 @@ namespace ChessPlatform
             }
 
             var piece = pieceType.ToPiece(color);
-            this.Pieces[offset] = piece;
-
-            var added = this.PieceOffsetMap.GetValueOrCreate(piece).Add(offset);
-            if (!added)
-            {
-                throw new ChessPlatformException("Inconsistent state of the piece offset map.");
-            }
+            SetPiece(position, piece);
         }
 
-        //// TODO [vmcl] Remove SetPiece method
-        internal Piece SetPiece(Position position, Piece piece)
-        {
-            var offset = position.X88Value;
-            var oldPiece = this.Pieces[offset];
-            this.Pieces[offset] = piece;
-
-            return oldPiece;
-        }
-
-        internal UndoMoveData MakeMove(PieceMove move, EnPassantCaptureInfo enPassantCaptureInfo)
+        internal UndoMoveData MakeMove(
+            [NotNull] PieceMove move,
+            PieceColor movingColor,
+            [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
+            [CanBeNull] PieceType? promotedPieceType,
+            ref CastlingOptions castlingOptions)
         {
             #region Argument Check
 
             if (move == null)
             {
                 throw new ArgumentNullException("move");
+            }
+
+            var pieceInfo = GetPieceInfo(move.From);
+            if (pieceInfo.PieceType == PieceType.None || pieceInfo.Color != movingColor)
+            {
+                throw new ArgumentException("Invalid move.", "move");
             }
 
             #endregion
@@ -454,12 +477,33 @@ namespace ChessPlatform
             var moveData = MovePieceInternal(move);
             var capturedPiece = moveData.CapturedPiece;
 
-            var isEnPassantCapture = IsEnPassantCapture(move, enPassantCaptureInfo);
-            if (isEnPassantCapture)
+            if (IsEnPassantCapture(move, enPassantCaptureInfo))
             {
+                if (enPassantCaptureInfo == null)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+
                 enPassantCapturedPiecePosition = enPassantCaptureInfo.TargetPiecePosition;
-                capturedPiece = RemovePieceInternal(enPassantCaptureInfo.TargetPiecePosition);
+                capturedPiece = SetPiece(enPassantCaptureInfo.TargetPiecePosition, Piece.None);
                 if (capturedPiece.GetPieceType() != PieceType.Pawn)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+            }
+            else if (IsPawnPromotion(move))
+            {
+                if (!promotedPieceType.HasValue)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Promoted piece type is not specified ({0}).",
+                            move));
+                }
+
+                var previousPiece = SetPiece(move.To, promotedPieceType.Value.ToPiece(movingColor));
+                if (previousPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
@@ -469,17 +513,37 @@ namespace ChessPlatform
                 var castlingInfo = CheckCastlingMove(move);
                 if (castlingInfo != null)
                 {
+                    if (!castlingOptions.IsAllSet(castlingInfo.Option))
+                    {
+                        throw new ChessPlatformException(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "The castling {{{0}}} ({1}) is not allowed.",
+                                move,
+                                castlingInfo.Option.GetName()));
+                    }
+
                     castlingRookMove = castlingInfo.RookMove;
                     var rookMoveData = MovePieceInternal(castlingRookMove);
                     if (rookMoveData.CapturedPiece != Piece.None)
                     {
                         throw ChessPlatformException.CreateInconsistentStateError();
                     }
+
+                    castlingOptions &= ~castlingInfo.Option;
                 }
             }
 
-            var undoMoveData = new UndoMoveData(move, capturedPiece, castlingRookMove, enPassantCapturedPiecePosition);
+            var undoMoveData = new UndoMoveData(
+                move,
+                moveData.MovedPiece,
+                capturedPiece,
+                castlingRookMove,
+                enPassantCapturedPiecePosition);
+
             _undoMoveDatas.Push(undoMoveData);
+
+            EnsureConsistency();
 
             return undoMoveData;
         }
@@ -493,11 +557,31 @@ namespace ChessPlatform
         {
             if (!CanUndoMove())
             {
-                throw new InvalidOperationException("Undo cannot performed: no moves.");
+                throw new InvalidOperationException("Undo cannot be performed: no moves.");
             }
 
-            var undoMoveData = _undoMoveDatas.Pop();
-            throw new NotImplementedException();
+            var data = _undoMoveDatas.Pop();
+
+            SetPiece(data.Move.From, data.MovedPiece);
+            SetPiece(data.Move.To, Piece.None);
+
+            if (data.CapturedPiece != Piece.None)
+            {
+                SetPiece(data.CapturedPiecePosition, data.CapturedPiece);
+            }
+            else if (data.CastlingRookMove != null)
+            {
+                var castlingRook = SetPiece(data.CastlingRookMove.To, Piece.None);
+                if (castlingRook.GetPieceType() != PieceType.Rook
+                    || castlingRook.GetColor() != data.MovedPiece.GetColor())
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+
+                SetPiece(data.CastlingRookMove.From, castlingRook);
+            }
+
+            EnsureConsistency();
         }
 
         #endregion
@@ -525,6 +609,44 @@ namespace ChessPlatform
             return result;
         }
 
+        [Conditional("DEBUG")]
+        private void EnsureConsistencyInternal()
+        {
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var position in ChessHelper.AllPositions)
+            {
+                var piece = _pieces[position.X88Value];
+
+                var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
+                if (x88Values == null || !x88Values.Contains(position.X88Value))
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Inconsistency for the piece '{0}' at '{1}'.",
+                            piece.GetName(),
+                            position));
+                }
+            }
+
+            foreach (var pair in _pieceOffsetMap.Where(p => p.Value != null))
+            {
+                foreach (var x88Value in pair.Value)
+                {
+                    var piece = _pieces[x88Value];
+                    if (piece != pair.Key)
+                    {
+                        throw new ChessPlatformException(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Inconsistency for the piece '{0}' at 0x{1:X2}.",
+                                pair.Key.GetName(),
+                                x88Value));
+                    }
+                }
+            }
+        }
+
         private MovePieceData MovePieceInternal(PieceMove move)
         {
             #region Argument Check
@@ -536,57 +658,48 @@ namespace ChessPlatform
 
             #endregion
 
-            var movedPiece = this.Pieces[move.From.X88Value];
+            var movedPiece = SetPiece(move.From, Piece.None);
             if (movedPiece == Piece.None)
             {
-                throw new ArgumentException(
+                throw new ChessPlatformException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The source square of the move {{{0}}} is empty.",
                         move));
             }
 
-            var capturedPiece = this.Pieces[move.To.X88Value];
+            var capturedPiece = SetPiece(move.To, movedPiece);
             if (capturedPiece != Piece.None)
             {
-                if (!this.PieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value))
+                if (capturedPiece.GetColor() == movedPiece.GetColor())
                 {
-                    throw ChessPlatformException.CreateInconsistentStateError();
+                    throw new ChessPlatformException("Cannot capture a piece of the same color.");
                 }
-            }
-
-            var movedPieceOffsets = this.PieceOffsetMap.GetValueOrCreate(movedPiece);
-
-            if (!movedPieceOffsets.Remove(move.From.X88Value))
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
-            }
-
-            if (!movedPieceOffsets.Add(move.To.X88Value))
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
             }
 
             return new MovePieceData(movedPiece, capturedPiece);
         }
 
-        private Piece RemovePieceInternal(Position position)
+        private Piece SetPiece(Position position, Piece piece)
         {
             var x88Value = position.X88Value;
-            var piece = this.Pieces[x88Value];
 
-            if (piece != Piece.None)
+            var oldPiece = _pieces[x88Value];
+            _pieces[x88Value] = piece;
+
+            var oldPieceRemoved = _pieceOffsetMap.GetValueOrCreate(oldPiece).Remove(x88Value);
+            if (!oldPieceRemoved)
             {
-                this.Pieces[x88Value] = Piece.None;
-
-                var removed = this.PieceOffsetMap.GetValueOrCreate(piece).Remove(x88Value);
-                if (!removed)
-                {
-                    throw ChessPlatformException.CreateInconsistentStateError();
-                }
+                throw ChessPlatformException.CreateInconsistentStateError();
             }
 
-            return piece;
+            var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(x88Value);
+            if (!added)
+            {
+                throw ChessPlatformException.CreateInconsistentStateError();
+            }
+
+            return oldPiece;
         }
 
         private void GetPotentialMovePositionsByRays(
@@ -605,7 +718,7 @@ namespace ChessPlatform
                 {
                     var currentPosition = new Position(currentX88Value);
 
-                    var currentPiece = this.Pieces[currentPosition.X88Value];
+                    var currentPiece = GetPiece(currentPosition);
                     var currentColor = currentPiece.GetColor();
                     if (currentPiece == Piece.None || !currentColor.HasValue)
                     {

@@ -43,8 +43,9 @@ namespace ChessPlatform
             #endregion
 
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
-            var result = ((Piece)pieceType)
-                | (color == PieceColor.Black ? Piece.BlackColor : Piece.WhiteColor);
+            var result = pieceType == PieceType.None
+                ? Piece.None
+                : ((Piece)pieceType) | (color == PieceColor.Black ? Piece.BlackColor : Piece.WhiteColor);
 
             return result;
         }

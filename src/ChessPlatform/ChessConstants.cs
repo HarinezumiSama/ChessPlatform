@@ -33,6 +33,22 @@ namespace ChessPlatform
         public static readonly ReadOnlyCollection<PieceColor> PieceColors =
             new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
 
+        public static readonly ReadOnlySet<PieceType> PieceTypes =
+            EnumHelper.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
+            PieceColors
+                .ToDictionary(
+                    Factotum.Identity,
+                    color => PieceTypes.Select(item => item.ToPiece(color)).ToHashSet().AsReadOnly())
+                .AsReadOnly();
+
+        public static readonly ReadOnlySet<Piece> Pieces =
+            PieceColors
+                .SelectMany(color => PieceTypes.Select(item => item.ToPiece(color)))
+                .ToHashSet()
+                .AsReadOnly();
+
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
 

@@ -19,7 +19,7 @@ namespace ChessPlatform
         private readonly PieceColor _activeColor;
         private readonly GameState _state;
         private readonly CastlingOptions _castlingOptions;
-        private readonly EnPassantCaptureInfo _enPassantCaptureTarget;
+        private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
         private readonly ReadOnlySet<PieceMove> _validMoves;
 
         #endregion
@@ -32,7 +32,7 @@ namespace ChessPlatform
         internal BoardState()
         {
             _pieceData = new PieceData();
-            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
+            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureInfo);
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -54,7 +54,7 @@ namespace ChessPlatform
             #endregion
 
             _pieceData = new PieceData();
-            SetupByFen(fen, out _activeColor, out _castlingOptions, out _enPassantCaptureTarget);
+            SetupByFen(fen, out _activeColor, out _castlingOptions, out _enPassantCaptureInfo);
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -79,104 +79,25 @@ namespace ChessPlatform
                 throw new ArgumentNullException("move");
             }
 
+            if (!previousState._validMoves.Contains(move))
+            {
+                throw new ArgumentException("The specified move is not a valid move.", "move");
+            }
+
             #endregion
 
             _pieceData = previousState._pieceData.Copy();
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
-            _enPassantCaptureTarget = _pieceData.GetEnPassantCaptureTarget(move);
+            _enPassantCaptureInfo = _pieceData.GetEnPassantCaptureInfo(move);
 
-            var castlingInfo = _pieceData.CheckCastlingMove(move);
-            if (castlingInfo != null)
-            {
-                if (!_castlingOptions.IsAllSet(castlingInfo.Option))
-                {
-                    throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The castling {{{0}}} ({1}) is not allowed.",
-                            move,
-                            castlingInfo.Option.GetName()));
-                }
-            }
-
-            var movingPiece = _pieceData.SetPiece(move.From, Piece.None);
-
-            movingPiece.EnsureDefined();
-
-            var color = movingPiece.GetColor();
-            if (movingPiece == Piece.None || !color.HasValue)
-            {
-                throw new ChessPlatformException("The move starting position contains no piece.");
-            }
-
-            var removed = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Remove(move.From.X88Value);
-            if (!removed)
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
-            }
-
-            var pieceColor = color.Value;
-
-            if (pieceColor != previousState._activeColor)
-            {
-                throw new ChessPlatformException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The move starting position specifies piece of invalid color (expected: {0}).",
-                        previousState._activeColor));
-            }
-
-            var pieceType = movingPiece.GetPieceType();
-            if (pieceType == PieceType.Pawn
-                && (pieceColor == PieceColor.White && move.To.Rank == ChessConstants.WhitePawnPromotionRank
-                    || pieceColor == PieceColor.Black && move.To.Rank == ChessConstants.BlackPawnPromotionRank))
-            {
-                if (!promotedPieceType.HasValue || !ChessConstants.ValidPromotions.Contains(promotedPieceType.Value))
-                {
-                    throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The promoted piece type is not specified or is invalid for the promoted piece {0}.",
-                            movingPiece.GetDescription()));
-                }
-
-                movingPiece = promotedPieceType.Value.ToPiece(pieceColor);
-            }
-
-            var capturedPiece = _pieceData.SetPiece(move.To, movingPiece);
-            if (capturedPiece != Piece.None)
-            {
-                if (capturedPiece.GetColor() == pieceColor)
-                {
-                    throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The move destination position performs a capture of the same color ({0}).",
-                            pieceColor));
-                }
-
-                var capturedRemoved =
-                    _pieceData.PieceOffsetMap.GetValueOrCreate(capturedPiece).Remove(move.To.X88Value);
-                if (!capturedRemoved)
-                {
-                    throw ChessPlatformException.CreateInconsistentStateError();
-                }
-            }
-
-            var added = _pieceData.PieceOffsetMap.GetValueOrCreate(movingPiece).Add(move.To.X88Value);
-            if (!added)
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
-            }
-
-            if (castlingInfo != null)
-            {
-                _castlingOptions &= ~castlingInfo.Option;
-                //// TODO [vmcl] Move Rook
-                throw new NotImplementedException();
-            }
+            _pieceData.MakeMove(
+                move,
+                previousState._activeColor,
+                _enPassantCaptureInfo,
+                promotedPieceType,
+                ref _castlingOptions);
 
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -213,12 +134,12 @@ namespace ChessPlatform
             }
         }
 
-        public EnPassantCaptureInfo EnPassantCaptureTarget
+        public EnPassantCaptureInfo EnPassantCaptureInfo
         {
             [DebuggerStepThrough]
             get
             {
-                return _enPassantCaptureTarget;
+                return _enPassantCaptureInfo;
             }
         }
 
@@ -252,7 +173,7 @@ namespace ChessPlatform
                 " {0} {1} {2} 0 1",
                 _activeColor.GetFenSnippet(),
                 _castlingOptions.GetFenSnippet(),
-                _enPassantCaptureTarget == null ? "-" : _enPassantCaptureTarget.CapturePosition.ToString());
+                _enPassantCaptureInfo == null ? "-" : _enPassantCaptureInfo.CapturePosition.ToString());
 
             return resultBuilder.ToString();
         }
@@ -283,9 +204,11 @@ namespace ChessPlatform
 
         private void Validate()
         {
+            _pieceData.EnsureConsistency();
+
             foreach (var king in ChessConstants.BothKings)
             {
-                var count = _pieceData.PieceOffsetMap.GetValueOrCreate(king).Count;
+                var count = _pieceData.GetPiecePositions(king).Length;
                 if (count != 1)
                 {
                     throw new ChessPlatformException(
@@ -305,38 +228,35 @@ namespace ChessPlatform
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
                 var color = pieceColor;
-                var pairs = _pieceData.PieceOffsetMap
-                    .Where(pair => pair.Key.GetColor() == color)
-                    .Select(pair => KeyValuePair.Create(pair.Key.GetPieceType(), pair.Value.Count))
-                    .ToArray();
 
-                var counts = pairs
-                    .Aggregate(
-                        new { AllCount = 0, PawnCount = 0 },
-                        (accumulator, pair) => new
-                        {
-                            AllCount = accumulator.AllCount + pair.Value,
-                            PawnCount = accumulator.PawnCount + (pair.Key == PieceType.Pawn ? pair.Value : 0)
-                        });
+                var pieceToCountMap = ChessConstants
+                    .PieceTypes
+                    .Where(item => item != PieceType.None)
+                    .ToDictionary(
+                        Factotum.Identity,
+                        item => _pieceData.GetPieceCount(item.ToPiece(color)));
 
-                if (counts.PawnCount > ChessConstants.MaxPawnCountPerColor)
+                var allCount = pieceToCountMap.Values.Sum();
+                var pawnCount = pieceToCountMap[PieceType.Pawn];
+
+                if (pawnCount > ChessConstants.MaxPawnCountPerColor)
                 {
                     throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Too many '{0}' ({1}).",
                             PieceType.Pawn.ToPiece(color).GetDescription(),
-                            counts.PawnCount));
+                            pawnCount));
                 }
 
-                if (counts.AllCount > ChessConstants.MaxPieceCountPerColor)
+                if (allCount > ChessConstants.MaxPieceCountPerColor)
                 {
                     throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Too many pieces of the color {0} ({1}).",
                             color.GetName(),
-                            counts.PawnCount));
+                            allCount));
                 }
             }
 
@@ -348,20 +268,19 @@ namespace ChessPlatform
             var isInCheck = _pieceData.IsInCheck(_activeColor);
             var oppositeColor = _activeColor.Invert();
 
-            var activePieceOffsets = _pieceData.PieceOffsetMap
-                .Where(pair => pair.Key.GetColor() == _activeColor && pair.Value.Count != 0)
-                .SelectMany(pair => pair.Value)
+            var activePiecePositions = ChessConstants
+                .PieceTypes
+                .Where(item => item != PieceType.None)
+                .SelectMany(item => _pieceData.GetPiecePositions(item.ToPiece(_activeColor)))
                 .ToArray();
 
             var validMoveSet = new HashSet<PieceMove>();
-            var moveHelper = new MoveHelper(_pieceData);
-            foreach (var offset in activePieceOffsets)
+            var pieceDataCopy = _pieceData.Copy();
+            foreach (var sourcePosition in activePiecePositions)
             {
-                var sourcePosition = new Position(offset);
-
                 var potentialMovePositions = _pieceData.GetPotentialMovePositions(
                     _castlingOptions,
-                    _enPassantCaptureTarget,
+                    _enPassantCaptureInfo,
                     sourcePosition);
 
                 foreach (var destinationPosition in potentialMovePositions)
@@ -377,14 +296,20 @@ namespace ChessPlatform
                         }
                     }
 
-                    moveHelper.MakeMove(move);
+                    var castlingOptions = CastlingOptions.All;
+                    pieceDataCopy.MakeMove(
+                        move,
+                        _activeColor,
+                        _enPassantCaptureInfo,
+                        PieceType.Queen,
+                        ref castlingOptions);
 
-                    if (!moveHelper.PieceData.IsInCheck(_activeColor))
+                    if (!pieceDataCopy.IsInCheck(_activeColor))
                     {
                         validMoveSet.Add(move);
                     }
 
-                    moveHelper.UndoMove();
+                    pieceDataCopy.UndoMove();
                 }
             }
 

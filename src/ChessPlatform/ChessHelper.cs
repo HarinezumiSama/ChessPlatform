@@ -98,6 +98,21 @@ namespace ChessPlatform
                         }
                     });
 
+        public static readonly ReadOnlyDictionary<PieceColor, byte> ColorToPawnPromotionRankMap =
+            new ReadOnlyDictionary<PieceColor, byte>(
+                new Dictionary<PieceColor, byte>
+                {
+                    { PieceColor.White, ChessConstants.WhitePawnPromotionRank },
+                    { PieceColor.Black, ChessConstants.BlackPawnPromotionRank }
+                });
+
+        public static readonly ReadOnlySet<Position> AllPositions =
+            Enumerable
+                .Range(0, ChessConstants.FileCount)
+                .SelectMany(rank => Position.GenerateRank((byte)rank))
+                .ToHashSet()
+                .AsReadOnly();
+
         internal const int MaxSlidingPieceDistance = 8;
         internal const int MaxPawnAttackOrMoveDistance = 1;
         internal const int MaxKingMoveDistance = 1;
