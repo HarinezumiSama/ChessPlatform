@@ -49,85 +49,14 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestMakeMoveScenario()
+        public void TestMakeMoveBasicScenario()
         {
-            //// 1-White
-            var boardState1W = new BoardState();
-
-            // Testing invalid move (no piece at the source position)
-            Assert.That(() => boardState1W.MakeMove(new PieceMove("a3", "a4"), null), Throws.ArgumentException);
-
-            //// 1-Black
-            var boardState1B = boardState1W.MakeMove(new PieceMove("e2", "e4"), null);
-            Assert.That(
-                boardState1B.GetFen(),
-                Is.EqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"));
-
-            AssertBaseProperties(
-                boardState1B,
-                PieceColor.Black,
-                CastlingOptions.All,
-                new EnPassantCaptureInfo("e3", "e4"),
-                0,
-                1,
-                GameState.Default);
-
-            // Testing invalid move (piece of non-active color at the source position)
-            Assert.That(() => boardState1B.MakeMove(new PieceMove("d2", "d4"), null), Throws.ArgumentException);
-
-            AssertBaseProperties(
-                boardState1B,
-                PieceColor.Black,
-                CastlingOptions.All,
-                new EnPassantCaptureInfo("e3", "e4"),
-                0,
-                1,
-                GameState.Default);
-
-            //// 2-White
-            var boardState2W = boardState1B.MakeMove(new PieceMove("e7", "e5"), null);
-            Assert.That(
-                boardState2W.GetFen(),
-                Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"));
-
-            AssertBaseProperties(
-                boardState2W,
-                PieceColor.White,
-                CastlingOptions.All,
-                new EnPassantCaptureInfo("e6", "e5"),
-                0,
-                2,
-                GameState.Default);
-
-            //// 2-Black
-            var boardState2B = boardState2W.MakeMove(new PieceMove("b1", "c3"), null);
-            Assert.That(
-                boardState2B.GetFen(),
-                Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2"));
-
-            AssertBaseProperties(
-                boardState2B,
-                PieceColor.Black,
-                CastlingOptions.All,
-                null,
-                1,
-                2,
-                GameState.Default);
-
-            //// 3-White
-            var boardState3W = boardState2B.MakeMove(new PieceMove("e8", "e7"), null);
-            Assert.That(
-                boardState3W.GetFen(),
-                Is.EqualTo("rnbq1bnr/ppppkppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 2 3"));
-
-            AssertBaseProperties(
-                boardState3W,
-                PieceColor.White,
-                CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
-                null,
-                2,
-                3,
-                GameState.Default);
+            var boardState1W = TestMakeMoveBasicScenario1W();
+            var boardState1B = TestMakeMoveBasicScenario1B(boardState1W);
+            var boardState2W = TestMakeMoveBasicScenario2W(boardState1B);
+            var boardState2B = TestMakeMoveBasicScenario2B(boardState2W);
+            var boardState3W = TestMakeMoveBasicScenario3W(boardState2B);
+            Assert.That(boardState3W, Is.Not.Null);
         }
 
         #endregion
@@ -178,6 +107,110 @@ namespace ChessPlatform.Tests
             Assert.That(expectedValidMoves, Is.Not.Null);
 
             Assert.That(boardState.ValidMoves, Is.EquivalentTo(expectedValidMoves));
+        }
+
+        private static BoardState TestMakeMoveBasicScenario1W()
+        {
+            var boardState1W = new BoardState();
+
+            // Testing invalid move (no piece at the source position)
+            Assert.That(() => boardState1W.MakeMove(new PieceMove("a3", "a4"), null), Throws.ArgumentException);
+
+            AssertBaseProperties(boardState1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+
+            return boardState1W;
+        }
+
+        private static BoardState TestMakeMoveBasicScenario1B(BoardState boardState1W)
+        {
+            var boardState1B = boardState1W.MakeMove(new PieceMove("e2", "e4"), null);
+
+            Assert.That(
+                boardState1B.GetFen(),
+                Is.EqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"));
+
+            AssertBaseProperties(
+                boardState1B,
+                PieceColor.Black,
+                CastlingOptions.All,
+                new EnPassantCaptureInfo("e3", "e4"),
+                0,
+                1,
+                GameState.Default);
+
+            // Testing invalid move (piece of non-active color at the source position)
+            Assert.That(() => boardState1B.MakeMove(new PieceMove("d2", "d4"), null), Throws.ArgumentException);
+
+            AssertBaseProperties(
+                boardState1B,
+                PieceColor.Black,
+                CastlingOptions.All,
+                new EnPassantCaptureInfo("e3", "e4"),
+                0,
+                1,
+                GameState.Default);
+
+            return boardState1B;
+        }
+
+        private static BoardState TestMakeMoveBasicScenario2W(BoardState boardState1B)
+        {
+            var boardState2W = boardState1B.MakeMove(new PieceMove("e7", "e5"), null);
+
+            Assert.That(
+                boardState2W.GetFen(),
+                Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"));
+
+            AssertBaseProperties(
+                boardState2W,
+                PieceColor.White,
+                CastlingOptions.All,
+                new EnPassantCaptureInfo("e6", "e5"),
+                0,
+                2,
+                GameState.Default);
+
+            return boardState2W;
+        }
+
+        private static BoardState TestMakeMoveBasicScenario2B(BoardState boardState2W)
+        {
+            var boardState2B = boardState2W.MakeMove(new PieceMove("b1", "c3"), null);
+
+            Assert.That(
+                boardState2B.GetFen(),
+                Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2"));
+
+            AssertBaseProperties(
+                boardState2B,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                1,
+                2,
+                GameState.Default);
+
+            return boardState2B;
+        }
+
+        private static BoardState TestMakeMoveBasicScenario3W(BoardState boardState2B)
+        {
+            var boardState3W = boardState2B.MakeMove(new PieceMove("e8", "e7"), null);
+
+            Assert.That(
+                boardState3W.GetFen(),
+                Is.EqualTo("rnbq1bnr/ppppkppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 2 3"));
+
+            AssertBaseProperties(
+                boardState3W,
+                PieceColor.White,
+                CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
+                null,
+                2,
+                3,
+                GameState.Default);
+
+            return boardState3W;
         }
 
         #endregion
