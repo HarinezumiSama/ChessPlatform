@@ -7,22 +7,22 @@ namespace ChessPlatform
     {
         None = 0x00,
 
-        [BaseFenChar('P')]
+        [FenChar('P')]
         Pawn = 0x01,
 
-        [BaseFenChar('N')]
+        [FenChar('N')]
         Knight = 0x02,
 
-        [BaseFenChar('K')]
+        [FenChar('K')]
         King = 0x03,
 
-        [BaseFenChar('B')]
+        [FenChar('B')]
         Bishop = 0x05,
 
-        [BaseFenChar('R')]
+        [FenChar('R')]
         Rook = 0x06,
 
-        [BaseFenChar('Q')]
+        [FenChar('Q')]
         Queen = 0x07
     }
 }

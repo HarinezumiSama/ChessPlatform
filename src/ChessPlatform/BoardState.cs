@@ -369,27 +369,25 @@ namespace ChessPlatform
             out int halfMovesBy50MoveRule,
             out int fullMoveIndex)
         {
-            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
-            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
-            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.White, "c1");
-            _pieceData.SetupNewPiece(PieceType.Queen, PieceColor.White, "d1");
-            _pieceData.SetupNewPiece(PieceType.King, PieceColor.White, "e1");
-            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.White, "f1");
-            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "g1");
-            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "h1");
-            Position.GenerateRank(1)
-                .DoForEach(position => _pieceData.SetupNewPiece(PieceType.Pawn, PieceColor.White, position));
+            _pieceData.SetupNewPiece(Piece.WhiteRook, "a1");
+            _pieceData.SetupNewPiece(Piece.WhiteKnight, "b1");
+            _pieceData.SetupNewPiece(Piece.WhiteBishop, "c1");
+            _pieceData.SetupNewPiece(Piece.WhiteQueen, "d1");
+            _pieceData.SetupNewPiece(Piece.WhiteKing, "e1");
+            _pieceData.SetupNewPiece(Piece.WhiteBishop, "f1");
+            _pieceData.SetupNewPiece(Piece.WhiteKnight, "g1");
+            _pieceData.SetupNewPiece(Piece.WhiteRook, "h1");
+            Position.GenerateRank(1).DoForEach(position => _pieceData.SetupNewPiece(Piece.WhitePawn, position));
 
-            Position.GenerateRank(6)
-                .DoForEach(position => _pieceData.SetupNewPiece(PieceType.Pawn, PieceColor.Black, position));
-            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.Black, "a8");
-            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.Black, "b8");
-            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.Black, "c8");
-            _pieceData.SetupNewPiece(PieceType.Queen, PieceColor.Black, "d8");
-            _pieceData.SetupNewPiece(PieceType.King, PieceColor.Black, "e8");
-            _pieceData.SetupNewPiece(PieceType.Bishop, PieceColor.Black, "f8");
-            _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.Black, "g8");
-            _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.Black, "h8");
+            Position.GenerateRank(6).DoForEach(position => _pieceData.SetupNewPiece(Piece.BlackPawn, position));
+            _pieceData.SetupNewPiece(Piece.BlackRook, "a8");
+            _pieceData.SetupNewPiece(Piece.BlackKnight, "b8");
+            _pieceData.SetupNewPiece(Piece.BlackBishop, "c8");
+            _pieceData.SetupNewPiece(Piece.BlackQueen, "d8");
+            _pieceData.SetupNewPiece(Piece.BlackKing, "e8");
+            _pieceData.SetupNewPiece(Piece.BlackBishop, "f8");
+            _pieceData.SetupNewPiece(Piece.BlackKnight, "g8");
+            _pieceData.SetupNewPiece(Piece.BlackRook, "h8");
 
             activeColor = PieceColor.White;
             castlingOptions = CastlingOptions.All;

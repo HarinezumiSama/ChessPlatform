@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using Omnifactotum;
 
 namespace ChessPlatform
@@ -25,6 +26,7 @@ namespace ChessPlatform
         internal const int FenSnippetCount = 6;
         internal const string NoneCastlingOptionsFenSnippet = "-";
         internal const string NoEnPassantCaptureFenSnippet = "-";
+        internal const char FenRankSeparator = '/';
         internal const string FenSnippetSeparator = " ";
 
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
@@ -97,13 +99,13 @@ namespace ChessPlatform
             PieceColors
                 .ToDictionary(
                     Factotum.Identity,
-                    item => BaseFenCharAttribute.GetBaseFenCharNonCached(item).ToString(CultureInfo.InvariantCulture))
+                    item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture))
                 .AsReadOnly();
 
         public static readonly ReadOnlyDictionary<string, PieceColor> FenSnippetToColorMap =
             PieceColors
                 .ToDictionary(
-                    item => BaseFenCharAttribute.GetBaseFenCharNonCached(item).ToString(CultureInfo.InvariantCulture),
+                    item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture),
                     Factotum.Identity)
                 .AsReadOnly();
 
@@ -119,13 +121,26 @@ namespace ChessPlatform
 
         public static readonly ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
             FenRelatedCastlingOptions
-                .ToDictionary(Factotum.Identity, item => BaseFenCharAttribute.GetBaseFenCharNonCached(item))
+                .ToDictionary(Factotum.Identity, item => FenCharAttribute.Get(item))
                 .AsReadOnly();
 
         public static readonly ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
             FenRelatedCastlingOptions
-                .ToDictionary(item => BaseFenCharAttribute.GetBaseFenCharNonCached(item), Factotum.Identity)
+                .ToDictionary(item => FenCharAttribute.Get(item), Factotum.Identity)
                 .AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
+            typeof(Piece)
+                .GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
+                .Where(obj => obj.FenChar.HasValue)
+                .ToDictionary(
+                    obj => (Piece)obj.Item.GetValue(null),
+                    obj => obj.FenChar.Value)
+                .AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
+            PieceToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
 
         #endregion
     }

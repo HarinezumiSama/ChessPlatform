@@ -40,7 +40,7 @@ namespace ChessPlatform
             {
                 if (rank < ChessConstants.RankCount - 1)
                 {
-                    resultBuilder.Append('/');
+                    resultBuilder.Append(ChessConstants.FenRankSeparator);
                 }
 
                 for (var file = 0; file < ChessConstants.FileCount; file++)

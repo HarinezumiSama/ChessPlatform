@@ -376,8 +376,17 @@ namespace ChessPlatform
 
         #region Internal Methods
 
-        internal void SetupNewPiece(PieceType pieceType, PieceColor color, Position position)
+        internal void SetupNewPiece(Piece piece, Position position)
         {
+            #region Argument Check
+
+            if (piece == Piece.None)
+            {
+                throw new ArgumentException("Must be a piece rather than empty square.", "piece");
+            }
+
+            #endregion
+
             var existingPiece = GetPiece(position);
             if (existingPiece != Piece.None)
             {
@@ -389,24 +398,73 @@ namespace ChessPlatform
                         existingPiece));
             }
 
-            var piece = pieceType.ToPiece(color);
             SetPiece(position, piece);
         }
 
-        internal void SetupByFenSnippet(string fenComponent)
+        internal void SetupByFenSnippet(string fenSnippet)
         {
             #region Argument Check
 
-            if (string.IsNullOrWhiteSpace(fenComponent))
+            if (string.IsNullOrWhiteSpace(fenSnippet))
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
-                    "fenComponent");
+                    "fenSnippet");
             }
 
             #endregion
 
-            throw new NotImplementedException();
+            const string InvalidFenMessage = "Invalid FEN.";
+
+            var currentRank = ChessConstants.RankCount - 1;
+            var currentFile = 0;
+            foreach (var ch in fenSnippet)
+            {
+                if (ch == ChessConstants.FenRankSeparator)
+                {
+                    if (currentFile != ChessConstants.FileCount)
+                    {
+                        throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                    }
+
+                    currentFile = 0;
+                    currentRank--;
+
+                    if (currentRank < 0)
+                    {
+                        throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                    }
+
+                    continue;
+                }
+
+                if (currentFile >= ChessConstants.FileCount)
+                {
+                    throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                }
+
+                Piece piece;
+                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
+                {
+                    var position = new Position(Convert.ToByte(currentFile), Convert.ToByte(currentRank));
+                    SetupNewPiece(piece, position);
+                    currentFile++;
+                    continue;
+                }
+
+                var emptySquareCount = byte.Parse(new string(ch, 1));
+                if (emptySquareCount == 0)
+                {
+                    throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                }
+
+                currentFile += emptySquareCount;
+            }
+
+            if (currentFile != ChessConstants.FileCount)
+            {
+                throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+            }
         }
 
         internal MakeMoveData MakeMove(

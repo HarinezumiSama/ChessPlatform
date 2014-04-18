@@ -5,10 +5,10 @@ namespace ChessPlatform
 {
     public enum PieceColor
     {
-        [BaseFenChar('w')]
+        [FenChar('w')]
         White,
 
-        [BaseFenChar('b')]
+        [FenChar('b')]
         Black
     }
 }

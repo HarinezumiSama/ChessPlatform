@@ -47,17 +47,11 @@ namespace ChessPlatform
 
             #endregion
 
-            var color = piece.GetColor();
-            if (!color.HasValue)
+            char result;
+            if (!ChessConstants.PieceToFenCharMap.TryGetValue(piece, out result))
             {
-                throw new ArgumentException("Empty board square must be encoded in a different way.", "piece");
+                throw new ArgumentException("Invalid piece.", "piece");
             }
-
-            var baseFenChar = piece.GetPieceType().GetBaseFenChar();
-
-            var result = color == PieceColor.White
-                ? char.ToUpperInvariant(baseFenChar)
-                : char.ToLowerInvariant(baseFenChar);
 
             return result;
         }
