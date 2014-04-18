@@ -29,7 +29,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="BoardState"/> class.
         /// </summary>
-        internal BoardState()
+        public BoardState()
         {
             _pieceData = new PieceData();
 
@@ -47,7 +47,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="BoardState"/> class.
         /// </summary>
-        internal BoardState([NotNull] string fen)
+        public BoardState([NotNull] string fen)
         {
             #region Argument Check
 
@@ -223,6 +223,11 @@ namespace ChessPlatform
         public Piece GetPiece(Position position)
         {
             return _pieceData.GetPiece(position);
+        }
+
+        public PieceInfo GetPieceInfo(Position position)
+        {
+            return _pieceData.GetPieceInfo(position);
         }
 
         public Position[] GetPiecePositions(Piece piece)

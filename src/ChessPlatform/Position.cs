@@ -18,20 +18,22 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> class.
+        ///     Initializes a new instance of the <see cref="Position"/> class
+        ///     using the specified file and rank.
         /// </summary>
         [DebuggerNonUserCode]
-        public Position(byte file, byte rank)
+        public Position(int file, int rank)
             : this(true, file, rank)
         {
             // Nothing to do
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> class.
+        ///     Initializes a new instance of the <see cref="Position"/> class
+        ///     using the specified 0x88 board representation value.
         /// </summary>
         [DebuggerNonUserCode]
-        public Position(byte x88Value)
+        internal Position(byte x88Value)
         {
             #region Argument Check
 
@@ -50,7 +52,7 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="Position"/> class.
         /// </summary>
         [DebuggerNonUserCode]
-        private Position(bool checkArguments, byte file, byte rank)
+        private Position(bool checkArguments, int file, int rank)
         {
             #region Argument Check
 
@@ -81,8 +83,8 @@ namespace ChessPlatform
 
             #endregion
 
-            _file = file;
-            _rank = rank;
+            _file = (byte)file;
+            _rank = (byte)rank;
         }
 
         #endregion
@@ -246,7 +248,7 @@ namespace ChessPlatform
             var rank = algebraicNotation[1] - '1';
 
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
-                ? new Position(Convert.ToByte(file), Convert.ToByte(rank))
+                ? new Position(false, file, rank)
                 : null;
         }
 
