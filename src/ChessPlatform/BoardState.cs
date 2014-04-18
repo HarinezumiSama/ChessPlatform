@@ -235,6 +235,34 @@ namespace ChessPlatform
             return _pieceData.GetPiecePositions(piece);
         }
 
+        public bool IsPawnPromotion(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            return this.ValidMoves.Contains(move) && _pieceData.IsPawnPromotion(move);
+        }
+
+        public CastlingInfo CheckCastlingMove(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            return this.ValidMoves.Contains(move) ? _pieceData.CheckCastlingMove(move) : null;
+        }
+
         public BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
         {
             return new BoardState(this, move, promotedPieceType);
@@ -243,6 +271,16 @@ namespace ChessPlatform
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
             return _pieceData.GetAttacks(targetPosition, attackingColor);
+        }
+
+        public PieceMove[] GetValidMovesBySource(Position sourcePosition)
+        {
+            return this.ValidMoves.Where(move => move.From == sourcePosition).ToArray();
+        }
+
+        public PieceMove[] GetValidMovesByDestination(Position destinationPosition)
+        {
+            return this.ValidMoves.Where(move => move.To == destinationPosition).ToArray();
         }
 
         #endregion

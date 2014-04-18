@@ -4,8 +4,8 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
-using Omnifactotum;
 
 namespace ChessPlatform.UI.Desktop
 {
@@ -16,26 +16,9 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
-        private static readonly ReadOnlyDictionary<Piece, char> PieceToCharMap =
-            new ReadOnlyDictionary<Piece, char>(
-                new Dictionary<Piece, char>
-                {
-                    { Piece.None, '\x2001' },
-                    { Piece.WhiteKing, '\x2654' },
-                    { Piece.WhiteQueen, '\x2655' },
-                    { Piece.WhiteRook, '\x2656' },
-                    { Piece.WhiteBishop, '\x2657' },
-                    { Piece.WhiteKnight, '\x2658' },
-                    { Piece.WhitePawn, '\x2659' },
-                    { Piece.BlackKing, '\x265A' },
-                    { Piece.BlackQueen, '\x265B' },
-                    { Piece.BlackRook, '\x265C' },
-                    { Piece.BlackBishop, '\x265D' },
-                    { Piece.BlackKnight, '\x265E' },
-                    { Piece.BlackPawn, '\x265F' }
-                });
+        private readonly Dictionary<Position, TextBlock> _positionToSquareElementMap =
+            new Dictionary<Position, TextBlock>();
 
-        private readonly Dictionary<Position, TextBlock> _positionToLabelMap = new Dictionary<Position, TextBlock>();
         private readonly BoardState _boardState = new BoardState();
 
         #endregion
@@ -54,6 +37,23 @@ namespace ChessPlatform.UI.Desktop
 
         #region Private Methods
 
+        private static Position? GetSquarePosition(object element)
+        {
+            var source = element as FrameworkElement;
+            return source == null || !(source.Tag is Position) ? null : (Position)source.Tag;
+        }
+
+        private static void ResetSquareElementColor(TextBlock squareElement)
+        {
+            var position = GetSquarePosition(squareElement);
+            if (!position.HasValue)
+            {
+                throw new ArgumentException(@"Invalid square element.", "squareElement");
+            }
+
+            squareElement.Background = UIHelper.GetSquareBrush(position.Value, SquareMode.Default);
+        }
+
         private void InitializeControls()
         {
             var starGridLength = new GridLength(1d, GridUnitType.Star);
@@ -68,18 +68,20 @@ namespace ChessPlatform.UI.Desktop
 
             foreach (var position in ChessHelper.AllPositions)
             {
-                var color = (position.File + position.Rank) % 2 == 0 ? Colors.DarkGray : Colors.WhiteSmoke;
-
                 var textBlock = new TextBlock
                 {
                     Margin = new Thickness(),
                     Tag = position,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    Background = new SolidColorBrush(color)
+                    VerticalAlignment = VerticalAlignment.Stretch
                 };
 
-                _positionToLabelMap.Add(position, textBlock);
+                ResetSquareElementColor(textBlock);
+
+                textBlock.MouseEnter += this.TextBlockSquare_MouseEnter;
+                textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
+
+                _positionToSquareElementMap.Add(position, textBlock);
 
                 var viewbox = new Viewbox
                 {
@@ -104,11 +106,46 @@ namespace ChessPlatform.UI.Desktop
             foreach (var position in ChessHelper.AllPositions)
             {
                 var pieceInfo = _boardState.GetPieceInfo(position);
-                var ch = PieceToCharMap[pieceInfo.Piece];
+                var ch = UIHelper.PieceToCharMap[pieceInfo.Piece];
 
-                var textBlock = _positionToLabelMap[position];
+                var textBlock = _positionToSquareElementMap[position];
+                ResetSquareElementColor(textBlock);
                 textBlock.Text = ch.ToString(CultureInfo.InvariantCulture);
             }
+        }
+
+        private void TextBlockSquare_MouseEnter(object sender, MouseEventArgs args)
+        {
+            var position = GetSquarePosition(args.OriginalSource);
+            if (!position.HasValue)
+            {
+                return;
+            }
+
+            var sourceSquareElement = _positionToSquareElementMap[position.Value];
+
+            var moves = _boardState.GetValidMovesBySource(position.Value);
+            foreach (var move in moves)
+            {
+                var squareElement = _positionToSquareElementMap[move.To];
+                squareElement.Background = UIHelper.GetSquareBrush(position.Value, SquareMode.ValidMoveTarget);
+            }
+
+            if (moves.Length != 0)
+            {
+                sourceSquareElement.Background = UIHelper.GetSquareBrush(position.Value, SquareMode.ValidMoveSource);
+            }
+        }
+
+        private void TextBlockSquare_MouseLeave(object sender, MouseEventArgs args)
+        {
+            var position = GetSquarePosition(args.OriginalSource);
+            if (!position.HasValue)
+            {
+                return;
+            }
+
+            DisplayBoardState();
         }
 
         #endregion
