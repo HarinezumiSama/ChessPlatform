@@ -30,5 +30,14 @@ namespace ChessPlatform
         }
 
         #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return this.ToPropertyString();
+        }
+
+        #endregion
     }
 }
