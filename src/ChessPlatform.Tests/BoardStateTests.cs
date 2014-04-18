@@ -56,7 +56,18 @@ namespace ChessPlatform.Tests
             var boardState2W = TestMakeMoveBasicScenario2W(boardState1B);
             var boardState2B = TestMakeMoveBasicScenario2B(boardState2W);
             var boardState3W = TestMakeMoveBasicScenario3W(boardState2B);
-            Assert.That(boardState3W, Is.Not.Null);
+            var boardState3B = TestMakeMoveBasicScenario3B(boardState3W);
+            Assert.That(boardState3B, Is.Not.Null);
+        }
+
+        [Test]
+        public void TestMakeMoveFoolsMateScenario()
+        {
+            var boardState1W = new BoardState();
+            var boardState1B = TestMakeMoveFoolsMateScenario1B(boardState1W);
+            var boardState2W = TestMakeMoveFoolsMateScenario2W(boardState1B);
+            var boardState2B = TestMakeMoveFoolsMateScenario2B(boardState2W);
+            TestMakeMoveFoolsMateScenario3W(boardState2B);
         }
 
         #endregion
@@ -109,12 +120,20 @@ namespace ChessPlatform.Tests
             Assert.That(boardState.ValidMoves, Is.EquivalentTo(expectedValidMoves));
         }
 
+        private static void AssertNoValidMoves(BoardState boardState)
+        {
+            Assert.That(boardState, Is.Not.Null);
+
+            Assert.That(boardState.ValidMoves.Count, Is.EqualTo(0));
+            Assert.That(boardState.ValidMoves, Is.Empty);
+        }
+
         private static BoardState TestMakeMoveBasicScenario1W()
         {
             var boardState1W = new BoardState();
 
             // Testing invalid move (no piece at the source position)
-            Assert.That(() => boardState1W.MakeMove(new PieceMove("a3", "a4"), null), Throws.ArgumentException);
+            Assert.That(() => boardState1W.MakeMove("a3-a4", null), Throws.ArgumentException);
 
             AssertBaseProperties(boardState1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
@@ -123,7 +142,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario1B(BoardState boardState1W)
         {
-            var boardState1B = boardState1W.MakeMove(new PieceMove("e2", "e4"), null);
+            var boardState1B = boardState1W.MakeMove("e2-e4", null);
 
             Assert.That(
                 boardState1B.GetFen(),
@@ -139,7 +158,7 @@ namespace ChessPlatform.Tests
                 GameState.Default);
 
             // Testing invalid move (piece of non-active color at the source position)
-            Assert.That(() => boardState1B.MakeMove(new PieceMove("d2", "d4"), null), Throws.ArgumentException);
+            Assert.That(() => boardState1B.MakeMove("d2-d4", null), Throws.ArgumentException);
 
             AssertBaseProperties(
                 boardState1B,
@@ -155,7 +174,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario2W(BoardState boardState1B)
         {
-            var boardState2W = boardState1B.MakeMove(new PieceMove("e7", "e5"), null);
+            var boardState2W = boardState1B.MakeMove("e7-e5", null);
 
             Assert.That(
                 boardState2W.GetFen(),
@@ -175,7 +194,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario2B(BoardState boardState2W)
         {
-            var boardState2B = boardState2W.MakeMove(new PieceMove("b1", "c3"), null);
+            var boardState2B = boardState2W.MakeMove("b1-c3", null);
 
             Assert.That(
                 boardState2B.GetFen(),
@@ -195,7 +214,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario3W(BoardState boardState2B)
         {
-            var boardState3W = boardState2B.MakeMove(new PieceMove("e8", "e7"), null);
+            var boardState3W = boardState2B.MakeMove("e8-e7", null);
 
             Assert.That(
                 boardState3W.GetFen(),
@@ -211,6 +230,60 @@ namespace ChessPlatform.Tests
                 GameState.Default);
 
             return boardState3W;
+        }
+
+        private static BoardState TestMakeMoveBasicScenario3B(BoardState boardState3W)
+        {
+            var boardState3B = boardState3W.MakeMove("c3-d5", null);
+
+            Assert.That(
+                boardState3B.GetFen(),
+                Is.EqualTo("rnbq1bnr/ppppkppp/8/3Np3/4P3/8/PPPP1PPP/R1BQKBNR b KQ - 3 3"));
+
+            AssertBaseProperties(
+                boardState3B,
+                PieceColor.Black,
+                CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
+                null,
+                3,
+                3,
+                GameState.Check);
+
+            return boardState3B;
+        }
+
+        private static BoardState TestMakeMoveFoolsMateScenario1B(BoardState boardState1W)
+        {
+            var boardState1B = boardState1W.MakeMove("g2-g4", null);
+            return boardState1B;
+        }
+
+        private static BoardState TestMakeMoveFoolsMateScenario2W(BoardState boardState1B)
+        {
+            var boardState2W = boardState1B.MakeMove("e7-e6", null);
+            return boardState2W;
+        }
+
+        private static BoardState TestMakeMoveFoolsMateScenario2B(BoardState boardState2W)
+        {
+            var boardState2B = boardState2W.MakeMove("f2-f4", null);
+            return boardState2B;
+        }
+
+        private static void TestMakeMoveFoolsMateScenario3W(BoardState boardState2B)
+        {
+            var boardState3W = boardState2B.MakeMove("d8-h4", null);
+
+            AssertBaseProperties(
+                boardState3W,
+                PieceColor.White,
+                CastlingOptions.All,
+                null,
+                1,
+                3,
+                GameState.Checkmate);
+
+            AssertNoValidMoves(boardState3W);
         }
 
         #endregion
