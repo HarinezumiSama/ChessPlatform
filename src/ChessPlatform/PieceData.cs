@@ -198,8 +198,14 @@ namespace ChessPlatform
         {
             var resultList = new List<Position>();
 
-            var attackingKnights = ChessHelper.GetKnightMovePositions(targetPosition)
-                .Where(position => GetPiece(position).GetColor() == attackingColor)
+            var attackingKnights = ChessHelper
+                .GetKnightMovePositions(targetPosition)
+                .Where(
+                    position =>
+                    {
+                        var pi = GetPieceInfo(position);
+                        return pi.Color == attackingColor && pi.PieceType == PieceType.Knight;
+                    })
                 .ToArray();
 
             resultList.AddRange(attackingKnights);
