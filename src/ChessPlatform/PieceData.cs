@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
@@ -196,60 +194,6 @@ namespace ChessPlatform
             return result;
         }
 
-        public void GetFenSnippet(StringBuilder resultBuilder)
-        {
-            #region Argument Check
-
-            if (resultBuilder == null)
-            {
-                throw new ArgumentNullException("resultBuilder");
-            }
-
-            #endregion
-
-            var emptySquareCount = new ValueContainer<int>(0);
-            Action writeEmptySquareCount =
-                () =>
-                {
-                    if (emptySquareCount.Value > 0)
-                    {
-                        resultBuilder.Append(emptySquareCount.Value);
-                        emptySquareCount.Value = 0;
-                    }
-                };
-
-            for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
-            {
-                if (rank < ChessConstants.RankCount - 1)
-                {
-                    resultBuilder.Append('/');
-                }
-
-                for (var file = 0; file < ChessConstants.FileCount; file++)
-                {
-                    var piece = GetPiece(new Position((byte)file, (byte)rank));
-                    if (piece == Piece.None)
-                    {
-                        emptySquareCount.Value++;
-                        continue;
-                    }
-
-                    writeEmptySquareCount();
-                    var fenChar = piece.GetFenChar();
-                    resultBuilder.Append(fenChar);
-                }
-
-                writeEmptySquareCount();
-            }
-        }
-
-        public string GetFenSnippet()
-        {
-            var resultBuilder = new StringBuilder();
-            GetFenSnippet(resultBuilder);
-            return resultBuilder.ToString();
-        }
-
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
             var resultList = new List<Position>();
@@ -341,9 +285,9 @@ namespace ChessPlatform
         public bool IsInCheck(PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = GetPiecePositions(king).Single();
-
-            return IsUnderAttack(kingPosition, kingColor.Invert());
+            var oppositeColor = kingColor.Invert();
+            var kingPositions = GetPiecePositions(king);
+            return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
         }
 
         public Position[] GetPotentialMovePositions(
@@ -447,6 +391,22 @@ namespace ChessPlatform
 
             var piece = pieceType.ToPiece(color);
             SetPiece(position, piece);
+        }
+
+        internal void SetupByFenSnippet(string fenComponent)
+        {
+            #region Argument Check
+
+            if (string.IsNullOrWhiteSpace(fenComponent))
+            {
+                throw new ArgumentException(
+                    @"The value can be neither empty nor whitespace-only string nor null.",
+                    "fenComponent");
+            }
+
+            #endregion
+
+            throw new NotImplementedException();
         }
 
         internal MakeMoveData MakeMove(

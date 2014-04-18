@@ -22,35 +22,9 @@ namespace ChessPlatform
         /// </summary>
         [DebuggerNonUserCode]
         public Position(byte file, byte rank)
+            : this(true, file, rank)
         {
-            #region Argument Check
-
-            if (!ChessConstants.FileRange.Contains(file))
-            {
-                throw new ArgumentOutOfRangeException(
-                    "file",
-                    file,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range {0}.",
-                        ChessConstants.FileRange));
-            }
-
-            if (!ChessConstants.RankRange.Contains(rank))
-            {
-                throw new ArgumentOutOfRangeException(
-                    "rank",
-                    rank,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range {0}.",
-                        ChessConstants.FileRange));
-            }
-
-            #endregion
-
-            _file = file;
-            _rank = rank;
+            // Nothing to do
         }
 
         /// <summary>
@@ -70,6 +44,45 @@ namespace ChessPlatform
 
             _file = (byte)(x88Value & 0x07);
             _rank = (byte)(x88Value >> 4);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Position"/> class.
+        /// </summary>
+        [DebuggerNonUserCode]
+        private Position(bool checkArguments, byte file, byte rank)
+        {
+            #region Argument Check
+
+            if (checkArguments)
+            {
+                if (!ChessConstants.FileRange.Contains(file))
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "file",
+                        file,
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            @"The value is out of the valid range {0}.",
+                            ChessConstants.FileRange));
+                }
+
+                if (!ChessConstants.RankRange.Contains(rank))
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "rank",
+                        rank,
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            @"The value is out of the valid range {0}.",
+                            ChessConstants.FileRange));
+                }
+            }
+
+            #endregion
+
+            _file = file;
+            _rank = rank;
         }
 
         #endregion
@@ -130,23 +143,13 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         public static Position FromAlgebraic(string algebraicNotation)
         {
-            #region Argument Check
-
-            if (algebraicNotation == null)
+            var position = TryFromAlgebraic(algebraicNotation);
+            if (!position.HasValue)
             {
-                throw new ArgumentNullException("algebraicNotation");
+                throw new ArgumentException("Invalid algebraic notation.", "algebraicNotation");
             }
 
-            if (algebraicNotation.Length != 2)
-            {
-                throw new ArgumentException("Invalid algebraic notation length.", "algebraicNotation");
-            }
-
-            #endregion
-
-            var file = algebraicNotation[0] - 'a';
-            var rank = algebraicNotation[1] - '1';
-            return new Position(Convert.ToByte(file), Convert.ToByte(rank));
+            return position.Value;
         }
 
         public static Position[] GenerateFile(byte file)
@@ -224,6 +227,27 @@ namespace ChessPlatform
         internal static bool IsValidX88Value(byte x88Value)
         {
             return (x88Value & 0x88) == 0;
+        }
+
+        [DebuggerNonUserCode]
+        internal static Position? TryFromAlgebraic(string algebraicNotation)
+        {
+            if (algebraicNotation == null)
+            {
+                return null;
+            }
+
+            if (algebraicNotation.Length != 2)
+            {
+                return null;
+            }
+
+            var file = algebraicNotation[0] - 'a';
+            var rank = algebraicNotation[1] - '1';
+
+            return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
+                ? new Position(Convert.ToByte(file), Convert.ToByte(rank))
+                : null;
         }
 
         #endregion

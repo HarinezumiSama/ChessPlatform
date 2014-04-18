@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using Omnifactotum;
 
@@ -166,6 +167,11 @@ namespace ChessPlatform
             }
 
             return result.ToArray();
+        }
+
+        internal static bool TryParseInt(string value, out int result)
+        {
+            return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
         }
 
         #endregion

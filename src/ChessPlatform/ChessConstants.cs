@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using Omnifactotum;
 
@@ -20,6 +21,11 @@ namespace ChessPlatform
 
         internal const int MaxPieceCountPerColor = 16;
         internal const int MaxPawnCountPerColor = 8;
+
+        internal const int FenSnippetCount = 6;
+        internal const string NoneCastlingOptionsFenSnippet = "-";
+        internal const string NoEnPassantCaptureFenSnippet = "-";
+        internal const string FenSnippetSeparator = " ";
 
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
@@ -85,12 +91,41 @@ namespace ChessPlatform
                 });
 
         public static readonly ReadOnlyDictionary<PieceColor, EnPassantInfo> ColorToEnPassantInfoMap =
-            new ReadOnlyDictionary<PieceColor, EnPassantInfo>(
-                new Dictionary<PieceColor, EnPassantInfo>
+            PieceColors.ToDictionary(Factotum.Identity, item => new EnPassantInfo(item)).AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =
+            PieceColors
+                .ToDictionary(
+                    Factotum.Identity,
+                    item => BaseFenCharAttribute.GetBaseFenCharNonCached(item).ToString(CultureInfo.InvariantCulture))
+                .AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<string, PieceColor> FenSnippetToColorMap =
+            PieceColors
+                .ToDictionary(
+                    item => BaseFenCharAttribute.GetBaseFenCharNonCached(item).ToString(CultureInfo.InvariantCulture),
+                    Factotum.Identity)
+                .AsReadOnly();
+
+        public static readonly ReadOnlyCollection<CastlingOptions> FenRelatedCastlingOptions =
+            new ReadOnlyCollection<CastlingOptions>(
+                new[]
                 {
-                    { PieceColor.White, new EnPassantInfo(true) },
-                    { PieceColor.Black, new EnPassantInfo(false) }
+                    CastlingOptions.WhiteKingSide,
+                    CastlingOptions.WhiteQueenSide,
+                    CastlingOptions.BlackKingSide,
+                    CastlingOptions.BlackQueenSide
                 });
+
+        public static readonly ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
+            FenRelatedCastlingOptions
+                .ToDictionary(Factotum.Identity, item => BaseFenCharAttribute.GetBaseFenCharNonCached(item))
+                .AsReadOnly();
+
+        public static readonly ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
+            FenRelatedCastlingOptions
+                .ToDictionary(item => BaseFenCharAttribute.GetBaseFenCharNonCached(item), Factotum.Identity)
+                .AsReadOnly();
 
         #endregion
     }

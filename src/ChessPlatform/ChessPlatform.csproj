@@ -57,11 +57,13 @@
     <Compile Include="ChessHelper.cs" />
     <Compile Include="ChessPlatformException.cs" />
     <Compile Include="EnPassantCaptureInfo.cs" />
+    <Compile Include="EnPassantCaptureInfoExtensions.cs" />
     <Compile Include="EnPassantInfo.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="MovePieceData.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="PieceData.cs" />
+    <Compile Include="PieceDataExtensions.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
     <Compile Include="PieceInfo.cs" />

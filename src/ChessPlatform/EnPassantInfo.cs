@@ -13,17 +13,45 @@ namespace ChessPlatform
 
         #region Constructors
 
-        internal EnPassantInfo(bool whiteDirection)
+        internal EnPassantInfo(PieceColor color)
         {
-            this.StartRank = (byte)(whiteDirection ? 1 : ChessConstants.RankCount - 2);
+            #region Argument Check
 
-            this.EndRank = (byte)(this.StartRank + (whiteDirection ? Difference : -Difference));
+            color.EnsureDefined();
+
+            #endregion
+
+            bool isWhite;
+            switch (color)
+            {
+                case PieceColor.White:
+                    isWhite = true;
+                    break;
+
+                case PieceColor.Black:
+                    isWhite = false;
+                    break;
+
+                default:
+                    throw color.CreateEnumValueNotSupportedException();
+            }
+
+            this.Color = color;
+            this.StartRank = (byte)(isWhite ? 1 : ChessConstants.RankCount - 2);
+
+            this.EndRank = (byte)(this.StartRank + (isWhite ? Difference : -Difference));
             this.CaptureTargetRank = (byte)((this.StartRank + this.EndRank) / 2);
         }
 
         #endregion
 
         #region Public Properties
+
+        public PieceColor Color
+        {
+            get;
+            private set;
+        }
 
         public byte StartRank
         {

@@ -8,37 +8,22 @@ namespace ChessPlatform
 {
     public static class CastlingOptionsExtensions
     {
-        #region Constants and Fields
-
-        private static readonly CastlingOptions[] OptionsToCheck =
-        {
-            CastlingOptions.WhiteKingSide,
-            CastlingOptions.WhiteQueenSide,
-            CastlingOptions.BlackKingSide,
-            CastlingOptions.BlackQueenSide
-        };
-
-        private static readonly Dictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
-            OptionsToCheck.ToDictionary(Factotum.Identity, item => BaseFenCharAttribute.GetBaseFenCharNonCached(item));
-
-        #endregion
-
         #region Public Methods
 
         public static string GetFenSnippet(this CastlingOptions castlingOptions)
         {
             if (castlingOptions == CastlingOptions.None)
             {
-                return "-";
+                return ChessConstants.NoneCastlingOptionsFenSnippet;
             }
 
             var resultBuilder = new StringBuilder(4);
 
-            foreach (var option in OptionsToCheck)
+            foreach (var option in ChessConstants.FenRelatedCastlingOptions)
             {
                 if (castlingOptions.IsAnySet(option))
                 {
-                    var fenChar = CastlingOptionToFenCharMap[option];
+                    var fenChar = ChessConstants.CastlingOptionToFenCharMap[option];
                     resultBuilder.Append(fenChar);
                 }
             }

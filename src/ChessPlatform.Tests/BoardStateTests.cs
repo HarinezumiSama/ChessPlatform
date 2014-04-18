@@ -19,33 +19,14 @@ namespace ChessPlatform.Tests
         public void TestDefaultConstruction()
         {
             var boardState = new BoardState();
+            AssertDefaultInitialBoard(boardState);
+        }
 
-            Assert.That(boardState.GetFen(), Is.EqualTo(DefaultFen));
-
-            AssertBaseProperties(boardState, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
-
-            AssertValidMoves(
-                boardState,
-                "a2-a3",
-                "a2-a4",
-                "b2-b3",
-                "b2-b4",
-                "c2-c3",
-                "c2-c4",
-                "d2-d3",
-                "d2-d4",
-                "e2-e3",
-                "e2-e4",
-                "f2-f3",
-                "f2-f4",
-                "g2-g3",
-                "g2-g4",
-                "h2-h3",
-                "h2-h4",
-                "b1-a3",
-                "b1-c3",
-                "g1-f3",
-                "g1-h3");
+        [Test]
+        public void TestConstructionByDefaultFen()
+        {
+            var boardState = new BoardState(DefaultFen);
+            AssertDefaultInitialBoard(boardState);
         }
 
         [Test]
@@ -126,6 +107,38 @@ namespace ChessPlatform.Tests
 
             Assert.That(boardState.ValidMoves.Count, Is.EqualTo(0));
             Assert.That(boardState.ValidMoves, Is.Empty);
+        }
+
+        private static void AssertDefaultInitialBoard(BoardState boardState)
+        {
+            Assert.That(boardState, Is.Not.Null);
+
+            Assert.That(boardState.GetFen(), Is.EqualTo(DefaultFen));
+
+            AssertBaseProperties(boardState, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+
+            AssertValidMoves(
+                boardState,
+                "a2-a3",
+                "a2-a4",
+                "b2-b3",
+                "b2-b4",
+                "c2-c3",
+                "c2-c4",
+                "d2-d3",
+                "d2-d4",
+                "e2-e3",
+                "e2-e4",
+                "f2-f3",
+                "f2-f4",
+                "g2-g3",
+                "g2-g4",
+                "h2-h3",
+                "h2-h4",
+                "b1-a3",
+                "b1-c3",
+                "g1-f3",
+                "g1-h3");
         }
 
         private static BoardState TestMakeMoveBasicScenario1W()

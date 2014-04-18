@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using System.Text;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -34,8 +32,14 @@ namespace ChessPlatform
         internal BoardState()
         {
             _pieceData = new PieceData();
-            _fullMoveIndex = 1;
-            SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureInfo);
+
+            SetupDefault(
+                out _activeColor,
+                out _castlingOptions,
+                out _enPassantCaptureInfo,
+                out _halfMovesBy50MoveRule,
+                out _fullMoveIndex);
+
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -57,7 +61,15 @@ namespace ChessPlatform
             #endregion
 
             _pieceData = new PieceData();
-            SetupByFen(fen, out _activeColor, out _castlingOptions, out _enPassantCaptureInfo);
+
+            SetupByFen(
+                fen,
+                out _activeColor,
+                out _castlingOptions,
+                out _enPassantCaptureInfo,
+                out _halfMovesBy50MoveRule,
+                out _fullMoveIndex);
+
             PostInitialize(out _validMoves, out _state);
             Validate();
         }
@@ -191,21 +203,21 @@ namespace ChessPlatform
 
         public string GetFen()
         {
-            var resultBuilder = new StringBuilder((ChessConstants.FileCount + 1) * ChessConstants.RankCount + 20);
+            var pieceDataSnippet = _pieceData.GetFenSnippet();
+            var activeColorSnippet = _activeColor.GetFenSnippet();
+            var castlingOptionsSnippet = _castlingOptions.GetFenSnippet();
+            var enPassantCaptureInfoSnippet = _enPassantCaptureInfo.GetFenSnippet();
 
-            _pieceData.GetFenSnippet(resultBuilder);
+            var result = string.Join(
+                ChessConstants.FenSnippetSeparator,
+                pieceDataSnippet,
+                activeColorSnippet,
+                castlingOptionsSnippet,
+                enPassantCaptureInfoSnippet,
+                _halfMovesBy50MoveRule.ToString(CultureInfo.InvariantCulture),
+                _fullMoveIndex.ToString(CultureInfo.InvariantCulture));
 
-            //// TODO [vmcl] Consider actual: (*) half move clock; (*) full move number
-            resultBuilder.AppendFormat(
-                CultureInfo.InvariantCulture,
-                " {0} {1} {2} {3} {4}",
-                _activeColor.GetFenSnippet(),
-                _castlingOptions.GetFenSnippet(),
-                _enPassantCaptureInfo == null ? "-" : _enPassantCaptureInfo.CapturePosition.ToString(),
-                _halfMovesBy50MoveRule,
-                _fullMoveIndex);
-
-            return resultBuilder.ToString();
+            return result;
         }
 
         public Piece GetPiece(Position position)
@@ -244,7 +256,7 @@ namespace ChessPlatform
                     throw new ChessPlatformException(
                         string.Format(
                             CultureInfo.InvariantCulture,
-                            "The number of the '{0}' piece is {1}. Must be exactly one.",
+                            "The number of the '{0}' pieces is {1}. Must be exactly one.",
                             king.GetDescription(),
                             count));
                 }
@@ -353,7 +365,9 @@ namespace ChessPlatform
         private void SetupDefault(
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
-            out EnPassantCaptureInfo enPassantTarget)
+            out EnPassantCaptureInfo enPassantTarget,
+            out int halfMovesBy50MoveRule,
+            out int fullMoveIndex)
         {
             _pieceData.SetupNewPiece(PieceType.Rook, PieceColor.White, "a1");
             _pieceData.SetupNewPiece(PieceType.Knight, PieceColor.White, "b1");
@@ -380,19 +394,90 @@ namespace ChessPlatform
             activeColor = PieceColor.White;
             castlingOptions = CastlingOptions.All;
             enPassantTarget = null;
+            halfMovesBy50MoveRule = 0;
+            fullMoveIndex = 1;
         }
 
         private void SetupByFen(
-            string inputFen,
+            string fen,
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
-            out EnPassantCaptureInfo enPassantCaptureTarget)
+            out EnPassantCaptureInfo enPassantCaptureTarget,
+            out int halfMovesBy50MoveRule,
+            out int fullMoveIndex)
         {
-            var fen = inputFen.Trim();
-            Trace.TraceInformation("[{0}] '{1}'", MethodBase.GetCurrentMethod().GetQualifiedName(), fen);
+            const string InvalidFenMessage = "Invalid FEN.";
 
-            //// TODO [vmcl] Parse FEN
-            throw new NotImplementedException();
+            var fenSnippets = fen
+                .Trim()
+                .Split(ChessConstants.FenSnippetSeparator.AsArray(), StringSplitOptions.None);
+            if (fenSnippets.Length != ChessConstants.FenSnippetCount)
+            {
+                throw new ArgumentException(InvalidFenMessage, "fen");
+            }
+
+            var pieceDataSnippet = fenSnippets[0];
+            _pieceData.SetupByFenSnippet(pieceDataSnippet);
+
+            var activeColorSnippet = fenSnippets[1];
+            if (!ChessConstants.FenSnippetToColorMap.TryGetValue(activeColorSnippet, out activeColor))
+            {
+                throw new ArgumentException(InvalidFenMessage, "fen");
+            }
+
+            castlingOptions = CastlingOptions.None;
+            var castlingOptionsSnippet = fenSnippets[2];
+            if (castlingOptionsSnippet != ChessConstants.NoneCastlingOptionsFenSnippet)
+            {
+                var castlingOptionsSnippetSet = castlingOptionsSnippet.ToHashSet();
+                foreach (var optionChar in castlingOptionsSnippetSet)
+                {
+                    CastlingOptions option;
+                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out option))
+                    {
+                        throw new ArgumentException(InvalidFenMessage, "fen");
+                    }
+
+                    castlingOptions |= option;
+                }
+            }
+
+            enPassantCaptureTarget = null;
+            var enPassantCaptureTargetSnippet = fenSnippets[3];
+            if (enPassantCaptureTargetSnippet != ChessConstants.NoEnPassantCaptureFenSnippet)
+            {
+                var capturePosition = Position.TryFromAlgebraic(enPassantCaptureTargetSnippet);
+                if (!capturePosition.HasValue)
+                {
+                    throw new ArgumentException(InvalidFenMessage, "fen");
+                }
+
+                var enPassantInfo =
+                    ChessConstants.ColorToEnPassantInfoMap.Values.SingleOrDefault(
+                        obj => obj.CaptureTargetRank == capturePosition.Value.Rank);
+
+                if (enPassantInfo == null)
+                {
+                    throw new ArgumentException(InvalidFenMessage, "fen");
+                }
+
+                enPassantCaptureTarget = new EnPassantCaptureInfo(
+                    capturePosition.Value,
+                    new Position(capturePosition.Value.File, enPassantInfo.StartRank));
+            }
+
+            var halfMovesBy50MoveRuleSnippet = fenSnippets[4];
+            if (!ChessHelper.TryParseInt(halfMovesBy50MoveRuleSnippet, out halfMovesBy50MoveRule)
+                || halfMovesBy50MoveRule < 0)
+            {
+                throw new ArgumentException(InvalidFenMessage, "fen");
+            }
+
+            var fullMoveIndexSnippet = fenSnippets[5];
+            if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out fullMoveIndex) || fullMoveIndex <= 0)
+            {
+                throw new ArgumentException(InvalidFenMessage, "fen");
+            }
         }
 
         #endregion
