@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public sealed class UndoMoveData
+    public sealed class MakeMoveData
     {
         #region Constructors
 
-        internal UndoMoveData(
+        internal MakeMoveData(
             [NotNull] PieceMove move,
             Piece movedPiece,
             Piece capturedPiece,
@@ -81,6 +82,19 @@ namespace ChessPlatform
         {
             get;
             private set;
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal bool ShouldKeepCountingBy50MoveRule
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return this.MovedPiece.GetPieceType() != PieceType.Pawn && this.CapturedPiece == Piece.None;
+            }
         }
 
         #endregion

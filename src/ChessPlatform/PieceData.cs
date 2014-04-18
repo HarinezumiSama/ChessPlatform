@@ -13,7 +13,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private readonly Stack<UndoMoveData> _undoMoveDatas = new Stack<UndoMoveData>();
+        private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
 
@@ -187,7 +187,7 @@ namespace ChessPlatform
                 return null;
             }
 
-            var castlingOptions = ChessHelper.ColorToCastlingOptionsMap[pieceInfo.Color.Value];
+            var castlingOptions = ChessHelper.ColorToCastlingOptionSetMap[pieceInfo.Color.Value];
 
             var result = ChessHelper.CastlingOptionToInfoMap
                 .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.KingMove == move)
@@ -449,7 +449,7 @@ namespace ChessPlatform
             SetPiece(position, piece);
         }
 
-        internal UndoMoveData MakeMove(
+        internal MakeMoveData MakeMove(
             [NotNull] PieceMove move,
             PieceColor movingColor,
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
@@ -473,6 +473,8 @@ namespace ChessPlatform
 
             PieceMove castlingRookMove = null;
             Position? enPassantCapturedPiecePosition = null;
+
+            var movingColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[movingColor];
 
             var moveData = MovePieceInternal(move);
             var capturedPiece = moveData.CapturedPiece;
@@ -530,11 +532,54 @@ namespace ChessPlatform
                         throw ChessPlatformException.CreateInconsistentStateError();
                     }
 
-                    castlingOptions &= ~castlingInfo.Option;
+                    castlingOptions &= ~movingColorAllCastlingOptions;
                 }
             }
 
-            var undoMoveData = new UndoMoveData(
+            var movingColorCurrentCastlingOptions = castlingOptions & movingColorAllCastlingOptions;
+            if (movingColorCurrentCastlingOptions != CastlingOptions.None)
+            {
+                switch (pieceInfo.PieceType)
+                {
+                    case PieceType.King:
+                        castlingOptions &= ~movingColorAllCastlingOptions;
+                        break;
+
+                    case PieceType.Rook:
+                        {
+                            var castlingInfo =
+                                ChessConstants.AllCastlingInfos.SingleOrDefault(obj => obj.RookMove.From == move.From);
+
+                            if (castlingInfo == null)
+                            {
+                                throw ChessPlatformException.CreateInconsistentStateError();
+                            }
+
+                            castlingOptions &= ~castlingInfo.Option;
+                        }
+
+                        break;
+                }
+            }
+
+            var oppositeColor = movingColor.Invert();
+            var oppositeColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[oppositeColor];
+            var oppositeColorCurrentCastlingOptions = castlingOptions & oppositeColorAllCastlingOptions;
+            if (oppositeColorCurrentCastlingOptions != CastlingOptions.None
+                && capturedPiece.GetPieceType() == PieceType.Rook)
+            {
+                var oppositeCastlingInfo =
+                    ChessConstants.AllCastlingInfos.SingleOrDefault(obj => obj.RookMove.From == move.To);
+
+                if (oppositeCastlingInfo == null)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+
+                castlingOptions &= ~oppositeCastlingInfo.Option;
+            }
+
+            var undoMoveData = new MakeMoveData(
                 move,
                 moveData.MovedPiece,
                 capturedPiece,

@@ -21,6 +21,8 @@ namespace ChessPlatform
         private readonly CastlingOptions _castlingOptions;
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
         private readonly ReadOnlySet<PieceMove> _validMoves;
+        private readonly int _halfMovesBy50MoveRule;
+        private readonly int _fullMoveIndex;
 
         #endregion
 
@@ -32,6 +34,7 @@ namespace ChessPlatform
         internal BoardState()
         {
             _pieceData = new PieceData();
+            _fullMoveIndex = 1;
             SetupDefault(out _activeColor, out _castlingOptions, out _enPassantCaptureInfo);
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -81,7 +84,9 @@ namespace ChessPlatform
 
             if (!previousState._validMoves.Contains(move))
             {
-                throw new ArgumentException("The specified move is not a valid move.", "move");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
+                    "move");
             }
 
             #endregion
@@ -90,14 +95,19 @@ namespace ChessPlatform
             _activeColor = previousState._activeColor.Invert();
             _castlingOptions = previousState.CastlingOptions;
 
+            _fullMoveIndex = previousState._fullMoveIndex + (_activeColor == PieceColor.White ? 1 : 0);
             _enPassantCaptureInfo = _pieceData.GetEnPassantCaptureInfo(move);
 
-            _pieceData.MakeMove(
+            var makeMoveData = _pieceData.MakeMove(
                 move,
                 previousState._activeColor,
                 _enPassantCaptureInfo,
                 promotedPieceType,
                 ref _castlingOptions);
+
+            _halfMovesBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
+                ? previousState._halfMovesBy50MoveRule + 1
+                : 0;
 
             PostInitialize(out _validMoves, out _state);
             Validate();
@@ -152,6 +162,24 @@ namespace ChessPlatform
             }
         }
 
+        public int HalfMovesBy50MoveRule
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _halfMovesBy50MoveRule;
+            }
+        }
+
+        public int FullMoveIndex
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _fullMoveIndex;
+            }
+        }
+
         #endregion
 
         #region Public Methods
@@ -170,10 +198,12 @@ namespace ChessPlatform
             //// TODO [vmcl] Consider actual: (*) half move clock; (*) full move number
             resultBuilder.AppendFormat(
                 CultureInfo.InvariantCulture,
-                " {0} {1} {2} 0 1",
+                " {0} {1} {2} {3} {4}",
                 _activeColor.GetFenSnippet(),
                 _castlingOptions.GetFenSnippet(),
-                _enPassantCaptureInfo == null ? "-" : _enPassantCaptureInfo.CapturePosition.ToString());
+                _enPassantCaptureInfo == null ? "-" : _enPassantCaptureInfo.CapturePosition.ToString(),
+                _halfMovesBy50MoveRule,
+                _fullMoveIndex);
 
             return resultBuilder.ToString();
         }

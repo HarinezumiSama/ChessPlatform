@@ -14,7 +14,7 @@ namespace ChessPlatform
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
 
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
-            ColorToCastlingOptionsMap =
+            ColorToCastlingOptionSetMap =
                 new ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
                     new Dictionary<PieceColor, ReadOnlySet<CastlingOptions>>
                     {
@@ -31,6 +31,13 @@ namespace ChessPlatform
                                 .AsReadOnly()
                         }
                     });
+
+        public static readonly ReadOnlyDictionary<PieceColor, CastlingOptions> ColorToCastlingOptionsMap =
+            ColorToCastlingOptionSetMap
+                .ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
+                .AsReadOnly();
 
         public static readonly ReadOnlyDictionary<PieceColor, byte> ColorToPawnPromotionRankMap =
             new ReadOnlyDictionary<PieceColor, byte>(
