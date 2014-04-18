@@ -112,6 +112,13 @@ namespace ChessPlatform.UI.Desktop
                 ResetSquareElementColor(textBlock);
                 textBlock.Text = ch.ToString(CultureInfo.InvariantCulture);
             }
+
+            this.StatusLabel.Content = string.Format(
+                CultureInfo.InvariantCulture,
+                "Move: {0}. Turn: {1}. State: {2}.",
+                _boardState.FullMoveIndex,
+                _boardState.ActiveColor,
+                _boardState.State);
         }
 
         private void TextBlockSquare_MouseEnter(object sender, MouseEventArgs args)
