@@ -30,6 +30,16 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestConstructionByStalemateFen()
+        {
+            const string StalemateFen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
+
+            var boardState = new BoardState(StalemateFen);
+            AssertBaseProperties(boardState, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
+            AssertNoValidMoves(boardState);
+        }
+
+        [Test]
         public void TestMakeMoveBasicScenario()
         {
             var boardState1W = TestMakeMoveBasicScenario1W();
