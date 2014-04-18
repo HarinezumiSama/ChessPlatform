@@ -164,11 +164,6 @@ namespace ChessPlatform
 
             #endregion
 
-            if (move.From.File != move.To.File)
-            {
-                return false;
-            }
-
             var pieceInfo = GetPieceInfo(move.From);
 
             var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
