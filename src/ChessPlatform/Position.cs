@@ -20,6 +20,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="Position"/> class.
         /// </summary>
+        [DebuggerNonUserCode]
         public Position(byte file, byte rank)
         {
             #region Argument Check
@@ -55,6 +56,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="Position"/> class.
         /// </summary>
+        [DebuggerNonUserCode]
         public Position(byte x88Value)
         {
             #region Argument Check
@@ -105,6 +107,7 @@ namespace ChessPlatform
 
         #region Operators
 
+        [DebuggerNonUserCode]
         public static implicit operator Position(string algebraicNotation)
         {
             return FromAlgebraic(algebraicNotation);
@@ -124,6 +127,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
+        [DebuggerNonUserCode]
         public static Position FromAlgebraic(string algebraicNotation)
         {
             #region Argument Check

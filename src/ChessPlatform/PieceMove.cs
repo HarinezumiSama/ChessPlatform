@@ -1,12 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ChessPlatform
 {
     public sealed class PieceMove : IEquatable<PieceMove>
     {
+        #region Constants and Fields
+
+        private const string FromGroupName = "from";
+        private const string ToGroupName = "to";
+
+        private static readonly Regex StringPatternRegex = new Regex(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                @"(?<{0}>[a-h][1-8])\-(?<{1}>[a-h][1-8])",
+                FromGroupName,
+                ToGroupName),
+            RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -57,9 +74,43 @@ namespace ChessPlatform
             return !(left == right);
         }
 
+        [DebuggerNonUserCode]
+        public static implicit operator PieceMove(string stringNotation)
+        {
+            return FromStringNotation(stringNotation);
+        }
+
         #endregion
 
         #region Public Methods
+
+        [DebuggerNonUserCode]
+        public static PieceMove FromStringNotation(string stringNotation)
+        {
+            #region Argument Check
+
+            if (string.IsNullOrEmpty(stringNotation))
+            {
+                throw new ArgumentException(@"The value can be neither empty string nor null.", "stringNotation");
+            }
+
+            #endregion
+
+            var match = StringPatternRegex.Match(stringNotation);
+            if (!match.Success)
+            {
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Invalid string notation of a move '{0}'.",
+                        stringNotation),
+                    "stringNotation");
+            }
+
+            var from = match.Groups[FromGroupName].Value;
+            var to = match.Groups[ToGroupName].Value;
+            return new PieceMove(Position.FromAlgebraic(from), Position.FromAlgebraic(to));
+        }
 
         public override bool Equals(object obj)
         {
