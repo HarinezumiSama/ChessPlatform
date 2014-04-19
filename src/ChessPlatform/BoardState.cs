@@ -114,7 +114,7 @@ namespace ChessPlatform
             var makeMoveData = _pieceData.MakeMove(
                 move,
                 previousState._activeColor,
-                _enPassantCaptureInfo,
+                previousState._enPassantCaptureInfo,
                 promotedPieceType,
                 ref _castlingOptions);
 
