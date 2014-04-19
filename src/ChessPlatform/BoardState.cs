@@ -21,6 +21,7 @@ namespace ChessPlatform
         private readonly ReadOnlySet<PieceMove> _validMoves;
         private readonly int _halfMovesBy50MoveRule;
         private readonly int _fullMoveIndex;
+        private readonly PieceMove _previousMove;
 
         #endregion
 
@@ -117,6 +118,8 @@ namespace ChessPlatform
                 promotedPieceType,
                 ref _castlingOptions);
 
+            _previousMove = makeMoveData.Move;
+
             _halfMovesBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
                 ? previousState._halfMovesBy50MoveRule + 1
                 : 0;
@@ -189,6 +192,15 @@ namespace ChessPlatform
             get
             {
                 return _fullMoveIndex;
+            }
+        }
+
+        public PieceMove PreviousMove
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _previousMove;
             }
         }
 

@@ -7,6 +7,8 @@ namespace ChessPlatform.UI.Desktop
     {
         Default,
         ValidMoveSource,
-        ValidMoveTarget
+        ValidMoveTarget,
+        CurrentMoveSource,
+        CurrentMoveTarget
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 
@@ -24,11 +25,16 @@ namespace ChessPlatform.UI.Desktop
         {
             var window = Current.Morph(obj => obj.MainWindow);
 
-            MessageBox.Show(
-                window,
-                args.ExceptionObject.ToStringSafely("<Unknown exception>"),
-                "Unhandled error",
-                MessageBoxButton.OK);
+            var text = string.Format(
+                CultureInfo.InvariantCulture,
+                "Unhandled exception has occurred (see below).{0}"
+                    + "The process will be terminated.{0}"
+                    + "{0}"
+                    + "{1}",
+                Environment.NewLine,
+                args.ExceptionObject.ToStringSafely("<Unknown exception>"));
+
+            window.ShowErrorDialog(text, "Unhandled exception");
 
             Process.GetCurrentProcess().Kill();
         }

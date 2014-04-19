@@ -77,6 +77,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\MainWindowCommands.cs" />
     <Compile Include="SquareColors.cs" />
     <Compile Include="SquareMode.cs" />
     <Compile Include="UIHelper.cs" />
