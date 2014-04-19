@@ -194,6 +194,49 @@ namespace ChessPlatform.UI.Desktop
 
                 this.BoardGrid.Children.Add(viewbox);
             }
+
+            this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
+
+            this.PromotionContainerGrid.SetValue(Grid.RowSpanProperty, (int)ChessConstants.RankCount);
+            this.PromotionContainerGrid.SetValue(Grid.ColumnSpanProperty, (int)ChessConstants.FileCount);
+
+            ChessConstants.ValidPromotions.DoForEach(
+                item => this.PromotionGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = starGridLength }));
+
+            var validPromotions = ChessConstants.ValidPromotions.ToArray();
+            for (var index = 0; index < validPromotions.Length; index++)
+            {
+                var promotion = validPromotions[index];
+
+                var textBlock = new TextBlock
+                {
+                    Margin = new Thickness(),
+                    Tag = promotion,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    Foreground = new SolidColorBrush(Colors.Maroon),
+                    Background = new SolidColorBrush(index % 2 == 0 ? Colors.Blue : Colors.LightBlue),
+                    Text = UIHelper
+                        .PieceToCharMap[promotion.ToPiece(PieceColor.Black)]
+                        .ToString(CultureInfo.InvariantCulture)
+                };
+
+                var viewbox = new Viewbox
+                {
+                    Child = textBlock,
+                    Margin = new Thickness(),
+                    Tag = promotion,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    Stretch = Stretch.Fill,
+                    StretchDirection = StretchDirection.Both
+                };
+
+                viewbox.SetValue(Grid.RowProperty, 0);
+                viewbox.SetValue(Grid.ColumnProperty, index);
+
+                this.PromotionGrid.Children.Add(viewbox);
+            }
         }
 
         private void RedrawBoardState()
@@ -264,7 +307,7 @@ namespace ChessPlatform.UI.Desktop
                 SquareMode.CurrentMoveSource);
         }
 
-        private void MakeMove(PieceMove move)
+        private void MakeMove(PieceMove move, PieceType? promotedPieceType)
         {
             if (!_currentBoardState.IsValidMove(move))
             {
@@ -272,17 +315,13 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            PieceType? promotedPieceType = null;
             if (_currentBoardState.IsPawnPromotion(move))
             {
-                var pieceType = QueryPawnPromotion(_currentBoardState.ActiveColor);
-                if (pieceType == PieceType.None)
+                if (!promotedPieceType.HasValue || promotedPieceType.Value == PieceType.None)
                 {
-                    SetMovingPiecePosition(null);
+                    QueryPawnPromotion(move, _currentBoardState.ActiveColor);
                     return;
                 }
-
-                promotedPieceType = pieceType;
             }
 
             var newBoardState = _currentBoardState.MakeMove(move, promotedPieceType).EnsureNotNull();
@@ -293,9 +332,10 @@ namespace ChessPlatform.UI.Desktop
             RedrawBoardState();
         }
 
-        private PieceType QueryPawnPromotion(PieceColor activeColor)
+        private void QueryPawnPromotion(PieceMove move, PieceColor activeColor)
         {
-            throw new NotImplementedException();
+            this.PromotionContainerGrid.Visibility = Visibility.Visible;
+            //// TODO [vmcl] Call MakeMove with the selected piece
         }
 
         #endregion
@@ -378,7 +418,7 @@ namespace ChessPlatform.UI.Desktop
             }
 
             var move = new PieceMove(_movingPiecePosition.Value, position.Value);
-            MakeMove(move);
+            MakeMove(move, null);
         }
 
         private void Exit_Executed(object sender, ExecutedRoutedEventArgs e)
