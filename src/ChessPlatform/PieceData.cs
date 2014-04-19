@@ -495,10 +495,15 @@ namespace ChessPlatform
 
             var movingColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[movingColor];
 
+            // Performing checks before actual move!
+            var castlingInfo = CheckCastlingMove(move);
+            var isEnPassantCapture = IsEnPassantCapture(move, enPassantCaptureInfo);
+            var isPawnPromotion = IsPawnPromotion(move);
+
             var moveData = MovePieceInternal(move);
             var capturedPiece = moveData.CapturedPiece;
 
-            if (IsEnPassantCapture(move, enPassantCaptureInfo))
+            if (isEnPassantCapture)
             {
                 if (enPassantCaptureInfo == null)
                 {
@@ -512,7 +517,7 @@ namespace ChessPlatform
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
             }
-            else if (IsPawnPromotion(move))
+            else if (isPawnPromotion)
             {
                 if (!promotedPieceType.HasValue)
                 {
@@ -529,30 +534,26 @@ namespace ChessPlatform
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
             }
-            else
+            else if (castlingInfo != null)
             {
-                var castlingInfo = CheckCastlingMove(move);
-                if (castlingInfo != null)
+                if (!castlingOptions.IsAllSet(castlingInfo.Option))
                 {
-                    if (!castlingOptions.IsAllSet(castlingInfo.Option))
-                    {
-                        throw new ChessPlatformException(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "The castling {{{0}}} ({1}) is not allowed.",
-                                move,
-                                castlingInfo.Option.GetName()));
-                    }
-
-                    castlingRookMove = castlingInfo.RookMove;
-                    var rookMoveData = MovePieceInternal(castlingRookMove);
-                    if (rookMoveData.CapturedPiece != Piece.None)
-                    {
-                        throw ChessPlatformException.CreateInconsistentStateError();
-                    }
-
-                    castlingOptions &= ~movingColorAllCastlingOptions;
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The castling {{{0}}} ({1}) is not allowed.",
+                            move,
+                            castlingInfo.Option.GetName()));
                 }
+
+                castlingRookMove = castlingInfo.RookMove;
+                var rookMoveData = MovePieceInternal(castlingRookMove);
+                if (rookMoveData.CapturedPiece != Piece.None)
+                {
+                    throw ChessPlatformException.CreateInconsistentStateError();
+                }
+
+                castlingOptions &= ~movingColorAllCastlingOptions;
             }
 
             var movingColorCurrentCastlingOptions = castlingOptions & movingColorAllCastlingOptions;
@@ -566,15 +567,15 @@ namespace ChessPlatform
 
                     case PieceType.Rook:
                         {
-                            var castlingInfo =
+                            var castlingInfoByRook =
                                 ChessConstants.AllCastlingInfos.SingleOrDefault(obj => obj.RookMove.From == move.From);
 
-                            if (castlingInfo == null)
+                            if (castlingInfoByRook == null)
                             {
                                 throw ChessPlatformException.CreateInconsistentStateError();
                             }
 
-                            castlingOptions &= ~castlingInfo.Option;
+                            castlingOptions &= ~castlingInfoByRook.Option;
                         }
 
                         break;
