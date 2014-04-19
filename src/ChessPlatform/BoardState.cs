@@ -235,6 +235,20 @@ namespace ChessPlatform
             return _pieceData.GetPiecePositions(piece);
         }
 
+        public bool IsValidMove(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            return this.ValidMoves.Contains(move);
+        }
+
         public bool IsPawnPromotion(PieceMove move)
         {
             #region Argument Check
