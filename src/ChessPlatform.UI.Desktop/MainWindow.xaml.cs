@@ -36,7 +36,7 @@ namespace ChessPlatform.UI.Desktop
             InitializeComponent();
 
             InitializeControls();
-            RedrawBoardState();
+            RedrawBoardState(false);
         }
 
         #endregion
@@ -74,7 +74,7 @@ namespace ChessPlatform.UI.Desktop
             _currentBoardState = new BoardState();
             _previosBoardStates.Clear();
 
-            RedrawBoardState();
+            RedrawBoardState(true);
         }
 
         private void StartNewGameFromFenFromClipboard(bool confirm)
@@ -119,7 +119,7 @@ namespace ChessPlatform.UI.Desktop
             _currentBoardState = boardState;
             _previosBoardStates.Clear();
 
-            RedrawBoardState();
+            RedrawBoardState(true);
         }
 
         private void UndoLastMove(bool confirm)
@@ -144,7 +144,7 @@ namespace ChessPlatform.UI.Desktop
             }
 
             _currentBoardState = _previosBoardStates.Pop();
-            RedrawBoardState();
+            RedrawBoardState(true);
         }
 
         private void InitializeControls()
@@ -239,7 +239,7 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void RedrawBoardState()
+        private void RedrawBoardState(bool showStatePopup)
         {
             _movingPiecePosition = null;
 
@@ -255,11 +255,38 @@ namespace ChessPlatform.UI.Desktop
 
             this.StatusLabel.Content = string.Format(
                 CultureInfo.InvariantCulture,
-                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}.",
+                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}",
                 _currentBoardState.FullMoveIndex,
                 _currentBoardState.ActiveColor,
                 _currentBoardState.State,
-                _currentBoardState.ValidMoves.Count);
+                _currentBoardState.ValidMoves.Count,
+                _currentBoardState.ResultString);
+
+            if (showStatePopup)
+            {
+                switch (_currentBoardState.State)
+                {
+                    case GameState.Check:
+                        this.MainGrid.ShowInfoPopup("Check!");
+                        break;
+
+                    case GameState.Checkmate:
+                        this.MainGrid.ShowInfoPopup(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Checkmate! {0}",
+                                _currentBoardState.ResultString));
+                        break;
+
+                    case GameState.Stalemate:
+                        this.MainGrid.ShowInfoPopup("Stalemate. Draw.");
+                        break;
+
+                    case GameState.ForcedDrawTwoKingsOnly:
+                        this.MainGrid.ShowInfoPopup("Forced draw.");
+                        break;
+                }
+            }
         }
 
         private void DisplayValidMoves(Position position)
@@ -294,7 +321,7 @@ namespace ChessPlatform.UI.Desktop
                 || _currentBoardState.GetPiece(_movingPiecePosition.Value) == Piece.None
                 || _currentBoardState.GetValidMovesBySource(_movingPiecePosition.Value).Length == 0)
             {
-                RedrawBoardState();
+                RedrawBoardState(false);
                 return;
             }
 
@@ -329,7 +356,7 @@ namespace ChessPlatform.UI.Desktop
             _previosBoardStates.Push(_currentBoardState);
             _currentBoardState = newBoardState;
 
-            RedrawBoardState();
+            RedrawBoardState(true);
         }
 
         private void QueryPawnPromotion(PieceMove move, PieceColor activeColor)
@@ -379,7 +406,7 @@ namespace ChessPlatform.UI.Desktop
 
             if (!_movingPiecePosition.HasValue)
             {
-                RedrawBoardState();
+                RedrawBoardState(false);
                 return;
             }
 
