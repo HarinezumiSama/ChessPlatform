@@ -407,13 +407,13 @@ namespace ChessPlatform
                         }
                     }
 
-                    var castlingOptions = CastlingOptions.All;
+                    var castlingOptionsCopy = _castlingOptions;
                     pieceDataCopy.MakeMove(
                         move,
                         _activeColor,
                         _enPassantCaptureInfo,
                         PieceType.Queen,
-                        ref castlingOptions);
+                        ref castlingOptionsCopy);
 
                     if (!pieceDataCopy.IsInCheck(_activeColor))
                     {

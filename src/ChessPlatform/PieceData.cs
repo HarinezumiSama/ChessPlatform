@@ -570,12 +570,10 @@ namespace ChessPlatform
                             var castlingInfoByRook =
                                 ChessConstants.AllCastlingInfos.SingleOrDefault(obj => obj.RookMove.From == move.From);
 
-                            if (castlingInfoByRook == null)
+                            if (castlingInfoByRook != null)
                             {
-                                throw ChessPlatformException.CreateInconsistentStateError();
+                                castlingOptions &= ~castlingInfoByRook.Option;
                             }
-
-                            castlingOptions &= ~castlingInfoByRook.Option;
                         }
 
                         break;
@@ -591,12 +589,10 @@ namespace ChessPlatform
                 var oppositeCastlingInfo =
                     ChessConstants.AllCastlingInfos.SingleOrDefault(obj => obj.RookMove.From == move.To);
 
-                if (oppositeCastlingInfo == null)
+                if (oppositeCastlingInfo != null)
                 {
-                    throw ChessPlatformException.CreateInconsistentStateError();
+                    castlingOptions &= ~oppositeCastlingInfo.Option;
                 }
-
-                castlingOptions &= ~oppositeCastlingInfo.Option;
             }
 
             var undoMoveData = new MakeMoveData(
