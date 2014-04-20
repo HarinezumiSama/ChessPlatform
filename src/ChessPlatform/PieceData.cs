@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
@@ -10,6 +11,9 @@ namespace ChessPlatform
     internal sealed class PieceData
     {
         #region Constants and Fields
+
+        private static readonly ReadOnlySet<PieceType> ForcedDrawPieceTypes =
+            new[] { PieceType.None, PieceType.King }.ToHashSet().AsReadOnly();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
         private readonly Piece[] _pieces;
@@ -289,6 +293,12 @@ namespace ChessPlatform
             var oppositeColor = kingColor.Invert();
             var kingPositions = GetPiecePositions(king);
             return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
+        }
+
+        public bool IsTwoKingsOnlyState()
+        {
+            var result = _pieces.All(piece => ForcedDrawPieceTypes.Contains(piece.GetPieceType()));
+            return result;
         }
 
         public Position[] GetPotentialMovePositions(

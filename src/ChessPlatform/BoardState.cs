@@ -22,6 +22,7 @@ namespace ChessPlatform
         private readonly int _halfMovesBy50MoveRule;
         private readonly int _fullMoveIndex;
         private readonly PieceMove _previousMove;
+        private readonly string _resultString;
 
         #endregion
 
@@ -42,6 +43,7 @@ namespace ChessPlatform
                 out _fullMoveIndex);
 
             PostInitialize(out _validMoves, out _state);
+            InitializeResultString(out _resultString);
             Validate();
         }
 
@@ -72,6 +74,7 @@ namespace ChessPlatform
                 out _fullMoveIndex);
 
             PostInitialize(out _validMoves, out _state);
+            InitializeResultString(out _resultString);
             Validate();
         }
 
@@ -125,6 +128,7 @@ namespace ChessPlatform
                 : 0;
 
             PostInitialize(out _validMoves, out _state);
+            InitializeResultString(out _resultString);
             Validate();
         }
 
@@ -201,6 +205,15 @@ namespace ChessPlatform
             get
             {
                 return _previousMove;
+            }
+        }
+
+        public string ResultString
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _resultString;
             }
         }
 
@@ -379,6 +392,14 @@ namespace ChessPlatform
             var isInCheck = _pieceData.IsInCheck(_activeColor);
             var oppositeColor = _activeColor.Invert();
 
+            var twoKingsOnly = _pieceData.IsTwoKingsOnlyState();
+            if (twoKingsOnly)
+            {
+                state = GameState.ForcedDrawTwoKingsOnly;
+                validMoves = new HashSet<PieceMove>().AsReadOnly();
+                return;
+            }
+
             var activePiecePositions = ChessConstants
                 .PieceTypes
                 .Where(item => item != PieceType.None)
@@ -429,6 +450,29 @@ namespace ChessPlatform
             state = validMoves.Count == 0
                 ? (isInCheck ? GameState.Checkmate : GameState.Stalemate)
                 : (isInCheck ? GameState.Check : GameState.Default);
+        }
+
+        private void InitializeResultString(out string resultString)
+        {
+            switch (_state)
+            {
+                case GameState.Default:
+                case GameState.Check:
+                    resultString = ResultStrings.Other;
+                    break;
+
+                case GameState.Checkmate:
+                    resultString = _activeColor == PieceColor.White ? ResultStrings.BlackWon : ResultStrings.WhiteWon;
+                    break;
+
+                case GameState.ForcedDrawTwoKingsOnly:
+                case GameState.Stalemate:
+                    resultString = ResultStrings.Draw;
+                    break;
+
+                default:
+                    throw _state.CreateEnumValueNotSupportedException();
+            }
         }
 
         private void SetupDefault(

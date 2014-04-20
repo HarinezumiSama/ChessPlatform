@@ -61,6 +61,23 @@ namespace ChessPlatform.Tests
             TestMakeMoveFoolsMateScenario3W(boardState2B);
         }
 
+        [Test]
+        public void TestTwoKingsOnlyCase()
+        {
+            var boardState = new BoardState("k7/8/K7/8/8/8/8/8 w - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.ForcedDrawTwoKingsOnly);
+
+            AssertNoValidMoves(boardState);
+        }
+
         #endregion
 
         #region Private Methods
