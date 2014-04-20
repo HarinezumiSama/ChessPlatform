@@ -54,6 +54,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>..\Solution Items\Icons\ChessPlatformIcon-256.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Omnifactotum, Version=0.2.0.59, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
       <HintPath>..\packages\Omnifactotum.0.2.0.59\lib\net40-Client\Omnifactotum.dll</HintPath>
