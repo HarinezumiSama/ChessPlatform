@@ -15,7 +15,7 @@ namespace ChessPlatform.UI.Desktop.Commands
             new InputGestureCollection { new KeyGesture(Key.N, ModifierKeys.Control) });
 
         public static readonly RoutedUICommand NewGameFromFenFromClipboard = new RoutedUICommand(
-            "_New Game from FEN from Clipboard...",
+            "New Game from _FEN from Clipboard...",
             "NewGameFromFenFromClipboard",
             typeof(MainWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.V, ModifierKeys.Control | ModifierKeys.Shift) });
