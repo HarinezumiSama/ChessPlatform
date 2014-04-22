@@ -5,8 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using ChessPlatform.UI.Desktop.Converters;
+using Omnifactotum;
 
 namespace ChessPlatform.UI.Desktop
 {
@@ -17,6 +21,8 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
+        private static readonly GridLength StarGridLength = new GridLength(1d, GridUnitType.Star);
+
         private readonly Dictionary<Position, TextBlock> _positionToSquareElementMap =
             new Dictionary<Position, TextBlock>();
 
@@ -26,6 +32,7 @@ namespace ChessPlatform.UI.Desktop
         private Position? _movingPiecePosition;
 
         private bool _canExecuteCopyFenToClipboard = true;
+        private Popup _promotionPopup;
 
         #endregion
 
@@ -149,15 +156,13 @@ namespace ChessPlatform.UI.Desktop
 
         private void InitializeControls()
         {
-            var starGridLength = new GridLength(1d, GridUnitType.Star);
-
             Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .DoForEach(i => this.BoardGrid.RowDefinitions.Add(new RowDefinition { Height = starGridLength }));
+                .DoForEach(i => this.BoardGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
 
             Enumerable
                 .Range(0, ChessConstants.FileCount)
-                .DoForEach(i => this.BoardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = starGridLength }));
+                .DoForEach(i => this.BoardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
 
             foreach (var position in ChessHelper.AllPositions)
             {
@@ -178,30 +183,75 @@ namespace ChessPlatform.UI.Desktop
 
                 _positionToSquareElementMap.Add(position, textBlock);
 
-                var viewbox = new Viewbox
-                {
-                    Child = textBlock,
-                    Margin = new Thickness(),
-                    Tag = position,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    Stretch = Stretch.Fill,
-                    StretchDirection = StretchDirection.Both
-                };
+                textBlock.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - position.Rank);
+                textBlock.SetValue(Grid.ColumnProperty, (int)position.File);
 
-                viewbox.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - position.Rank);
-                viewbox.SetValue(Grid.ColumnProperty, (int)position.File);
-
-                this.BoardGrid.Children.Add(viewbox);
+                this.BoardGrid.Children.Add(textBlock);
             }
 
+            InitializePromotionControls();
+        }
+
+        private void InitializePromotionControls()
+        {
             this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
 
-            this.PromotionContainerGrid.SetValue(Grid.RowSpanProperty, (int)ChessConstants.RankCount);
-            this.PromotionContainerGrid.SetValue(Grid.ColumnSpanProperty, (int)ChessConstants.FileCount);
+            var promotionGrid = new Grid { Background = Brushes.Transparent };
 
-            ChessConstants.ValidPromotions.DoForEach(
-                item => this.PromotionGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = starGridLength }));
+            Enumerable
+                .Range(0, ChessConstants.ValidPromotions.Count)
+                .DoForEach(i => promotionGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
+
+            var viewbox = new Viewbox
+            {
+                Child = new Border
+                {
+                    BorderThickness = new Thickness(1d),
+                    BorderBrush = SystemColors.HighlightBrush,
+                    Child = promotionGrid
+                },
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Stretch = Stretch.Uniform,
+                StretchDirection = StretchDirection.Both
+            };
+
+            var popupContent = new Grid
+            {
+                Background = Brushes.Transparent,
+                Children = { viewbox }
+            };
+
+            popupContent.SetBinding(
+                HeightProperty,
+                new Binding
+                {
+                    Source = this.BoardViewbox,
+                    Path = new PropertyPath(ActualHeightProperty.Name),
+                    Mode = BindingMode.OneWay,
+                    Converter = new RatioDoubleConverter(0.2d)
+                });
+
+            _promotionPopup = new Popup
+            {
+                IsOpen = false,
+                StaysOpen = false,
+                AllowsTransparency = true,
+                Placement = PlacementMode.Center,
+                PlacementTarget = this.BoardViewbox,
+                HorizontalOffset = 0,
+                VerticalOffset = 0,
+                PopupAnimation = PopupAnimation.None,
+                Focusable = true,
+                Opacity = 0d,
+                Child = popupContent,
+            };
+
+            _promotionPopup.PreviewKeyDown += this.PromotionPopup_PreviewKeyDown;
+            _promotionPopup.Opened += this.PromotionPopup_Opened;
+            _promotionPopup.Closed += this.PromotionPopup_Closed;
+
+            this.MainGrid.Children.Add(_promotionPopup);
 
             var validPromotions = ChessConstants.ValidPromotions.ToArray();
             for (var index = 0; index < validPromotions.Length; index++)
@@ -215,27 +265,33 @@ namespace ChessPlatform.UI.Desktop
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
                     Foreground = new SolidColorBrush(Colors.Maroon),
-                    Background = new SolidColorBrush(index % 2 == 0 ? Colors.Blue : Colors.LightBlue),
+                    Background = index % 2 == 0 ? Brushes.DeepSkyBlue : Brushes.LightBlue,
                     Text = UIHelper
                         .PieceToCharMap[promotion.ToPiece(PieceColor.Black)]
                         .ToString(CultureInfo.InvariantCulture)
                 };
 
-                var viewbox = new Viewbox
+                var textBlockBorder = new Border
                 {
                     Child = textBlock,
-                    Margin = new Thickness(),
-                    Tag = promotion,
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    Stretch = Stretch.Fill,
-                    StretchDirection = StretchDirection.Both
+                    BorderBrush = SystemColors.HighlightBrush,
+                    BorderThickness = new Thickness(2d)
                 };
 
-                viewbox.SetValue(Grid.RowProperty, 0);
-                viewbox.SetValue(Grid.ColumnProperty, index);
+                textBlockBorder.SetValue(Grid.RowProperty, 0);
+                textBlockBorder.SetValue(Grid.ColumnProperty, index);
 
-                this.PromotionGrid.Children.Add(viewbox);
+                textBlock.MouseLeftButtonUp +=
+                    (sender, e) =>
+                    {
+                        _promotionPopup.Tag = promotion;
+                        _promotionPopup.IsOpen = false;
+                    };
+
+                textBlock.MouseEnter += (sender, e) => textBlockBorder.BorderBrush = SystemColors.ActiveBorderBrush;
+                textBlock.MouseLeave += (sender, e) => textBlockBorder.BorderBrush = SystemColors.HighlightBrush;
+
+                promotionGrid.Children.Add(textBlockBorder);
             }
         }
 
@@ -334,6 +390,16 @@ namespace ChessPlatform.UI.Desktop
                 SquareMode.CurrentMoveSource);
         }
 
+        private void MakeMoveInternal(PieceMove move, PieceType? promotedPieceType)
+        {
+            var newBoardState = _currentBoardState.MakeMove(move, promotedPieceType).EnsureNotNull();
+
+            _previosBoardStates.Push(_currentBoardState);
+            _currentBoardState = newBoardState;
+
+            RedrawBoardState(true);
+        }
+
         private void MakeMove(PieceMove move, PieceType? promotedPieceType)
         {
             if (!_currentBoardState.IsValidMove(move))
@@ -346,23 +412,45 @@ namespace ChessPlatform.UI.Desktop
             {
                 if (!promotedPieceType.HasValue || promotedPieceType.Value == PieceType.None)
                 {
-                    QueryPawnPromotion(move, _currentBoardState.ActiveColor);
+                    QueryPawnPromotion(move);
                     return;
                 }
             }
 
-            var newBoardState = _currentBoardState.MakeMove(move, promotedPieceType).EnsureNotNull();
-
-            _previosBoardStates.Push(_currentBoardState);
-            _currentBoardState = newBoardState;
-
-            RedrawBoardState(true);
+            MakeMoveInternal(move, promotedPieceType);
         }
 
-        private void QueryPawnPromotion(PieceMove move, PieceColor activeColor)
+        private void QueryPawnPromotion(PieceMove move)
         {
+            this.PromotionContainerGrid.Width = this.BoardGrid.ActualWidth;
+            this.PromotionContainerGrid.Height = this.BoardGrid.ActualHeight;
             this.PromotionContainerGrid.Visibility = Visibility.Visible;
-            //// TODO [vmcl] Call MakeMove with the selected piece
+
+            var promotionPopupClosed = new ValueContainer<EventHandler>();
+
+            promotionPopupClosed.Value =
+                (sender, args) =>
+                {
+                    _promotionPopup.Closed -= promotionPopupClosed.Value;
+
+                    var promotion = _promotionPopup.Tag as PieceType?;
+                    if (promotion.HasValue)
+                    {
+                        MakeMoveInternal(move, promotion.Value);
+                    }
+                };
+
+            _promotionPopup.Closed += promotionPopupClosed.Value;
+
+            _promotionPopup.Tag = null;
+            _promotionPopup.IsOpen = true;
+        }
+
+        private void CancelPromotion()
+        {
+            this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
+            _promotionPopup.IsOpen = false;
+            SetMovingPiecePosition(null);
         }
 
         #endregion
@@ -487,6 +575,24 @@ namespace ChessPlatform.UI.Desktop
         private void NewGameFromFenFromClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             StartNewGameFromFenFromClipboard(true);
+        }
+
+        private void PromotionPopup_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape)
+            {
+                CancelPromotion();
+            }
+        }
+
+        private void PromotionPopup_Opened(object sender, EventArgs e)
+        {
+            _promotionPopup.Focus();
+        }
+
+        private void PromotionPopup_Closed(object sender, EventArgs e)
+        {
+            CancelPromotion();
         }
 
         #endregion
