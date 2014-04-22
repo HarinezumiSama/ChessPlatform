@@ -266,9 +266,7 @@ namespace ChessPlatform.UI.Desktop
                     VerticalAlignment = VerticalAlignment.Stretch,
                     Foreground = new SolidColorBrush(Colors.Maroon),
                     Background = index % 2 == 0 ? Brushes.DeepSkyBlue : Brushes.LightBlue,
-                    Text = UIHelper
-                        .PieceToCharMap[promotion.ToPiece(PieceColor.Black)]
-                        .ToString(CultureInfo.InvariantCulture)
+                    Text = UIHelper.PieceToCharMap[promotion].ToString(CultureInfo.InvariantCulture)
                 };
 
                 var textBlockBorder = new Border
@@ -302,11 +300,12 @@ namespace ChessPlatform.UI.Desktop
             foreach (var position in ChessHelper.AllPositions)
             {
                 var pieceInfo = _currentBoardState.GetPieceInfo(position);
-                var ch = UIHelper.PieceToCharMap[pieceInfo.Piece];
+                var ch = UIHelper.PieceToCharMap[pieceInfo.PieceType];
 
                 var textBlock = _positionToSquareElementMap[position];
                 ResetSquareElementColor(textBlock);
                 textBlock.Text = ch.ToString(CultureInfo.InvariantCulture);
+                textBlock.Foreground = pieceInfo.Color == PieceColor.White ? Brushes.DarkKhaki : Brushes.Black;
             }
 
             this.StatusLabel.Content = string.Format(

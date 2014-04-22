@@ -17,23 +17,17 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
-        public static readonly ReadOnlyDictionary<Piece, char> PieceToCharMap =
-            new ReadOnlyDictionary<Piece, char>(
-                new Dictionary<Piece, char>
+        public static readonly ReadOnlyDictionary<PieceType, char> PieceToCharMap =
+            new ReadOnlyDictionary<PieceType, char>(
+                new Dictionary<PieceType, char>
                 {
-                    { Piece.None, '\x2001' },
-                    { Piece.WhiteKing, '\x2654' },
-                    { Piece.WhiteQueen, '\x2655' },
-                    { Piece.WhiteRook, '\x2656' },
-                    { Piece.WhiteBishop, '\x2657' },
-                    { Piece.WhiteKnight, '\x2658' },
-                    { Piece.WhitePawn, '\x2659' },
-                    { Piece.BlackKing, '\x265A' },
-                    { Piece.BlackQueen, '\x265B' },
-                    { Piece.BlackRook, '\x265C' },
-                    { Piece.BlackBishop, '\x265D' },
-                    { Piece.BlackKnight, '\x265E' },
-                    { Piece.BlackPawn, '\x265F' }
+                    { PieceType.None, '\x2001' },
+                    { PieceType.King, '\x265A' },
+                    { PieceType.Queen, '\x265B' },
+                    { PieceType.Rook, '\x265C' },
+                    { PieceType.Bishop, '\x265D' },
+                    { PieceType.Knight, '\x265E' },
+                    { PieceType.Pawn, '\x265F' }
                 });
 
         public static readonly ReadOnlyDictionary<SquareMode, SquareColors> SquareColorMap =
@@ -41,10 +35,10 @@ namespace ChessPlatform.UI.Desktop
                 new Dictionary<SquareMode, SquareColors>
                 {
                     { SquareMode.Default, new SquareColors(Colors.DimGray, Colors.WhiteSmoke) },
-                    { SquareMode.ValidMoveSource, new SquareColors(Colors.SandyBrown, Colors.Yellow) },
-                    { SquareMode.ValidMoveTarget, new SquareColors(Colors.DeepPink, Colors.Pink) },
-                    { SquareMode.CurrentMoveSource, new SquareColors(Colors.DarkBlue, Colors.SkyBlue) },
-                    { SquareMode.CurrentMoveTarget, new SquareColors(Colors.DarkViolet, Colors.Violet) }
+                    { SquareMode.ValidMoveSource, new SquareColors(Colors.Brown, Colors.Yellow) },
+                    { SquareMode.ValidMoveTarget, new SquareColors(Colors.Green, Colors.LightGreen) },
+                    { SquareMode.CurrentMoveSource, new SquareColors(Colors.Navy, Colors.Blue) },
+                    { SquareMode.CurrentMoveTarget, new SquareColors(Colors.DarkRed, Colors.Red) }
                 });
 
         private static readonly string EntryAssemblyName =
@@ -163,9 +157,9 @@ namespace ChessPlatform.UI.Desktop
             Storyboard.SetTarget(fadeInAnimation, popupContent);
             Storyboard.SetTargetProperty(fadeInAnimation, new PropertyPath(UIElement.OpacityProperty));
 
-            var fadeOutAnimation = new DoubleAnimation(1d, 0d, new Duration(TimeSpan.FromSeconds(0.5d)))
+            var fadeOutAnimation = new DoubleAnimation(1d, 0d, new Duration(TimeSpan.FromSeconds(0.2d)))
             {
-                BeginTime = TimeSpan.FromSeconds(1.5d)
+                BeginTime = TimeSpan.FromSeconds(0.75d)
             };
 
             Storyboard.SetTarget(fadeOutAnimation, popupContent);
