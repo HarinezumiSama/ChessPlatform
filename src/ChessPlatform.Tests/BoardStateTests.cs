@@ -118,25 +118,20 @@ namespace ChessPlatform.Tests
         [Test]
         [TestCaseSource(typeof(TestPerftForInitialPositionCases))]
         [Timeout(600000)]
-        [MaxTime(30000)]
-        public void TestPerftForInitialPosition(PerftPosition perftPosition, int depth, ulong expectedResult)
+        public void TestPerftForInitialPosition(PerftPosition perftPosition, PerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
             var boardState = new BoardState(fen);
 
-            var stopwatch = Stopwatch.StartNew();
-            var actualResult = boardState.Perft(depth);
-            stopwatch.Stop();
+            var actualResult = boardState.Perft(expectedResult.Depth);
 
             Console.WriteLine(
-                "[{0}] Perft[{1}]({2}) -> {3}. Took {4}.",
+                "[{0}] {1}: {2}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 perftPosition.GetName(),
-                actualResult,
-                depth,
-                stopwatch.Elapsed);
+                actualResult);
 
-            Assert.That(actualResult, Is.EqualTo(expectedResult));
+            AssertPerftResult(actualResult, expectedResult);
         }
 
         #endregion
@@ -227,6 +222,20 @@ namespace ChessPlatform.Tests
                 "b1-c3",
                 "g1-f3",
                 "g1-h3");
+        }
+
+        private static void AssertPerftResult(PerftResult actualResult, PerftResult expectedResult)
+        {
+            Assert.That(actualResult, Is.Not.Null);
+            Assert.That(expectedResult, Is.Not.Null);
+
+            Assert.That(actualResult.Depth, Is.EqualTo(expectedResult.Depth));
+            Assert.That(actualResult.NodeCount, Is.EqualTo(expectedResult.NodeCount));
+
+            if (expectedResult.Elapsed > TimeSpan.Zero)
+            {
+                Assert.That(actualResult.Elapsed, Is.LessThanOrEqualTo(expectedResult.Elapsed));
+            }
         }
 
         private static BoardState TestMakeMoveBasicScenario1W()
@@ -410,35 +419,69 @@ namespace ChessPlatform.Tests
             {
                 const string TooLongNow = "Move generation takes too much time now.";
 
-                yield return new TestCaseData(PerftPosition.Initial, 0, 1UL);
-                yield return new TestCaseData(PerftPosition.Initial, 1, 20UL);
-                yield return new TestCaseData(PerftPosition.Initial, 2, 400UL);
-                yield return new TestCaseData(PerftPosition.Initial, 3, 8902UL);
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new PerftResult(0, TimeSpan.FromMilliseconds(100), 1));
 
-                yield return new TestCaseData(PerftPosition.Initial, 4, 197281UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Initial, 5, 4865609UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Initial, 6, 119060324UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Initial, 7, 3195901860UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Initial, 8, 84998978956UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new PerftResult(1, TimeSpan.Zero, 20));
 
-                yield return new TestCaseData(PerftPosition.Position2, 1, 48UL);
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new PerftResult(2, TimeSpan.Zero, 400));
 
-                yield return new TestCaseData(PerftPosition.Position2, 2, 2039UL);
-                yield return new TestCaseData(PerftPosition.Position2, 3, 97862UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Position2, 4, 4085603UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Position2, 5, 193690690UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new PerftResult(3, TimeSpan.Zero, 8902));
 
-                yield return new TestCaseData(PerftPosition.Position4, 1, 6UL);
-                yield return new TestCaseData(PerftPosition.Position4, 2, 264UL);
-                yield return new TestCaseData(PerftPosition.Position4, 3, 9467UL);
+                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(4, TimeSpan.Zero, 197281))
+                    .MakeExplicit(TooLongNow);
 
-                yield return new TestCaseData(PerftPosition.Position4, 4, 422333UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Position4, 5, 15833292UL).MakeExplicit(TooLongNow);
-                yield return new TestCaseData(PerftPosition.Position4, 6, 706045033UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(5, TimeSpan.Zero, 4865609))
+                    .MakeExplicit(TooLongNow);
 
-                yield return new TestCaseData(PerftPosition.Position5, 1, 42UL);
-                yield return new TestCaseData(PerftPosition.Position5, 2, 1352UL);
-                yield return new TestCaseData(PerftPosition.Position5, 3, 53392UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(6, TimeSpan.Zero, 119060324))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(7, TimeSpan.Zero, 3195901860))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(8, TimeSpan.Zero, 84998978956))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(1, TimeSpan.Zero, 48));
+                
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(2, TimeSpan.Zero, 2039));
+
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(3, TimeSpan.Zero, 97862))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(4, TimeSpan.Zero, 4085603))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(5, TimeSpan.Zero, 193690690))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(1, TimeSpan.Zero, 6));
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(2, TimeSpan.Zero, 264));
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(3, TimeSpan.Zero, 9467));
+
+                yield return new TestCaseData(PerftPosition.Position4, 4, new PerftResult(4, TimeSpan.Zero, 422333))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(5, TimeSpan.Zero, 15833292))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(6, TimeSpan.Zero, 706045033))
+                    .MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position5, new PerftResult(1, TimeSpan.Zero, 42));
+
+                yield return new TestCaseData(PerftPosition.Position5, new PerftResult(2, TimeSpan.Zero, 1352));
+
+                yield return new TestCaseData(PerftPosition.Position5, new PerftResult(3, TimeSpan.Zero, 53392))
+                    .MakeExplicit(TooLongNow);
             }
 
             IEnumerator IEnumerable.GetEnumerator()

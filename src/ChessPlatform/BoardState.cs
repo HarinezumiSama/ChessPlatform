@@ -227,7 +227,7 @@ namespace ChessPlatform
         }
 
         [CLSCompliant(false)]
-        public ulong Perft(int depth)
+        public PerftResult Perft(int depth)
         {
             #region Argument Check
 
@@ -241,9 +241,13 @@ namespace ChessPlatform
 
             #endregion
 
-            //// TODO [vmcl] Count also: captures, promotions, checks etc.
+            var perftData = new PerftData();
 
-            return PerftInternal(this, depth);
+            var stopwatch = Stopwatch.StartNew();
+            PerftInternal(this, depth, perftData);
+            stopwatch.Stop();
+
+            return new PerftResult(depth, stopwatch.Elapsed, perftData.NodeCount);
         }
 
         public string GetFen()
@@ -611,14 +615,13 @@ namespace ChessPlatform
             }
         }
 
-        private static ulong PerftInternal(BoardState boardState, int depth)
+        private static void PerftInternal(BoardState boardState, int depth, PerftData perftData)
         {
             if (depth == 0)
             {
-                return 1;
+                perftData.NodeCount++;
+                return;
             }
-
-            var nodes = 0UL;
 
             var moves = boardState.ValidMoves;
             foreach (var move in moves)
@@ -631,7 +634,7 @@ namespace ChessPlatform
                         var newBoardState = boardState.MakeMove(move, promotion);
                         checked
                         {
-                            nodes += PerftInternal(newBoardState, depth - 1);
+                            PerftInternal(newBoardState, depth - 1, perftData);
                         }
                     }
                 }
@@ -640,12 +643,27 @@ namespace ChessPlatform
                     var newBoardState = boardState.MakeMove(move, null);
                     checked
                     {
-                        nodes += PerftInternal(newBoardState, depth - 1);
+                        PerftInternal(newBoardState, depth - 1, perftData);
                     }
                 }
             }
+        }
 
-            return nodes;
+        #endregion
+
+        #region PerftData Class
+
+        private sealed class PerftData
+        {
+            #region Public Properties
+
+            public ulong NodeCount
+            {
+                get;
+                set;
+            }
+
+            #endregion
         }
 
         #endregion
