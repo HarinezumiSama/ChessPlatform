@@ -226,6 +226,26 @@ namespace ChessPlatform
             return GetFen();
         }
 
+        [CLSCompliant(false)]
+        public ulong Perft(int depth)
+        {
+            #region Argument Check
+
+            if (depth < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "depth",
+                    depth,
+                    @"The value cannot be negative.");
+            }
+
+            #endregion
+
+            //// TODO [vmcl] Count also: captures, promotions, checks etc.
+
+            return PerftInternal(this, depth);
+        }
+
         public string GetFen()
         {
             var pieceDataSnippet = _pieceData.GetFenSnippet();
@@ -589,6 +609,43 @@ namespace ChessPlatform
             {
                 throw new ArgumentException(InvalidFenMessage, "fen");
             }
+        }
+
+        private static ulong PerftInternal(BoardState boardState, int depth)
+        {
+            if (depth == 0)
+            {
+                return 1;
+            }
+
+            var nodes = 0UL;
+
+            var moves = boardState.ValidMoves;
+            foreach (var move in moves)
+            {
+                //// TODO [vmcl] Make various promotions various moves (include promoted piece type into PieceMove)
+                if (boardState.IsPawnPromotion(move))
+                {
+                    foreach (var promotion in ChessConstants.ValidPromotions)
+                    {
+                        var newBoardState = boardState.MakeMove(move, promotion);
+                        checked
+                        {
+                            nodes += PerftInternal(newBoardState, depth - 1);
+                        }
+                    }
+                }
+                else
+                {
+                    var newBoardState = boardState.MakeMove(move, null);
+                    checked
+                    {
+                        nodes += PerftInternal(newBoardState, depth - 1);
+                    }
+                }
+            }
+
+            return nodes;
         }
 
         #endregion

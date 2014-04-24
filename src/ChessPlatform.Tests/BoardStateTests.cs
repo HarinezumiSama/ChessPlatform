@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
+using Omnifactotum;
 
 namespace ChessPlatform.Tests
 {
@@ -10,6 +15,28 @@ namespace ChessPlatform.Tests
         #region Constants and Fields
 
         private const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        private static readonly ReadOnlyDictionary<PerftPosition, string> PerftPositionToFenMap =
+            new ReadOnlyDictionary<PerftPosition, string>(
+                new Dictionary<PerftPosition, string>
+                {
+                    {
+                        PerftPosition.Initial,
+                        DefaultFen
+                    },
+                    {
+                        PerftPosition.Position2,
+                        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"
+                    },
+                    {
+                        PerftPosition.Position4,
+                        "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
+                    },
+                    {
+                        PerftPosition.Position5,
+                        "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6"
+                    }
+                });
 
         #endregion
 
@@ -76,6 +103,40 @@ namespace ChessPlatform.Tests
                 GameState.ForcedDrawTwoKingsOnly);
 
             AssertNoValidMoves(boardState);
+        }
+
+        [Test]
+        [TestCase(-1)]
+        [TestCase(-2)]
+        [TestCase(int.MinValue)]
+        public void TestPerftForInvalidArgument(int depth)
+        {
+            var boardState = new BoardState();
+            Assert.That(() => boardState.Perft(depth), Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
+        [TestCaseSource(typeof(TestPerftForInitialPositionCases))]
+        [Timeout(600000)]
+        [MaxTime(30000)]
+        public void TestPerftForInitialPosition(PerftPosition perftPosition, int depth, ulong expectedResult)
+        {
+            var fen = PerftPositionToFenMap[perftPosition];
+            var boardState = new BoardState(fen);
+
+            var stopwatch = Stopwatch.StartNew();
+            var actualResult = boardState.Perft(depth);
+            stopwatch.Stop();
+
+            Console.WriteLine(
+                "[{0}] Perft[{1}]({2}) -> {3}. Took {4}.",
+                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                perftPosition.GetName(),
+                actualResult,
+                depth,
+                stopwatch.Elapsed);
+
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
         #endregion
@@ -324,6 +385,66 @@ namespace ChessPlatform.Tests
                 GameState.Checkmate);
 
             AssertNoValidMoves(boardState3W);
+        }
+
+        #endregion
+
+        #region PerftPosition Enumeration
+
+        public enum PerftPosition
+        {
+            Initial,
+            Position2,
+            Position4,
+            Position5
+        }
+
+        #endregion
+
+        #region TestPerftForInitialPositionCases Class
+
+        //// TODO [vmcl] Use Omnifactotum.NUnit once it's published
+        public sealed class TestPerftForInitialPositionCases : IEnumerable<TestCaseData>
+        {
+            public IEnumerator<TestCaseData> GetEnumerator()
+            {
+                const string TooLongNow = "Move generation takes too much time now.";
+
+                yield return new TestCaseData(PerftPosition.Initial, 0, 1UL);
+                yield return new TestCaseData(PerftPosition.Initial, 1, 20UL);
+                yield return new TestCaseData(PerftPosition.Initial, 2, 400UL);
+                yield return new TestCaseData(PerftPosition.Initial, 3, 8902UL);
+
+                yield return new TestCaseData(PerftPosition.Initial, 4, 197281UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, 5, 4865609UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, 6, 119060324UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, 7, 3195901860UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Initial, 8, 84998978956UL).MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position2, 1, 48UL);
+
+                yield return new TestCaseData(PerftPosition.Position2, 2, 2039UL);
+                yield return new TestCaseData(PerftPosition.Position2, 3, 97862UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position2, 4, 4085603UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position2, 5, 193690690UL).MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position4, 1, 6UL);
+                yield return new TestCaseData(PerftPosition.Position4, 2, 264UL);
+                yield return new TestCaseData(PerftPosition.Position4, 3, 9467UL);
+
+                yield return new TestCaseData(PerftPosition.Position4, 4, 422333UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position4, 5, 15833292UL).MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position4, 6, 706045033UL).MakeExplicit(TooLongNow);
+
+                yield return new TestCaseData(PerftPosition.Position5, 1, 42UL);
+                yield return new TestCaseData(PerftPosition.Position5, 2, 1352UL);
+                yield return new TestCaseData(PerftPosition.Position5, 3, 53392UL).MakeExplicit(TooLongNow);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
         }
 
         #endregion
