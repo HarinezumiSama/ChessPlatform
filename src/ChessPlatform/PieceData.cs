@@ -76,12 +76,6 @@ namespace ChessPlatform
 
         public Position[] GetPiecePositions(Piece piece)
         {
-            #region Argument Check
-
-            piece.EnsureDefined();
-
-            #endregion
-
             var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
 
             var result = x88Values == null ? new Position[0] : x88Values.Select(item => new Position(item)).ToArray();
@@ -90,12 +84,6 @@ namespace ChessPlatform
 
         public int GetPieceCount(Piece piece)
         {
-            #region Argument Check
-
-            piece.EnsureDefined();
-
-            #endregion
-
             var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
 
             var result = x88Values.Morph(obj => obj.Count, 0);
@@ -298,6 +286,7 @@ namespace ChessPlatform
             var oppositeColor = kingColor.Invert();
             var kingPositions = GetPiecePositions(king);
             return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
+            //return kingPositions.Length > 0 && IsUnderAttack(kingPositions[0], oppositeColor);
         }
 
         public bool IsInsufficientMaterialState()
@@ -684,9 +673,13 @@ namespace ChessPlatform
             return result;
         }
 
-        [Conditional("DEBUG")]
         private void EnsureConsistencyInternal()
         {
+            if (!DebugConstants.EnsurePieceDataConsistency)
+            {
+                return;
+            }
+
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var position in ChessHelper.AllPositions)
             {

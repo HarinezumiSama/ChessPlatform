@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace ChessPlatform
@@ -7,6 +8,16 @@ namespace ChessPlatform
     public static class PieceTypeExtensions
     {
         #region Public Methods
+
+        public static PieceType EnsureDefined(this PieceType pieceType)
+        {
+            if (!ChessConstants.PieceTypes.Contains(pieceType))
+            {
+                throw new InvalidEnumArgumentException("pieceType", (int)pieceType, pieceType.GetType());
+            }
+
+            return pieceType;
+        }
 
         public static Piece ToPiece(this PieceType pieceType, PieceColor color)
         {

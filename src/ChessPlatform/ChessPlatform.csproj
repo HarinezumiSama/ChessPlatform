@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DebugConstants.cs" />
     <Compile Include="FenCharAttribute.cs" />
     <Compile Include="BoardState.cs" />
     <Compile Include="CastlingInfo.cs" />

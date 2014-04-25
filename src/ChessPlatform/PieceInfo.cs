@@ -14,12 +14,6 @@ namespace ChessPlatform
         public PieceInfo(Piece piece)
             : this()
         {
-            #region Argument Check
-
-            piece.EnsureDefined();
-
-            #endregion
-
             this.Piece = piece;
             this.PieceType = piece.GetPieceType();
             this.Color = piece.GetColor();
