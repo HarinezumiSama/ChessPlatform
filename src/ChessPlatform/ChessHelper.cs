@@ -135,13 +135,16 @@ namespace ChessPlatform
         private static readonly ReadOnlyDictionary<byte, Position> X88ValueToPositionMap =
             AllPositions.ToDictionary(item => item.X88Value, item => item).AsReadOnly();
 
+        private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
+            AllPositions.ToDictionary(Factotum.Identity, GetKnightMovePositionsNonCached).AsReadOnly();
+
         #endregion
 
         #region Public Methods
 
-        public static Position[] GetKnightMovePositions(Position position)
+        public static ReadOnlyCollection<Position> GetKnightMovePositions(Position position)
         {
-            return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
+            return KnightMovePositionMap[position];
         }
 
         public static bool IsZero(this double value, double tolerance = DefaultZeroTolerance)
@@ -192,6 +195,15 @@ namespace ChessPlatform
         internal static bool TryParseInt(string value, out int result)
         {
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static ReadOnlyCollection<Position> GetKnightMovePositionsNonCached(Position position)
+        {
+            return GetOnboardPositions(position, KnightAttackOrMoveOffsets).AsReadOnly();
         }
 
         #endregion
