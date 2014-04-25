@@ -12,6 +12,8 @@ namespace ChessPlatform
 
         private readonly byte _file;
         private readonly byte _rank;
+        private readonly byte _x88Value;
+        private readonly int _hashCode;
 
         #endregion
 
@@ -46,6 +48,9 @@ namespace ChessPlatform
 
             _file = (byte)(x88Value & 0x07);
             _rank = (byte)(x88Value >> 4);
+            _x88Value = x88Value;
+
+            _hashCode = _x88Value;
         }
 
         /// <summary>
@@ -85,6 +90,9 @@ namespace ChessPlatform
 
             _file = (byte)file;
             _rank = (byte)rank;
+            _x88Value = (byte)((_rank << 4) + _file);
+
+            _hashCode = _x88Value;
         }
 
         #endregion
@@ -114,7 +122,7 @@ namespace ChessPlatform
             [DebuggerNonUserCode]
             get
             {
-                return (byte)((_rank << 4) + _file);
+                return _x88Value;
             }
         }
 
@@ -219,7 +227,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return _file.CombineHashCodes(_rank);
+            return _hashCode;
         }
 
         #endregion
