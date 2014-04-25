@@ -146,8 +146,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return this.From.CombineHashCodes(this.To).CombineHashCodes(this.PromotionResult);
-            //return _hashCode;
+            return _hashCode;
         }
 
         public override string ToString()
