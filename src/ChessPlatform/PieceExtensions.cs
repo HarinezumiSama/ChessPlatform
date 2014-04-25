@@ -24,6 +24,12 @@ namespace ChessPlatform
                 .ToDictionary(item => (int)item, GetPieceTypeNonCached)
                 .AsReadOnly();
 
+        private static readonly ReadOnlyDictionary<int, PieceInfo> PieceToPieceInfoMap =
+            ChessConstants
+                .Pieces
+                .ToDictionary(item => (int)item, GetPieceInfoNonCached)
+                .AsReadOnly();
+
         #endregion
 
         #region Public Methods
@@ -58,6 +64,17 @@ namespace ChessPlatform
         {
             PieceType result;
             if (!PieceToPieceTypeMap.TryGetValue((int)piece, out result))
+            {
+                throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
+            }
+
+            return result;
+        }
+
+        public static PieceInfo GetPieceInfo(this Piece piece)
+        {
+            PieceInfo result;
+            if (!PieceToPieceInfoMap.TryGetValue((int)piece, out result))
             {
                 throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
             }
@@ -122,6 +139,18 @@ namespace ChessPlatform
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
             var result = (PieceType)(piece & Piece.TypeMask);
             return result.EnsureDefined();
+        }
+
+        private static PieceInfo GetPieceInfoNonCached(Piece piece)
+        {
+            #region Argument Check
+
+            piece.EnsureDefined();
+
+            #endregion
+
+            var result = new PieceInfo(piece);
+            return result;
         }
 
         #endregion

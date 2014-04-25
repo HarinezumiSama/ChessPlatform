@@ -71,7 +71,7 @@ namespace ChessPlatform
         public PieceInfo GetPieceInfo(Position position)
         {
             var piece = GetPiece(position);
-            return new PieceInfo(piece);
+            return piece.GetPieceInfo();
         }
 
         public Position[] GetPiecePositions(Piece piece)
@@ -210,19 +210,18 @@ namespace ChessPlatform
                 {
                     var currentPosition = new Position(currentX88Value);
 
-                    var piece = GetPiece(currentPosition);
-                    var color = piece.GetColor();
-                    if (piece == Piece.None || !color.HasValue)
+                    var pieceInfo = GetPieceInfo(currentPosition);
+                    if (pieceInfo.Piece == Piece.None || !pieceInfo.Color.HasValue)
                     {
                         continue;
                     }
 
-                    if (color.Value != attackingColor)
+                    if (pieceInfo.Color.Value != attackingColor)
                     {
                         break;
                     }
 
-                    var pieceType = piece.GetPieceType();
+                    var pieceType = pieceInfo.PieceType;
                     if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
                         || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
                     {
@@ -311,7 +310,7 @@ namespace ChessPlatform
             if (pieceInfo.PieceType == PieceType.Knight)
             {
                 var result = ChessHelper.GetKnightMovePositions(sourcePosition)
-                    .Where(position => GetPiece(position).GetColor() != pieceColor)
+                    .Where(position => GetPieceInfo(position).Color != pieceColor)
                     .ToArray();
 
                 return result;
@@ -786,9 +785,9 @@ namespace ChessPlatform
                 {
                     var currentPosition = new Position(currentX88Value);
 
-                    var currentPiece = GetPiece(currentPosition);
-                    var currentColor = currentPiece.GetColor();
-                    if (currentPiece == Piece.None || !currentColor.HasValue)
+                    var pieceInfo = GetPieceInfo(currentPosition);
+                    var currentColor = pieceInfo.Color;
+                    if (pieceInfo.Piece == Piece.None || !currentColor.HasValue)
                     {
                         resultCollection.Add(currentPosition);
                         continue;
