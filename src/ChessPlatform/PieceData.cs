@@ -157,6 +157,16 @@ namespace ChessPlatform
             return result;
         }
 
+        public bool IsPawnPromotion(Position from, Position to)
+        {
+            var pieceInfo = GetPieceInfo(from);
+
+            var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
+                && to.Rank == ChessHelper.ColorToPawnPromotionRankMap[pieceInfo.Color.Value];
+
+            return result;
+        }
+
         public bool IsPawnPromotion(PieceMove move)
         {
             #region Argument Check
@@ -168,12 +178,7 @@ namespace ChessPlatform
 
             #endregion
 
-            var pieceInfo = GetPieceInfo(move.From);
-
-            var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
-                && move.To.Rank == ChessHelper.ColorToPawnPromotionRankMap[pieceInfo.Color.Value];
-
-            return result;
+            return IsPawnPromotion(move.From, move.To);
         }
 
         public CastlingInfo CheckCastlingMove(PieceMove move)
@@ -295,7 +300,7 @@ namespace ChessPlatform
             return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
         }
 
-        public bool IsTwoKingsOnlyState()
+        public bool IsInsufficientMaterialState()
         {
             var result = _pieces.All(piece => ForcedDrawPieceTypes.Contains(piece.GetPieceType()));
             return result;
@@ -482,7 +487,6 @@ namespace ChessPlatform
             [NotNull] PieceMove move,
             PieceColor movingColor,
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
-            [CanBeNull] PieceType? promotedPieceType,
             ref CastlingOptions castlingOptions)
         {
             #region Argument Check
@@ -529,7 +533,7 @@ namespace ChessPlatform
             }
             else if (isPawnPromotion)
             {
-                if (!promotedPieceType.HasValue)
+                if (move.PromotionResult == PieceType.None)
                 {
                     throw new ChessPlatformException(
                         string.Format(
@@ -538,7 +542,7 @@ namespace ChessPlatform
                             move));
                 }
 
-                var previousPiece = SetPiece(move.To, promotedPieceType.Value.ToPiece(movingColor));
+                var previousPiece = SetPiece(move.To, move.PromotionResult.ToPiece(movingColor));
                 if (previousPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();

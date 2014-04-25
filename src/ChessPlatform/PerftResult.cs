@@ -39,6 +39,9 @@ namespace ChessPlatform
             this.Depth = depth;
             this.Elapsed = elapsed;
             this.NodeCount = nodeCount;
+
+            var totalSeconds = elapsed.TotalSeconds;
+            this.NodesPerSecond = checked((ulong)(totalSeconds.IsZero() ? 0 : nodeCount / totalSeconds));
         }
 
         #endregion
@@ -63,6 +66,12 @@ namespace ChessPlatform
             private set;
         }
 
+        public ulong NodesPerSecond
+        {
+            get;
+            private set;
+        }
+
         #endregion
 
         #region Public Methods
@@ -71,10 +80,11 @@ namespace ChessPlatform
         {
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{{Perft({0}) = {1} [{2}]}}",
+                "{{Perft({0}) = {1} [{2}, {3} nps]}}",
                 this.Depth,
                 this.NodeCount,
-                this.Elapsed);
+                this.Elapsed,
+                this.NodesPerSecond);
         }
 
         #endregion

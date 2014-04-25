@@ -6,9 +6,9 @@ namespace ChessPlatform
     public enum GameState
     {
         Default = 0,
-        Check = 10,
-        Stalemate = 20,
-        ForcedDrawTwoKingsOnly = 30,
-        Checkmate = 40
+        Check = 1,
+        Stalemate = 2,
+        ForcedDrawInsufficientMaterial = 3,
+        Checkmate = 4
     }
 }

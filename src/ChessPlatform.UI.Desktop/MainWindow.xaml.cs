@@ -337,8 +337,8 @@ namespace ChessPlatform.UI.Desktop
                         this.MainGrid.ShowInfoPopup("Stalemate. Draw.");
                         break;
 
-                    case GameState.ForcedDrawTwoKingsOnly:
-                        this.MainGrid.ShowInfoPopup("Forced draw.");
+                    case GameState.ForcedDrawInsufficientMaterial:
+                        this.MainGrid.ShowInfoPopup("Draw (insufficient material).");
                         break;
                 }
             }
@@ -389,9 +389,9 @@ namespace ChessPlatform.UI.Desktop
                 SquareMode.CurrentMoveSource);
         }
 
-        private void MakeMoveInternal(PieceMove move, PieceType? promotedPieceType)
+        private void MakeMoveInternal(PieceMove move)
         {
-            var newBoardState = _currentBoardState.MakeMove(move, promotedPieceType).EnsureNotNull();
+            var newBoardState = _currentBoardState.MakeMove(move).EnsureNotNull();
 
             _previosBoardStates.Push(_currentBoardState);
             _currentBoardState = newBoardState;
@@ -399,7 +399,7 @@ namespace ChessPlatform.UI.Desktop
             RedrawBoardState(true);
         }
 
-        private void MakeMove(PieceMove move, PieceType? promotedPieceType)
+        private void MakeMove(PieceMove move)
         {
             if (!_currentBoardState.IsValidMove(move))
             {
@@ -409,14 +409,14 @@ namespace ChessPlatform.UI.Desktop
 
             if (_currentBoardState.IsPawnPromotion(move))
             {
-                if (!promotedPieceType.HasValue || promotedPieceType.Value == PieceType.None)
+                if (move.PromotionResult == PieceType.None)
                 {
                     QueryPawnPromotion(move);
                     return;
                 }
             }
 
-            MakeMoveInternal(move, promotedPieceType);
+            MakeMoveInternal(move);
         }
 
         private void QueryPawnPromotion(PieceMove move)
@@ -435,7 +435,8 @@ namespace ChessPlatform.UI.Desktop
                     var promotion = _promotionPopup.Tag as PieceType?;
                     if (promotion.HasValue)
                     {
-                        MakeMoveInternal(move, promotion.Value);
+                        var promotionMove = move.MakePromotion(promotion.Value);
+                        MakeMoveInternal(promotionMove);
                     }
                 };
 
@@ -532,7 +533,7 @@ namespace ChessPlatform.UI.Desktop
             }
 
             var move = new PieceMove(_movingPiecePosition.Value, position.Value);
-            MakeMove(move, null);
+            MakeMove(move);
         }
 
         private void Exit_Executed(object sender, ExecutedRoutedEventArgs e)

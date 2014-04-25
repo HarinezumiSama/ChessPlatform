@@ -100,7 +100,7 @@ namespace ChessPlatform.Tests
                 null,
                 0,
                 1,
-                GameState.ForcedDrawTwoKingsOnly);
+                GameState.ForcedDrawInsufficientMaterial);
 
             AssertNoValidMoves(boardState);
         }
@@ -243,7 +243,7 @@ namespace ChessPlatform.Tests
             var boardState1W = new BoardState();
 
             // Testing invalid move (no piece at the source position)
-            Assert.That(() => boardState1W.MakeMove("a3-a4", null), Throws.ArgumentException);
+            Assert.That(() => boardState1W.MakeMove("a3-a4"), Throws.ArgumentException);
 
             AssertBaseProperties(boardState1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
@@ -252,7 +252,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario1B(BoardState boardState1W)
         {
-            var boardState1B = boardState1W.MakeMove("e2-e4", null);
+            var boardState1B = boardState1W.MakeMove("e2-e4");
 
             Assert.That(
                 boardState1B.GetFen(),
@@ -268,7 +268,7 @@ namespace ChessPlatform.Tests
                 GameState.Default);
 
             // Testing invalid move (piece of non-active color at the source position)
-            Assert.That(() => boardState1B.MakeMove("d2-d4", null), Throws.ArgumentException);
+            Assert.That(() => boardState1B.MakeMove("d2-d4"), Throws.ArgumentException);
 
             AssertBaseProperties(
                 boardState1B,
@@ -284,7 +284,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario2W(BoardState boardState1B)
         {
-            var boardState2W = boardState1B.MakeMove("e7-e5", null);
+            var boardState2W = boardState1B.MakeMove("e7-e5");
 
             Assert.That(
                 boardState2W.GetFen(),
@@ -304,7 +304,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario2B(BoardState boardState2W)
         {
-            var boardState2B = boardState2W.MakeMove("b1-c3", null);
+            var boardState2B = boardState2W.MakeMove("b1-c3");
 
             Assert.That(
                 boardState2B.GetFen(),
@@ -324,7 +324,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario3W(BoardState boardState2B)
         {
-            var boardState3W = boardState2B.MakeMove("e8-e7", null);
+            var boardState3W = boardState2B.MakeMove("e8-e7");
 
             Assert.That(
                 boardState3W.GetFen(),
@@ -344,7 +344,7 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveBasicScenario3B(BoardState boardState3W)
         {
-            var boardState3B = boardState3W.MakeMove("c3-d5", null);
+            var boardState3B = boardState3W.MakeMove("c3-d5");
 
             Assert.That(
                 boardState3B.GetFen(),
@@ -364,25 +364,25 @@ namespace ChessPlatform.Tests
 
         private static BoardState TestMakeMoveFoolsMateScenario1B(BoardState boardState1W)
         {
-            var boardState1B = boardState1W.MakeMove("g2-g4", null);
+            var boardState1B = boardState1W.MakeMove("g2-g4");
             return boardState1B;
         }
 
         private static BoardState TestMakeMoveFoolsMateScenario2W(BoardState boardState1B)
         {
-            var boardState2W = boardState1B.MakeMove("e7-e6", null);
+            var boardState2W = boardState1B.MakeMove("e7-e6");
             return boardState2W;
         }
 
         private static BoardState TestMakeMoveFoolsMateScenario2B(BoardState boardState2W)
         {
-            var boardState2B = boardState2W.MakeMove("f2-f4", null);
+            var boardState2B = boardState2W.MakeMove("f2-f4");
             return boardState2B;
         }
 
         private static void TestMakeMoveFoolsMateScenario3W(BoardState boardState2B)
         {
-            var boardState3W = boardState2B.MakeMove("d8-h4", null);
+            var boardState3W = boardState2B.MakeMove("d8-h4");
 
             AssertBaseProperties(
                 boardState3W,
@@ -435,8 +435,10 @@ namespace ChessPlatform.Tests
                     PerftPosition.Initial,
                     new PerftResult(3, TimeSpan.Zero, 8902));
 
-                yield return new TestCaseData(PerftPosition.Initial, new PerftResult(4, TimeSpan.Zero, 197281))
-                    .MakeExplicit(TooLongNow);
+                // Targeting ~100,000 NPS (or better) for the first optimization
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new PerftResult(4, TimeSpan.FromSeconds(2d), 197281));
 
                 yield return new TestCaseData(PerftPosition.Initial, new PerftResult(5, TimeSpan.Zero, 4865609))
                     .MakeExplicit(TooLongNow);
@@ -451,11 +453,10 @@ namespace ChessPlatform.Tests
                     .MakeExplicit(TooLongNow);
 
                 yield return new TestCaseData(PerftPosition.Position2, new PerftResult(1, TimeSpan.Zero, 48));
-                
+
                 yield return new TestCaseData(PerftPosition.Position2, new PerftResult(2, TimeSpan.Zero, 2039));
 
-                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(3, TimeSpan.Zero, 97862))
-                    .MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position2, new PerftResult(3, TimeSpan.Zero, 97862));
 
                 yield return new TestCaseData(PerftPosition.Position2, new PerftResult(4, TimeSpan.Zero, 4085603))
                     .MakeExplicit(TooLongNow);
@@ -467,8 +468,7 @@ namespace ChessPlatform.Tests
                 yield return new TestCaseData(PerftPosition.Position4, new PerftResult(2, TimeSpan.Zero, 264));
                 yield return new TestCaseData(PerftPosition.Position4, new PerftResult(3, TimeSpan.Zero, 9467));
 
-                yield return new TestCaseData(PerftPosition.Position4, 4, new PerftResult(4, TimeSpan.Zero, 422333))
-                    .MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position4, new PerftResult(4, TimeSpan.Zero, 422333));
 
                 yield return new TestCaseData(PerftPosition.Position4, new PerftResult(5, TimeSpan.Zero, 15833292))
                     .MakeExplicit(TooLongNow);
@@ -480,8 +480,7 @@ namespace ChessPlatform.Tests
 
                 yield return new TestCaseData(PerftPosition.Position5, new PerftResult(2, TimeSpan.Zero, 1352));
 
-                yield return new TestCaseData(PerftPosition.Position5, new PerftResult(3, TimeSpan.Zero, 53392))
-                    .MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position5, new PerftResult(3, TimeSpan.Zero, 53392));
             }
 
             IEnumerator IEnumerable.GetEnumerator()

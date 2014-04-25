@@ -22,6 +22,8 @@ namespace ChessPlatform
                 ToGroupName),
             RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
 
+        private readonly int _hashCode;
+
         #endregion
 
         #region Constructors
@@ -29,7 +31,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="PieceMove"/> class.
         /// </summary>
-        public PieceMove(Position from, Position to)
+        public PieceMove(Position from, Position to, PieceType promotionResult)
         {
             #region Argument Check
 
@@ -38,10 +40,29 @@ namespace ChessPlatform
                 throw new ArgumentException("The source and destination positions must be different.");
             }
 
+            if (promotionResult != PieceType.None && !ChessConstants.ValidPromotions.Contains(promotionResult))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "Invalid promotion: {0}.", promotionResult),
+                    "promotionResult");
+            }
+
             #endregion
 
             this.From = from;
             this.To = to;
+            this.PromotionResult = promotionResult;
+
+            _hashCode = this.From.CombineHashCodes(this.To).CombineHashCodes(this.PromotionResult);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="PieceMove"/> class.
+        /// </summary>
+        public PieceMove(Position from, Position to)
+            : this(from, to, PieceType.None)
+        {
+            // Nothing to do
         }
 
         #endregion
@@ -55,6 +76,12 @@ namespace ChessPlatform
         }
 
         public Position To
+        {
+            get;
+            private set;
+        }
+
+        public PieceType PromotionResult
         {
             get;
             private set;
@@ -119,12 +146,27 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return this.From.CombineHashCodes(this.To);
+            return this.From.CombineHashCodes(this.To).CombineHashCodes(this.PromotionResult);
+            //return _hashCode;
         }
 
         public override string ToString()
         {
             return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", this.From, this.To);
+        }
+
+        public PieceMove MakePromotion(PieceType promotionResult)
+        {
+            #region Argument Check
+
+            if (promotionResult == PieceType.None)
+            {
+                throw new ArgumentException("Must be a valid promotion piece.", "promotionResult");
+            }
+
+            #endregion
+
+            return new PieceMove(this.From, this.To, promotionResult);
         }
 
         #endregion
@@ -143,7 +185,7 @@ namespace ChessPlatform
                 return true;
             }
 
-            return other.From == this.From && other.To == this.To;
+            return other.From == this.From && other.To == this.To && other.PromotionResult == this.PromotionResult;
         }
 
         #endregion

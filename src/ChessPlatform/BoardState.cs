@@ -81,10 +81,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="BoardState"/> class.
         /// </summary>
-        private BoardState(
-            [NotNull] BoardState previousState,
-            [NotNull] PieceMove move,
-            [CanBeNull] PieceType? promotedPieceType)
+        private BoardState([NotNull] BoardState previousState, [NotNull] PieceMove move)
         {
             #region Argument Check
 
@@ -118,7 +115,6 @@ namespace ChessPlatform
                 move,
                 previousState._activeColor,
                 previousState._enPassantCaptureInfo,
-                promotedPieceType,
                 ref _castlingOptions);
 
             _previousMove = makeMoveData.Move;
@@ -326,9 +322,9 @@ namespace ChessPlatform
             return this.ValidMoves.Contains(move) ? _pieceData.CheckCastlingMove(move) : null;
         }
 
-        public BoardState MakeMove([NotNull] PieceMove move, [CanBeNull] PieceType? promotedPieceType)
+        public BoardState MakeMove([NotNull] PieceMove move)
         {
-            return new BoardState(this, move, promotedPieceType);
+            return new BoardState(this, move);
         }
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
@@ -416,10 +412,10 @@ namespace ChessPlatform
             var isInCheck = _pieceData.IsInCheck(_activeColor);
             var oppositeColor = _activeColor.Invert();
 
-            var twoKingsOnly = _pieceData.IsTwoKingsOnlyState();
-            if (twoKingsOnly)
+            var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
+            if (isInsufficientMaterialState)
             {
-                state = GameState.ForcedDrawTwoKingsOnly;
+                state = GameState.ForcedDrawInsufficientMaterial;
                 validMoves = new HashSet<PieceMove>().AsReadOnly();
                 return;
             }
@@ -441,9 +437,12 @@ namespace ChessPlatform
 
                 foreach (var destinationPosition in potentialMovePositions)
                 {
-                    var move = new PieceMove(sourcePosition, destinationPosition);
+                    var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, destinationPosition);
 
-                    var castlingMove = _pieceData.CheckCastlingMove(move);
+                    var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
+                    var basicMove = new PieceMove(sourcePosition, destinationPosition, promotionResult);
+
+                    var castlingMove = _pieceData.CheckCastlingMove(basicMove);
                     if (castlingMove != null)
                     {
                         if (isInCheck || _pieceData.IsUnderAttack(castlingMove.PassedPosition, oppositeColor))
@@ -454,15 +453,20 @@ namespace ChessPlatform
 
                     var castlingOptionsCopy = _castlingOptions;
                     pieceDataCopy.MakeMove(
-                        move,
+                        basicMove,
                         _activeColor,
                         _enPassantCaptureInfo,
-                        PieceType.Queen,
                         ref castlingOptionsCopy);
 
                     if (!pieceDataCopy.IsInCheck(_activeColor))
                     {
-                        validMoveSet.Add(move);
+                        validMoveSet.Add(basicMove);
+
+                        if (isPawnPromotion)
+                        {
+                            ChessHelper.NonDefaultPromotions.DoForEach(
+                                item => validMoveSet.Add(basicMove.MakePromotion(item)));
+                        }
                     }
 
                     pieceDataCopy.UndoMove();
@@ -489,7 +493,7 @@ namespace ChessPlatform
                     resultString = _activeColor == PieceColor.White ? ResultStrings.BlackWon : ResultStrings.WhiteWon;
                     break;
 
-                case GameState.ForcedDrawTwoKingsOnly:
+                case GameState.ForcedDrawInsufficientMaterial:
                 case GameState.Stalemate:
                     resultString = ResultStrings.Draw;
                     break;
@@ -624,28 +628,16 @@ namespace ChessPlatform
             }
 
             var moves = boardState.ValidMoves;
+            if (depth == 1)
+            {
+                perftData.NodeCount += checked((ulong)moves.Count);
+                return;
+            }
+
             foreach (var move in moves)
             {
-                //// TODO [vmcl] Make various promotions various moves (include promoted piece type into PieceMove)
-                if (boardState.IsPawnPromotion(move))
-                {
-                    foreach (var promotion in ChessConstants.ValidPromotions)
-                    {
-                        var newBoardState = boardState.MakeMove(move, promotion);
-                        checked
-                        {
-                            PerftInternal(newBoardState, depth - 1, perftData);
-                        }
-                    }
-                }
-                else
-                {
-                    var newBoardState = boardState.MakeMove(move, null);
-                    checked
-                    {
-                        PerftInternal(newBoardState, depth - 1, perftData);
-                    }
-                }
+                var newBoardState = boardState.MakeMove(move);
+                PerftInternal(newBoardState, depth - 1, perftData);
             }
         }
 

@@ -11,6 +11,8 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
+        public const double DefaultZeroTolerance = 1E-7d;
+
         public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
 
@@ -125,6 +127,11 @@ namespace ChessPlatform
         internal static readonly ReadOnlySet<byte> KnightAttackOrMoveOffsets =
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
 
+        internal static readonly PieceType DefaultPromotion = PieceType.Queen;
+
+        internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
+            ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
+
         #endregion
 
         #region Public Methods
@@ -132,6 +139,11 @@ namespace ChessPlatform
         public static Position[] GetKnightMovePositions(Position position)
         {
             return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
+        }
+
+        public static bool IsZero(this double value, double tolerance = DefaultZeroTolerance)
+        {
+            return Math.Abs(value) <= DefaultZeroTolerance;
         }
 
         #endregion

@@ -51,8 +51,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new ArgumentException("Invalid argument(s).");
             }
 
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (this.Ratio == 0d)
+            if (this.Ratio.IsZero())
             {
                 throw new InvalidOperationException("Unable to convert back since the ratio is zero.");
             }
