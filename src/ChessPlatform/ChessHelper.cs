@@ -132,6 +132,9 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
 
+        private static readonly ReadOnlyDictionary<byte, Position> X88ValueToPositionMap =
+            AllPositions.ToDictionary(item => item.X88Value, item => item).AsReadOnly();
+
         #endregion
 
         #region Public Methods
@@ -174,11 +177,16 @@ namespace ChessPlatform
                 var x88Value = (byte)(position.X88Value + x88Offset);
                 if (Position.IsValidX88Value(x88Value))
                 {
-                    result.Add(new Position(x88Value));
+                    result.Add(x88Value.GetPositionFromX88Value());
                 }
             }
 
             return result.ToArray();
+        }
+
+        internal static Position GetPositionFromX88Value(this byte x88Value)
+        {
+            return X88ValueToPositionMap[x88Value];
         }
 
         internal static bool TryParseInt(string value, out int result)

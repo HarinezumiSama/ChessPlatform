@@ -78,7 +78,10 @@ namespace ChessPlatform
         {
             var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
 
-            var result = x88Values == null ? new Position[0] : x88Values.Select(item => new Position(item)).ToArray();
+            var result = x88Values == null
+                ? new Position[0]
+                : x88Values.Select(ChessHelper.GetPositionFromX88Value).ToArray();
+
             return result;
         }
 
@@ -188,78 +191,16 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            var resultList = new List<Position>();
-
-            var attackingKnights = ChessHelper
-                .GetKnightMovePositions(targetPosition)
-                .Where(
-                    position =>
-                    {
-                        var pi = GetPieceInfo(position);
-                        return pi.Color == attackingColor && pi.PieceType == PieceType.Knight;
-                    })
-                .ToArray();
-
-            resultList.AddRange(attackingKnights);
-
-            foreach (var rayOffset in ChessHelper.AllRays)
-            {
-                for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
-                    Position.IsValidX88Value(currentX88Value);
-                    currentX88Value += rayOffset.Offset)
-                {
-                    var currentPosition = new Position(currentX88Value);
-
-                    var pieceInfo = GetPieceInfo(currentPosition);
-                    if (pieceInfo.Piece == Piece.None || !pieceInfo.Color.HasValue)
-                    {
-                        continue;
-                    }
-
-                    if (pieceInfo.Color.Value != attackingColor)
-                    {
-                        break;
-                    }
-
-                    var pieceType = pieceInfo.PieceType;
-                    if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
-                        || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
-                    {
-                        resultList.Add(currentPosition);
-                        break;
-                    }
-
-                    var difference = (byte)(targetPosition.X88Value - currentX88Value);
-                    switch (pieceType)
-                    {
-                        case PieceType.Pawn:
-                            if (ChessHelper.PawnAttackOffsetMap[attackingColor].Contains(difference))
-                            {
-                                resultList.Add(currentPosition);
-                            }
-
-                            break;
-
-                        case PieceType.King:
-                            if (ChessHelper.KingAttackOrMoveOffsets.Contains(difference))
-                            {
-                                resultList.Add(currentPosition);
-                            }
-
-                            break;
-                    }
-
-                    break;
-                }
-            }
-
-            return resultList.ToArray();
+            Position[] result;
+            GetAttacksInternal(targetPosition, attackingColor, false, out result);
+            return result.EnsureNotNull();
         }
 
         public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
         {
-            var attacks = GetAttacks(targetPosition, attackingColor);
-            return attacks.Length != 0;
+            Position[] attackingPositions;
+            var result = GetAttacksInternal(targetPosition, attackingColor, true, out attackingPositions);
+            return result;
         }
 
         public bool IsAnyUnderAttack(
@@ -769,6 +710,12 @@ namespace ChessPlatform
             return oldPiece;
         }
 
+        private bool IsKnightAttacking(Position position, PieceColor attackingColor)
+        {
+            var pi = GetPieceInfo(position);
+            return pi.Color == attackingColor && pi.PieceType == PieceType.Knight;
+        }
+
         private void GetPotentialMovePositionsByRays(
             Position sourcePosition,
             PieceColor sourceColor,
@@ -783,7 +730,7 @@ namespace ChessPlatform
                     Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
                     currentX88Value += ray.Offset, distance++)
                 {
-                    var currentPosition = new Position(currentX88Value);
+                    var currentPosition = currentX88Value.GetPositionFromX88Value();
 
                     var pieceInfo = GetPieceInfo(currentPosition);
                     var currentColor = pieceInfo.Color;
@@ -937,6 +884,112 @@ namespace ChessPlatform
             }
 
             return resultList.ToArray();
+        }
+
+        private bool GetAttacksInternal(
+            Position targetPosition,
+            PieceColor attackingColor,
+            bool findFirstAttackOnly,
+            out Position[] attackingPositions)
+        {
+            var resultList = new List<Position>();
+
+            var knightMovePositions = ChessHelper.GetKnightMovePositions(targetPosition);
+            if (findFirstAttackOnly)
+            {
+                var knightAttacks = knightMovePositions.Any(position => IsKnightAttacking(position, attackingColor));
+                if (knightAttacks)
+                {
+                    attackingPositions = null;
+                    return true;
+                }
+            }
+            else
+            {
+                var attackingKnights = knightMovePositions
+                    .Where(position => IsKnightAttacking(position, attackingColor))
+                    .ToArray();
+
+                resultList.AddRange(attackingKnights);
+            }
+
+            foreach (var rayOffset in ChessHelper.AllRays)
+            {
+                for (var currentX88Value = (byte)(targetPosition.X88Value + rayOffset.Offset);
+                    Position.IsValidX88Value(currentX88Value);
+                    currentX88Value += rayOffset.Offset)
+                {
+                    var currentPosition = currentX88Value.GetPositionFromX88Value();
+
+                    var pieceInfo = GetPieceInfo(currentPosition);
+                    if (pieceInfo.Piece == Piece.None || !pieceInfo.Color.HasValue)
+                    {
+                        continue;
+                    }
+
+                    if (pieceInfo.Color.Value != attackingColor)
+                    {
+                        break;
+                    }
+
+                    var pieceType = pieceInfo.PieceType;
+                    if ((pieceType.IsSlidingStraight() && rayOffset.IsStraight)
+                        || (pieceType.IsSlidingDiagonally() && !rayOffset.IsStraight))
+                    {
+                        if (findFirstAttackOnly)
+                        {
+                            attackingPositions = null;
+                            return true;
+                        }
+
+                        resultList.Add(currentPosition);
+                        break;
+                    }
+
+                    var difference = (byte)(targetPosition.X88Value - currentX88Value);
+                    switch (pieceType)
+                    {
+                        case PieceType.Pawn:
+                            if (ChessHelper.PawnAttackOffsetMap[attackingColor].Contains(difference))
+                            {
+                                if (findFirstAttackOnly)
+                                {
+                                    attackingPositions = null;
+                                    return true;
+                                }
+
+                                resultList.Add(currentPosition);
+                            }
+
+                            break;
+
+                        case PieceType.King:
+                            if (ChessHelper.KingAttackOrMoveOffsets.Contains(difference))
+                            {
+                                if (findFirstAttackOnly)
+                                {
+                                    attackingPositions = null;
+                                    return true;
+                                }
+
+                                resultList.Add(currentPosition);
+                            }
+
+                            break;
+                    }
+
+                    break;
+                }
+            }
+
+            if (findFirstAttackOnly)
+            {
+                attackingPositions = null;
+                return false;
+            }
+
+            attackingPositions = resultList.ToArray();
+            return attackingPositions.Length != 0;
         }
 
         #endregion
