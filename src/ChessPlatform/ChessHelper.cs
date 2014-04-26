@@ -147,7 +147,8 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
-        private static readonly Dictionary<AttackCacheKey, Position[][]> AttackCache = GenerateAttackCache();
+        private static readonly Dictionary<AttackCacheKey, Position[][]> PieceToAttackedPositionsMap =
+            GeneratePieceToAttackedPositionsMap();
 
         #endregion
 
@@ -207,7 +208,7 @@ namespace ChessPlatform
         {
             var key = new AttackCacheKey(sourcePosition, attackingPiece);
 
-            var result = AttackCache[key];
+            var result = PieceToAttackedPositionsMap[key];
             return result;
         }
 
@@ -277,16 +278,24 @@ namespace ChessPlatform
             return result;
         }
 
-        private static Dictionary<AttackCacheKey, Position[][]> GenerateAttackCache()
+        private static Dictionary<AttackCacheKey, Position[][]> GeneratePieceToAttackedPositionsMap()
         {
             var result = new Dictionary<AttackCacheKey, Position[][]>();
 
-            Action<Position, PieceType, Position[][]> addAllColorsToCache =
+            Action<Position, Piece, Position[][]> addToResult =
+                (position, piece, positionArrays) =>
+                {
+                    var filteredPositionArrays = positionArrays.Where(positions => positions.Length != 0).ToArray();
+                    result.Add(new AttackCacheKey(position, piece), filteredPositionArrays);
+                };
+
+            Action<Position, PieceType, Position[][]> addAllColorsToResult =
                 (position, pieceType, positionArrays) =>
                 {
                     foreach (var pieceColor in ChessConstants.PieceColors)
                     {
-                        result.Add(new AttackCacheKey(position, pieceType.ToPiece(pieceColor)), positionArrays);
+                        var piece = pieceType.ToPiece(pieceColor);
+                        addToResult(position, piece, positionArrays);
                     }
                 };
 
@@ -296,13 +305,13 @@ namespace ChessPlatform
                     var positionArrays =
                         GetKnightMovePositionsNonCached(position).Select(item => item.AsArray()).ToArray();
 
-                    addAllColorsToCache(position, PieceType.Knight, positionArrays);
+                    addAllColorsToResult(position, PieceType.Knight, positionArrays);
                 }
 
                 foreach (var pieceType in new[] { PieceType.Bishop, PieceType.Rook, PieceType.Queen })
                 {
                     var positionArrays = GetMovePositionArraysByRays(position, pieceType, MaxSlidingPieceDistance);
-                    addAllColorsToCache(position, pieceType, positionArrays);
+                    addAllColorsToResult(position, pieceType, positionArrays);
                 }
 
                 {
@@ -311,7 +320,7 @@ namespace ChessPlatform
                         KingAttackRays,
                         MaxKingMoveOrAttackDistance);
 
-                    addAllColorsToCache(position, PieceType.King, positionArrays);
+                    addAllColorsToResult(position, PieceType.King, positionArrays);
                 }
             }
 
@@ -321,7 +330,7 @@ namespace ChessPlatform
                 {
                     var rays = PawnAttackRayMap[pieceColor];
                     var positionArrays = GetMovePositionArraysByRays(position, rays, MaxPawnAttackOrMoveDistance);
-                    result.Add(new AttackCacheKey(position, PieceType.Pawn.ToPiece(pieceColor)), positionArrays);
+                    addToResult(position, PieceType.Pawn.ToPiece(pieceColor), positionArrays);
                 }
             }
 
