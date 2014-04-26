@@ -143,7 +143,7 @@ namespace ChessPlatform
         private static readonly ReadOnlySet<Position> AllPawnPositions =
             Enumerable
                 .Range(1, ChessConstants.RankCount - 2)
-                .SelectMany(file => Position.GenerateFile((byte)file))
+                .SelectMany(rank => Position.GenerateRank((byte)rank))
                 .ToHashSet()
                 .AsReadOnly();
 
@@ -308,7 +308,7 @@ namespace ChessPlatform
                 {
                     var positionArrays = GetMovePositionArraysByRays(
                         position,
-                        PieceType.King,
+                        KingAttackRays,
                         MaxKingMoveOrAttackDistance);
 
                     addAllColorsToCache(position, PieceType.King, positionArrays);
