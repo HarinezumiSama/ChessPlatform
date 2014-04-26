@@ -61,6 +61,7 @@
     <Compile Include="EnPassantCaptureInfoExtensions.cs" />
     <Compile Include="EnPassantInfo.cs" />
     <Compile Include="GameState.cs" />
+    <Compile Include="AttackCacheKey.cs" />
     <Compile Include="MovePieceData.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />

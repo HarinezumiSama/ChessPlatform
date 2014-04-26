@@ -59,7 +59,7 @@ namespace ChessPlatform
 
         internal const int MaxSlidingPieceDistance = 8;
         internal const int MaxPawnAttackOrMoveDistance = 1;
-        internal const int MaxKingMoveDistance = 1;
+        internal const int MaxKingMoveOrAttackDistance = 1;
 
         internal static readonly ReadOnlyCollection<RayInfo> StraightRays =
             new ReadOnlyCollection<RayInfo>(
@@ -136,7 +136,18 @@ namespace ChessPlatform
             AllPositions.ToDictionary(item => item.X88Value, item => item).AsReadOnly();
 
         private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
-            AllPositions.ToDictionary(Factotum.Identity, GetKnightMovePositionsNonCached).AsReadOnly();
+            AllPositions.ToDictionary(
+                Factotum.Identity,
+                position => GetKnightMovePositionsNonCached(position).ToArray().AsReadOnly()).AsReadOnly();
+
+        private static readonly ReadOnlySet<Position> AllPawnPositions =
+            Enumerable
+                .Range(1, ChessConstants.RankCount - 2)
+                .SelectMany(file => Position.GenerateFile((byte)file))
+                .ToHashSet()
+                .AsReadOnly();
+
+        private static readonly Dictionary<AttackCacheKey, Position[][]> AttackCache = GenerateAttackCache();
 
         #endregion
 
@@ -192,6 +203,14 @@ namespace ChessPlatform
             return X88ValueToPositionMap[x88Value];
         }
 
+        internal static Position[][] GetAttackedPositionArrays(Position sourcePosition, Piece attackingPiece)
+        {
+            var key = new AttackCacheKey(sourcePosition, attackingPiece);
+
+            var result = AttackCache[key];
+            return result;
+        }
+
         internal static bool TryParseInt(string value, out int result)
         {
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
@@ -201,9 +220,112 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static ReadOnlyCollection<Position> GetKnightMovePositionsNonCached(Position position)
+        private static IEnumerable<Position> GetKnightMovePositionsNonCached(Position position)
         {
-            return GetOnboardPositions(position, KnightAttackOrMoveOffsets).AsReadOnly();
+            return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
+        }
+
+        private static Position[][] GetMovePositionArraysByRays(
+            Position sourcePosition,
+            ICollection<RayInfo> rays,
+            int maxDistance)
+        {
+            var resultList = new List<Position[]>(rays.Count);
+
+            var positionList = new List<Position>(Math.Max(ChessConstants.FileCount, ChessConstants.RankCount));
+            foreach (var ray in rays)
+            {
+                positionList.Clear();
+
+                for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
+                    Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
+                    currentX88Value += ray.Offset, distance++)
+                {
+                    var currentPosition = currentX88Value.GetPositionFromX88Value();
+                    positionList.Add(currentPosition);
+                }
+
+                resultList.Add(positionList.ToArray());
+            }
+
+            return resultList.ToArray();
+        }
+
+        private static Position[][] GetMovePositionArraysByRays(
+            Position sourcePosition,
+            PieceType pieceType,
+            int maxDistance)
+        {
+            var rays = new List<RayInfo>(AllRays.Count);
+
+            if (pieceType.IsSlidingStraight())
+            {
+                rays.AddRange(StraightRays);
+            }
+
+            if (pieceType.IsSlidingDiagonally())
+            {
+                rays.AddRange(DiagonalRays);
+            }
+
+            if (rays.Count == 0)
+            {
+                throw new InvalidOperationException("The method is intended for sliding pieces.");
+            }
+
+            var result = GetMovePositionArraysByRays(sourcePosition, rays, maxDistance);
+            return result;
+        }
+
+        private static Dictionary<AttackCacheKey, Position[][]> GenerateAttackCache()
+        {
+            var result = new Dictionary<AttackCacheKey, Position[][]>();
+
+            Action<Position, PieceType, Position[][]> addAllColorsToCache =
+                (position, pieceType, positionArrays) =>
+                {
+                    foreach (var pieceColor in ChessConstants.PieceColors)
+                    {
+                        result.Add(new AttackCacheKey(position, pieceType.ToPiece(pieceColor)), positionArrays);
+                    }
+                };
+
+            foreach (var position in AllPositions)
+            {
+                {
+                    var positionArrays =
+                        GetKnightMovePositionsNonCached(position).Select(item => item.AsArray()).ToArray();
+
+                    addAllColorsToCache(position, PieceType.Knight, positionArrays);
+                }
+
+                foreach (var pieceType in new[] { PieceType.Bishop, PieceType.Rook, PieceType.Queen })
+                {
+                    var positionArrays = GetMovePositionArraysByRays(position, pieceType, MaxSlidingPieceDistance);
+                    addAllColorsToCache(position, pieceType, positionArrays);
+                }
+
+                {
+                    var positionArrays = GetMovePositionArraysByRays(
+                        position,
+                        PieceType.King,
+                        MaxKingMoveOrAttackDistance);
+
+                    addAllColorsToCache(position, PieceType.King, positionArrays);
+                }
+            }
+
+            foreach (var position in AllPawnPositions)
+            {
+                foreach (var pieceColor in ChessConstants.PieceColors)
+                {
+                    var rays = PawnAttackRayMap[pieceColor];
+                    var positionArrays = GetMovePositionArraysByRays(position, rays, MaxPawnAttackOrMoveDistance);
+                    result.Add(new AttackCacheKey(position, PieceType.Pawn.ToPiece(pieceColor)), positionArrays);
+                }
+            }
+
+            return result;
         }
 
         #endregion

@@ -266,7 +266,7 @@ namespace ChessPlatform
 
         public bool Equals(Position other)
         {
-            return other._file == _file && other._rank == _rank;
+            return other._x88Value == _x88Value;
         }
 
         #endregion

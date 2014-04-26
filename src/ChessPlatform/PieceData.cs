@@ -834,7 +834,7 @@ namespace ChessPlatform
                 sourcePosition,
                 pieceColor,
                 ChessHelper.KingAttackRays,
-                ChessHelper.MaxKingMoveDistance,
+                ChessHelper.MaxKingMoveOrAttackDistance,
                 true,
                 resultList);
 
