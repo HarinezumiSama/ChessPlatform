@@ -325,6 +325,10 @@ namespace ChessPlatform.UI.Desktop
                         this.MainGrid.ShowInfoPopup("Check!");
                         break;
 
+                    case GameState.DoubleCheck:
+                        this.MainGrid.ShowInfoPopup("Double Check!");
+                        break;
+
                     case GameState.Checkmate:
                         this.MainGrid.ShowInfoPopup(
                             string.Format(

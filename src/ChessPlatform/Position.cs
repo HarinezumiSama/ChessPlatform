@@ -13,6 +13,7 @@ namespace ChessPlatform
         private readonly byte _file;
         private readonly byte _rank;
         private readonly byte _x88Value;
+        private readonly ulong _bitboardBit;
         private readonly int _hashCode;
 
         #endregion
@@ -48,8 +49,9 @@ namespace ChessPlatform
 
             _file = (byte)(x88Value & 0x07);
             _rank = (byte)(x88Value >> 4);
-            _x88Value = x88Value;
 
+            _x88Value = x88Value;
+            _bitboardBit = 1UL << (byte)(_file | (_rank << 3));
             _hashCode = _x88Value;
         }
 
@@ -90,8 +92,9 @@ namespace ChessPlatform
 
             _file = (byte)file;
             _rank = (byte)rank;
-            _x88Value = (byte)((_rank << 4) + _file);
 
+            _x88Value = (byte)((_rank << 4) + _file);
+            _bitboardBit = 1UL << (byte)(_file | (_rank << 3));
             _hashCode = _x88Value;
         }
 
@@ -123,6 +126,19 @@ namespace ChessPlatform
             get
             {
                 return _x88Value;
+            }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal ulong BitboardBit
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _bitboardBit;
             }
         }
 

@@ -409,6 +409,7 @@ namespace ChessPlatform
 
         private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
         {
+            //// TODO [vmcl] Implement DoubleCheck verification
             var isInCheck = _pieceData.IsInCheck(_activeColor);
             var oppositeColor = _activeColor.Invert();
 

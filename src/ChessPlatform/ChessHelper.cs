@@ -147,8 +147,11 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
-        private static readonly Dictionary<AttackCacheKey, Position[][]> PieceToAttackedPositionsMap =
+        private static readonly Dictionary<AttackingPieceKey, Position[][]> PieceToAttackedPositionsMap =
             GeneratePieceToAttackedPositionsMap();
+
+        //private static readonly Dictionary<Position, AttackingPieceValue[]> PositionToAttackingPieceValueMap =
+        //    GeneratePositionToAttackingPieceValueMap();
 
         #endregion
 
@@ -162,6 +165,38 @@ namespace ChessPlatform
         public static bool IsZero(this double value, double tolerance = DefaultZeroTolerance)
         {
             return Math.Abs(value) <= DefaultZeroTolerance;
+        }
+
+        [CLSCompliant(false)]
+        // ReSharper disable once InconsistentNaming
+        public static int FindLs1b(this ulong value)
+        {
+            if (value == 0)
+            {
+                return -1;
+            }
+
+            var result = 0;
+            var bit = 1UL;
+            while ((value & bit) == 0)
+            {
+                result++;
+                bit <<= 1;
+
+                //// TODO [vmcl] Remove this verification
+                if (result >= sizeof(ulong) * 8)
+                {
+                    throw new InvalidOperationException("Algorithm error.");
+                }
+            }
+
+            return result;
+        }
+
+        // ReSharper disable once InconsistentNaming
+        public static int FindLs1b(this long value)
+        {
+            return FindLs1b((ulong)value);
         }
 
         #endregion
@@ -206,11 +241,16 @@ namespace ChessPlatform
 
         internal static Position[][] GetAttackedPositionArrays(Position sourcePosition, Piece attackingPiece)
         {
-            var key = new AttackCacheKey(sourcePosition, attackingPiece);
+            var key = new AttackingPieceKey(sourcePosition, attackingPiece);
 
             var result = PieceToAttackedPositionsMap[key];
             return result;
         }
+
+        //internal static AttackingPieceValue[] GetAttackingPieceValues(Position targetPosition)
+        //{
+        //    return PositionToAttackingPieceValueMap[targetPosition];
+        //}
 
         internal static bool TryParseInt(string value, out int result)
         {
@@ -278,15 +318,15 @@ namespace ChessPlatform
             return result;
         }
 
-        private static Dictionary<AttackCacheKey, Position[][]> GeneratePieceToAttackedPositionsMap()
+        private static Dictionary<AttackingPieceKey, Position[][]> GeneratePieceToAttackedPositionsMap()
         {
-            var result = new Dictionary<AttackCacheKey, Position[][]>();
+            var result = new Dictionary<AttackingPieceKey, Position[][]>();
 
             Action<Position, Piece, Position[][]> addToResult =
                 (position, piece, positionArrays) =>
                 {
                     var filteredPositionArrays = positionArrays.Where(positions => positions.Length != 0).ToArray();
-                    result.Add(new AttackCacheKey(position, piece), filteredPositionArrays);
+                    result.Add(new AttackingPieceKey(position, piece), filteredPositionArrays);
                 };
 
             Action<Position, PieceType, Position[][]> addAllColorsToResult =
@@ -335,6 +375,24 @@ namespace ChessPlatform
             }
 
             return result;
+        }
+
+        private static Dictionary<Position, AttackingPieceValue[]> GeneratePositionToAttackingPieceValueMap()
+        {
+            ////var result = new Dictionary<Position, AttackingPieceValue[]>();
+
+            ////Action<Position, AttackingPieceValue[]> addToResult =
+            ////    (position, piece, positionArrays) =>
+            ////    {
+            ////        !~!~!~~!~!
+            ////            var
+            ////        filteredPositionArrays = positionArrays.Where(positions => positions.Length != 0).ToArray();
+            ////        result.Add(new AttackingPieceKey(position, piece), filteredPositionArrays);
+            ////    };
+
+            ////return result;
+
+            throw new NotImplementedException();
         }
 
         #endregion

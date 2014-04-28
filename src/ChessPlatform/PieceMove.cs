@@ -151,7 +151,12 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}-{1}", this.From, this.To);
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}-{1}{2}",
+                this.From,
+                this.To,
+                this.PromotionResult == PieceType.None ? string.Empty : "=" + this.PromotionResult.GetFenChar());
         }
 
         public PieceMove MakePromotion(PieceType promotionResult)

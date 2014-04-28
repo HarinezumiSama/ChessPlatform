@@ -400,6 +400,9 @@ namespace ChessPlatform.Tests
 
         #region PerftPosition Enumeration
 
+        /// <summary>
+        ///     Positions from http://chessprogramming.wikispaces.com/Perft+Results
+        /// </summary>
         public enum PerftPosition
         {
             Initial,

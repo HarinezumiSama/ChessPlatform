@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace ChessPlatform
 {
-    internal struct AttackCacheKey : IEquatable<AttackCacheKey>
+    internal struct AttackingPieceKey : IEquatable<AttackingPieceKey>
     {
         #region Constants and Fields
 
@@ -18,10 +18,7 @@ namespace ChessPlatform
 
         #region Constructors
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="AttackCacheKey"/> class.
-        /// </summary>
-        public AttackCacheKey(Position position, Piece piece)
+        public AttackingPieceKey(Position position, Piece piece)
         {
             #region Argument Check
 
@@ -64,12 +61,12 @@ namespace ChessPlatform
 
         #region Operators
 
-        public static bool operator ==(AttackCacheKey left, AttackCacheKey right)
+        public static bool operator ==(AttackingPieceKey left, AttackingPieceKey right)
         {
-            return EqualityComparer<AttackCacheKey>.Default.Equals(left, right);
+            return EqualityComparer<AttackingPieceKey>.Default.Equals(left, right);
         }
 
-        public static bool operator !=(AttackCacheKey left, AttackCacheKey right)
+        public static bool operator !=(AttackingPieceKey left, AttackingPieceKey right)
         {
             return !(left == right);
         }
@@ -80,7 +77,7 @@ namespace ChessPlatform
 
         public override bool Equals(object obj)
         {
-            return obj is AttackCacheKey && Equals((AttackCacheKey)obj);
+            return obj is AttackingPieceKey && Equals((AttackingPieceKey)obj);
         }
 
         public override int GetHashCode()
@@ -90,14 +87,14 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0} @ {1}", _piece.GetDescription(), _position);
+            return string.Format(CultureInfo.InvariantCulture, "{{{0} @ {1}}}", _piece.GetDescription(), _position);
         }
 
         #endregion
 
-        #region IEquatable<AttackCacheKey> Members
+        #region IEquatable<AttackingPieceKey> Members
 
-        public bool Equals(AttackCacheKey other)
+        public bool Equals(AttackingPieceKey other)
         {
             return other._piece == _piece && other._position == _position;
         }

@@ -36,6 +36,17 @@ namespace ChessPlatform
             return result;
         }
 
+        public static char GetFenChar(this PieceType pieceType)
+        {
+            char result;
+            if (!ChessConstants.PieceTypeToFenCharMap.TryGetValue(pieceType, out result))
+            {
+                throw new ArgumentException("Invalid piece type.", "pieceType");
+            }
+
+            return result;
+        }
+
         public static bool IsSlidingDiagonally(this PieceType pieceType)
         {
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design

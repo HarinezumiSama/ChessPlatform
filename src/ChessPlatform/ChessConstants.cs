@@ -129,6 +129,16 @@ namespace ChessPlatform
                 .ToDictionary(item => FenCharAttribute.Get(item), Factotum.Identity)
                 .AsReadOnly();
 
+        public static readonly ReadOnlyDictionary<PieceType, char> PieceTypeToFenCharMap =
+            typeof(PieceType)
+                .GetFields(BindingFlags.Static | BindingFlags.Public)
+                .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
+                .Where(obj => obj.FenChar.HasValue)
+                .ToDictionary(
+                    obj => (PieceType)obj.Item.GetValue(null),
+                    obj => obj.FenChar.Value)
+                .AsReadOnly();
+
         public static readonly ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
             typeof(Piece)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)

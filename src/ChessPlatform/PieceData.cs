@@ -16,6 +16,11 @@ namespace ChessPlatform
             new[] { PieceType.None, PieceType.King }.ToHashSet().AsReadOnly();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
+
+        private readonly Dictionary<Piece, ulong> _bitboards = ChessConstants.Pieces.ToDictionary(
+            Factotum.Identity,
+            item => item == Piece.None ? ulong.MaxValue : 0UL);
+
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
 
@@ -47,6 +52,7 @@ namespace ChessPlatform
 
             _pieces = other._pieces.Copy();
             _pieceOffsetMap = CopyPieceOffsetMap(other._pieceOffsetMap);
+            _bitboards = new Dictionary<Piece, ulong>(other._bitboards);
         }
 
         #endregion
@@ -632,10 +638,13 @@ namespace ChessPlatform
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var position in ChessHelper.AllPositions)
             {
-                var piece = _pieces[position.X88Value];
+                var x88Value = position.X88Value;
+                var bitboardBit = position.BitboardBit;
+
+                var piece = _pieces[x88Value];
 
                 var x88Values = _pieceOffsetMap.GetValueOrDefault(piece);
-                if (x88Values == null || !x88Values.Contains(position.X88Value))
+                if (x88Values == null || !x88Values.Contains(x88Value))
                 {
                     throw new ChessPlatformException(
                         string.Format(
@@ -643,6 +652,20 @@ namespace ChessPlatform
                             "Inconsistency for the piece '{0}' at '{1}'.",
                             piece.GetName(),
                             position));
+                }
+
+                foreach (var currentPiece in ChessConstants.Pieces)
+                {
+                    var isSet = (_bitboards[currentPiece] & bitboardBit) != 0;
+                    if ((piece == currentPiece) != isSet)
+                    {
+                        throw new ChessPlatformException(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "Bitboard inconsistency for the piece '{0}' at '{1}'.",
+                                piece.GetName(),
+                                position));
+                    }
                 }
             }
 
@@ -700,9 +723,12 @@ namespace ChessPlatform
         private Piece SetPiece(Position position, Piece piece)
         {
             var x88Value = position.X88Value;
+            var bitboardBit = position.BitboardBit;
 
             var oldPiece = _pieces[x88Value];
             _pieces[x88Value] = piece;
+            _bitboards[oldPiece] &= ~bitboardBit;
+            _bitboards[piece] |= bitboardBit;
 
             var oldPieceRemoved = _pieceOffsetMap.GetValueOrCreate(oldPiece).Remove(x88Value);
             if (!oldPieceRemoved)
