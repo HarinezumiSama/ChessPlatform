@@ -36,7 +36,7 @@ namespace ChessPlatform
 
         public static Piece EnsureDefined(this Piece piece)
         {
-            if (!ChessConstants.Pieces.Contains(piece))
+            if (DebugConstants.EnsureEnumValuesDefined && !ChessConstants.Pieces.Contains(piece))
             {
                 throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
             }

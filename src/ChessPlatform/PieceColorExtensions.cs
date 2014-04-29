@@ -11,7 +11,7 @@ namespace ChessPlatform
 
         public static PieceColor EnsureDefined(this PieceColor color)
         {
-            if (!ChessConstants.PieceColors.Contains(color))
+            if (DebugConstants.EnsureEnumValuesDefined && !ChessConstants.PieceColors.Contains(color))
             {
                 throw new InvalidEnumArgumentException("color", (int)color, color.GetType());
             }
