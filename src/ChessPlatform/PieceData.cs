@@ -17,12 +17,14 @@ namespace ChessPlatform
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
 
-        private readonly Dictionary<Piece, long> _bitboards = ChessConstants.Pieces.ToDictionary(
-            Factotum.Identity,
-            item => item == Piece.None ? -1L : 0L);
+        private readonly PieceDictionary<long> _bitboards =
+            new PieceDictionary<long>(
+                ChessConstants.Pieces.ToDictionary(
+                    Factotum.Identity,
+                    item => item == Piece.None ? -1L : 0L));
 
         private readonly Piece[] _pieces;
-        private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
+        private readonly PieceDictionary<HashSet<byte>> _pieceOffsetMap;
 
         #endregion
 
@@ -33,7 +35,7 @@ namespace ChessPlatform
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
             _pieces = new Piece[ChessConstants.X88Length];
-            _pieceOffsetMap = new Dictionary<Piece, HashSet<byte>>
+            _pieceOffsetMap = new PieceDictionary<HashSet<byte>>
             {
                 { Piece.None, ChessHelper.AllPositions.Select(position => position.X88Value).ToHashSet() }
             };
@@ -52,7 +54,7 @@ namespace ChessPlatform
 
             _pieces = other._pieces.Copy();
             _pieceOffsetMap = CopyPieceOffsetMap(other._pieceOffsetMap);
-            _bitboards = new Dictionary<Piece, long>(other._bitboards);
+            _bitboards = new PieceDictionary<long>(other._bitboards);
         }
 
         #endregion
@@ -607,7 +609,7 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static Dictionary<Piece, HashSet<byte>> CopyPieceOffsetMap(
+        private static PieceDictionary<HashSet<byte>> CopyPieceOffsetMap(
             ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
         {
             #region Argument Check
@@ -619,7 +621,7 @@ namespace ChessPlatform
 
             #endregion
 
-            var result = new Dictionary<Piece, HashSet<byte>>(pieceOffsetMap.Count);
+            var result = new PieceDictionary<HashSet<byte>>();
             foreach (var pair in pieceOffsetMap)
             {
                 result.Add(pair.Key, new HashSet<byte>(pair.Value.EnsureNotNull()));

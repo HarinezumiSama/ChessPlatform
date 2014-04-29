@@ -69,6 +69,7 @@
     <Compile Include="PieceAttackInfo.cs" />
     <Compile Include="PieceData.cs" />
     <Compile Include="PieceDataExtensions.cs" />
+    <Compile Include="PieceDictionary.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
     <Compile Include="PieceInfo.cs" />
