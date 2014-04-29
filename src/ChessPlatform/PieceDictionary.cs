@@ -202,12 +202,6 @@ namespace ChessPlatform
 
         private static int GetIndex(Piece key)
         {
-            #region Argument Check
-
-            key.EnsureDefined();
-
-            #endregion
-
             return (int)key;
         }
 
