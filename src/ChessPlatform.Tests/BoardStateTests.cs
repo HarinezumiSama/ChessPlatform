@@ -117,7 +117,6 @@ namespace ChessPlatform.Tests
 
         [Test]
         [TestCaseSource(typeof(TestPerftForInitialPositionCases))]
-        [Timeout(600000)]
         public void TestPerft(PerftPosition perftPosition, PerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
