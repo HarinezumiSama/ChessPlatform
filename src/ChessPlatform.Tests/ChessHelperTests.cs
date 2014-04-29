@@ -10,11 +10,11 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
-        [TestCase(0UL, -1)]
-        [TestCase(1UL, 0)]
-        [TestCase(1UL << 1, 1)]
-        [TestCase(1UL << 49, 49)]
-        [TestCase((1UL << 49) | (1UL << 23), 23)]
+        [TestCase(0L, -1)]
+        [TestCase(1L, 0)]
+        [TestCase(1L << 1, 1)]
+        [TestCase(1L << 49, 49)]
+        [TestCase((1L << 49) | (1L << 23), 23)]
         public void TestFindFirstBitSet(long value, int expectedResult)
         {
             var actualResult = value.FindFirstBitSet();
@@ -22,9 +22,16 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestFindAllBitsSet()
+        [TestCase(0L)]
+        [TestCase(1L, 0)]
+        [TestCase(1L << 1, 1)]
+        [TestCase(1L << 49, 49)]
+        [TestCase((1L << 49) | (1L << 23), 49, 23)]
+        [TestCase((1L << 1) | (1L << 59), 1, 59)]
+        public void TestFindAllBitsSet(long value, params int[] expectedResult)
         {
-            throw new NotImplementedException();
+            var actualResult = value.FindAllBitsSet();
+            Assert.That(actualResult, Is.EquivalentTo(expectedResult));
         }
 
         #endregion
