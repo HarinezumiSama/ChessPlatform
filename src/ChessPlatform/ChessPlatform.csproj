@@ -48,7 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttackingPieceValue.cs" />
+    <Compile Include="AttackInfo.cs" />
+    <Compile Include="AttackInfoKey.cs" />
     <Compile Include="DebugConstants.cs" />
     <Compile Include="FenCharAttribute.cs" />
     <Compile Include="BoardState.cs" />
@@ -62,10 +63,10 @@
     <Compile Include="EnPassantCaptureInfoExtensions.cs" />
     <Compile Include="EnPassantInfo.cs" />
     <Compile Include="GameState.cs" />
-    <Compile Include="AttackingPieceKey.cs" />
     <Compile Include="MovePieceData.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />
+    <Compile Include="PieceAttackInfo.cs" />
     <Compile Include="PieceData.cs" />
     <Compile Include="PieceDataExtensions.cs" />
     <Compile Include="PieceExtensions.cs" />
@@ -77,6 +78,8 @@
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />
     <Compile Include="Position.cs" />
+    <Compile Include="PositionBridge.cs" />
+    <Compile Include="PositionBridgeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RayInfo.cs" />
     <Compile Include="MakeMoveData.cs" />

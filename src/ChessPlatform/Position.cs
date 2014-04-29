@@ -10,10 +10,12 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
+        private const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
+
         private readonly byte _file;
         private readonly byte _rank;
         private readonly byte _x88Value;
-        private readonly ulong _bitboardBit;
+        private readonly long _bitboardBit;
         private readonly int _hashCode;
 
         #endregion
@@ -51,7 +53,7 @@ namespace ChessPlatform
             _rank = (byte)(x88Value >> 4);
 
             _x88Value = x88Value;
-            _bitboardBit = 1UL << (byte)(_file | (_rank << 3));
+            _bitboardBit = GetBitboardBit(_file, _rank);
             _hashCode = _x88Value;
         }
 
@@ -94,7 +96,7 @@ namespace ChessPlatform
             _rank = (byte)rank;
 
             _x88Value = (byte)((_rank << 4) + _file);
-            _bitboardBit = 1UL << (byte)(_file | (_rank << 3));
+            _bitboardBit = GetBitboardBit(_file, _rank);
             _hashCode = _x88Value;
         }
 
@@ -133,7 +135,7 @@ namespace ChessPlatform
 
         #region Internal Properties
 
-        internal ulong BitboardBit
+        internal long BitboardBit
         {
             [DebuggerStepThrough]
             get
@@ -274,6 +276,38 @@ namespace ChessPlatform
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
                 ? new Position(false, file, rank)
                 : null;
+        }
+
+        internal static Position FromBitboardBitIndex(int index)
+        {
+            #region Argument Check
+
+            if (index < 0 || index > MaxBitboardBitIndex)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "index",
+                    index,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The value is out of the valid range ({0} .. {1}).",
+                        0,
+                        MaxBitboardBitIndex));
+            }
+
+            #endregion
+
+            var file = index & 7;
+            var rank = (index >> 3) & 7;
+            return new Position(file, rank);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static long GetBitboardBit(int file, int rank)
+        {
+            return 1L << (file | (rank << 3));
         }
 
         #endregion

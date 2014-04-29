@@ -114,6 +114,20 @@ namespace ChessPlatform
                     }
                 });
 
+        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnReverseAttackRayMap =
+            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
+                {
+                    {
+                        PieceColor.White,
+                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+                    },
+                    {
+                        PieceColor.Black,
+                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+                    }
+                });
+
         internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
             PawnAttackRayMap.ToDictionary(
                 pair => pair.Key,
@@ -132,26 +146,25 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
 
-        private static readonly ReadOnlyDictionary<byte, Position> X88ValueToPositionMap =
-            AllPositions.ToDictionary(item => item.X88Value, item => item).AsReadOnly();
-
-        private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
-            AllPositions.ToDictionary(
-                Factotum.Identity,
-                position => GetKnightMovePositionsNonCached(position).ToArray().AsReadOnly()).AsReadOnly();
-
-        private static readonly ReadOnlySet<Position> AllPawnPositions =
+        internal static readonly ReadOnlySet<Position> AllPawnPositions =
             Enumerable
                 .Range(1, ChessConstants.RankCount - 2)
                 .SelectMany(rank => Position.GenerateRank((byte)rank))
                 .ToHashSet()
                 .AsReadOnly();
 
-        private static readonly Dictionary<AttackingPieceKey, Position[][]> PieceToAttackedPositionsMap =
-            GeneratePieceToAttackedPositionsMap();
+        internal static readonly ReadOnlyDictionary<AttackInfoKey, AttackInfo> TargetPositionToAttackInfoMap =
+            GenerateTargetPositionToAttackInfoMap();
 
-        //private static readonly Dictionary<Position, AttackingPieceValue[]> PositionToAttackingPieceValueMap =
-        //    GeneratePositionToAttackingPieceValueMap();
+        internal static readonly ReadOnlyDictionary<PositionBridgeKey, PositionBridge> PositionBridgeMap =
+            GeneratePositionBridgeMap();
+
+        private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
+            AllPositions
+                .ToDictionary(
+                    Factotum.Identity,
+                    position => GetKnightMovePositionsNonCached(position).AsReadOnly())
+                .AsReadOnly();
 
         #endregion
 
@@ -167,9 +180,7 @@ namespace ChessPlatform
             return Math.Abs(value) <= DefaultZeroTolerance;
         }
 
-        [CLSCompliant(false)]
-        // ReSharper disable once InconsistentNaming
-        public static int FindLs1b(this ulong value)
+        public static int FindFirstBitSet(this long value)
         {
             if (value == 0)
             {
@@ -177,7 +188,7 @@ namespace ChessPlatform
             }
 
             var result = 0;
-            var bit = 1UL;
+            var bit = 1L;
             while ((value & bit) == 0)
             {
                 result++;
@@ -193,10 +204,20 @@ namespace ChessPlatform
             return result;
         }
 
-        // ReSharper disable once InconsistentNaming
-        public static int FindLs1b(this long value)
+        public static int[] FindAllBitsSet(this long value)
         {
-            return FindLs1b((ulong)value);
+            var resultList = new List<int>();
+
+            var currentValue = value;
+
+            int index;
+            while ((index = FindFirstBitSet(currentValue)) >= 0)
+            {
+                resultList.Add(index);
+                currentValue &= ~(1L << index);
+            }
+
+            return resultList.ToArray();
         }
 
         #endregion
@@ -227,72 +248,63 @@ namespace ChessPlatform
                 var x88Value = (byte)(position.X88Value + x88Offset);
                 if (Position.IsValidX88Value(x88Value))
                 {
-                    result.Add(x88Value.GetPositionFromX88Value());
+                    result.Add(new Position(x88Value));
                 }
             }
 
             return result.ToArray();
         }
 
-        internal static Position GetPositionFromX88Value(this byte x88Value)
-        {
-            return X88ValueToPositionMap[x88Value];
-        }
-
-        internal static Position[][] GetAttackedPositionArrays(Position sourcePosition, Piece attackingPiece)
-        {
-            var key = new AttackingPieceKey(sourcePosition, attackingPiece);
-
-            var result = PieceToAttackedPositionsMap[key];
-            return result;
-        }
-
-        //internal static AttackingPieceValue[] GetAttackingPieceValues(Position targetPosition)
-        //{
-        //    return PositionToAttackingPieceValueMap[targetPosition];
-        //}
-
         internal static bool TryParseInt(string value, out int result)
         {
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
+        }
+
+        internal static long GetBitboard(IEnumerable<Position> positions)
+        {
+            #region Argument Check
+
+            if (positions == null)
+            {
+                throw new ArgumentNullException("positions");
+            }
+
+            #endregion
+
+            return positions.Aggregate(0L, (accumulator, position) => accumulator | position.BitboardBit);
         }
 
         #endregion
 
         #region Private Methods
 
-        private static IEnumerable<Position> GetKnightMovePositionsNonCached(Position position)
+        private static Position[] GetKnightMovePositionsNonCached(Position position)
         {
             return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
         }
 
-        private static Position[][] GetMovePositionArraysByRays(
+        private static Position[] GetMovePositionArraysByRays(
             Position sourcePosition,
-            ICollection<RayInfo> rays,
+            IEnumerable<RayInfo> rays,
             int maxDistance)
         {
-            var resultList = new List<Position[]>(rays.Count);
+            var resultList = new List<Position>(AllPositions.Count);
 
-            var positionList = new List<Position>(Math.Max(ChessConstants.FileCount, ChessConstants.RankCount));
             foreach (var ray in rays)
             {
-                positionList.Clear();
-
                 for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
                     Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
                     currentX88Value += ray.Offset, distance++)
                 {
-                    var currentPosition = currentX88Value.GetPositionFromX88Value();
-                    positionList.Add(currentPosition);
+                    var currentPosition = new Position(currentX88Value);
+                    resultList.Add(currentPosition);
                 }
-
-                resultList.Add(positionList.ToArray());
             }
 
             return resultList.ToArray();
         }
 
-        private static Position[][] GetMovePositionArraysByRays(
+        private static Position[] GetMovePositionArraysByRays(
             Position sourcePosition,
             PieceType pieceType,
             int maxDistance)
@@ -318,81 +330,102 @@ namespace ChessPlatform
             return result;
         }
 
-        private static Dictionary<AttackingPieceKey, Position[][]> GeneratePieceToAttackedPositionsMap()
+        private static ReadOnlyDictionary<AttackInfoKey, AttackInfo> GenerateTargetPositionToAttackInfoMap()
         {
-            var result = new Dictionary<AttackingPieceKey, Position[][]>();
+            var resultMap = AllPositions
+                .SelectMany(item => ChessConstants.PieceColors.Select(color => new AttackInfoKey(item, color)))
+                .ToDictionary(
+                    Factotum.Identity,
+                    item => new Dictionary<PieceType, PieceAttackInfo>());
 
-            Action<Position, Piece, Position[][]> addToResult =
-                (position, piece, positionArrays) =>
+            Action<Position, PieceColor, PieceType, ICollection<Position>, bool> addAttack =
+                (targetPosition, attackingColor, pieceType, positions, isDirectAttack) =>
                 {
-                    var filteredPositionArrays = positionArrays.Where(positions => positions.Length != 0).ToArray();
-                    result.Add(new AttackingPieceKey(position, piece), filteredPositionArrays);
-                };
-
-            Action<Position, PieceType, Position[][]> addAllColorsToResult =
-                (position, pieceType, positionArrays) =>
-                {
-                    foreach (var pieceColor in ChessConstants.PieceColors)
+                    if (positions.Count != 0)
                     {
-                        var piece = pieceType.ToPiece(pieceColor);
-                        addToResult(position, piece, positionArrays);
+                        var key = new AttackInfoKey(targetPosition, attackingColor);
+                        resultMap[key].Add(pieceType, new PieceAttackInfo(positions, isDirectAttack));
                     }
                 };
 
-            foreach (var position in AllPositions)
+            Action<Position, PieceType, ICollection<Position>, bool> addAllColorsAttack =
+                (targetPosition, pieceType, positions, isDirectAttack) =>
+                    ChessConstants.PieceColors.DoForEach(
+                        attackingColor =>
+                            addAttack(targetPosition, attackingColor, pieceType, positions, isDirectAttack));
+
+            var slidingPieceTypes = new[] { PieceType.Bishop, PieceType.Rook, PieceType.Queen };
+
+            foreach (var currentPosition in AllPositions)
             {
+                var kingPositions = GetMovePositionArraysByRays(
+                    currentPosition,
+                    KingAttackRays,
+                    MaxKingMoveOrAttackDistance);
+
+                addAllColorsAttack(currentPosition, PieceType.King, kingPositions, true);
+
+                var knightPositions = GetKnightMovePositionsNonCached(currentPosition);
+                addAllColorsAttack(currentPosition, PieceType.Knight, knightPositions, true);
+
+                foreach (var pieceType in slidingPieceTypes)
                 {
-                    var positionArrays =
-                        GetKnightMovePositionsNonCached(position).Select(item => item.AsArray()).ToArray();
+                    var positions = GetMovePositionArraysByRays(
+                        currentPosition,
+                        pieceType,
+                        MaxSlidingPieceDistance);
 
-                    addAllColorsToResult(position, PieceType.Knight, positionArrays);
-                }
-
-                foreach (var pieceType in new[] { PieceType.Bishop, PieceType.Rook, PieceType.Queen })
-                {
-                    var positionArrays = GetMovePositionArraysByRays(position, pieceType, MaxSlidingPieceDistance);
-                    addAllColorsToResult(position, pieceType, positionArrays);
-                }
-
-                {
-                    var positionArrays = GetMovePositionArraysByRays(
-                        position,
-                        KingAttackRays,
-                        MaxKingMoveOrAttackDistance);
-
-                    addAllColorsToResult(position, PieceType.King, positionArrays);
+                    addAllColorsAttack(currentPosition, pieceType, positions, false);
                 }
             }
 
-            foreach (var position in AllPawnPositions)
+            foreach (var position in AllPositions)
             {
                 foreach (var pieceColor in ChessConstants.PieceColors)
                 {
-                    var rays = PawnAttackRayMap[pieceColor];
-                    var positionArrays = GetMovePositionArraysByRays(position, rays, MaxPawnAttackOrMoveDistance);
-                    addToResult(position, PieceType.Pawn.ToPiece(pieceColor), positionArrays);
+                    var rays = PawnReverseAttackRayMap[pieceColor];
+                    var positions = GetMovePositionArraysByRays(position, rays, MaxPawnAttackOrMoveDistance)
+                        .Where(item => AllPawnPositions.Contains(item))
+                        .ToArray();
+
+                    addAttack(position, pieceColor, PieceType.Pawn, positions, true);
                 }
             }
 
+            var result = resultMap.ToDictionary(pair => pair.Key, pair => new AttackInfo(pair.Value)).AsReadOnly();
             return result;
         }
 
-        private static Dictionary<Position, AttackingPieceValue[]> GeneratePositionToAttackingPieceValueMap()
+        private static ReadOnlyDictionary<PositionBridgeKey, PositionBridge> GeneratePositionBridgeMap()
         {
-            ////var result = new Dictionary<Position, AttackingPieceValue[]>();
+            var resultMap = new Dictionary<PositionBridgeKey, PositionBridge>(AllPositions.Count * AllPositions.Count);
 
-            ////Action<Position, AttackingPieceValue[]> addToResult =
-            ////    (position, piece, positionArrays) =>
-            ////    {
-            ////        !~!~!~~!~!
-            ////            var
-            ////        filteredPositionArrays = positionArrays.Where(positions => positions.Length != 0).ToArray();
-            ////        result.Add(new AttackingPieceKey(position, piece), filteredPositionArrays);
-            ////    };
+            var allPositions = AllPositions.ToArray();
+            for (var outerIndex = 0; outerIndex < allPositions.Length; outerIndex++)
+            {
+                var first = allPositions[outerIndex];
+                for (var innerIndex = outerIndex + 1; innerIndex < allPositions.Length; innerIndex++)
+                {
+                    var second = allPositions[innerIndex];
 
-            ////return result;
+                    foreach (var ray in AllRays)
+                    {
+                        var positions = GetMovePositionArraysByRays(first, ray.AsArray(), MaxSlidingPieceDistance);
+                        var index = Array.IndexOf(positions, second);
+                        if (index < 0)
+                        {
+                            continue;
+                        }
 
-            throw new NotImplementedException();
+                        var positionBridgeKey = new PositionBridgeKey(first, second);
+                        var positionBridge = new PositionBridge(positions.Take(index));
+                        resultMap.Add(positionBridgeKey, positionBridge);
+                        break;
+                    }
+                }
+            }
+
+            return resultMap.AsReadOnly();
         }
 
         #endregion

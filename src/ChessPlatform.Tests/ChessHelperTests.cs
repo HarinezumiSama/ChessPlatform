@@ -15,14 +15,16 @@ namespace ChessPlatform.Tests
         [TestCase(1UL << 1, 1)]
         [TestCase(1UL << 49, 49)]
         [TestCase((1UL << 49) | (1UL << 23), 23)]
-        // ReSharper disable once InconsistentNaming
-        public void TestFindLs1b(ulong value, int expectedResult)
+        public void TestFindFirstBitSet(long value, int expectedResult)
         {
-            var actualResult = value.FindLs1b();
+            var actualResult = value.FindFirstBitSet();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
+        }
 
-            var actualResultSigned = ((long)value).FindLs1b();
-            Assert.That(actualResultSigned, Is.EqualTo(expectedResult));
+        [Test]
+        public void TestFindAllBitsSet()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

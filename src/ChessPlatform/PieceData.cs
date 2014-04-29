@@ -17,9 +17,9 @@ namespace ChessPlatform
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
 
-        private readonly Dictionary<Piece, ulong> _bitboards = ChessConstants.Pieces.ToDictionary(
+        private readonly Dictionary<Piece, long> _bitboards = ChessConstants.Pieces.ToDictionary(
             Factotum.Identity,
-            item => item == Piece.None ? ulong.MaxValue : 0UL);
+            item => item == Piece.None ? -1L : 0L);
 
         private readonly Piece[] _pieces;
         private readonly Dictionary<Piece, HashSet<byte>> _pieceOffsetMap;
@@ -52,7 +52,7 @@ namespace ChessPlatform
 
             _pieces = other._pieces.Copy();
             _pieceOffsetMap = CopyPieceOffsetMap(other._pieceOffsetMap);
-            _bitboards = new Dictionary<Piece, ulong>(other._bitboards);
+            _bitboards = new Dictionary<Piece, long>(other._bitboards);
         }
 
         #endregion
@@ -86,7 +86,7 @@ namespace ChessPlatform
 
             var result = x88Values == null
                 ? new Position[0]
-                : x88Values.Select(ChessHelper.GetPositionFromX88Value).ToArray();
+                : x88Values.Select(item => new Position(item)).ToArray();
 
             return result;
         }
@@ -759,7 +759,7 @@ namespace ChessPlatform
                     Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
                     currentX88Value += ray.Offset, distance++)
                 {
-                    var currentPosition = currentX88Value.GetPositionFromX88Value();
+                    var currentPosition = new Position(currentX88Value);
 
                     var pieceInfo = GetPieceInfo(currentPosition);
                     var currentColor = pieceInfo.Color;
@@ -923,40 +923,53 @@ namespace ChessPlatform
         {
             attackingPositions = findFirstAttackOnly ? null : new List<Position>();
 
-            var attackingPiecePositions = GetPiecePositions(attackingColor);
-            foreach (var attackingPiecePosition in attackingPiecePositions)
+            var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
+            var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
+
+            var emptySquareBitboard = _bitboards[Piece.None];
+
+            foreach (var pair in attackInfo.Attacks)
             {
-                var attackingPiece = GetPiece(attackingPiecePosition);
-                var positionArrays = ChessHelper.GetAttackedPositionArrays(attackingPiecePosition, attackingPiece);
+                var attackingPiece = pair.Key.ToPiece(attackingColor);
+                var bitboard = _bitboards[attackingPiece];
+                var pieceAttackInfo = pair.Value;
 
-                var shouldStop = false;
-                foreach (var positionArray in positionArrays)
+                var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
+                if (attackBitboard == 0)
                 {
-                    foreach (var position in positionArray)
+                    continue;
+                }
+
+                if (pieceAttackInfo.IsDirectAttack)
+                {
+                    if (findFirstAttackOnly)
                     {
-                        if (position == targetPosition)
-                        {
-                            if (findFirstAttackOnly)
-                            {
-                                return true;
-                            }
-
-                            attackingPositions.Add(attackingPiecePosition);
-                            shouldStop = true;
-                            break;
-                        }
-
-                        var pieceInfo = GetPieceInfo(position);
-                        if (pieceInfo.Piece != Piece.None && pieceInfo.Color.HasValue)
-                        {
-                            break;
-                        }
+                        return true;
                     }
 
-                    if (shouldStop)
+                    var positions = attackBitboard.FindAllBitsSet().Select(Position.FromBitboardBitIndex);
+                    attackingPositions.AddRange(positions);
+                    continue;
+                }
+
+                var potentialPositions =
+                    attackBitboard.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
+
+                foreach (var potentialPosition in potentialPositions)
+                {
+                    var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
+                    var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
+                    if ((emptySquareBitboard & positionBridge.Bitboard) != positionBridge.Bitboard)
                     {
-                        break;
+                        continue;
                     }
+
+                    if (findFirstAttackOnly)
+                    {
+                        return true;
+                    }
+
+                    attackingPositions.Add(potentialPosition);
                 }
             }
 
