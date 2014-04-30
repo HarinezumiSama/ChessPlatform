@@ -106,6 +106,23 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestKingInCheckCase()
+        {
+            var boardState = new BoardState("r3k2r/p1ppqQ2/bn2p1pb/3PN3/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "e8-d8", "e7-f7");
+        }
+
+        [Test]
         [TestCase(-1)]
         [TestCase(-2)]
         [TestCase(int.MinValue)]
