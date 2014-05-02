@@ -45,7 +45,8 @@ namespace ChessPlatform
 
                 for (var file = 0; file < ChessConstants.FileCount; file++)
                 {
-                    var piece = pieceData.GetPiece(new Position((byte)file, (byte)rank));
+                    var position = new Position((byte)file, (byte)rank);
+                    var piece = pieceData[position];
                     if (piece == Piece.None)
                     {
                         emptySquareCount.Value++;

@@ -42,9 +42,9 @@ namespace ChessPlatform
                 out _halfMovesBy50MoveRule,
                 out _fullMoveIndex);
 
+            Validate();
             PostInitialize(out _validMoves, out _state);
             InitializeResultString(out _resultString);
-            Validate();
         }
 
         /// <summary>
@@ -73,9 +73,9 @@ namespace ChessPlatform
                 out _halfMovesBy50MoveRule,
                 out _fullMoveIndex);
 
+            Validate();
             PostInitialize(out _validMoves, out _state);
             InitializeResultString(out _resultString);
-            Validate();
         }
 
         /// <summary>
@@ -123,9 +123,9 @@ namespace ChessPlatform
                 ? previousState._halfMovesBy50MoveRule + 1
                 : 0;
 
+            Validate();
             PostInitialize(out _validMoves, out _state);
             InitializeResultString(out _resultString);
-            Validate();
         }
 
         #endregion
@@ -267,7 +267,7 @@ namespace ChessPlatform
 
         public Piece GetPiece(Position position)
         {
-            return _pieceData.GetPiece(position);
+            return _pieceData[position];
         }
 
         public PieceInfo GetPieceInfo(Position position)
@@ -329,7 +329,7 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            return _pieceData.GetAttacks(targetPosition, attackingColor);
+            return _pieceData.GetAttackingPositions(targetPosition, attackingColor);
         }
 
         public PieceMove[] GetValidMovesBySource(Position sourcePosition)
@@ -409,10 +409,6 @@ namespace ChessPlatform
 
         private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
         {
-            //// TODO [vmcl] Implement DoubleCheck verification
-            var isInCheck = _pieceData.IsInCheck(_activeColor);
-            var oppositeColor = _activeColor.Invert();
-
             var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
             if (isInsufficientMaterialState)
             {
@@ -421,15 +417,109 @@ namespace ChessPlatform
                 return;
             }
 
-            var activePiecePositions = ChessConstants
-                .PieceTypes
-                .Where(item => item != PieceType.None)
-                .SelectMany(item => _pieceData.GetPiecePositions(item.ToPiece(_activeColor)))
-                .ToArray();
+            var activeKing = PieceType.King.ToPiece(_activeColor);
+            var activeKingPosition = _pieceData.GetPiecePositions(activeKing).Single();
+            var oppositeColor = _activeColor.Invert();
+
+            var checkAttackPositions = _pieceData.GetAttackingPositions(activeKingPosition, oppositeColor);
+            var isInCheck = checkAttackPositions.Length != 0;
+            var isInDoubleCheck = checkAttackPositions.Length > 1;
+
+            var pinnedPieceMap = _pieceData
+                .GetPinnedPieceInfos(activeKingPosition)
+                .ToDictionary(
+                    item => item.Position,
+                    item => item.AllowedMoves);
+
+            Func<Position, Position, bool> isValidMoveByPinning =
+                (sourcePosition, targetPosition) =>
+                {
+                    Bitboard bitboard;
+                    var found = pinnedPieceMap.TryGetValue(sourcePosition, out bitboard);
+                    return !found || ((bitboard & targetPosition.Bitboard) == targetPosition.Bitboard);
+                };
 
             var validMoveSet = new HashSet<PieceMove>();
+
+            var activePiecePositions = Lazy.Create(
+                () => ChessConstants
+                    .PieceTypes
+                    .Where(item => item != PieceType.None)
+                    .SelectMany(item => _pieceData.GetPiecePositions(item.ToPiece(_activeColor)))
+                    .ToArray());
+
+            var noActiveKingPieceData = _pieceData.Copy();
+            noActiveKingPieceData.SetPiece(activeKingPosition, Piece.None);
+
+            var activeKingMoves = _pieceData
+                .GetPotentialMovePositions(
+                    isInCheck ? CastlingOptions.None : _castlingOptions,
+                    null,
+                    activeKingPosition)
+                .Where(position => !noActiveKingPieceData.IsUnderAttack(position, oppositeColor))
+                .Select(position => new PieceMove(activeKingPosition, position))
+                .Where(
+                    move =>
+                        isInCheck
+                            || _pieceData
+                                .CheckCastlingMove(move)
+                                .Morph(info => !_pieceData.IsUnderAttack(info.PassedPosition, oppositeColor), true))
+                .ToArray();
+
+            if (isInCheck)
+            {
+                if (!isInDoubleCheck)
+                {
+                    var checkAttackPosition = checkAttackPositions.Single();
+                    var checkingPieceInfo = _pieceData.GetPieceInfo(checkAttackPosition);
+
+                    var potentialCapturingMoves = _pieceData
+                        .GetAttackingPositions(checkAttackPosition, _activeColor)
+                        .Where(
+                            position =>
+                                _pieceData[position] != activeKing
+                                    && isValidMoveByPinning(position, checkAttackPosition))
+                        .Select(position => new PieceMove(position, checkAttackPosition))
+                        .ToArray();
+
+                    validMoveSet.AddRange(potentialCapturingMoves);
+
+                    if (checkingPieceInfo.PieceType.IsSliding())
+                    {
+                        var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
+                        var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
+
+                        var moves = activePiecePositions.Value
+                            .Where(position => _pieceData[position] != activeKing)
+                            .SelectMany(
+                                sourcePosition => _pieceData
+                                    .GetPotentialMovePositions(
+                                        _castlingOptions,
+                                        _enPassantCaptureInfo,
+                                        sourcePosition)
+                                    .Where(
+                                        targetPosition =>
+                                            !(targetPosition.Bitboard & positionBridge).IsZero()
+                                                && isValidMoveByPinning(sourcePosition, targetPosition))
+                                    .Select(targetPosition => new PieceMove(sourcePosition, targetPosition)))
+                            .ToArray();
+
+                        validMoveSet.AddRange(moves);
+                    }
+                }
+
+                validMoveSet.AddRange(activeKingMoves);
+
+                validMoves = validMoveSet.AsReadOnly();
+                state = validMoves.Count == 0
+                    ? GameState.Checkmate
+                    : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
+
+                return;
+            }
+
             var pieceDataCopy = _pieceData.Copy();
-            foreach (var sourcePosition in activePiecePositions)
+            foreach (var sourcePosition in activePiecePositions.Value)
             {
                 var potentialMovePositions = _pieceData.GetPotentialMovePositions(
                     _castlingOptions,
@@ -446,7 +536,7 @@ namespace ChessPlatform
                     var castlingMove = _pieceData.CheckCastlingMove(basicMove);
                     if (castlingMove != null)
                     {
-                        if (isInCheck || _pieceData.IsUnderAttack(castlingMove.PassedPosition, oppositeColor))
+                        if (_pieceData.IsUnderAttack(castlingMove.PassedPosition, oppositeColor))
                         {
                             continue;
                         }
@@ -475,10 +565,7 @@ namespace ChessPlatform
             }
 
             validMoves = validMoveSet.AsReadOnly();
-
-            state = validMoves.Count == 0
-                ? (isInCheck ? GameState.Checkmate : GameState.Stalemate)
-                : (isInCheck ? GameState.Check : GameState.Default);
+            state = validMoves.Count == 0 ? GameState.Stalemate : GameState.Default;
         }
 
         private void InitializeResultString(out string resultString)
@@ -487,6 +574,7 @@ namespace ChessPlatform
             {
                 case GameState.Default:
                 case GameState.Check:
+                case GameState.DoubleCheck:
                     resultString = ResultStrings.Other;
                     break;
 

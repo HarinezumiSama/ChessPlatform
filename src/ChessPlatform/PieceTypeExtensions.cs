@@ -59,6 +59,12 @@ namespace ChessPlatform
             return (pieceType & PieceTypeMask.SlidingStraight) == PieceTypeMask.SlidingStraight;
         }
 
+        public static bool IsSliding(this PieceType pieceType)
+        {
+            // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
+            return (pieceType & PieceTypeMask.Sliding) == PieceTypeMask.Sliding;
+        }
+
         #endregion
     }
 }

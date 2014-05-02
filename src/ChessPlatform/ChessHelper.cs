@@ -156,7 +156,7 @@ namespace ChessPlatform
         internal static readonly ReadOnlyDictionary<AttackInfoKey, AttackInfo> TargetPositionToAttackInfoMap =
             GenerateTargetPositionToAttackInfoMap();
 
-        internal static readonly ReadOnlyDictionary<PositionBridgeKey, PositionBridge> PositionBridgeMap =
+        internal static readonly ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
         private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
@@ -220,6 +220,11 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
+        public static bool IsExactlyOneBitSet(this long value)
+        {
+            return value != 0 && ((value & -value) == value);
+        }
+
         #endregion
 
         #region Internal Methods
@@ -260,7 +265,7 @@ namespace ChessPlatform
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
         }
 
-        internal static long GetBitboard(IEnumerable<Position> positions)
+        internal static Bitboard GetBitboard(IEnumerable<Position> positions)
         {
             #region Argument Check
 
@@ -271,7 +276,26 @@ namespace ChessPlatform
 
             #endregion
 
-            return positions.Aggregate(0L, (accumulator, position) => accumulator | position.BitboardBit);
+            return positions.Aggregate(Bitboard.Zero, (accumulator, position) => accumulator | position.Bitboard);
+        }
+
+        internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
+        {
+            #region Argument Check
+
+            if (hashSet == null)
+            {
+                throw new ArgumentNullException("hashSet");
+            }
+
+            if (collection == null)
+            {
+                throw new ArgumentNullException("collection");
+            }
+
+            #endregion
+
+            collection.DoForEach(item => hashSet.Add(item));
         }
 
         #endregion
@@ -396,9 +420,9 @@ namespace ChessPlatform
             return result;
         }
 
-        private static ReadOnlyDictionary<PositionBridgeKey, PositionBridge> GeneratePositionBridgeMap()
+        private static ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()
         {
-            var resultMap = new Dictionary<PositionBridgeKey, PositionBridge>(AllPositions.Count * AllPositions.Count);
+            var resultMap = new Dictionary<PositionBridgeKey, Bitboard>(AllPositions.Count * AllPositions.Count);
 
             var allPositions = AllPositions.ToArray();
             for (var outerIndex = 0; outerIndex < allPositions.Length; outerIndex++)
@@ -418,7 +442,7 @@ namespace ChessPlatform
                         }
 
                         var positionBridgeKey = new PositionBridgeKey(first, second);
-                        var positionBridge = new PositionBridge(positions.Take(index));
+                        var positionBridge = new Bitboard(positions.Take(index));
                         resultMap.Add(positionBridgeKey, positionBridge);
                         break;
                     }

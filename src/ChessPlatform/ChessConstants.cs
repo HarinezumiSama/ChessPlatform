@@ -48,7 +48,12 @@ namespace ChessPlatform
             PieceColors
                 .ToDictionary(
                     Factotum.Identity,
-                    color => PieceTypes.Select(item => item.ToPiece(color)).ToHashSet().AsReadOnly())
+                    color =>
+                        PieceTypes
+                            .Where(item => item != PieceType.None)
+                            .Select(item => item.ToPiece(color))
+                            .ToHashSet()
+                            .AsReadOnly())
                 .AsReadOnly();
 
         public static readonly ReadOnlySet<Piece> Pieces =

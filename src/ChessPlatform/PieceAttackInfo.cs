@@ -9,7 +9,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private readonly long _bitboard;
+        private readonly Bitboard _bitboard;
         private readonly bool _isDirectAttack;
 
         #endregion
@@ -40,7 +40,7 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public long Bitboard
+        public Bitboard Bitboard
         {
             [DebuggerStepThrough]
             get

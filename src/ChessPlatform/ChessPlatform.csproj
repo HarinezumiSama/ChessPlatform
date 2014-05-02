@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="AttackInfo.cs" />
     <Compile Include="AttackInfoKey.cs" />
+    <Compile Include="Bitboard.cs" />
     <Compile Include="DebugConstants.cs" />
     <Compile Include="FenCharAttribute.cs" />
     <Compile Include="BoardState.cs" />
@@ -78,8 +79,8 @@
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />
+    <Compile Include="PinnedPieceInfo.cs" />
     <Compile Include="Position.cs" />
-    <Compile Include="PositionBridge.cs" />
     <Compile Include="PositionBridgeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RayInfo.cs" />

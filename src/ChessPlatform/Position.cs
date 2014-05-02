@@ -15,7 +15,7 @@ namespace ChessPlatform
         private readonly byte _file;
         private readonly byte _rank;
         private readonly byte _x88Value;
-        private readonly long _bitboardBit;
+        private readonly Bitboard _bitboard;
         private readonly int _hashCode;
 
         #endregion
@@ -53,7 +53,7 @@ namespace ChessPlatform
             _rank = (byte)(x88Value >> 4);
 
             _x88Value = x88Value;
-            _bitboardBit = GetBitboardBit(_file, _rank);
+            _bitboard = GetBitboardBit(_file, _rank);
             _hashCode = _x88Value;
         }
 
@@ -96,7 +96,7 @@ namespace ChessPlatform
             _rank = (byte)rank;
 
             _x88Value = (byte)((_rank << 4) + _file);
-            _bitboardBit = GetBitboardBit(_file, _rank);
+            _bitboard = GetBitboardBit(_file, _rank);
             _hashCode = _x88Value;
         }
 
@@ -135,12 +135,12 @@ namespace ChessPlatform
 
         #region Internal Properties
 
-        internal long BitboardBit
+        internal Bitboard Bitboard
         {
             [DebuggerStepThrough]
             get
             {
-                return _bitboardBit;
+                return _bitboard;
             }
         }
 
@@ -305,9 +305,9 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static long GetBitboardBit(int file, int rank)
+        private static Bitboard GetBitboardBit(int file, int rank)
         {
-            return 1L << (file | (rank << 3));
+            return new Bitboard(1L << (file | (rank << 3)));
         }
 
         #endregion

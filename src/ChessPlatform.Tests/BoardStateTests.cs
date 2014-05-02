@@ -106,9 +106,9 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestKingInCheckCase()
+        public void TestKingInCheckByCloseQueenCase()
         {
-            var boardState = new BoardState("r3k2r/p1ppqQ2/bn2p1pb/3PN3/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var boardState = new BoardState("r3k2r/p1ppqQ2/1n2p1pb/3PN2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
 
             AssertBaseProperties(
                 boardState,
@@ -120,6 +120,91 @@ namespace ChessPlatform.Tests
                 GameState.Check);
 
             AssertValidMoves(boardState, "e8-d8", "e7-f7");
+        }
+
+        [Test]
+        public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase1()
+        {
+            var boardState = new BoardState("r3k2r/p1ppq3/3n2Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "e8-d8", "e8-f8", "d6-f7", "h5-g6");
+        }
+
+        [Test]
+        public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase2()
+        {
+            var boardState = new BoardState("r3k2r/p1pp4/3nq1Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "e8-d8", "e8-f8", "e8-e7", "d6-f7", "h5-g6");
+        }
+
+        [Test]
+        public void TestPinnedOwnQueenCase()
+        {
+            var boardState = new BoardState("k7/8/8/3q4/4Q3/5P2/5K2/8 b - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Default);
+
+            AssertValidMoves(boardState, "a8-b8", "a8-a7", "a8-b7", "d5-b7", "d5-c6", "d5-e4");
+        }
+
+        [Test]
+        public void TestKingInCheckByFarQueenAndCanBlockByEnPassantB2B4Case()
+        {
+            var boardState = new BoardState("rnb1kbnr/pp1ppppp/2p5/q7/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "d1-d2", "c1-d2", "b2-b4", "b1-c3", "b1-d2");
+        }
+
+        [Test]
+        public void TestKingInDoubleCheckByQueenAndKnight()
+        {
+            var boardState = new BoardState("r3k2r/p1ppq3/1n1Np1Qb/3P3b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.DoubleCheck);
+
+            AssertValidMoves(boardState, "e8-d8", "e8-f8");
         }
 
         [Test]

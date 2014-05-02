@@ -17,11 +17,11 @@ namespace ChessPlatform
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
 
-        private readonly PieceDictionary<long> _bitboards =
-            new PieceDictionary<long>(
+        private readonly PieceDictionary<Bitboard> _bitboards =
+            new PieceDictionary<Bitboard>(
                 ChessConstants.Pieces.ToDictionary(
                     Factotum.Identity,
-                    item => item == Piece.None ? -1L : 0L));
+                    item => new Bitboard(item == Piece.None ? -1L : 0L)));
 
         private readonly Piece[] _pieces;
         private readonly PieceDictionary<HashSet<byte>> _pieceOffsetMap;
@@ -54,7 +54,19 @@ namespace ChessPlatform
 
             _pieces = other._pieces.Copy();
             _pieceOffsetMap = CopyPieceOffsetMap(other._pieceOffsetMap);
-            _bitboards = new PieceDictionary<long>(other._bitboards);
+            _bitboards = new PieceDictionary<Bitboard>(other._bitboards);
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public Piece this[Position position]
+        {
+            get
+            {
+                return _pieces[position.X88Value];
+            }
         }
 
         #endregion
@@ -63,6 +75,11 @@ namespace ChessPlatform
 
         public void EnsureConsistency()
         {
+            if (!DebugConstants.EnsurePieceDataConsistency)
+            {
+                return;
+            }
+
             EnsureConsistencyInternal();
         }
 
@@ -71,14 +88,9 @@ namespace ChessPlatform
             return new PieceData(this);
         }
 
-        public Piece GetPiece(Position position)
-        {
-            return _pieces[position.X88Value];
-        }
-
         public PieceInfo GetPieceInfo(Position position)
         {
-            var piece = GetPiece(position);
+            var piece = this[position];
             return piece.GetPieceInfo();
         }
 
@@ -206,17 +218,17 @@ namespace ChessPlatform
             return result;
         }
 
-        public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
+        public Position[] GetAttackingPositions(Position targetPosition, PieceColor attackingColor)
         {
             List<Position> result;
-            GetAttacksInternal(targetPosition, attackingColor, false, out result);
+            GetAttackingPositionsInternal(targetPosition, attackingColor, false, out result);
             return result.EnsureNotNull().ToArray();
         }
 
         public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
         {
             List<Position> attackingPositions;
-            var result = GetAttacksInternal(targetPosition, attackingColor, true, out attackingPositions);
+            var result = GetAttackingPositionsInternal(targetPosition, attackingColor, true, out attackingPositions);
             return result;
         }
 
@@ -235,6 +247,74 @@ namespace ChessPlatform
 
             var result = targetPositions.Any(targetPosition => IsUnderAttack(targetPosition, attackingColor));
             return result;
+        }
+
+        public PinnedPieceInfo[] GetPinnedPieceInfos(Position targetPosition)
+        {
+            var targetPieceInfo = GetPieceInfo(targetPosition);
+            if (targetPieceInfo.Piece == Piece.None || !targetPieceInfo.Color.HasValue)
+            {
+                throw new ArgumentException("Empty square.", "targetPosition");
+            }
+
+            var resultList = new List<PinnedPieceInfo>();
+
+            var targetColor = targetPieceInfo.Color.Value;
+            var attackingColor = targetColor.Invert();
+
+            var targetColorBitboard = GetEntireColorBitboard(targetColor);
+            var attackingColorBitboard = GetEntireColorBitboard(attackingColor);
+
+            var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
+            var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
+
+            foreach (var pair in attackInfo.Attacks)
+            {
+                var pieceAttackInfo = pair.Value;
+                if (pieceAttackInfo.IsDirectAttack)
+                {
+                    continue;
+                }
+
+                var attackingPiece = pair.Key.ToPiece(attackingColor);
+                var bitboard = _bitboards[attackingPiece];
+
+                var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
+                if (attackBitboard.IsZero())
+                {
+                    continue;
+                }
+
+                var potentialPositions =
+                    attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
+
+                foreach (var potentialPosition in potentialPositions)
+                {
+                    var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
+                    var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
+
+                    if (!(attackingColorBitboard & positionBridge).IsZero())
+                    {
+                        continue;
+                    }
+
+                    var pinnedPieceBitboard = targetColorBitboard & positionBridge;
+                    if (!pinnedPieceBitboard.Value.IsExactlyOneBitSet())
+                    {
+                        continue;
+                    }
+
+                    var index = pinnedPieceBitboard.Value.FindFirstBitSet();
+                    var pinnedPiecePosition = Position.FromBitboardBitIndex(index);
+
+                    var bridge = positionBridge & ~pinnedPieceBitboard;
+                    var pinnedPieceInfo = new PinnedPieceInfo(pinnedPiecePosition, bridge);
+
+                    resultList.Add(pinnedPieceInfo);
+                }
+            }
+
+            return resultList.ToArray();
         }
 
         public bool IsInCheck(PieceColor kingColor)
@@ -338,6 +418,31 @@ namespace ChessPlatform
 
         #region Internal Methods
 
+        internal Piece SetPiece(Position position, Piece piece)
+        {
+            var x88Value = position.X88Value;
+            var bitboardBit = position.Bitboard;
+
+            var oldPiece = _pieces[x88Value];
+            _pieces[x88Value] = piece;
+            _bitboards[oldPiece] &= ~bitboardBit;
+            _bitboards[piece] |= bitboardBit;
+
+            var oldPieceRemoved = _pieceOffsetMap.GetValueOrCreate(oldPiece).Remove(x88Value);
+            if (!oldPieceRemoved)
+            {
+                throw ChessPlatformException.CreateInconsistentStateError();
+            }
+
+            var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(x88Value);
+            if (!added)
+            {
+                throw ChessPlatformException.CreateInconsistentStateError();
+            }
+
+            return oldPiece;
+        }
+
         internal void SetupNewPiece(Piece piece, Position position)
         {
             #region Argument Check
@@ -349,7 +454,7 @@ namespace ChessPlatform
 
             #endregion
 
-            var existingPiece = GetPiece(position);
+            var existingPiece = this[position];
             if (existingPiece != Piece.None)
             {
                 throw new ChessPlatformException(
@@ -610,7 +715,7 @@ namespace ChessPlatform
         #region Private Methods
 
         private static PieceDictionary<HashSet<byte>> CopyPieceOffsetMap(
-            ICollection<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
+            IEnumerable<KeyValuePair<Piece, HashSet<byte>>> pieceOffsetMap)
         {
             #region Argument Check
 
@@ -632,16 +737,11 @@ namespace ChessPlatform
 
         private void EnsureConsistencyInternal()
         {
-            if (!DebugConstants.EnsurePieceDataConsistency)
-            {
-                return;
-            }
-
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var position in ChessHelper.AllPositions)
             {
                 var x88Value = position.X88Value;
-                var bitboardBit = position.BitboardBit;
+                var bitboardBit = position.Bitboard;
 
                 var piece = _pieces[x88Value];
 
@@ -668,6 +768,35 @@ namespace ChessPlatform
                                 piece.GetName(),
                                 position));
                     }
+                }
+            }
+
+            var allBitboards = _bitboards.Values.ToArray();
+            for (var outerIndex = 0; outerIndex < allBitboards.Length; outerIndex++)
+            {
+                var outerBitboard = allBitboards[outerIndex];
+                for (var innerIndex = outerIndex + 1; innerIndex < allBitboards.Length; innerIndex++)
+                {
+                    var innerBitboard = allBitboards[innerIndex];
+                    var intersectionBitboard = outerBitboard & innerBitboard;
+                    if (intersectionBitboard.IsZero())
+                    {
+                        continue;
+                    }
+
+                    var intersectingPositions =
+                        intersectionBitboard
+                            .Value
+                            .FindAllBitsSet()
+                            .Select(Position.FromBitboardBitIndex)
+                            .Select(item => item.ToString())
+                            .Join("', '");
+
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Bitboard inconsistency at '{0}'.",
+                            intersectingPositions));
                 }
             }
 
@@ -720,31 +849,6 @@ namespace ChessPlatform
             }
 
             return new MovePieceData(movedPiece, capturedPiece);
-        }
-
-        private Piece SetPiece(Position position, Piece piece)
-        {
-            var x88Value = position.X88Value;
-            var bitboardBit = position.BitboardBit;
-
-            var oldPiece = _pieces[x88Value];
-            _pieces[x88Value] = piece;
-            _bitboards[oldPiece] &= ~bitboardBit;
-            _bitboards[piece] |= bitboardBit;
-
-            var oldPieceRemoved = _pieceOffsetMap.GetValueOrCreate(oldPiece).Remove(x88Value);
-            if (!oldPieceRemoved)
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
-            }
-
-            var added = _pieceOffsetMap.GetValueOrCreate(piece).Add(x88Value);
-            if (!added)
-            {
-                throw ChessPlatformException.CreateInconsistentStateError();
-            }
-
-            return oldPiece;
         }
 
         private void GetPotentialMovePositionsByRays(
@@ -828,12 +932,19 @@ namespace ChessPlatform
 
         private bool CheckSquares(Piece expectedPiece, IEnumerable<Position> positions)
         {
-            return positions.All(position => GetPiece(position) == expectedPiece);
+            return positions.All(position => this[position] == expectedPiece);
         }
 
         private bool CheckSquares(Piece expectedPiece, params Position[] positions)
         {
             return CheckSquares(expectedPiece, (IEnumerable<Position>)positions);
+        }
+
+        private Bitboard GetEntireColorBitboard(PieceColor color)
+        {
+            return ChessConstants.ColorToPiecesMap[color].Aggregate(
+                Bitboard.Zero,
+                (a, piece) => a | _bitboards[piece]);
         }
 
         private void GetPotentialCastlingMove(
@@ -917,7 +1028,7 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
-        private bool GetAttacksInternal(
+        private bool GetAttackingPositionsInternal(
             Position targetPosition,
             PieceColor attackingColor,
             bool findFirstAttackOnly,
@@ -949,19 +1060,19 @@ namespace ChessPlatform
                         return true;
                     }
 
-                    var positions = attackBitboard.FindAllBitsSet().Select(Position.FromBitboardBitIndex);
+                    var positions = attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex);
                     attackingPositions.AddRange(positions);
                     continue;
                 }
 
                 var potentialPositions =
-                    attackBitboard.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
+                    attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
 
                 foreach (var potentialPosition in potentialPositions)
                 {
                     var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
                     var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
-                    if ((emptySquareBitboard & positionBridge.Bitboard) != positionBridge.Bitboard)
+                    if ((emptySquareBitboard & positionBridge) != positionBridge)
                     {
                         continue;
                     }
