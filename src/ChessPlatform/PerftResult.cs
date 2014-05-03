@@ -14,7 +14,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="PerftResult"/> class.
         /// </summary>
-        internal PerftResult(int depth, TimeSpan elapsed, ulong nodeCount)
+        internal PerftResult(int depth, TimeSpan elapsed, ulong nodeCount, ulong checkCount, ulong checkmateCount)
         {
             #region Argument Check
 
@@ -39,6 +39,8 @@ namespace ChessPlatform
             this.Depth = depth;
             this.Elapsed = elapsed;
             this.NodeCount = nodeCount;
+            this.CheckCount = checkCount;
+            this.CheckmateCount = checkmateCount;
 
             var totalSeconds = elapsed.TotalSeconds;
             this.NodesPerSecond = checked((ulong)(totalSeconds.IsZero() ? 0 : nodeCount / totalSeconds));
@@ -61,6 +63,18 @@ namespace ChessPlatform
         }
 
         public ulong NodeCount
+        {
+            get;
+            private set;
+        }
+
+        public ulong CheckCount
+        {
+            get;
+            private set;
+        }
+
+        public ulong CheckmateCount
         {
             get;
             private set;

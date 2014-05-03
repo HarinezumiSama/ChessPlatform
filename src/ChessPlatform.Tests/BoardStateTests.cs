@@ -339,12 +339,31 @@ namespace ChessPlatform.Tests
             Assert.That(actualResult, Is.Not.Null);
             Assert.That(expectedResult, Is.Not.Null);
 
-            Assert.That(actualResult.Depth, Is.EqualTo(expectedResult.Depth));
-            Assert.That(actualResult.NodeCount, Is.EqualTo(expectedResult.NodeCount));
+            Assert.That(actualResult.Depth, Is.EqualTo(expectedResult.Depth), "Depth mismatch.");
+            Assert.That(actualResult.NodeCount, Is.EqualTo(expectedResult.NodeCount), "Node count mismatch.");
 
-            if (expectedResult.NodesPerSecond > 0)
+            if (expectedResult.CheckCount.HasValue)
             {
-                Assert.That(actualResult.NodesPerSecond, Is.GreaterThanOrEqualTo(expectedResult.NodesPerSecond));
+                Assert.That(
+                    actualResult.CheckCount,
+                    Is.EqualTo(expectedResult.CheckCount.Value),
+                    "Check count mismatch.");
+            }
+
+            if (expectedResult.CheckmateCount.HasValue)
+            {
+                Assert.That(
+                    actualResult.CheckmateCount,
+                    Is.EqualTo(expectedResult.CheckmateCount.Value),
+                    "Checkmate count mismatch.");
+            }
+
+            if (expectedResult.NodesPerSecond.HasValue)
+            {
+                Assert.That(
+                    actualResult.NodesPerSecond,
+                    Is.GreaterThanOrEqualTo(expectedResult.NodesPerSecond.Value),
+                    "NPS is too low.");
             }
         }
 
@@ -565,7 +584,19 @@ namespace ChessPlatform.Tests
                 private set;
             }
 
-            public ulong NodesPerSecond
+            public ulong? CheckCount
+            {
+                get;
+                set;
+            }
+
+            public ulong? CheckmateCount
+            {
+                get;
+                set;
+            }
+
+            public ulong? NodesPerSecond
             {
                 get;
                 set;
@@ -582,7 +613,7 @@ namespace ChessPlatform.Tests
                     "{{ Depth = {0}, NodeCount = {1}, NodesPerSecond = {2} }}",
                     this.Depth,
                     this.NodeCount,
-                    this.NodesPerSecond > 0 ? this.NodesPerSecond.ToStringSafelyInvariant() : "n/a");
+                    this.NodesPerSecond.HasValue ? this.NodesPerSecond.Value.ToStringSafelyInvariant() : "n/a");
             }
 
             #endregion
@@ -674,7 +705,9 @@ namespace ChessPlatform.Tests
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(3, 2812UL));
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(4, 43238UL));
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(5, 674624UL));
-                yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(6, 11030083UL));
+
+                yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(6, 11030083UL))
+                    .MakeExplicit(TooLongNow);
 
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(7, 178633661UL))
                     .MakeExplicit(TooLongNow);
@@ -683,14 +716,37 @@ namespace ChessPlatform.Tests
 
                 #region Position4
 
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(1, 6UL));
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(2, 264UL));
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(3, 9467UL));
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(4, 422333UL));
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(5, 15833292UL));
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(1, 6UL) { CheckCount = 0, CheckmateCount = 0 });
 
-                yield return new TestCaseData(PerftPosition.Position4, new ExpectedPerftResult(6, 706045033UL))
-                    .MakeExplicit(TooLongNow);
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(2, 264UL) { CheckCount = 10, CheckmateCount = 0 });
+
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(3, 9467UL) { CheckCount = 38, CheckmateCount = 22 });
+
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(4, 422333UL) { CheckCount = 15492 });
+
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(5, 15833292UL) { CheckCount = 200568, CheckmateCount = 50562 })
+                        .MakeExplicit(TooLongNow);
+
+                yield return
+                    new TestCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(6, 706045033UL) { CheckCount = 26973664, CheckmateCount = 81076 })
+                        .MakeExplicit(TooLongNow);
 
                 #endregion
 

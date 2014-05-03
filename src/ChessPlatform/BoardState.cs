@@ -243,7 +243,12 @@ namespace ChessPlatform
             PerftInternal(this, depth, perftData);
             stopwatch.Stop();
 
-            return new PerftResult(depth, stopwatch.Elapsed, perftData.NodeCount);
+            return new PerftResult(
+                depth,
+                stopwatch.Elapsed,
+                perftData.NodeCount,
+                perftData.CheckCount,
+                perftData.CheckmateCount);
         }
 
         public string GetFen()
@@ -694,15 +699,36 @@ namespace ChessPlatform
             if (depth == 0)
             {
                 perftData.NodeCount++;
+
+                switch (boardState.State)
+                {
+                    case GameState.Check:
+                    case GameState.DoubleCheck:
+                        checked
+                        {
+                            perftData.CheckCount++;
+                        }
+
+                        break;
+
+                    case GameState.Checkmate:
+                        checked
+                        {
+                            perftData.CheckmateCount++;
+                        }
+
+                        break;
+                }
+
                 return;
             }
 
             var moves = boardState.ValidMoves;
-            if (depth == 1)
-            {
-                perftData.NodeCount += checked((ulong)moves.Count);
-                return;
-            }
+            ////if (depth == 1)
+            ////{
+            ////    perftData.NodeCount += checked((ulong)moves.Count);
+            ////    return;
+            ////}
 
             foreach (var move in moves)
             {
@@ -720,6 +746,18 @@ namespace ChessPlatform
             #region Public Properties
 
             public ulong NodeCount
+            {
+                get;
+                set;
+            }
+
+            public ulong CheckCount
+            {
+                get;
+                set;
+            }
+
+            public ulong CheckmateCount
             {
                 get;
                 set;
