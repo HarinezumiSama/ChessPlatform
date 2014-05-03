@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class ChessHelperTests
+    public sealed class BitboardTests
     {
         #region Tests
 

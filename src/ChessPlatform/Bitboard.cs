@@ -12,6 +12,11 @@ namespace ChessPlatform
 
         public static readonly Bitboard Zero = new Bitboard(0L);
 
+        private static readonly Dictionary<long, int> BitToIndexMap =
+            Enumerable.Range(0, sizeof(long) * 8)
+                .Select(i => new { Key = 1L << i, Value = i })
+                .ToDictionary(obj => obj.Key, obj => obj.Value);
+
         private readonly long _value;
 
         #endregion
@@ -166,20 +171,9 @@ namespace ChessPlatform
                 return -1;
             }
 
-            var result = 0;
-            var bit = 1L;
-            while ((value & bit) == 0)
-            {
-                result++;
-                bit <<= 1;
+            var firstBitOnly = value & -value;
 
-                //// TODO [vmcl] Remove this verification
-                if (result >= sizeof(ulong) * 8)
-                {
-                    throw new InvalidOperationException("Algorithm error.");
-                }
-            }
-
+            var result = BitToIndexMap[firstBitOnly];
             return result;
         }
 
