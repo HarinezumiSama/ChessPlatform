@@ -298,7 +298,7 @@ namespace ChessPlatform
 
             var file = index & 7;
             var rank = (index >> 3) & 7;
-            return new Position(file, rank);
+            return new Position(false, file, rank);
         }
 
         #endregion

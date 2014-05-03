@@ -285,8 +285,7 @@ namespace ChessPlatform
                     continue;
                 }
 
-                var potentialPositions =
-                    attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
+                var potentialPositions = attackBitboard.GetPositions();
 
                 foreach (var potentialPosition in potentialPositions)
                 {
@@ -299,12 +298,12 @@ namespace ChessPlatform
                     }
 
                     var pinnedPieceBitboard = targetColorBitboard & positionBridge;
-                    if (!pinnedPieceBitboard.Value.IsExactlyOneBitSet())
+                    if (!pinnedPieceBitboard.IsExactlyOneBitSet())
                     {
                         continue;
                     }
 
-                    var index = pinnedPieceBitboard.Value.FindFirstBitSet();
+                    var index = pinnedPieceBitboard.FindFirstBitSet();
                     var pinnedPiecePosition = Position.FromBitboardBitIndex(index);
 
                     var bridge = positionBridge & ~pinnedPieceBitboard;
@@ -785,12 +784,7 @@ namespace ChessPlatform
                     }
 
                     var intersectingPositions =
-                        intersectionBitboard
-                            .Value
-                            .FindAllBitsSet()
-                            .Select(Position.FromBitboardBitIndex)
-                            .Select(item => item.ToString())
-                            .Join("', '");
+                        intersectionBitboard.GetPositions().Select(item => item.ToString()).Join("', '");
 
                     throw new ChessPlatformException(
                         string.Format(
@@ -1060,13 +1054,12 @@ namespace ChessPlatform
                         return true;
                     }
 
-                    var positions = attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex);
+                    var positions = attackBitboard.GetPositions();
                     attackingPositions.AddRange(positions);
                     continue;
                 }
 
-                var potentialPositions =
-                    attackBitboard.Value.FindAllBitsSet().Select(Position.FromBitboardBitIndex).ToArray();
+                var potentialPositions = attackBitboard.GetPositions();
 
                 foreach (var potentialPosition in potentialPositions)
                 {

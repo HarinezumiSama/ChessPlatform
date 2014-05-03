@@ -180,51 +180,6 @@ namespace ChessPlatform
             return Math.Abs(value) <= DefaultZeroTolerance;
         }
 
-        public static int FindFirstBitSet(this long value)
-        {
-            if (value == 0)
-            {
-                return -1;
-            }
-
-            var result = 0;
-            var bit = 1L;
-            while ((value & bit) == 0)
-            {
-                result++;
-                bit <<= 1;
-
-                //// TODO [vmcl] Remove this verification
-                if (result >= sizeof(ulong) * 8)
-                {
-                    throw new InvalidOperationException("Algorithm error.");
-                }
-            }
-
-            return result;
-        }
-
-        public static int[] FindAllBitsSet(this long value)
-        {
-            var resultList = new List<int>();
-
-            var currentValue = value;
-
-            int index;
-            while ((index = FindFirstBitSet(currentValue)) >= 0)
-            {
-                resultList.Add(index);
-                currentValue &= ~(1L << index);
-            }
-
-            return resultList.ToArray();
-        }
-
-        public static bool IsExactlyOneBitSet(this long value)
-        {
-            return value != 0 && ((value & -value) == value);
-        }
-
         #endregion
 
         #region Internal Methods

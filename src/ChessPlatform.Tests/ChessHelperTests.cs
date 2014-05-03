@@ -17,7 +17,8 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 49) | (1L << 23), 23)]
         public void TestFindFirstBitSet(long value, int expectedResult)
         {
-            var actualResult = value.FindFirstBitSet();
+            var bitboard = new Bitboard(value);
+            var actualResult = bitboard.FindFirstBitSet();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
@@ -28,9 +29,12 @@ namespace ChessPlatform.Tests
         [TestCase(1L << 49, 49)]
         [TestCase((1L << 49) | (1L << 23), 49, 23)]
         [TestCase((1L << 1) | (1L << 59), 1, 59)]
-        public void TestFindAllBitsSet(long value, params int[] expectedResult)
+        public void TestFindAllBitsSet(long value, params int[] expectedIndexesResult)
         {
-            var actualResult = value.FindAllBitsSet();
+            var expectedResult = expectedIndexesResult.Select(Position.FromBitboardBitIndex).ToArray();
+
+            var bitboard = new Bitboard(value);
+            var actualResult = bitboard.GetPositions();
             Assert.That(actualResult, Is.EquivalentTo(expectedResult));
         }
 

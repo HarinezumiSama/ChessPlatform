@@ -112,17 +112,38 @@ namespace ChessPlatform
                 CultureInfo.InvariantCulture,
                 "{{ {0:X16} : {1} }}",
                 _value,
-                _value == 0
-                    ? "<none>"
-                    : _value
-                        .FindAllBitsSet()
-                        .Select(item => Position.FromBitboardBitIndex(item).ToString())
-                        .Join(", "));
+                _value == 0 ? "<none>" : GetPositions().Select(item => item.ToString()).Join(", "));
         }
 
         public bool IsZero()
         {
             return _value == 0;
+        }
+
+        public int FindFirstBitSet()
+        {
+            return FindFirstBitSetInternal(_value);
+        }
+
+        public bool IsExactlyOneBitSet()
+        {
+            return IsExactlyOneBitSetInternal(_value);
+        }
+
+        public Position[] GetPositions()
+        {
+            var resultList = new List<Position>();
+
+            var currentValue = _value;
+
+            int index;
+            while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
+            {
+                resultList.Add(Position.FromBitboardBitIndex(index));
+                currentValue &= ~(1L << index);
+            }
+
+            return resultList.ToArray();
         }
 
         #endregion
@@ -132,6 +153,39 @@ namespace ChessPlatform
         public bool Equals(Bitboard other)
         {
             return Equals(other, this);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static int FindFirstBitSetInternal(long value)
+        {
+            if (value == 0)
+            {
+                return -1;
+            }
+
+            var result = 0;
+            var bit = 1L;
+            while ((value & bit) == 0)
+            {
+                result++;
+                bit <<= 1;
+
+                //// TODO [vmcl] Remove this verification
+                if (result >= sizeof(ulong) * 8)
+                {
+                    throw new InvalidOperationException("Algorithm error.");
+                }
+            }
+
+            return result;
+        }
+
+        private static bool IsExactlyOneBitSetInternal(long value)
+        {
+            return value != 0 && ((value & -value) == value);
         }
 
         #endregion
