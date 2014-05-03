@@ -306,8 +306,8 @@ namespace ChessPlatform
                     var index = pinnedPieceBitboard.FindFirstBitSet();
                     var pinnedPiecePosition = Position.FromBitboardBitIndex(index);
 
-                    var bridge = positionBridge & ~pinnedPieceBitboard;
-                    var pinnedPieceInfo = new PinnedPieceInfo(pinnedPiecePosition, bridge);
+                    var allowedMoves = (positionBridge & ~pinnedPieceBitboard) | potentialPosition.Bitboard;
+                    var pinnedPieceInfo = new PinnedPieceInfo(pinnedPiecePosition, allowedMoves);
 
                     resultList.Add(pinnedPieceInfo);
                 }

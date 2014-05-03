@@ -441,10 +441,10 @@ namespace ChessPlatform
 
             var validMoveSet = new HashSet<PieceMove>();
 
-            var activePiecePositions = Lazy.Create(
+            var activePieceNoKingPositions = Lazy.Create(
                 () => ChessConstants
                     .PieceTypes
-                    .Where(item => item != PieceType.None)
+                    .Where(item => item != PieceType.None && item != PieceType.King)
                     .SelectMany(item => _pieceData.GetPiecePositions(item.ToPiece(_activeColor)))
                     .ToArray());
 
@@ -465,6 +465,8 @@ namespace ChessPlatform
                                 .CheckCastlingMove(move)
                                 .Morph(info => !_pieceData.IsUnderAttack(info.PassedPosition, oppositeColor), true))
                 .ToArray();
+
+            validMoveSet.AddRange(activeKingMoves);
 
             if (isInCheck)
             {
@@ -489,8 +491,7 @@ namespace ChessPlatform
                         var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
                         var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
 
-                        var moves = activePiecePositions.Value
-                            .Where(position => _pieceData[position] != activeKing)
+                        var moves = activePieceNoKingPositions.Value
                             .SelectMany(
                                 sourcePosition => _pieceData
                                     .GetPotentialMovePositions(
@@ -508,8 +509,6 @@ namespace ChessPlatform
                     }
                 }
 
-                validMoveSet.AddRange(activeKingMoves);
-
                 validMoves = validMoveSet.AsReadOnly();
                 state = validMoves.Count == 0
                     ? GameState.Checkmate
@@ -518,8 +517,7 @@ namespace ChessPlatform
                 return;
             }
 
-            var pieceDataCopy = _pieceData.Copy();
-            foreach (var sourcePosition in activePiecePositions.Value)
+            foreach (var sourcePosition in activePieceNoKingPositions.Value)
             {
                 var potentialMovePositions = _pieceData.GetPotentialMovePositions(
                     _castlingOptions,
@@ -528,39 +526,22 @@ namespace ChessPlatform
 
                 foreach (var destinationPosition in potentialMovePositions)
                 {
+                    if (!isValidMoveByPinning(sourcePosition, destinationPosition))
+                    {
+                        continue;
+                    }
+
                     var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, destinationPosition);
 
                     var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
                     var basicMove = new PieceMove(sourcePosition, destinationPosition, promotionResult);
 
-                    var castlingMove = _pieceData.CheckCastlingMove(basicMove);
-                    if (castlingMove != null)
+                    validMoveSet.Add(basicMove);
+
+                    if (isPawnPromotion)
                     {
-                        if (_pieceData.IsUnderAttack(castlingMove.PassedPosition, oppositeColor))
-                        {
-                            continue;
-                        }
+                        validMoveSet.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
                     }
-
-                    var castlingOptionsCopy = _castlingOptions;
-                    pieceDataCopy.MakeMove(
-                        basicMove,
-                        _activeColor,
-                        _enPassantCaptureInfo,
-                        ref castlingOptionsCopy);
-
-                    if (!pieceDataCopy.IsInCheck(_activeColor))
-                    {
-                        validMoveSet.Add(basicMove);
-
-                        if (isPawnPromotion)
-                        {
-                            ChessHelper.NonDefaultPromotions.DoForEach(
-                                item => validMoveSet.Add(basicMove.MakePromotion(item)));
-                        }
-                    }
-
-                    pieceDataCopy.UndoMove();
                 }
             }
 
