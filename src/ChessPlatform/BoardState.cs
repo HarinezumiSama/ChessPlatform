@@ -501,6 +501,30 @@ namespace ChessPlatform
 
                     validMoveSet.AddRange(potentialCapturingMoves);
 
+                    if (_enPassantCaptureInfo != null
+                        && _enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
+                    {
+                        //// TODO [vmcl] Fast to implement approach (likely non-optimal)
+
+                        var activeColorPawn = PieceType.Pawn.ToPiece(_activeColor);
+                        var activePawnPositions = _pieceData.GetPiecePositions(activeColorPawn);
+                        var capturePosition = _enPassantCaptureInfo.CapturePosition;
+                        foreach (var activePawnPosition in activePawnPositions)
+                        {
+                            var canCapture = _pieceData
+                                .GetPotentialMovePositions(
+                                    CastlingOptions.None,
+                                    _enPassantCaptureInfo,
+                                    activePawnPosition)
+                                .Contains(capturePosition);
+
+                            if (canCapture)
+                            {
+                                validMoveSet.Add(new PieceMove(activePawnPosition, capturePosition));
+                            }
+                        }
+                    }
+
                     if (checkingPieceInfo.PieceType.IsSliding())
                     {
                         var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
@@ -550,6 +574,26 @@ namespace ChessPlatform
 
                     var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
                     var basicMove = new PieceMove(sourcePosition, destinationPosition, promotionResult);
+
+                    bool isEnPassantCapture = _pieceData.IsEnPassantCapture(basicMove, _enPassantCaptureInfo);
+                    if (isEnPassantCapture)
+                    {
+                        var temporaryCastlingOptions = _castlingOptions;
+
+                        _pieceData.MakeMove(
+                            basicMove,
+                            _activeColor,
+                            _enPassantCaptureInfo,
+                            ref temporaryCastlingOptions);
+
+                        var isInvalidMove = _pieceData.IsInCheck(_activeColor);
+                        _pieceData.UndoMove();
+
+                        if (isInvalidMove)
+                        {
+                            continue;
+                        }
+                    }
 
                     validMoveSet.Add(basicMove);
 
@@ -687,7 +731,7 @@ namespace ChessPlatform
 
                 enPassantCaptureTarget = new EnPassantCaptureInfo(
                     capturePosition.Value,
-                    new Position(capturePosition.Value.File, enPassantInfo.StartRank));
+                    new Position(capturePosition.Value.File, enPassantInfo.EndRank));
             }
 
             var halfMovesBy50MoveRuleSnippet = fenSnippets[4];

@@ -14,6 +14,8 @@ namespace ChessPlatform
         private const string FromGroupName = "from";
         private const string ToGroupName = "to";
 
+        //// TODO [vmcl] Consider promotion in RegEx
+
         private static readonly Regex StringPatternRegex = new Regex(
             string.Format(
                 CultureInfo.InvariantCulture,

@@ -38,6 +38,10 @@ namespace ChessPlatform.Tests
                         "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"
                     },
                     {
+                        PerftPosition.MirroredPosition4,
+                        "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1"
+                    },
+                    {
                         PerftPosition.Position5,
                         "rnbqkb1r/pp1p1ppp/2p5/4P3/2B5/8/PPP1NnPP/RNBQK2R w KQkq - 0 6"
                     },
@@ -217,6 +221,41 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestCanCaptureCheckingPawnByEnPassantCapture()
+        {
+            var boardState = new BoardState("8/8/3p4/1Pp3kr/1K3p2/1R6/4P1P1/8 w - c6 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.None,
+                new EnPassantCaptureInfo("c6", "c5"),
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "b4-a5", "b4-a4", "b4-a3", "b4-c3", "b4-c4", "b5-c6");
+        }
+
+        [Test]
+        public void TestCannotCaptureEnPassantPawnByPinnedPawn()
+        {
+            var boardState = new BoardState("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.None,
+                new EnPassantCaptureInfo("e3", "e4"),
+                0,
+                1,
+                GameState.Default);
+
+            Assert.That(boardState.ValidMoves.Contains("f4-e3"), Is.False);
+            Assert.That(boardState.ValidMoves.Count, Is.EqualTo(16));
+        }
+
+        [Test]
         [TestCase(-1)]
         [TestCase(-2)]
         [TestCase(int.MinValue)]
@@ -233,7 +272,7 @@ namespace ChessPlatform.Tests
             var fen = PerftPositionToFenMap[perftPosition];
             var boardState = new BoardState(fen);
 
-            var flags = PerftFlags.None;
+            var flags = PerftFlags.IncludeDivideMap;
 
             var includeExtraCountTypes = expectedResult.CheckCount.HasValue || expectedResult.CheckmateCount.HasValue;
             if (includeExtraCountTypes)
@@ -241,13 +280,39 @@ namespace ChessPlatform.Tests
                 flags |= PerftFlags.IncludeExtraCountTypes;
             }
 
+            ////boardState = boardState
+            ////    .MakeMove("a5-a6")
+            ////    .MakeMove("h5-h7")
+            ////    .MakeMove("a6-a7")
+            ////    //.MakeMove("c7-c5")
+            ////    ;
+
             var actualResult = boardState.Perft(expectedResult.Depth, flags);
 
-            Console.WriteLine(
-                "[{0}] {1}: {2}",
+            string extraInfo = null;
+            if (actualResult.Flags.HasFlag(PerftFlags.IncludeDivideMap))
+            {
+                var divideResult = actualResult
+                    .DividedMoves
+                    .OrderBy(pair => pair.Key.ToString())
+                    .Select(pair => string.Format(CultureInfo.InvariantCulture, "  {0} -> {1}", pair.Key, pair.Value))
+                    .Join(Environment.NewLine);
+
+                extraInfo = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0}Divide ({1}):{0}{2}",
+                    Environment.NewLine,
+                    actualResult.DividedMoves.Count,
+                    divideResult);
+            }
+
+            Trace.TraceInformation(
+                "[{0}] {1} {{ {2} }} : {3}{4}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 perftPosition.GetName(),
-                actualResult);
+                fen,
+                actualResult,
+                extraInfo);
 
             AssertPerftResult(actualResult, expectedResult);
         }
@@ -286,12 +351,16 @@ namespace ChessPlatform.Tests
             }
 
             Assert.That(actualEnPassantCaptureInfo, Is.Not.Null);
+
             Assert.That(
                 actualEnPassantCaptureInfo.CapturePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.CapturePosition));
+                Is.EqualTo(expectedEnPassantCaptureInfo.CapturePosition),
+                "Capture position.");
+
             Assert.That(
                 actualEnPassantCaptureInfo.TargetPiecePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPiecePosition));
+                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPiecePosition),
+                "Target piece position.");
         }
 
         private static void AssertValidMoves(BoardState boardState, params PieceMove[] expectedValidMoves)
@@ -546,6 +615,7 @@ namespace ChessPlatform.Tests
             Position2,
             Position3,
             Position4,
+            MirroredPosition4,
             Position5,
             Position6
         }
@@ -646,19 +716,23 @@ namespace ChessPlatform.Tests
 
                 yield return new TestCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(0, 1UL));
+                    new ExpectedPerftResult(0, 1UL) { CheckCount = 0, CheckmateCount = 0 });
 
                 yield return new TestCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(1, 20UL));
+                    new ExpectedPerftResult(1, 20UL) { CheckCount = 0, CheckmateCount = 0 });
 
                 yield return new TestCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(2, 400UL));
+                    new ExpectedPerftResult(2, 400UL) { CheckCount = 0, CheckmateCount = 0 });
 
                 yield return new TestCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(3, 8902UL));
+                    new ExpectedPerftResult(3, 8902UL) { CheckCount = 12, CheckmateCount = 0 });
+
+                yield return new TestCaseData(
+                    PerftPosition.Initial,
+                    new ExpectedPerftResult(4, 197281UL) { CheckCount = 469, CheckmateCount = 8 });
 
                 // Targeting ~100,000 NPS (or better) for the first optimization
                 yield return new TestCaseData(
@@ -700,10 +774,21 @@ namespace ChessPlatform.Tests
 
                 #region Position2
 
-                yield return new TestCaseData(PerftPosition.Position2, new ExpectedPerftResult(1, 48UL));
-                yield return new TestCaseData(PerftPosition.Position2, new ExpectedPerftResult(2, 2039UL));
-                yield return new TestCaseData(PerftPosition.Position2, new ExpectedPerftResult(3, 97862UL));
-                yield return new TestCaseData(PerftPosition.Position2, new ExpectedPerftResult(4, 4085603UL));
+                yield return new TestCaseData(
+                    PerftPosition.Position2,
+                    new ExpectedPerftResult(1, 48UL) { CheckCount = 0, CheckmateCount = 0 });
+
+                yield return new TestCaseData(
+                    PerftPosition.Position2,
+                    new ExpectedPerftResult(2, 2039UL) { CheckCount = 3, CheckmateCount = 0 });
+
+                yield return new TestCaseData(
+                    PerftPosition.Position2,
+                    new ExpectedPerftResult(3, 97862UL) { CheckCount = 993, CheckmateCount = 1 });
+
+                yield return new TestCaseData(
+                    PerftPosition.Position2,
+                    new ExpectedPerftResult(4, 4085603UL));
 
                 yield return new TestCaseData(PerftPosition.Position2, new ExpectedPerftResult(5, 193690690UL))
                     .MakeExplicit(TooLongNow);
@@ -726,39 +811,37 @@ namespace ChessPlatform.Tests
 
                 #endregion
 
-                #region Position4
+                #region Position4 and MirroredPosition4
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
+                var mirroredPositions = new[] { PerftPosition.Position4, PerftPosition.MirroredPosition4 };
+                foreach (var position in mirroredPositions)
+                {
+                    yield return new TestCaseData(
+                        position,
                         new ExpectedPerftResult(1, 6UL) { CheckCount = 0, CheckmateCount = 0 });
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
+                    yield return new TestCaseData(
+                        position,
                         new ExpectedPerftResult(2, 264UL) { CheckCount = 10, CheckmateCount = 0 });
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
+                    yield return new TestCaseData(
+                        position,
                         new ExpectedPerftResult(3, 9467UL) { CheckCount = 38, CheckmateCount = 22 });
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
-                        new ExpectedPerftResult(4, 422333UL) { CheckCount = 15492 });
+                    yield return new TestCaseData(
+                        position,
+                        new ExpectedPerftResult(4, 422333UL) { CheckCount = 15492, CheckmateCount = 5 });
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
+                    yield return new TestCaseData(
+                        position,
                         new ExpectedPerftResult(5, 15833292UL) { CheckCount = 200568, CheckmateCount = 50562 })
                         .MakeExplicit(TooLongNow);
 
-                yield return
-                    new TestCaseData(
-                        PerftPosition.Position4,
+                    yield return new TestCaseData(
+                        position,
                         new ExpectedPerftResult(6, 706045033UL) { CheckCount = 26973664, CheckmateCount = 81076 })
                         .MakeExplicit(TooLongNow);
+                }
 
                 #endregion
 

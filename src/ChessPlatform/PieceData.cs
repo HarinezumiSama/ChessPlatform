@@ -333,7 +333,7 @@ namespace ChessPlatform
 
         public Position[] GetPotentialMovePositions(
             CastlingOptions castlingOptions,
-            EnPassantCaptureInfo enPassantCaptureTarget,
+            EnPassantCaptureInfo enPassantCaptureInfo,
             Position sourcePosition)
         {
             var pieceInfo = GetPieceInfo(sourcePosition);
@@ -361,7 +361,7 @@ namespace ChessPlatform
 
             if (pieceInfo.PieceType == PieceType.Pawn)
             {
-                var result = GetPawnPotentialMovePositions(enPassantCaptureTarget, sourcePosition, pieceColor);
+                var result = GetPawnPotentialMovePositions(enPassantCaptureInfo, sourcePosition, pieceColor);
                 return result;
             }
 
