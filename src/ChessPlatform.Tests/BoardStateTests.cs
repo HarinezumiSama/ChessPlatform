@@ -48,6 +48,22 @@ namespace ChessPlatform.Tests
                     {
                         PerftPosition.Position6,
                         "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"
+                    },
+                    {
+                        PerftPosition.WideOpen,
+                        "rnbqkbnr/8/8/8/8/8/8/RNBQKBNR w KQkq - 0 1"
+                    },
+                    {
+                        PerftPosition.KingAndPawns,
+                        "4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1"
+                    },
+                    {
+                        PerftPosition.KingAndRooks,
+                        "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"
+                    },
+                    {
+                        PerftPosition.KingAndBishops,
+                        "2b1kb2/8/8/8/8/8/8/2B1KB2 w - - 0 1"
                     }
                 });
 
@@ -617,7 +633,11 @@ namespace ChessPlatform.Tests
             Position4,
             MirroredPosition4,
             Position5,
-            Position6
+            Position6,
+            WideOpen,
+            KingAndPawns,
+            KingAndRooks,
+            KingAndBishops
         }
 
         #endregion
@@ -873,6 +893,57 @@ namespace ChessPlatform.Tests
                     .MakeExplicit(TooLongNow);
 
                 yield return new TestCaseData(PerftPosition.Position6, new ExpectedPerftResult(9, 490154852788714UL))
+                    .MakeExplicit(TooLongNow);
+
+                #endregion
+
+                #region WideOpen
+
+                yield return new TestCaseData(PerftPosition.WideOpen, new ExpectedPerftResult(1, 50UL));
+                yield return new TestCaseData(PerftPosition.WideOpen, new ExpectedPerftResult(2, 2125UL));
+                yield return new TestCaseData(PerftPosition.WideOpen, new ExpectedPerftResult(3, 96062UL));
+                yield return new TestCaseData(PerftPosition.WideOpen, new ExpectedPerftResult(4, 4200525UL));
+
+                yield return new TestCaseData(PerftPosition.WideOpen, new ExpectedPerftResult(5, 191462298UL))
+                    .MakeExplicit(TooLongNow);
+
+                #endregion
+
+                #region KingAndPawns
+
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(1, 18UL));
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(2, 324UL));
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(3, 5658UL));
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(4, 98766UL));
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(5, 1683597UL));
+
+                yield return new TestCaseData(PerftPosition.KingAndPawns, new ExpectedPerftResult(6, 28677387UL))
+                    .MakeExplicit(TooLongNow);
+
+                #endregion
+
+                #region KingAndRooks
+
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(1, 26UL));
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(2, 568UL));
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(3, 13744UL));
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(4, 314346UL));
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(5, 7594526UL));
+
+                yield return new TestCaseData(PerftPosition.KingAndRooks, new ExpectedPerftResult(6, 179862938UL))
+                    .MakeExplicit(TooLongNow);
+
+                #endregion
+
+                #region KingAndBishops
+
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(1, 18UL));
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(2, 305UL));
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(3, 5575UL));
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(4, 99932UL));
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(5, 1879563UL));
+
+                yield return new TestCaseData(PerftPosition.KingAndBishops, new ExpectedPerftResult(6, 34853962UL))
                     .MakeExplicit(TooLongNow);
 
                 #endregion
