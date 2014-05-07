@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -14,7 +16,14 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="PerftResult"/> class.
         /// </summary>
-        internal PerftResult(int depth, TimeSpan elapsed, ulong nodeCount, ulong checkCount, ulong checkmateCount)
+        internal PerftResult(
+            PerftFlags flags,
+            int depth,
+            TimeSpan elapsed,
+            ulong nodeCount,
+            IDictionary<PieceMove, ulong> dividedMoves,
+            ulong? checkCount,
+            ulong? checkmateCount)
         {
             #region Argument Check
 
@@ -34,11 +43,18 @@ namespace ChessPlatform
                     @"The value cannot be negative.");
             }
 
+            if (dividedMoves == null)
+            {
+                throw new ArgumentNullException("dividedMoves");
+            }
+
             #endregion
 
+            this.Flags = flags;
             this.Depth = depth;
             this.Elapsed = elapsed;
             this.NodeCount = nodeCount;
+            this.DividedMoves = dividedMoves.AsReadOnly();
             this.CheckCount = checkCount;
             this.CheckmateCount = checkmateCount;
 
@@ -49,6 +65,12 @@ namespace ChessPlatform
         #endregion
 
         #region Public Properties
+
+        public PerftFlags Flags
+        {
+            get;
+            private set;
+        }
 
         public int Depth
         {
@@ -68,13 +90,19 @@ namespace ChessPlatform
             private set;
         }
 
-        public ulong CheckCount
+        public ReadOnlyDictionary<PieceMove, ulong> DividedMoves
         {
             get;
             private set;
         }
 
-        public ulong CheckmateCount
+        public ulong? CheckCount
+        {
+            get;
+            private set;
+        }
+
+        public ulong? CheckmateCount
         {
             get;
             private set;

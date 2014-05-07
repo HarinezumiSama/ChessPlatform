@@ -223,7 +223,7 @@ namespace ChessPlatform
         }
 
         [CLSCompliant(false)]
-        public PerftResult Perft(int depth)
+        public PerftResult Perft(int depth, PerftFlags flags)
         {
             #region Argument Check
 
@@ -238,17 +238,27 @@ namespace ChessPlatform
             #endregion
 
             var perftData = new PerftData();
+            var includeDivideMap = flags.HasFlag(PerftFlags.IncludeDivideMap);
+            var includeExtraCountTypes = flags.HasFlag(PerftFlags.IncludeExtraCountTypes);
 
             var stopwatch = Stopwatch.StartNew();
-            PerftInternal(this, depth, perftData);
+            PerftInternal(this, depth, perftData, includeDivideMap, includeExtraCountTypes);
             stopwatch.Stop();
 
             return new PerftResult(
+                flags,
                 depth,
                 stopwatch.Elapsed,
                 perftData.NodeCount,
-                perftData.CheckCount,
-                perftData.CheckmateCount);
+                perftData.DividedMoves,
+                includeExtraCountTypes ? perftData.CheckCount : (ulong?)null,
+                includeExtraCountTypes ? perftData.CheckmateCount : (ulong?)null);
+        }
+
+        [CLSCompliant(false)]
+        public PerftResult Perft(int depth)
+        {
+            return Perft(depth, PerftFlags.None);
         }
 
         public string GetFen()
@@ -694,11 +704,21 @@ namespace ChessPlatform
             }
         }
 
-        private static void PerftInternal(BoardState boardState, int depth, PerftData perftData)
+        private static void PerftInternal(
+            BoardState boardState,
+            int depth,
+            PerftData perftData,
+            bool includeDivideMap,
+            bool includeExtraCountTypes)
         {
             if (depth == 0)
             {
                 perftData.NodeCount++;
+
+                if (!includeExtraCountTypes)
+                {
+                    return;
+                }
 
                 switch (boardState.State)
                 {
@@ -714,6 +734,7 @@ namespace ChessPlatform
                     case GameState.Checkmate:
                         checked
                         {
+                            perftData.CheckCount++;
                             perftData.CheckmateCount++;
                         }
 
@@ -724,16 +745,24 @@ namespace ChessPlatform
             }
 
             var moves = boardState.ValidMoves;
-            ////if (depth == 1)
-            ////{
-            ////    perftData.NodeCount += checked((ulong)moves.Count);
-            ////    return;
-            ////}
+            if (depth == 1 && !includeExtraCountTypes && !includeDivideMap)
+            {
+                perftData.NodeCount += checked((ulong)moves.Count);
+                return;
+            }
 
             foreach (var move in moves)
             {
+                var previousNodeCount = perftData.NodeCount;
+
                 var newBoardState = boardState.MakeMove(move);
-                PerftInternal(newBoardState, depth - 1, perftData);
+                PerftInternal(newBoardState, depth - 1, perftData, false, includeExtraCountTypes);
+
+                if (includeDivideMap)
+                {
+                    perftData.DividedMoves[move] = perftData.DividedMoves.GetValueOrDefault(move)
+                        + checked(perftData.NodeCount - previousNodeCount);
+                }
             }
         }
 
@@ -743,6 +772,15 @@ namespace ChessPlatform
 
         private sealed class PerftData
         {
+            #region Constructors
+
+            public PerftData()
+            {
+                this.DividedMoves = new Dictionary<PieceMove, ulong>();
+            }
+
+            #endregion
+
             #region Public Properties
 
             public ulong NodeCount
@@ -761,6 +799,12 @@ namespace ChessPlatform
             {
                 get;
                 set;
+            }
+
+            public Dictionary<PieceMove, ulong> DividedMoves
+            {
+                get;
+                private set;
             }
 
             #endregion

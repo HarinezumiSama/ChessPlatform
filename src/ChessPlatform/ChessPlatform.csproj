@@ -66,6 +66,7 @@
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="MovePieceData.cs" />
+    <Compile Include="PerftFlags.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="PieceAttackInfo.cs" />

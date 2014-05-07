@@ -233,7 +233,15 @@ namespace ChessPlatform.Tests
             var fen = PerftPositionToFenMap[perftPosition];
             var boardState = new BoardState(fen);
 
-            var actualResult = boardState.Perft(expectedResult.Depth);
+            var flags = PerftFlags.None;
+
+            var includeExtraCountTypes = expectedResult.CheckCount.HasValue || expectedResult.CheckmateCount.HasValue;
+            if (includeExtraCountTypes)
+            {
+                flags |= PerftFlags.IncludeExtraCountTypes;
+            }
+
+            var actualResult = boardState.Perft(expectedResult.Depth, flags);
 
             Console.WriteLine(
                 "[{0}] {1}: {2}",
@@ -608,12 +616,16 @@ namespace ChessPlatform.Tests
 
             public override string ToString()
             {
+                const string NotSpecified = "n/a";
+
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "{{ Depth = {0}, NodeCount = {1}, NodesPerSecond = {2} }}",
+                    "{{ Depth = {0}, NodeCount = {1}, NPS = {2}, CheckCount = {3}, CheckmateCount = {4} }}",
                     this.Depth,
                     this.NodeCount,
-                    this.NodesPerSecond.HasValue ? this.NodesPerSecond.Value.ToStringSafelyInvariant() : "n/a");
+                    this.NodesPerSecond.ToStringSafelyInvariant(NotSpecified),
+                    this.CheckCount.ToStringSafelyInvariant(NotSpecified),
+                    this.CheckmateCount.ToStringSafelyInvariant(NotSpecified));
             }
 
             #endregion
