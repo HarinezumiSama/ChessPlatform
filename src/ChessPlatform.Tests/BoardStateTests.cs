@@ -886,6 +886,7 @@ namespace ChessPlatform.Tests
                             item.ExpectedResult.CheckCount.HasValue || item.ExpectedResult.CheckmateCount.HasValue
                                 ? 1
                                 : 0)
+                    .ThenBy(item => item.ExpectedResult.NodeCount)
                     .ThenBy(item => item.ExpectedResult.Depth)
                     .ThenBy(item => item.Position.ToString());
 
