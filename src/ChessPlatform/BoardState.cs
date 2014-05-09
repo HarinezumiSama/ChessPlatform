@@ -242,7 +242,7 @@ namespace ChessPlatform
             var includeExtraCountTypes = flags.HasFlag(PerftFlags.IncludeExtraCountTypes);
 
             var stopwatch = Stopwatch.StartNew();
-            PerftInternal(this, depth, perftData, includeDivideMap, includeExtraCountTypes);
+            PerftInternal(this, depth, true, perftData, includeDivideMap, includeExtraCountTypes);
             stopwatch.Stop();
 
             return new PerftResult(
@@ -751,6 +751,7 @@ namespace ChessPlatform
         private static void PerftInternal(
             BoardState boardState,
             int depth,
+            bool isTopDepth,
             PerftData perftData,
             bool includeDivideMap,
             bool includeExtraCountTypes)
@@ -795,12 +796,33 @@ namespace ChessPlatform
                 return;
             }
 
+            if (isTopDepth)
+            {
+                var topDatas = moves
+                    .AsParallel()
+                    .Select(
+                        move =>
+                        {
+                            var localData = new PerftData();
+                            var newBoardState = boardState.MakeMove(move);
+                            PerftInternal(newBoardState, depth - 1, false, localData, false, includeExtraCountTypes);
+                            return KeyValuePair.Create(move, localData);
+                        })
+                    .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+                var totalData = topDatas.Aggregate(new PerftData(), (acc, pair) => acc + pair.Value);
+                perftData.Include(totalData);
+                topDatas.DoForEach(pair => perftData.DividedMoves.Add(pair.Key, pair.Value.NodeCount));
+
+                return;
+            }
+
             foreach (var move in moves)
             {
                 var previousNodeCount = perftData.NodeCount;
 
                 var newBoardState = boardState.MakeMove(move);
-                PerftInternal(newBoardState, depth - 1, perftData, false, includeExtraCountTypes);
+                PerftInternal(newBoardState, depth - 1, false, perftData, false, includeExtraCountTypes);
 
                 if (includeDivideMap)
                 {
@@ -849,6 +871,40 @@ namespace ChessPlatform
             {
                 get;
                 private set;
+            }
+
+            #endregion
+
+            #region Operators
+
+            public static PerftData operator +(PerftData left, PerftData right)
+            {
+                return new PerftData
+                {
+                    CheckCount = left.CheckCount + right.CheckCount,
+                    CheckmateCount = left.CheckmateCount + right.CheckmateCount,
+                    NodeCount = left.NodeCount + right.NodeCount
+                };
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public void Include(PerftData other)
+            {
+                #region Argument Check
+
+                if (other == null)
+                {
+                    throw new ArgumentNullException("other");
+                }
+
+                #endregion
+
+                this.CheckCount += other.CheckCount;
+                this.CheckmateCount += other.CheckmateCount;
+                this.NodeCount += other.NodeCount;
             }
 
             #endregion
