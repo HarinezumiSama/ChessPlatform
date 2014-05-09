@@ -10,7 +10,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
+        internal const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
 
         private readonly byte _file;
         private readonly byte _rank;
