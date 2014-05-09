@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -19,96 +18,35 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
-        [TestCaseSource(typeof(ConstructionWithPromotionArgumentCases))]
-        public void TestConstructionWithPromotionArgument(Position from, Position to, PieceType promotion)
+        public void TestConstruction()
         {
-            var move = new PieceMove(from, to, promotion);
-            Assert.That(move.From, Is.EqualTo(from));
-            Assert.That(move.To, Is.EqualTo(to));
-        }
-
-        #endregion
-
-        #region ConstructionWithPromotionArgumentCaseData Class
-
-        public sealed class ConstructionWithPromotionArgumentCaseData : TestCaseData
-        {
-            #region Constructors
-
-            internal ConstructionWithPromotionArgumentCaseData(Position from, Position to, PieceType promotion)
-                : base(from, to, promotion)
+            for (var fromIndex = 0; fromIndex < Position.MaxBitboardBitIndex; fromIndex++)
             {
-                this.From = from;
-                this.To = to;
-                this.Promotion = promotion;
-            }
+                var from = Position.FromBitboardBitIndex(fromIndex);
 
-            #endregion
-
-            #region Public Properties
-
-            public Position From
-            {
-                get;
-                private set;
-            }
-
-            public Position To
-            {
-                get;
-                private set;
-            }
-
-            public PieceType Promotion
-            {
-                get;
-                private set;
-            }
-
-            #endregion
-        }
-
-        #endregion
-
-        #region ConstructionWithPromotionArgumentCases Class
-
-        public sealed class ConstructionWithPromotionArgumentCases : IEnumerable<TestCaseData>
-        {
-            #region IEnumerable<TestCaseData> Members
-
-            public IEnumerator<TestCaseData> GetEnumerator()
-            {
-                var promotionIndex = 0;
-                for (var fromIndex = 0; fromIndex < Position.MaxBitboardBitIndex; fromIndex++)
+                for (var toIndex = 0; toIndex < Position.MaxBitboardBitIndex; toIndex++)
                 {
-                    var from = Position.FromBitboardBitIndex(fromIndex);
-
-                    for (var toIndex = 0; toIndex < Position.MaxBitboardBitIndex; toIndex++)
+                    if (fromIndex == toIndex)
                     {
-                        if (fromIndex == toIndex)
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        var to = Position.FromBitboardBitIndex(toIndex);
-                        var promotion = ValidPromotionArguments[promotionIndex % ValidPromotionArguments.Length];
-                        promotionIndex++;
+                    var to = Position.FromBitboardBitIndex(toIndex);
 
-                        yield return new ConstructionWithPromotionArgumentCaseData(from, to, promotion);
+                    var outerMove = new PieceMove(from, to);
+                    Assert.That(outerMove.From, Is.EqualTo(from));
+                    Assert.That(outerMove.To, Is.EqualTo(to));
+                    Assert.That(outerMove.PromotionResult, Is.EqualTo(PieceType.None));
+
+                    foreach (var promotion in ValidPromotionArguments)
+                    {
+                        var innerMove = new PieceMove(from, to, promotion);
+                        Assert.That(innerMove.From, Is.EqualTo(from));
+                        Assert.That(innerMove.To, Is.EqualTo(to));
+                        Assert.That(innerMove.PromotionResult, Is.EqualTo(promotion));
                     }
                 }
             }
-
-            #endregion
-
-            #region IEnumerable Members
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-
-            #endregion
         }
 
         #endregion
