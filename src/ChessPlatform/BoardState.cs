@@ -456,6 +456,26 @@ namespace ChessPlatform
 
             var validMoveSet = new HashSet<PieceMove>();
 
+            Action<Position, Position, Func<PieceMove, bool>> addBasicMove =
+                (sourcePosition, targetPosition, checkMove) =>
+                {
+                    var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, targetPosition);
+                    var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
+                    var basicMove = new PieceMove(sourcePosition, targetPosition, promotionResult);
+
+                    if (checkMove != null && !checkMove(basicMove))
+                    {
+                        return;
+                    }
+
+                    validMoveSet.Add(basicMove);
+
+                    if (isPawnPromotion)
+                    {
+                        validMoveSet.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
+                    }
+                };
+
             var activePieceNoKingPositions = Lazy.Create(
                 () => ChessConstants
                     .PieceTypes
@@ -490,16 +510,16 @@ namespace ChessPlatform
                     var checkAttackPosition = checkAttackPositions.Single();
                     var checkingPieceInfo = _pieceData.GetPieceInfo(checkAttackPosition);
 
-                    var potentialCapturingMoves = _pieceData
+                    var capturingSourcePositions = _pieceData
                         .GetAttackingPositions(checkAttackPosition, _activeColor)
                         .Where(
                             position =>
                                 _pieceData[position] != activeKing
                                     && isValidMoveByPinning(position, checkAttackPosition))
-                        .Select(position => new PieceMove(position, checkAttackPosition))
                         .ToArray();
 
-                    validMoveSet.AddRange(potentialCapturingMoves);
+                    capturingSourcePositions.DoForEach(
+                        sourcePosition => addBasicMove(sourcePosition, checkAttackPosition, null));
 
                     if (_enPassantCaptureInfo != null
                         && _enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
@@ -518,9 +538,9 @@ namespace ChessPlatform
                                     activePawnPosition)
                                 .Contains(capturePosition);
 
-                            if (canCapture)
+                            if (canCapture && isValidMoveByPinning(activePawnPosition, capturePosition))
                             {
-                                validMoveSet.Add(new PieceMove(activePawnPosition, capturePosition));
+                                addBasicMove(activePawnPosition, capturePosition, null);
                             }
                         }
                     }
@@ -563,19 +583,17 @@ namespace ChessPlatform
                     _enPassantCaptureInfo,
                     sourcePosition);
 
-                foreach (var destinationPosition in potentialMovePositions)
+                var filteredDestinationPositions = potentialMovePositions
+                    .Where(position => isValidMoveByPinning(sourcePosition, position))
+                    .ToArray();
+
+                foreach (var destinationPosition in filteredDestinationPositions)
                 {
-                    if (!isValidMoveByPinning(sourcePosition, destinationPosition))
-                    {
-                        continue;
-                    }
-
                     var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, destinationPosition);
-
                     var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
                     var basicMove = new PieceMove(sourcePosition, destinationPosition, promotionResult);
 
-                    bool isEnPassantCapture = _pieceData.IsEnPassantCapture(basicMove, _enPassantCaptureInfo);
+                    var isEnPassantCapture = _pieceData.IsEnPassantCapture(basicMove, _enPassantCaptureInfo);
                     if (isEnPassantCapture)
                     {
                         var temporaryCastlingOptions = _castlingOptions;

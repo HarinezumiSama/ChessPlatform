@@ -272,6 +272,96 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestCannotCaptureEnPassantCheckingPawnByPinnedPawn()
+        {
+            var boardState = new BoardState("8/2p5/3p4/KP3k1r/5pP1/8/4P3/5R2 b - g3 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.None,
+                new EnPassantCaptureInfo("g3", "g4"),
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "f5-g6", "f5-e4", "f5-e6", "f5-g4", "f5-f6", "f5-g5", "f5-e5");
+        }
+
+        [Test]
+        public void TestCannotCaptureCheckingPieceByPinnedPiece()
+        {
+            var boardState = new BoardState("Q2k4/8/1n6/B7/8/8/8/7K b - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.Black,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, "d8-c7", "d8-d7", "d8-e7");
+        }
+
+        [Test]
+        public void TestCanPromoteByMovingAndByCapturing()
+        {
+            var boardState = new BoardState("r6k/1P6/8/8/8/8/8/7K w - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Default);
+
+            var kingMoves = new PieceMove[] { "h1-g1", "h1-g2", "h1-h2" };
+            var expectedValidMoves = kingMoves
+                .Concat(new PieceMove("b7", "b8").MakeAllPromotions())
+                .Concat(new PieceMove("b7", "a8").MakeAllPromotions());
+
+            AssertValidMoves(boardState, expectedValidMoves);
+        }
+
+        [Test]
+        public void TestCanCaptureCheckingPieceByPromotingPawn()
+        {
+            var boardState = new BoardState("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(boardState, new PieceMove("b7", "a8").MakeAllPromotions());
+        }
+
+        [Test]
+        public void TestCheckmateByDoubleCheckAndPawnCannotCapture()
+        {
+            var boardState = new BoardState("r6k/1P6/1Pn5/KR6/1R6/8/8/8 w - - 0 1");
+
+            AssertBaseProperties(
+                boardState,
+                PieceColor.White,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Checkmate);
+
+            AssertNoValidMoves(boardState);
+        }
+
+        [Test]
         [TestCase(-1)]
         [TestCase(-2)]
         [TestCase(int.MinValue)]
@@ -282,7 +372,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        [TestCaseSource(typeof(TestPerftForInitialPositionCases))]
+        [TestCaseSource(typeof(TestPerftCases))]
         public void TestPerft(PerftPosition perftPosition, ExpectedPerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
@@ -295,7 +385,6 @@ namespace ChessPlatform.Tests
             {
                 flags |= PerftFlags.IncludeExtraCountTypes;
             }
-
 
             #region For Finding Bugs in Move Generator
 
@@ -388,7 +477,17 @@ namespace ChessPlatform.Tests
             Assert.That(boardState, Is.Not.Null);
             Assert.That(expectedValidMoves, Is.Not.Null);
 
-            Assert.That(boardState.ValidMoves, Is.EquivalentTo(expectedValidMoves));
+            var actualValidMoves = boardState.ValidMoves.OrderBy(move => move.ToString()).ToArray();
+            var expectedValidMovesSorted = expectedValidMoves.OrderBy(move => move.ToString()).ToArray();
+
+            Assert.That(actualValidMoves, Is.EquivalentTo(expectedValidMovesSorted));
+        }
+
+        private static void AssertValidMoves(BoardState boardState, IEnumerable<PieceMove> expectedValidMoves)
+        {
+            Assert.That(expectedValidMoves, Is.Not.Null);
+
+            AssertValidMoves(boardState, expectedValidMoves.ToArray());
         }
 
         private static void AssertNoValidMoves(BoardState boardState)
@@ -727,10 +826,10 @@ namespace ChessPlatform.Tests
 
         #endregion
 
-        #region TestPerftForInitialPositionCases Class
+        #region TestPerftCases Class
 
         //// TODO [vmcl] Use Omnifactotum.NUnit once it's published
-        public sealed class TestPerftForInitialPositionCases : IEnumerable<TestCaseData>
+        public sealed class TestPerftCases : IEnumerable<TestCaseData>
         {
             public IEnumerator<TestCaseData> GetEnumerator()
             {

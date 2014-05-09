@@ -175,6 +175,11 @@ namespace ChessPlatform
             return new PieceMove(this.From, this.To, promotionResult);
         }
 
+        public PieceMove[] MakeAllPromotions()
+        {
+            return ChessConstants.ValidPromotions.Select(item => new PieceMove(this.From, this.To, item)).ToArray();
+        }
+
         #endregion
 
         #region IEquatable<PieceMove> Members
