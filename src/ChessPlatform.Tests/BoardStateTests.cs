@@ -296,14 +296,18 @@ namespace ChessPlatform.Tests
                 flags |= PerftFlags.IncludeExtraCountTypes;
             }
 
-            ////boardState = boardState
-            ////    .MakeMove("a5-a6")
-            ////    .MakeMove("h5-h7")
-            ////    .MakeMove("a6-a7")
-            ////    //.MakeMove("c7-c5")
-            ////    ;
 
-            var actualResult = boardState.Perft(expectedResult.Depth, flags);
+            #region For Finding Bugs in Move Generator
+
+            var extraMoves = new PieceMove[]
+            {
+            };
+
+            boardState = extraMoves.Aggregate(boardState, (current, extraMove) => current.MakeMove(extraMove));
+
+            #endregion
+
+            var actualResult = boardState.Perft(expectedResult.Depth - extraMoves.Length, flags);
 
             string extraInfo = null;
             if (actualResult.Flags.HasFlag(PerftFlags.IncludeDivideMap))
@@ -822,9 +826,7 @@ namespace ChessPlatform.Tests
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(3, 2812UL));
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(4, 43238UL));
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(5, 674624UL));
-
-                yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(6, 11030083UL))
-                    .MakeExplicit(TooLongNow);
+                yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(6, 11030083UL));
 
                 yield return new TestCaseData(PerftPosition.Position3, new ExpectedPerftResult(7, 178633661UL))
                     .MakeExplicit(TooLongNow);
