@@ -800,6 +800,7 @@ namespace ChessPlatform
             {
                 var topDatas = moves
                     .AsParallel()
+                    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                     .Select(
                         move =>
                         {
