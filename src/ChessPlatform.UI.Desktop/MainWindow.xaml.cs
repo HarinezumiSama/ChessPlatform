@@ -405,6 +405,11 @@ namespace ChessPlatform.UI.Desktop
 
         private void MakeMove(PieceMove move)
         {
+            if (_currentBoardState.IsPawnPromotion(move))
+            {
+                move = move.MakePromotion(ChessHelper.DefaultPromotion);
+            }
+
             if (!_currentBoardState.IsValidMove(move))
             {
                 SetMovingPiecePosition(null);
@@ -413,11 +418,8 @@ namespace ChessPlatform.UI.Desktop
 
             if (_currentBoardState.IsPawnPromotion(move))
             {
-                if (move.PromotionResult == PieceType.None)
-                {
-                    QueryPawnPromotion(move);
-                    return;
-                }
+                QueryPawnPromotion(move);
+                return;
             }
 
             MakeMoveInternal(move);
@@ -437,7 +439,7 @@ namespace ChessPlatform.UI.Desktop
                     _promotionPopup.Closed -= promotionPopupClosed.Value;
 
                     var promotion = _promotionPopup.Tag as PieceType?;
-                    if (promotion.HasValue)
+                    if (promotion.HasValue && promotion.Value != PieceType.None)
                     {
                         var promotionMove = move.MakePromotion(promotion.Value);
                         MakeMoveInternal(promotionMove);
@@ -446,13 +448,19 @@ namespace ChessPlatform.UI.Desktop
 
             _promotionPopup.Closed += promotionPopupClosed.Value;
 
-            _promotionPopup.Tag = null;
+            _promotionPopup.Tag = PieceType.None;
             _promotionPopup.IsOpen = true;
         }
 
-        private void CancelPromotion()
+        private void ClosePromotion(bool cancel)
         {
             this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
+
+            if (cancel)
+            {
+                _promotionPopup.Tag = PieceType.None;
+            }
+
             _promotionPopup.IsOpen = false;
             SetMovingPiecePosition(null);
         }
@@ -585,7 +593,7 @@ namespace ChessPlatform.UI.Desktop
         {
             if (e.Key == Key.Escape)
             {
-                CancelPromotion();
+                ClosePromotion(true);
             }
         }
 
@@ -596,7 +604,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void PromotionPopup_Closed(object sender, EventArgs e)
         {
-            CancelPromotion();
+            ClosePromotion(false);
         }
 
         #endregion

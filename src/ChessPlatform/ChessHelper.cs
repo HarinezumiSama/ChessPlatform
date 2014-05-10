@@ -57,6 +57,8 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
+        public static readonly PieceType DefaultPromotion = PieceType.Queen;
+
         internal const int MaxSlidingPieceDistance = 8;
         internal const int MaxPawnAttackOrMoveDistance = 1;
         internal const int MaxKingMoveOrAttackDistance = 1;
@@ -140,8 +142,6 @@ namespace ChessPlatform
 
         internal static readonly ReadOnlySet<byte> KnightAttackOrMoveOffsets =
             new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
-
-        internal static readonly PieceType DefaultPromotion = PieceType.Queen;
 
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();

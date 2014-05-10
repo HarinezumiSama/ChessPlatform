@@ -165,9 +165,14 @@ namespace ChessPlatform
         {
             #region Argument Check
 
-            if (promotionResult == PieceType.None)
+            if (!ChessConstants.ValidPromotions.Contains(promotionResult))
             {
-                throw new ArgumentException("Must be a valid promotion piece.", "promotionResult");
+                throw new ArgumentException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Must be a valid promotion piece ({0}).",
+                        promotionResult),
+                    "promotionResult");
             }
 
             #endregion

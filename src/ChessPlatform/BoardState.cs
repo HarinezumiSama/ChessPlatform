@@ -320,7 +320,7 @@ namespace ChessPlatform
 
             #endregion
 
-            return this.ValidMoves.Contains(move) && _pieceData.IsPawnPromotion(move);
+            return _pieceData.IsPawnPromotion(move);
         }
 
         public CastlingInfo CheckCastlingMove(PieceMove move)
