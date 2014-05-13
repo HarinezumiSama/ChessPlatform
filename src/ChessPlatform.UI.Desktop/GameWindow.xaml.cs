@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using ChessPlatform.UI.Desktop.Converters;
+using ChessPlatform.UI.Desktop.ViewModels;
 using Omnifactotum;
 
 namespace ChessPlatform.UI.Desktop
@@ -17,19 +18,11 @@ namespace ChessPlatform.UI.Desktop
     /// <summary>
     ///     Interaction logic for <b>GameWindow.xaml</b>.
     /// </summary>
-    public sealed partial class GameWindow
+    internal sealed partial class GameWindow
     {
         #region Constants and Fields
 
         private static readonly GridLength StarGridLength = new GridLength(1d, GridUnitType.Star);
-
-        private readonly Dictionary<Position, TextBlock> _positionToSquareElementMap =
-            new Dictionary<Position, TextBlock>();
-
-        private readonly Stack<BoardState> _previosBoardStates = new Stack<BoardState>();
-        private BoardState _currentBoardState = new BoardState();
-
-        private Position? _movingPiecePosition;
 
         private bool _canExecuteCopyFenToClipboard = true;
         private Popup _promotionPopup;
@@ -56,17 +49,6 @@ namespace ChessPlatform.UI.Desktop
             return source == null || !(source.Tag is Position) ? null : (Position)source.Tag;
         }
 
-        private static void ResetSquareElementColor(TextBlock squareElement)
-        {
-            var position = GetSquarePosition(squareElement);
-            if (!position.HasValue)
-            {
-                throw new ArgumentException(@"Invalid square element.", "squareElement");
-            }
-
-            squareElement.Background = UIHelper.GetSquareBrush(position.Value, SquareMode.Default);
-        }
-
         private void StartNewGame(bool confirm)
         {
             if (confirm)
@@ -78,8 +60,7 @@ namespace ChessPlatform.UI.Desktop
                 }
             }
 
-            _currentBoardState = new BoardState();
-            _previosBoardStates.Clear();
+            this.ViewModel.StartNewGame();
 
             RedrawBoardState(true);
         }
@@ -110,28 +91,28 @@ namespace ChessPlatform.UI.Desktop
                 }
             }
 
-            BoardState boardState;
             try
             {
-                boardState = new BoardState(fen);
+                this.ViewModel.StartNewGameFromFen(fen);
             }
             catch (ArgumentException)
             {
                 this.ShowErrorDialog(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid FEN:{0}{1}", Environment.NewLine, fen));
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Invalid FEN:{0}{1}",
+                        Environment.NewLine,
+                        fen));
 
                 return;
             }
-
-            _currentBoardState = boardState;
-            _previosBoardStates.Clear();
 
             RedrawBoardState(true);
         }
 
         private void UndoLastMove(bool confirm)
         {
-            if (_previosBoardStates.Count == 0)
+            if (!this.ViewModel.CanUndoLastMove())
             {
                 return;
             }
@@ -142,7 +123,7 @@ namespace ChessPlatform.UI.Desktop
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Do you want to undo the last move ({0})?",
-                        _currentBoardState.PreviousMove));
+                        this.ViewModel.CurrentBoardState.PreviousMove));
 
                 if (answer != MessageBoxResult.Yes)
                 {
@@ -150,7 +131,7 @@ namespace ChessPlatform.UI.Desktop
                 }
             }
 
-            _currentBoardState = _previosBoardStates.Pop();
+            this.ViewModel.UndoLastMove();
             RedrawBoardState(true);
         }
 
@@ -171,17 +152,25 @@ namespace ChessPlatform.UI.Desktop
                     Margin = new Thickness(),
                     Tag = position,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    DataContext = this.ViewModel.SquareViewModels[position]
                 };
 
-                ResetSquareElementColor(textBlock);
+                textBlock.SetBinding(
+                    TextBlock.BackgroundProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Background)));
+
+                textBlock.SetBinding(
+                    TextBlock.ForegroundProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Foreground)));
+
+                textBlock.SetBinding(
+                    TextBlock.TextProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Text)));
 
                 textBlock.MouseEnter += this.TextBlockSquare_MouseEnter;
                 textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
-                textBlock.MouseLeftButtonDown += this.TextBlockSquare_MouseLeftButtonDown;
                 textBlock.MouseLeftButtonUp += this.TextBlockSquare_MouseLeftButtonUp;
-
-                _positionToSquareElementMap.Add(position, textBlock);
 
                 textBlock.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - position.Rank);
                 textBlock.SetValue(Grid.ColumnProperty, (int)position.File);
@@ -295,31 +284,20 @@ namespace ChessPlatform.UI.Desktop
 
         private void RedrawBoardState(bool showStatePopup)
         {
-            _movingPiecePosition = null;
-
-            foreach (var position in ChessHelper.AllPositions)
-            {
-                var pieceInfo = _currentBoardState.GetPieceInfo(position);
-                var ch = UIHelper.PieceToCharMap[pieceInfo.PieceType];
-
-                var textBlock = _positionToSquareElementMap[position];
-                ResetSquareElementColor(textBlock);
-                textBlock.Text = ch.ToString(CultureInfo.InvariantCulture);
-                textBlock.Foreground = pieceInfo.Color == PieceColor.White ? Brushes.DarkKhaki : Brushes.Black;
-            }
+            var currentBoardState = this.ViewModel.CurrentBoardState;
 
             this.StatusLabel.Content = string.Format(
                 CultureInfo.InvariantCulture,
                 "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}",
-                _currentBoardState.FullMoveIndex,
-                _currentBoardState.ActiveColor,
-                _currentBoardState.State,
-                _currentBoardState.ValidMoves.Count,
-                _currentBoardState.ResultString);
+                currentBoardState.FullMoveIndex,
+                currentBoardState.ActiveColor,
+                currentBoardState.State,
+                currentBoardState.ValidMoves.Count,
+                currentBoardState.ResultString);
 
             if (showStatePopup)
             {
-                switch (_currentBoardState.State)
+                switch (currentBoardState.State)
                 {
                     case GameState.Check:
                         this.MainGrid.ShowInfoPopup("Check!");
@@ -334,7 +312,7 @@ namespace ChessPlatform.UI.Desktop
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Checkmate! {0}",
-                                _currentBoardState.ResultString));
+                                currentBoardState.ResultString));
                         break;
 
                     case GameState.Stalemate:
@@ -348,72 +326,24 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void DisplayValidMoves(Position position)
-        {
-            var sourceSquareElement = _positionToSquareElementMap[position];
-
-            var moves = _currentBoardState.GetValidMovesBySource(position);
-            foreach (var move in moves)
-            {
-                var squareElement = _positionToSquareElementMap[move.To];
-                squareElement.Background = UIHelper.GetSquareBrush(move.To, SquareMode.ValidMoveTarget);
-            }
-
-            if (moves.Length != 0)
-            {
-                sourceSquareElement.Background = UIHelper.GetSquareBrush(position, SquareMode.ValidMoveSource);
-            }
-        }
-
-        private void SetMovingPiecePosition(Position? movingPiecePosition)
-        {
-            ////Trace.TraceInformation(
-            ////    "*** [{0}] {1}{2}{3}{2}{2}",
-            ////    MethodBase.GetCurrentMethod().Name,
-            ////    movingPiecePosition.ToStringSafely("None"),
-            ////    Environment.NewLine,
-            ////    new StackTrace());
-
-            _movingPiecePosition = movingPiecePosition;
-
-            if (!_movingPiecePosition.HasValue
-                || _currentBoardState.GetPiece(_movingPiecePosition.Value) == Piece.None
-                || _currentBoardState.GetValidMovesBySource(_movingPiecePosition.Value).Length == 0)
-            {
-                RedrawBoardState(false);
-                return;
-            }
-
-            DisplayValidMoves(_movingPiecePosition.Value);
-
-            var squareElement = _positionToSquareElementMap[_movingPiecePosition.Value];
-
-            squareElement.Background = UIHelper.GetSquareBrush(
-                _movingPiecePosition.Value,
-                SquareMode.CurrentMoveSource);
-        }
-
         private void MakeMoveInternal(PieceMove move)
         {
-            var newBoardState = _currentBoardState.MakeMove(move).EnsureNotNull();
-
-            _previosBoardStates.Push(_currentBoardState);
-            _currentBoardState = newBoardState;
+            this.ViewModel.MakeMove(move);
 
             RedrawBoardState(true);
         }
 
         private void MakeMove(PieceMove move)
         {
-            var isPawnPromotion = _currentBoardState.IsPawnPromotion(move);
+            var isPawnPromotion = this.ViewModel.CurrentBoardState.IsPawnPromotion(move);
             if (isPawnPromotion)
             {
                 move = move.MakePromotion(ChessHelper.DefaultPromotion);
             }
 
-            if (!_currentBoardState.IsValidMove(move))
+            if (!this.ViewModel.CurrentBoardState.IsValidMove(move))
             {
-                SetMovingPiecePosition(null);
+                this.ViewModel.ResetSelectionMode();
                 return;
             }
 
@@ -463,7 +393,6 @@ namespace ChessPlatform.UI.Desktop
             }
 
             _promotionPopup.IsOpen = false;
-            SetMovingPiecePosition(null);
         }
 
         #endregion
@@ -478,51 +407,22 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            if (!_movingPiecePosition.HasValue)
+            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.None)
             {
-                DisplayValidMoves(position.Value);
+                this.ViewModel.CurrentTargetPosition = null;
+                this.ViewModel.SetValidMovesOnlySelectionMode(position.Value);
                 return;
             }
 
-            if (_movingPiecePosition.Value == position.Value)
-            {
-                return;
-            }
-
-            var move = new PieceMove(_movingPiecePosition.Value, position.Value);
-            if (_currentBoardState.IsValidMove(move))
-            {
-                var squareElement = _positionToSquareElementMap[position.Value];
-                squareElement.Background = UIHelper.GetSquareBrush(position.Value, SquareMode.CurrentMoveTarget);
-            }
+            this.ViewModel.CurrentTargetPosition = position.Value;
         }
 
         private void TextBlockSquare_MouseLeave(object sender, MouseEventArgs args)
         {
-            var position = GetSquarePosition(args.OriginalSource);
-            if (!position.HasValue)
+            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.DisplayValidMovesOnly)
             {
-                return;
+                this.ViewModel.ResetSelectionMode();
             }
-
-            if (!_movingPiecePosition.HasValue)
-            {
-                RedrawBoardState(false);
-                return;
-            }
-
-            SetMovingPiecePosition(_movingPiecePosition.Value);
-        }
-
-        private void TextBlockSquare_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            ////var position = GetSquarePosition(e.OriginalSource);
-            ////if (!position.HasValue)
-            ////{
-            ////    return;
-            ////}
-
-            ////Trace.TraceInformation(position.Value.ToString());
         }
 
         private void TextBlockSquare_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -533,19 +433,21 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            if (!_movingPiecePosition.HasValue)
+            var movingPiecePosition = this.ViewModel.CurrentSourcePosition;
+            if (this.ViewModel.SelectionMode != GameWindowSelectionMode.MovingPieceSelected
+                || !movingPiecePosition.HasValue)
             {
-                SetMovingPiecePosition(position);
+                this.ViewModel.SetMovingPieceSelectionMode(position.Value);
                 return;
             }
 
-            if (_movingPiecePosition.Value == position.Value)
+            if (movingPiecePosition.Value == position.Value)
             {
-                SetMovingPiecePosition(null);
+                this.ViewModel.ResetSelectionMode();
                 return;
             }
 
-            var move = new PieceMove(_movingPiecePosition.Value, position.Value);
+            var move = new PieceMove(movingPiecePosition.Value, position.Value);
             MakeMove(move);
         }
 
@@ -566,12 +468,12 @@ namespace ChessPlatform.UI.Desktop
 
         private void UndoLastMove_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = _previosBoardStates.Count != 0;
+            e.CanExecute = this.ViewModel.CanUndoLastMove();
         }
 
         private void CopyFenToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var fen = _currentBoardState.GetFen();
+            var fen = this.ViewModel.CurrentBoardState.GetFen();
             Clipboard.SetText(fen);
 
             this.MainGrid.ShowInfoPopup(

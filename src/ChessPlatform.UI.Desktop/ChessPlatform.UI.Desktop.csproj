@@ -80,11 +80,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />
     <Compile Include="Converters\RatioDoubleConverter.cs" />
+    <Compile Include="ViewModels\GameWindowSelectionMode.cs" />
+    <Compile Include="ViewModels\GameWindowViewModel.cs" />
     <Compile Include="SquareColors.cs" />
     <Compile Include="SquareMode.cs" />
     <Compile Include="UIHelper.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="GameWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
