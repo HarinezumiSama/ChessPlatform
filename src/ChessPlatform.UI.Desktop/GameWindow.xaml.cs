@@ -15,9 +15,9 @@ using Omnifactotum;
 namespace ChessPlatform.UI.Desktop
 {
     /// <summary>
-    ///     Interaction logic for <b>MainWindow.xaml</b>.
+    ///     Interaction logic for <b>GameWindow.xaml</b>.
     /// </summary>
-    public sealed partial class MainWindow
+    public sealed partial class GameWindow
     {
         #region Constants and Fields
 
@@ -38,7 +38,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Constructors
 
-        public MainWindow()
+        public GameWindow()
         {
             InitializeComponent();
 
@@ -405,7 +405,8 @@ namespace ChessPlatform.UI.Desktop
 
         private void MakeMove(PieceMove move)
         {
-            if (_currentBoardState.IsPawnPromotion(move))
+            var isPawnPromotion = _currentBoardState.IsPawnPromotion(move);
+            if (isPawnPromotion)
             {
                 move = move.MakePromotion(ChessHelper.DefaultPromotion);
             }
@@ -416,7 +417,7 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            if (_currentBoardState.IsPawnPromotion(move))
+            if (isPawnPromotion)
             {
                 QueryPawnPromotion(move);
                 return;

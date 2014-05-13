@@ -1,4 +1,4 @@
-﻿<Window x:Class="ChessPlatform.UI.Desktop.MainWindow"
+﻿<Window x:Class="ChessPlatform.UI.Desktop.GameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:commands="clr-namespace:ChessPlatform.UI.Desktop.Commands"
