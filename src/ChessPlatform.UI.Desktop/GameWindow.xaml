@@ -5,13 +5,13 @@
         Title="Chess Platform UI for Desktop" Width="460" Height="480" MinWidth="400" MinHeight="400"
         WindowStartupLocation="CenterScreen" Margin="0" WindowState="Maximized">
     <Window.CommandBindings>
-        <CommandBinding Command="commands:MainWindowCommands.Exit" Executed="Exit_Executed" />
-        <CommandBinding Command="commands:MainWindowCommands.NewGame" Executed="NewGame_Executed" />
-        <CommandBinding Command="commands:MainWindowCommands.UndoLastMove" Executed="UndoLastMove_Executed"
+        <CommandBinding Command="commands:GameWindowCommands.Exit" Executed="Exit_Executed" />
+        <CommandBinding Command="commands:GameWindowCommands.NewGame" Executed="NewGame_Executed" />
+        <CommandBinding Command="commands:GameWindowCommands.UndoLastMove" Executed="UndoLastMove_Executed"
                         CanExecute="UndoLastMove_CanExecute" />
-        <CommandBinding Command="commands:MainWindowCommands.CopyFenToClipboard" Executed="CopyFenToClipboard_Executed"
+        <CommandBinding Command="commands:GameWindowCommands.CopyFenToClipboard" Executed="CopyFenToClipboard_Executed"
                         CanExecute="CopyFenToClipboard_CanExecute" />
-        <CommandBinding Command="commands:MainWindowCommands.NewGameFromFenFromClipboard"
+        <CommandBinding Command="commands:GameWindowCommands.NewGameFromFenFromClipboard"
                         Executed="NewGameFromFenFromClipboard_Executed" />
     </Window.CommandBindings>
 
@@ -24,15 +24,15 @@
 
         <Menu Name="MainMenu" HorizontalAlignment="Stretch" VerticalAlignment="Top">
             <MenuItem Name="GameMenuItem" Header="_Game">
-                <MenuItem Command="commands:MainWindowCommands.NewGame" />
-                <MenuItem Command="commands:MainWindowCommands.NewGameFromFenFromClipboard" />
+                <MenuItem Command="commands:GameWindowCommands.NewGame" />
+                <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard" />
                 <Separator />
-                <MenuItem Command="commands:MainWindowCommands.Exit" />
+                <MenuItem Command="commands:GameWindowCommands.Exit" />
             </MenuItem>
             <MenuItem Name="HistoryMenuItem" Header="_History">
-                <MenuItem Command="commands:MainWindowCommands.UndoLastMove" />
+                <MenuItem Command="commands:GameWindowCommands.UndoLastMove" />
                 <Separator />
-                <MenuItem Command="commands:MainWindowCommands.CopyFenToClipboard" />
+                <MenuItem Command="commands:GameWindowCommands.CopyFenToClipboard" />
             </MenuItem>
         </Menu>
 
