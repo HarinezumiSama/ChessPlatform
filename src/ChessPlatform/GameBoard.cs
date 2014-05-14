@@ -8,7 +8,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public sealed class BoardState
+    public sealed class GameBoard
     {
         #region Constants and Fields
 
@@ -29,9 +29,9 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BoardState"/> class.
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class.
         /// </summary>
-        public BoardState()
+        public GameBoard()
         {
             _pieceData = new PieceData();
 
@@ -46,9 +46,9 @@ namespace ChessPlatform
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BoardState"/> class.
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class.
         /// </summary>
-        public BoardState([NotNull] string fen)
+        public GameBoard([NotNull] string fen)
         {
             #region Argument Check
 
@@ -75,10 +75,10 @@ namespace ChessPlatform
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BoardState"/> class
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class
         ///     using the specified previous state and specified move.
         /// </summary>
-        private BoardState([NotNull] BoardState previous, [NotNull] PieceMove move)
+        private GameBoard([NotNull] GameBoard previous, [NotNull] PieceMove move)
         {
             #region Argument Check
 
@@ -332,9 +332,9 @@ namespace ChessPlatform
             return this.ValidMoves.Contains(move) ? _pieceData.CheckCastlingMove(move) : null;
         }
 
-        public BoardState MakeMove([NotNull] PieceMove move)
+        public GameBoard MakeMove([NotNull] PieceMove move)
         {
-            return new BoardState(this, move);
+            return new GameBoard(this, move);
         }
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
@@ -773,7 +773,7 @@ namespace ChessPlatform
         }
 
         private static void PerftInternal(
-            BoardState boardState,
+            GameBoard gameBoard,
             int depth,
             bool isTopDepth,
             PerftData perftData,
@@ -789,7 +789,7 @@ namespace ChessPlatform
                     return;
                 }
 
-                switch (boardState.State)
+                switch (gameBoard.State)
                 {
                     case GameState.Check:
                     case GameState.DoubleCheck:
@@ -813,7 +813,7 @@ namespace ChessPlatform
                 return;
             }
 
-            var moves = boardState.ValidMoves;
+            var moves = gameBoard.ValidMoves;
             if (depth == 1 && !includeExtraCountTypes && !includeDivideMap)
             {
                 perftData.NodeCount += checked((ulong)moves.Count);
@@ -829,8 +829,8 @@ namespace ChessPlatform
                         move =>
                         {
                             var localData = new PerftData();
-                            var newBoardState = boardState.MakeMove(move);
-                            PerftInternal(newBoardState, depth - 1, false, localData, false, includeExtraCountTypes);
+                            var newBoard = gameBoard.MakeMove(move);
+                            PerftInternal(newBoard, depth - 1, false, localData, false, includeExtraCountTypes);
                             return KeyValuePair.Create(move, localData);
                         })
                     .ToDictionary(pair => pair.Key, pair => pair.Value);
@@ -846,8 +846,8 @@ namespace ChessPlatform
             {
                 var previousNodeCount = perftData.NodeCount;
 
-                var newBoardState = boardState.MakeMove(move);
-                PerftInternal(newBoardState, depth - 1, false, perftData, false, includeExtraCountTypes);
+                var newBoard = gameBoard.MakeMove(move);
+                PerftInternal(newBoard, depth - 1, false, perftData, false, includeExtraCountTypes);
 
                 if (includeDivideMap)
                 {

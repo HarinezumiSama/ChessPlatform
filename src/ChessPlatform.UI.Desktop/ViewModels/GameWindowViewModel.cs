@@ -11,8 +11,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Constants and Fields
 
         private readonly HashSet<Position> _validMoveTargetPositionsInternal;
-        private readonly Stack<BoardState> _previosBoardStates;
-        private BoardState _currentBoardState;
+        private readonly Stack<GameBoard> _previousGameBoards;
+        private GameBoard _currentGameBoard;
         private GameWindowSelectionMode _selectionMode;
         private Position? _currentTargetPosition;
 
@@ -26,8 +26,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public GameWindowViewModel()
         {
             _validMoveTargetPositionsInternal = new HashSet<Position>();
-            _previosBoardStates = new Stack<BoardState>();
-            _currentBoardState = new BoardState();
+            _previousGameBoards = new Stack<GameBoard>();
+            _currentGameBoard = new GameBoard();
 
             _selectionMode = GameWindowSelectionMode.None;
             this.ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
@@ -67,23 +67,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        public BoardState CurrentBoardState
+        public GameBoard CurrentGameBoard
         {
             [DebuggerStepThrough]
             get
             {
-                return _currentBoardState;
+                return _currentGameBoard;
             }
 
             private set
             {
-                if (ReferenceEquals(value, _currentBoardState))
+                if (ReferenceEquals(value, _currentGameBoard))
                 {
                     return;
                 }
 
-                _currentBoardState = value;
-                RaisePropertyChanged(() => this.CurrentBoardState);
+                _currentGameBoard = value;
+                RaisePropertyChanged(() => this.CurrentGameBoard);
             }
         }
 
@@ -147,10 +147,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void StartNewGame()
         {
-            var boardState = new BoardState();
+            var gameBoard = new GameBoard();
 
-            _previosBoardStates.Clear();
-            this.CurrentBoardState = boardState;
+            _previousGameBoards.Clear();
+            this.CurrentGameBoard = gameBoard;
         }
 
         public void StartNewGameFromFen(string fen)
@@ -166,10 +166,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             #endregion
 
-            var boardState = new BoardState(fen);
+            var gameBoard = new GameBoard(fen);
 
-            _previosBoardStates.Clear();
-            this.CurrentBoardState = boardState;
+            _previousGameBoards.Clear();
+            this.CurrentGameBoard = gameBoard;
         }
 
         public void MakeMove(PieceMove move)
@@ -183,28 +183,28 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             #endregion
 
-            var newBoardState = this.CurrentBoardState.MakeMove(move).EnsureNotNull();
+            var newGameBoard = this.CurrentGameBoard.MakeMove(move).EnsureNotNull();
 
             ResetSelectionMode();
 
-            _previosBoardStates.Push(this.CurrentBoardState);
-            this.CurrentBoardState = newBoardState;
+            _previousGameBoards.Push(this.CurrentGameBoard);
+            this.CurrentGameBoard = newGameBoard;
         }
 
         public bool CanUndoLastMove()
         {
-            return _previosBoardStates.Count != 0;
+            return _previousGameBoards.Count != 0;
         }
 
         public void UndoLastMove()
         {
-            if (_previosBoardStates.Count == 0)
+            if (_previousGameBoards.Count == 0)
             {
                 throw new InvalidOperationException("No moves to undo.");
             }
 
-            var boardState = _previosBoardStates.Pop();
-            this.CurrentBoardState = boardState;
+            var gameBoard = _previousGameBoards.Pop();
+            this.CurrentGameBoard = gameBoard;
         }
 
         #endregion
@@ -213,7 +213,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void SetModeInternal(Position currentSourcePosition, GameWindowSelectionMode selectionMode)
         {
-            var validMoves = this.CurrentBoardState.GetValidMovesBySource(currentSourcePosition);
+            var validMoves = this.CurrentGameBoard.GetValidMovesBySource(currentSourcePosition);
             if (validMoves.Length == 0)
             {
                 return;

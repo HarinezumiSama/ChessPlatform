@@ -36,7 +36,7 @@ namespace ChessPlatform.UI.Desktop
             InitializeComponent();
 
             InitializeControls();
-            RedrawBoardState(false);
+            RedrawGameBoard(false);
         }
 
         #endregion
@@ -62,7 +62,7 @@ namespace ChessPlatform.UI.Desktop
 
             this.ViewModel.StartNewGame();
 
-            RedrawBoardState(true);
+            RedrawGameBoard(true);
         }
 
         private void StartNewGameFromFenFromClipboard(bool confirm)
@@ -107,7 +107,7 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            RedrawBoardState(true);
+            RedrawGameBoard(true);
         }
 
         private void UndoLastMove(bool confirm)
@@ -123,7 +123,7 @@ namespace ChessPlatform.UI.Desktop
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Do you want to undo the last move ({0})?",
-                        this.ViewModel.CurrentBoardState.PreviousMove));
+                        this.ViewModel.CurrentGameBoard.PreviousMove));
 
                 if (answer != MessageBoxResult.Yes)
                 {
@@ -132,7 +132,7 @@ namespace ChessPlatform.UI.Desktop
             }
 
             this.ViewModel.UndoLastMove();
-            RedrawBoardState(true);
+            RedrawGameBoard(true);
         }
 
         private void InitializeControls()
@@ -282,22 +282,22 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void RedrawBoardState(bool showStatePopup)
+        private void RedrawGameBoard(bool showStatePopup)
         {
-            var currentBoardState = this.ViewModel.CurrentBoardState;
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
 
             this.StatusLabel.Content = string.Format(
                 CultureInfo.InvariantCulture,
                 "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}",
-                currentBoardState.FullMoveIndex,
-                currentBoardState.ActiveColor,
-                currentBoardState.State,
-                currentBoardState.ValidMoves.Count,
-                currentBoardState.ResultString);
+                currentGameBoard.FullMoveIndex,
+                currentGameBoard.ActiveColor,
+                currentGameBoard.State,
+                currentGameBoard.ValidMoves.Count,
+                currentGameBoard.ResultString);
 
             if (showStatePopup)
             {
-                switch (currentBoardState.State)
+                switch (currentGameBoard.State)
                 {
                     case GameState.Check:
                         this.MainGrid.ShowInfoPopup("Check!");
@@ -312,7 +312,7 @@ namespace ChessPlatform.UI.Desktop
                             string.Format(
                                 CultureInfo.InvariantCulture,
                                 "Checkmate! {0}",
-                                currentBoardState.ResultString));
+                                currentGameBoard.ResultString));
                         break;
 
                     case GameState.Stalemate:
@@ -330,18 +330,18 @@ namespace ChessPlatform.UI.Desktop
         {
             this.ViewModel.MakeMove(move);
 
-            RedrawBoardState(true);
+            RedrawGameBoard(true);
         }
 
         private void MakeMove(PieceMove move)
         {
-            var isPawnPromotion = this.ViewModel.CurrentBoardState.IsPawnPromotion(move);
+            var isPawnPromotion = this.ViewModel.CurrentGameBoard.IsPawnPromotion(move);
             if (isPawnPromotion)
             {
                 move = move.MakePromotion(ChessHelper.DefaultPromotion);
             }
 
-            if (!this.ViewModel.CurrentBoardState.IsValidMove(move))
+            if (!this.ViewModel.CurrentGameBoard.IsValidMove(move))
             {
                 this.ViewModel.ResetSelectionMode();
                 return;
@@ -473,7 +473,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void CopyFenToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var fen = this.ViewModel.CurrentBoardState.GetFen();
+            var fen = this.ViewModel.CurrentGameBoard.GetFen();
             Clipboard.SetText(fen);
 
             this.MainGrid.ShowInfoPopup(

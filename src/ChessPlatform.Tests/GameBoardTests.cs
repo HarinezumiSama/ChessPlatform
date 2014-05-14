@@ -11,7 +11,7 @@ using Omnifactotum;
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class BoardStateTests
+    public sealed class GameBoardTests
     {
         #region Constants and Fields
 
@@ -74,15 +74,15 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestDefaultConstruction()
         {
-            var boardState = new BoardState();
-            AssertDefaultInitialBoard(boardState);
+            var gameBoard = new GameBoard();
+            AssertDefaultInitialBoard(gameBoard);
         }
 
         [Test]
         public void TestConstructionByDefaultFen()
         {
-            var boardState = new BoardState(DefaultFen);
-            AssertDefaultInitialBoard(boardState);
+            var gameBoard = new GameBoard(DefaultFen);
+            AssertDefaultInitialBoard(gameBoard);
         }
 
         [Test]
@@ -90,40 +90,40 @@ namespace ChessPlatform.Tests
         {
             const string StalemateFen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
 
-            var boardState = new BoardState(StalemateFen);
-            AssertBaseProperties(boardState, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
-            AssertNoValidMoves(boardState);
+            var gameBoard = new GameBoard(StalemateFen);
+            AssertBaseProperties(gameBoard, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
+            AssertNoValidMoves(gameBoard);
         }
 
         [Test]
         public void TestMakeMoveBasicScenario()
         {
-            var boardState1W = TestMakeMoveBasicScenario1W();
-            var boardState1B = TestMakeMoveBasicScenario1B(boardState1W);
-            var boardState2W = TestMakeMoveBasicScenario2W(boardState1B);
-            var boardState2B = TestMakeMoveBasicScenario2B(boardState2W);
-            var boardState3W = TestMakeMoveBasicScenario3W(boardState2B);
-            var boardState3B = TestMakeMoveBasicScenario3B(boardState3W);
-            Assert.That(boardState3B, Is.Not.Null);
+            var gameBoard1W = TestMakeMoveBasicScenario1W();
+            var gameBoard1B = TestMakeMoveBasicScenario1B(gameBoard1W);
+            var gameBoard2W = TestMakeMoveBasicScenario2W(gameBoard1B);
+            var gameBoard2B = TestMakeMoveBasicScenario2B(gameBoard2W);
+            var gameBoard3W = TestMakeMoveBasicScenario3W(gameBoard2B);
+            var gameBoard3B = TestMakeMoveBasicScenario3B(gameBoard3W);
+            Assert.That(gameBoard3B, Is.Not.Null);
         }
 
         [Test]
         public void TestMakeMoveFoolsMateScenario()
         {
-            var boardState1W = new BoardState();
-            var boardState1B = TestMakeMoveFoolsMateScenario1B(boardState1W);
-            var boardState2W = TestMakeMoveFoolsMateScenario2W(boardState1B);
-            var boardState2B = TestMakeMoveFoolsMateScenario2B(boardState2W);
-            TestMakeMoveFoolsMateScenario3W(boardState2B);
+            var gameBoard1W = new GameBoard();
+            var gameBoard1B = TestMakeMoveFoolsMateScenario1B(gameBoard1W);
+            var gameBoard2W = TestMakeMoveFoolsMateScenario2W(gameBoard1B);
+            var gameBoard2B = TestMakeMoveFoolsMateScenario2B(gameBoard2W);
+            TestMakeMoveFoolsMateScenario3W(gameBoard2B);
         }
 
         [Test]
         public void TestTwoKingsOnlyCase()
         {
-            var boardState = new BoardState("k7/8/K7/8/8/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("k7/8/K7/8/8/8/8/8 w - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.None,
                 null,
@@ -131,16 +131,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.ForcedDrawInsufficientMaterial);
 
-            AssertNoValidMoves(boardState);
+            AssertNoValidMoves(gameBoard);
         }
 
         [Test]
         public void TestKingInCheckByCloseQueenCase()
         {
-            var boardState = new BoardState("r3k2r/p1ppqQ2/1n2p1pb/3PN2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard("r3k2r/p1ppqQ2/1n2p1pb/3PN2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.All,
                 null,
@@ -148,16 +148,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "e8-d8", "e7-f7");
+            AssertValidMoves(gameBoard, "e8-d8", "e7-f7");
         }
 
         [Test]
         public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase1()
         {
-            var boardState = new BoardState("r3k2r/p1ppq3/3n2Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard("r3k2r/p1ppq3/3n2Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.All,
                 null,
@@ -165,16 +165,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "e8-d8", "e8-f8", "d6-f7", "h5-g6");
+            AssertValidMoves(gameBoard, "e8-d8", "e8-f8", "d6-f7", "h5-g6");
         }
 
         [Test]
         public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase2()
         {
-            var boardState = new BoardState("r3k2r/p1pp4/3nq1Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard("r3k2r/p1pp4/3nq1Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.All,
                 null,
@@ -182,16 +182,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "e8-d8", "e8-f8", "e8-e7", "d6-f7", "h5-g6");
+            AssertValidMoves(gameBoard, "e8-d8", "e8-f8", "e8-e7", "d6-f7", "h5-g6");
         }
 
         [Test]
         public void TestPinnedOwnQueenCase()
         {
-            var boardState = new BoardState("k7/8/8/3q4/4Q3/5P2/5K2/8 b - - 0 1");
+            var gameBoard = new GameBoard("k7/8/8/3q4/4Q3/5P2/5K2/8 b - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.None,
                 null,
@@ -199,16 +199,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            AssertValidMoves(boardState, "a8-b8", "a8-a7", "a8-b7", "d5-b7", "d5-c6", "d5-e4");
+            AssertValidMoves(gameBoard, "a8-b8", "a8-a7", "a8-b7", "d5-b7", "d5-c6", "d5-e4");
         }
 
         [Test]
         public void TestKingInCheckByFarQueenAndCanBlockByEnPassantB2B4Case()
         {
-            var boardState = new BoardState("rnb1kbnr/pp1ppppp/2p5/q7/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1");
+            var gameBoard = new GameBoard("rnb1kbnr/pp1ppppp/2p5/q7/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.All,
                 null,
@@ -216,16 +216,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "d1-d2", "c1-d2", "b2-b4", "b1-c3", "b1-d2");
+            AssertValidMoves(gameBoard, "d1-d2", "c1-d2", "b2-b4", "b1-c3", "b1-d2");
         }
 
         [Test]
         public void TestKingInDoubleCheckByQueenAndKnight()
         {
-            var boardState = new BoardState("r3k2r/p1ppq3/1n1Np1Qb/3P3b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard("r3k2r/p1ppq3/1n1Np1Qb/3P3b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.All,
                 null,
@@ -233,16 +233,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.DoubleCheck);
 
-            AssertValidMoves(boardState, "e8-d8", "e8-f8");
+            AssertValidMoves(gameBoard, "e8-d8", "e8-f8");
         }
 
         [Test]
         public void TestCanCaptureCheckingPawnByEnPassantCapture()
         {
-            var boardState = new BoardState("8/8/3p4/1Pp3kr/1K3p2/1R6/4P1P1/8 w - c6 0 1");
+            var gameBoard = new GameBoard("8/8/3p4/1Pp3kr/1K3p2/1R6/4P1P1/8 w - c6 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("c6", "c5"),
@@ -250,16 +250,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "b4-a5", "b4-a4", "b4-a3", "b4-c3", "b4-c4", "b5-c6");
+            AssertValidMoves(gameBoard, "b4-a5", "b4-a4", "b4-a3", "b4-c3", "b4-c4", "b5-c6");
         }
 
         [Test]
         public void TestCannotCaptureEnPassantPawnByPinnedPawn()
         {
-            var boardState = new BoardState("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1");
+            var gameBoard = new GameBoard("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("e3", "e4"),
@@ -267,17 +267,17 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            Assert.That(boardState.ValidMoves.Contains("f4-e3"), Is.False);
-            Assert.That(boardState.ValidMoves.Count, Is.EqualTo(16));
+            Assert.That(gameBoard.ValidMoves.Contains("f4-e3"), Is.False);
+            Assert.That(gameBoard.ValidMoves.Count, Is.EqualTo(16));
         }
 
         [Test]
         public void TestCannotCaptureEnPassantCheckingPawnByPinnedPawn()
         {
-            var boardState = new BoardState("8/2p5/3p4/KP3k1r/5pP1/8/4P3/5R2 b - g3 0 1");
+            var gameBoard = new GameBoard("8/2p5/3p4/KP3k1r/5pP1/8/4P3/5R2 b - g3 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("g3", "g4"),
@@ -285,16 +285,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "f5-g6", "f5-e4", "f5-e6", "f5-g4", "f5-f6", "f5-g5", "f5-e5");
+            AssertValidMoves(gameBoard, "f5-g6", "f5-e4", "f5-e6", "f5-g4", "f5-f6", "f5-g5", "f5-e5");
         }
 
         [Test]
         public void TestCannotCaptureCheckingPieceByPinnedPiece()
         {
-            var boardState = new BoardState("Q2k4/8/1n6/B7/8/8/8/7K b - - 0 1");
+            var gameBoard = new GameBoard("Q2k4/8/1n6/B7/8/8/8/7K b - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.Black,
                 CastlingOptions.None,
                 null,
@@ -302,16 +302,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, "d8-c7", "d8-d7", "d8-e7");
+            AssertValidMoves(gameBoard, "d8-c7", "d8-d7", "d8-e7");
         }
 
         [Test]
         public void TestCanPromoteByMovingAndByCapturing()
         {
-            var boardState = new BoardState("r6k/1P6/8/8/8/8/8/7K w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/8/8/8/8/8/7K w - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.None,
                 null,
@@ -324,16 +324,16 @@ namespace ChessPlatform.Tests
                 .Concat(new PieceMove("b7", "b8").MakeAllPromotions())
                 .Concat(new PieceMove("b7", "a8").MakeAllPromotions());
 
-            AssertValidMoves(boardState, expectedValidMoves);
+            AssertValidMoves(gameBoard, expectedValidMoves);
         }
 
         [Test]
         public void TestCanCaptureCheckingPieceByPromotingPawn()
         {
-            var boardState = new BoardState("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.None,
                 null,
@@ -341,16 +341,16 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(boardState, new PieceMove("b7", "a8").MakeAllPromotions());
+            AssertValidMoves(gameBoard, new PieceMove("b7", "a8").MakeAllPromotions());
         }
 
         [Test]
         public void TestCheckmateByDoubleCheckAndPawnCannotCapture()
         {
-            var boardState = new BoardState("r6k/1P6/1Pn5/KR6/1R6/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/1Pn5/KR6/1R6/8/8/8 w - - 0 1");
 
             AssertBaseProperties(
-                boardState,
+                gameBoard,
                 PieceColor.White,
                 CastlingOptions.None,
                 null,
@@ -358,7 +358,7 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Checkmate);
 
-            AssertNoValidMoves(boardState);
+            AssertNoValidMoves(gameBoard);
         }
 
         [Test]
@@ -367,8 +367,8 @@ namespace ChessPlatform.Tests
         [TestCase(int.MinValue)]
         public void TestPerftForInvalidArgument(int depth)
         {
-            var boardState = new BoardState();
-            Assert.That(() => boardState.Perft(depth), Throws.TypeOf<ArgumentOutOfRangeException>());
+            var gameBoard = new GameBoard();
+            Assert.That(() => gameBoard.Perft(depth), Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -376,7 +376,7 @@ namespace ChessPlatform.Tests
         public void TestPerft(PerftPosition perftPosition, ExpectedPerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
-            var boardState = new BoardState(fen);
+            var gameBoard = new GameBoard(fen);
 
             var flags = PerftFlags.IncludeDivideMap;
 
@@ -392,11 +392,11 @@ namespace ChessPlatform.Tests
             {
             };
 
-            boardState = extraMoves.Aggregate(boardState, (current, extraMove) => current.MakeMove(extraMove));
+            gameBoard = extraMoves.Aggregate(gameBoard, (current, extraMove) => current.MakeMove(extraMove));
 
             #endregion
 
-            var actualResult = boardState.Perft(expectedResult.Depth - extraMoves.Length, flags);
+            var actualResult = gameBoard.Perft(expectedResult.Depth - extraMoves.Length, flags);
 
             string extraInfo = null;
             if (actualResult.Flags.HasFlag(PerftFlags.IncludeDivideMap))
@@ -431,7 +431,7 @@ namespace ChessPlatform.Tests
         #region Private Methods
 
         private static void AssertBaseProperties(
-            BoardState boardState,
+            GameBoard gameBoard,
             PieceColor expectedActiveColor,
             CastlingOptions expectedCastlingOptions,
             EnPassantCaptureInfo expectedEnPassantCaptureInfo,
@@ -439,14 +439,14 @@ namespace ChessPlatform.Tests
             int expectedFullMoveIndex,
             GameState expectedGameState)
         {
-            Assert.That(boardState, Is.Not.Null);
+            Assert.That(gameBoard, Is.Not.Null);
 
-            Assert.That(boardState.ActiveColor, Is.EqualTo(expectedActiveColor));
-            Assert.That(boardState.CastlingOptions, Is.EqualTo(expectedCastlingOptions));
-            AssertEnPassantCaptureInfo(boardState.EnPassantCaptureInfo, expectedEnPassantCaptureInfo);
-            Assert.That(boardState.FullMoveIndex, Is.EqualTo(expectedFullMoveIndex));
-            Assert.That(boardState.HalfMovesBy50MoveRule, Is.EqualTo(expectedHalfMovesBy50MoveRule));
-            Assert.That(boardState.State, Is.EqualTo(expectedGameState));
+            Assert.That(gameBoard.ActiveColor, Is.EqualTo(expectedActiveColor));
+            Assert.That(gameBoard.CastlingOptions, Is.EqualTo(expectedCastlingOptions));
+            AssertEnPassantCaptureInfo(gameBoard.EnPassantCaptureInfo, expectedEnPassantCaptureInfo);
+            Assert.That(gameBoard.FullMoveIndex, Is.EqualTo(expectedFullMoveIndex));
+            Assert.That(gameBoard.HalfMovesBy50MoveRule, Is.EqualTo(expectedHalfMovesBy50MoveRule));
+            Assert.That(gameBoard.State, Is.EqualTo(expectedGameState));
         }
 
         private static void AssertEnPassantCaptureInfo(
@@ -472,42 +472,42 @@ namespace ChessPlatform.Tests
                 "Target piece position.");
         }
 
-        private static void AssertValidMoves(BoardState boardState, params PieceMove[] expectedValidMoves)
+        private static void AssertValidMoves(GameBoard gameBoard, params PieceMove[] expectedValidMoves)
         {
-            Assert.That(boardState, Is.Not.Null);
+            Assert.That(gameBoard, Is.Not.Null);
             Assert.That(expectedValidMoves, Is.Not.Null);
 
-            var actualValidMoves = boardState.ValidMoves.OrderBy(move => move.ToString()).ToArray();
+            var actualValidMoves = gameBoard.ValidMoves.OrderBy(move => move.ToString()).ToArray();
             var expectedValidMovesSorted = expectedValidMoves.OrderBy(move => move.ToString()).ToArray();
 
             Assert.That(actualValidMoves, Is.EquivalentTo(expectedValidMovesSorted));
         }
 
-        private static void AssertValidMoves(BoardState boardState, IEnumerable<PieceMove> expectedValidMoves)
+        private static void AssertValidMoves(GameBoard gameBoard, IEnumerable<PieceMove> expectedValidMoves)
         {
             Assert.That(expectedValidMoves, Is.Not.Null);
 
-            AssertValidMoves(boardState, expectedValidMoves.ToArray());
+            AssertValidMoves(gameBoard, expectedValidMoves.ToArray());
         }
 
-        private static void AssertNoValidMoves(BoardState boardState)
+        private static void AssertNoValidMoves(GameBoard gameBoard)
         {
-            Assert.That(boardState, Is.Not.Null);
+            Assert.That(gameBoard, Is.Not.Null);
 
-            Assert.That(boardState.ValidMoves.Count, Is.EqualTo(0));
-            Assert.That(boardState.ValidMoves, Is.Empty);
+            Assert.That(gameBoard.ValidMoves.Count, Is.EqualTo(0));
+            Assert.That(gameBoard.ValidMoves, Is.Empty);
         }
 
-        private static void AssertDefaultInitialBoard(BoardState boardState)
+        private static void AssertDefaultInitialBoard(GameBoard gameBoard)
         {
-            Assert.That(boardState, Is.Not.Null);
+            Assert.That(gameBoard, Is.Not.Null);
 
-            Assert.That(boardState.GetFen(), Is.EqualTo(DefaultFen));
+            Assert.That(gameBoard.GetFen(), Is.EqualTo(DefaultFen));
 
-            AssertBaseProperties(boardState, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
             AssertValidMoves(
-                boardState,
+                gameBoard,
                 "a2-a3",
                 "a2-a4",
                 "b2-b3",
@@ -563,28 +563,28 @@ namespace ChessPlatform.Tests
             }
         }
 
-        private static BoardState TestMakeMoveBasicScenario1W()
+        private static GameBoard TestMakeMoveBasicScenario1W()
         {
-            var boardState1W = new BoardState();
+            var gameBoard1W = new GameBoard();
 
             // Testing invalid move (no piece at the source position)
-            Assert.That(() => boardState1W.MakeMove("a3-a4"), Throws.ArgumentException);
+            Assert.That(() => gameBoard1W.MakeMove("a3-a4"), Throws.ArgumentException);
 
-            AssertBaseProperties(boardState1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+            AssertBaseProperties(gameBoard1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
-            return boardState1W;
+            return gameBoard1W;
         }
 
-        private static BoardState TestMakeMoveBasicScenario1B(BoardState boardState1W)
+        private static GameBoard TestMakeMoveBasicScenario1B(GameBoard gameBoard1W)
         {
-            var boardState1B = boardState1W.MakeMove("e2-e4");
+            var gameBoard1B = gameBoard1W.MakeMove("e2-e4");
 
             Assert.That(
-                boardState1B.GetFen(),
+                gameBoard1B.GetFen(),
                 Is.EqualTo("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"));
 
             AssertBaseProperties(
-                boardState1B,
+                gameBoard1B,
                 PieceColor.Black,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e3", "e4"),
@@ -593,10 +593,10 @@ namespace ChessPlatform.Tests
                 GameState.Default);
 
             // Testing invalid move (piece of non-active color at the source position)
-            Assert.That(() => boardState1B.MakeMove("d2-d4"), Throws.ArgumentException);
+            Assert.That(() => gameBoard1B.MakeMove("d2-d4"), Throws.ArgumentException);
 
             AssertBaseProperties(
-                boardState1B,
+                gameBoard1B,
                 PieceColor.Black,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e3", "e4"),
@@ -604,19 +604,19 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            return boardState1B;
+            return gameBoard1B;
         }
 
-        private static BoardState TestMakeMoveBasicScenario2W(BoardState boardState1B)
+        private static GameBoard TestMakeMoveBasicScenario2W(GameBoard gameBoard1B)
         {
-            var boardState2W = boardState1B.MakeMove("e7-e5");
+            var gameBoard2W = gameBoard1B.MakeMove("e7-e5");
 
             Assert.That(
-                boardState2W.GetFen(),
+                gameBoard2W.GetFen(),
                 Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"));
 
             AssertBaseProperties(
-                boardState2W,
+                gameBoard2W,
                 PieceColor.White,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e6", "e5"),
@@ -624,19 +624,19 @@ namespace ChessPlatform.Tests
                 2,
                 GameState.Default);
 
-            return boardState2W;
+            return gameBoard2W;
         }
 
-        private static BoardState TestMakeMoveBasicScenario2B(BoardState boardState2W)
+        private static GameBoard TestMakeMoveBasicScenario2B(GameBoard gameBoard2W)
         {
-            var boardState2B = boardState2W.MakeMove("b1-c3");
+            var gameBoard2B = gameBoard2W.MakeMove("b1-c3");
 
             Assert.That(
-                boardState2B.GetFen(),
+                gameBoard2B.GetFen(),
                 Is.EqualTo("rnbqkbnr/pppp1ppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR b KQkq - 1 2"));
 
             AssertBaseProperties(
-                boardState2B,
+                gameBoard2B,
                 PieceColor.Black,
                 CastlingOptions.All,
                 null,
@@ -644,19 +644,19 @@ namespace ChessPlatform.Tests
                 2,
                 GameState.Default);
 
-            return boardState2B;
+            return gameBoard2B;
         }
 
-        private static BoardState TestMakeMoveBasicScenario3W(BoardState boardState2B)
+        private static GameBoard TestMakeMoveBasicScenario3W(GameBoard gameBoard2B)
         {
-            var boardState3W = boardState2B.MakeMove("e8-e7");
+            var gameBoard3W = gameBoard2B.MakeMove("e8-e7");
 
             Assert.That(
-                boardState3W.GetFen(),
+                gameBoard3W.GetFen(),
                 Is.EqualTo("rnbq1bnr/ppppkppp/8/4p3/4P3/2N5/PPPP1PPP/R1BQKBNR w KQ - 2 3"));
 
             AssertBaseProperties(
-                boardState3W,
+                gameBoard3W,
                 PieceColor.White,
                 CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
                 null,
@@ -664,19 +664,19 @@ namespace ChessPlatform.Tests
                 3,
                 GameState.Default);
 
-            return boardState3W;
+            return gameBoard3W;
         }
 
-        private static BoardState TestMakeMoveBasicScenario3B(BoardState boardState3W)
+        private static GameBoard TestMakeMoveBasicScenario3B(GameBoard gameBoard3W)
         {
-            var boardState3B = boardState3W.MakeMove("c3-d5");
+            var gameBoard3B = gameBoard3W.MakeMove("c3-d5");
 
             Assert.That(
-                boardState3B.GetFen(),
+                gameBoard3B.GetFen(),
                 Is.EqualTo("rnbq1bnr/ppppkppp/8/3Np3/4P3/8/PPPP1PPP/R1BQKBNR b KQ - 3 3"));
 
             AssertBaseProperties(
-                boardState3B,
+                gameBoard3B,
                 PieceColor.Black,
                 CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
                 null,
@@ -684,33 +684,33 @@ namespace ChessPlatform.Tests
                 3,
                 GameState.Check);
 
-            return boardState3B;
+            return gameBoard3B;
         }
 
-        private static BoardState TestMakeMoveFoolsMateScenario1B(BoardState boardState1W)
+        private static GameBoard TestMakeMoveFoolsMateScenario1B(GameBoard gameBoard1W)
         {
-            var boardState1B = boardState1W.MakeMove("g2-g4");
-            return boardState1B;
+            var gameBoard1B = gameBoard1W.MakeMove("g2-g4");
+            return gameBoard1B;
         }
 
-        private static BoardState TestMakeMoveFoolsMateScenario2W(BoardState boardState1B)
+        private static GameBoard TestMakeMoveFoolsMateScenario2W(GameBoard gameBoard1B)
         {
-            var boardState2W = boardState1B.MakeMove("e7-e6");
-            return boardState2W;
+            var gameBoard2W = gameBoard1B.MakeMove("e7-e6");
+            return gameBoard2W;
         }
 
-        private static BoardState TestMakeMoveFoolsMateScenario2B(BoardState boardState2W)
+        private static GameBoard TestMakeMoveFoolsMateScenario2B(GameBoard gameBoard2W)
         {
-            var boardState2B = boardState2W.MakeMove("f2-f4");
-            return boardState2B;
+            var gameBoard2B = gameBoard2W.MakeMove("f2-f4");
+            return gameBoard2B;
         }
 
-        private static void TestMakeMoveFoolsMateScenario3W(BoardState boardState2B)
+        private static void TestMakeMoveFoolsMateScenario3W(GameBoard gameBoard2B)
         {
-            var boardState3W = boardState2B.MakeMove("d8-h4");
+            var gameBoard3W = gameBoard2B.MakeMove("d8-h4");
 
             AssertBaseProperties(
-                boardState3W,
+                gameBoard3W,
                 PieceColor.White,
                 CastlingOptions.All,
                 null,
@@ -718,7 +718,7 @@ namespace ChessPlatform.Tests
                 3,
                 GameState.Checkmate);
 
-            AssertNoValidMoves(boardState3W);
+            AssertNoValidMoves(gameBoard3W);
         }
 
         #endregion

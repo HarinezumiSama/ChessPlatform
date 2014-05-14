@@ -39,8 +39,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _parentViewModel.SubscribeToChangeOf(() => _parentViewModel.SelectionMode, this.OnSelectionModeChanged);
 
             _parentViewModel.SubscribeToChangeOf(
-                () => _parentViewModel.CurrentBoardState,
-                this.OnCurrentBoardStateChanged);
+                () => _parentViewModel.CurrentGameBoard,
+                this.OnCurrentGameBoardChanged);
 
             _parentViewModel.SubscribeToChangeOf(
                 () => _parentViewModel.CurrentTargetPosition,
@@ -195,7 +195,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void UpdatePiece(bool forceRaiseEvent)
         {
-            var piece = _parentViewModel.CurrentBoardState.GetPiece(this.Position);
+            var piece = _parentViewModel.CurrentGameBoard.GetPiece(this.Position);
             SetPieceInternal(piece, forceRaiseEvent);
         }
 
@@ -213,7 +213,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             UpdateBackground();
         }
 
-        private void OnCurrentBoardStateChanged(object sender, EventArgs e)
+        private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
             UpdatePiece(false);
         }

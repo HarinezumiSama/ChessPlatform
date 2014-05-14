@@ -53,7 +53,7 @@
     <Compile Include="Bitboard.cs" />
     <Compile Include="DebugConstants.cs" />
     <Compile Include="FenCharAttribute.cs" />
-    <Compile Include="BoardState.cs" />
+    <Compile Include="GameBoard.cs" />
     <Compile Include="CastlingInfo.cs" />
     <Compile Include="CastlingOptions.cs" />
     <Compile Include="CastlingOptionsExtensions.cs" />
