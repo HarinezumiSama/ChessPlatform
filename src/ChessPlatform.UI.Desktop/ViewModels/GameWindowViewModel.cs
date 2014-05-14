@@ -35,6 +35,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             this.SquareViewModels = ChessHelper.AllPositions
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
                 .AsReadOnly();
+
+            SubscribeToChangeOf(() => this.CurrentGameBoard, this.OnCurrentGameBoardChanged);
         }
 
         #endregion
@@ -185,8 +187,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var newGameBoard = this.CurrentGameBoard.MakeMove(move).EnsureNotNull();
 
-            ResetSelectionMode();
-
             _previousGameBoards.Push(this.CurrentGameBoard);
             this.CurrentGameBoard = newGameBoard;
         }
@@ -204,8 +204,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             var gameBoard = _previousGameBoards.Pop();
-
-            ResetSelectionMode();
             this.CurrentGameBoard = gameBoard;
         }
 
@@ -226,6 +224,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             this.CurrentSourcePosition = currentSourcePosition;
             this.SelectionMode = selectionMode;
+        }
+
+        private void OnCurrentGameBoardChanged(object sender, EventArgs e)
+        {
+            ResetSelectionMode();
         }
 
         #endregion
