@@ -204,6 +204,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             var gameBoard = _previousGameBoards.Pop();
+
+            ResetSelectionMode();
             this.CurrentGameBoard = gameBoard;
         }
 
