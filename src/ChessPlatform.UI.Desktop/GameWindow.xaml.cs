@@ -36,7 +36,7 @@ namespace ChessPlatform.UI.Desktop
             InitializeComponent();
 
             InitializeControls();
-            RedrawGameBoard(false);
+            this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.CurrentGameBoard, this.OnCurrentGameBoardChanged);
         }
 
         #endregion
@@ -61,8 +61,6 @@ namespace ChessPlatform.UI.Desktop
             }
 
             this.ViewModel.StartNewGame();
-
-            RedrawGameBoard(true);
         }
 
         private void StartNewGameFromFenFromClipboard(bool confirm)
@@ -103,11 +101,7 @@ namespace ChessPlatform.UI.Desktop
                         "Invalid FEN:{0}{1}",
                         Environment.NewLine,
                         fen));
-
-                return;
             }
-
-            RedrawGameBoard(true);
         }
 
         private void UndoLastMove(bool confirm)
@@ -132,7 +126,6 @@ namespace ChessPlatform.UI.Desktop
             }
 
             this.ViewModel.UndoLastMove();
-            RedrawGameBoard(true);
         }
 
         private void InitializeControls()
@@ -177,6 +170,13 @@ namespace ChessPlatform.UI.Desktop
 
                 this.BoardGrid.Children.Add(textBlock);
             }
+
+            this.StatusLabel.SetBinding(
+                ContentProperty,
+                new Binding(Factotum.For<GameWindowViewModel>.GetPropertyName(obj => obj.CurrentGameBoard))
+                {
+                    Converter = StatusLabelTextConverter.Instance
+                });
 
             InitializePromotionControls();
         }
@@ -282,55 +282,9 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void RedrawGameBoard(bool showStatePopup)
-        {
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
-
-            this.StatusLabel.Content = string.Format(
-                CultureInfo.InvariantCulture,
-                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}",
-                currentGameBoard.FullMoveIndex,
-                currentGameBoard.ActiveColor,
-                currentGameBoard.State,
-                currentGameBoard.ValidMoves.Count,
-                currentGameBoard.ResultString);
-
-            if (showStatePopup)
-            {
-                switch (currentGameBoard.State)
-                {
-                    case GameState.Check:
-                        this.MainGrid.ShowInfoPopup("Check!");
-                        break;
-
-                    case GameState.DoubleCheck:
-                        this.MainGrid.ShowInfoPopup("Double Check!");
-                        break;
-
-                    case GameState.Checkmate:
-                        this.MainGrid.ShowInfoPopup(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "Checkmate! {0}",
-                                currentGameBoard.ResultString));
-                        break;
-
-                    case GameState.Stalemate:
-                        this.MainGrid.ShowInfoPopup("Stalemate. Draw.");
-                        break;
-
-                    case GameState.ForcedDrawInsufficientMaterial:
-                        this.MainGrid.ShowInfoPopup("Draw (insufficient material).");
-                        break;
-                }
-            }
-        }
-
         private void MakeMoveInternal(PieceMove move)
         {
             this.ViewModel.MakeMove(move);
-
-            RedrawGameBoard(true);
         }
 
         private void MakeMove(PieceMove move)
@@ -398,6 +352,38 @@ namespace ChessPlatform.UI.Desktop
         #endregion
 
         #region Private Methods: Event Handlers
+
+        private void OnCurrentGameBoardChanged(object sender, EventArgs e)
+        {
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+
+            switch (currentGameBoard.State)
+            {
+                case GameState.Check:
+                    this.MainGrid.ShowInfoPopup("Check!");
+                    break;
+
+                case GameState.DoubleCheck:
+                    this.MainGrid.ShowInfoPopup("Double Check!");
+                    break;
+
+                case GameState.Checkmate:
+                    this.MainGrid.ShowInfoPopup(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Checkmate! {0}",
+                            currentGameBoard.ResultString));
+                    break;
+
+                case GameState.Stalemate:
+                    this.MainGrid.ShowInfoPopup("Stalemate. Draw.");
+                    break;
+
+                case GameState.ForcedDrawInsufficientMaterial:
+                    this.MainGrid.ShowInfoPopup("Draw (insufficient material).");
+                    break;
+            }
+        }
 
         private void TextBlockSquare_MouseEnter(object sender, MouseEventArgs args)
         {
