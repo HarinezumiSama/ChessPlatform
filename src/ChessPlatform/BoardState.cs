@@ -42,9 +42,7 @@ namespace ChessPlatform
                 out _halfMovesBy50MoveRule,
                 out _fullMoveIndex);
 
-            Validate();
-            PostInitialize(out _validMoves, out _state);
-            InitializeResultString(out _resultString);
+            FinishInitialization(out _validMoves, out _state, out _resultString);
         }
 
         /// <summary>
@@ -73,21 +71,20 @@ namespace ChessPlatform
                 out _halfMovesBy50MoveRule,
                 out _fullMoveIndex);
 
-            Validate();
-            PostInitialize(out _validMoves, out _state);
-            InitializeResultString(out _resultString);
+            FinishInitialization(out _validMoves, out _state, out _resultString);
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="BoardState"/> class.
+        ///     Initializes a new instance of the <see cref="BoardState"/> class
+        ///     using the specified previous state and specified move.
         /// </summary>
-        private BoardState([NotNull] BoardState previousState, [NotNull] PieceMove move)
+        private BoardState([NotNull] BoardState previous, [NotNull] PieceMove move)
         {
             #region Argument Check
 
-            if (previousState == null)
+            if (previous == null)
             {
-                throw new ArgumentNullException("previousState");
+                throw new ArgumentNullException("previous");
             }
 
             if (move == null)
@@ -95,7 +92,7 @@ namespace ChessPlatform
                 throw new ArgumentNullException("move");
             }
 
-            if (!previousState._validMoves.Contains(move))
+            if (!previous._validMoves.Contains(move))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
@@ -104,28 +101,26 @@ namespace ChessPlatform
 
             #endregion
 
-            _pieceData = previousState._pieceData.Copy();
-            _activeColor = previousState._activeColor.Invert();
-            _castlingOptions = previousState.CastlingOptions;
+            _pieceData = previous._pieceData.Copy();
+            _activeColor = previous._activeColor.Invert();
+            _castlingOptions = previous._castlingOptions;
 
-            _fullMoveIndex = previousState._fullMoveIndex + (_activeColor == PieceColor.White ? 1 : 0);
+            _fullMoveIndex = previous._fullMoveIndex + (_activeColor == PieceColor.White ? 1 : 0);
             _enPassantCaptureInfo = _pieceData.GetEnPassantCaptureInfo(move);
 
             var makeMoveData = _pieceData.MakeMove(
                 move,
-                previousState._activeColor,
-                previousState._enPassantCaptureInfo,
+                previous._activeColor,
+                previous._enPassantCaptureInfo,
                 ref _castlingOptions);
 
             _previousMove = makeMoveData.Move;
 
             _halfMovesBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
-                ? previousState._halfMovesBy50MoveRule + 1
+                ? previous._halfMovesBy50MoveRule + 1
                 : 0;
 
-            Validate();
-            PostInitialize(out _validMoves, out _state);
-            InitializeResultString(out _resultString);
+            FinishInitialization(out _validMoves, out _state, out _resultString);
         }
 
         #endregion
@@ -422,13 +417,13 @@ namespace ChessPlatform
             //// TODO [vmcl] (*) No non-promoted pawns at their last rank, (*) etc.
         }
 
-        private void PostInitialize(out ReadOnlySet<PieceMove> validMoves, out GameState state)
+        private void InitializeValidMovesAndState(out HashSet<PieceMove> validMoves, out GameState state)
         {
             var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
             if (isInsufficientMaterialState)
             {
                 state = GameState.ForcedDrawInsufficientMaterial;
-                validMoves = new HashSet<PieceMove>().AsReadOnly();
+                validMoves = new HashSet<PieceMove>();
                 return;
             }
 
@@ -442,9 +437,7 @@ namespace ChessPlatform
 
             var pinnedPieceMap = _pieceData
                 .GetPinnedPieceInfos(activeKingPosition)
-                .ToDictionary(
-                    item => item.Position,
-                    item => item.AllowedMoves);
+                .ToDictionary(item => item.Position, item => item.AllowedMoves);
 
             Func<Position, Position, bool> isValidMoveByPinning =
                 (sourcePosition, targetPosition) =>
@@ -454,7 +447,8 @@ namespace ChessPlatform
                     return !found || ((bitboard & targetPosition.Bitboard) == targetPosition.Bitboard);
                 };
 
-            var validMoveSet = new HashSet<PieceMove>();
+            validMoves = new HashSet<PieceMove>();
+            var validMoveReference = validMoves;
 
             Action<Position, Position, Func<PieceMove, bool>> addBasicMove =
                 (sourcePosition, targetPosition, checkMove) =>
@@ -468,11 +462,11 @@ namespace ChessPlatform
                         return;
                     }
 
-                    validMoveSet.Add(basicMove);
+                    validMoveReference.Add(basicMove);
 
                     if (isPawnPromotion)
                     {
-                        validMoveSet.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
+                        validMoveReference.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
                     }
                 };
 
@@ -501,7 +495,7 @@ namespace ChessPlatform
                                 .Morph(info => !_pieceData.IsUnderAttack(info.PassedPosition, oppositeColor), true))
                 .ToArray();
 
-            validMoveSet.AddRange(activeKingMoves);
+            validMoveReference.AddRange(activeKingMoves);
 
             if (isInCheck)
             {
@@ -564,11 +558,10 @@ namespace ChessPlatform
                                     .Select(targetPosition => new PieceMove(sourcePosition, targetPosition)))
                             .ToArray();
 
-                        validMoveSet.AddRange(moves);
+                        validMoveReference.AddRange(moves);
                     }
                 }
 
-                validMoves = validMoveSet.AsReadOnly();
                 state = validMoves.Count == 0
                     ? GameState.Checkmate
                     : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
@@ -613,16 +606,15 @@ namespace ChessPlatform
                         }
                     }
 
-                    validMoveSet.Add(basicMove);
+                    validMoveReference.Add(basicMove);
 
                     if (isPawnPromotion)
                     {
-                        validMoveSet.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
+                        validMoveReference.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
                     }
                 }
             }
 
-            validMoves = validMoveSet.AsReadOnly();
             state = validMoves.Count == 0 ? GameState.Stalemate : GameState.Default;
         }
 
@@ -648,6 +640,20 @@ namespace ChessPlatform
                 default:
                     throw _state.CreateEnumValueNotSupportedException();
             }
+        }
+
+        private void FinishInitialization(
+            out ReadOnlySet<PieceMove> validMoves,
+            out GameState state,
+            out string resultString)
+        {
+            Validate();
+
+            HashSet<PieceMove> validMoveSet;
+            InitializeValidMovesAndState(out validMoveSet, out state);
+            validMoves = validMoveSet.AsReadOnly();
+
+            InitializeResultString(out resultString);
         }
 
         private void SetupDefault(
