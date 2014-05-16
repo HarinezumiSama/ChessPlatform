@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop.ViewModels
 {
@@ -205,6 +208,46 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var gameBoard = _previousGameBoards.Pop();
             this.CurrentGameBoard = gameBoard;
+        }
+
+        [NotNull]
+        public string GetMoveHistory()
+        {
+            var resultBuilder = new StringBuilder();
+
+            var boards = _previousGameBoards.Reverse().Concat(_currentGameBoard.AsCollection()).ToArray();
+
+            var initialBoard = boards[0];
+            resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"[FEN ""{0}""]", initialBoard.GetFen());
+
+            var previousBoard = initialBoard;
+            var moveIndex = unchecked(previousBoard.FullMoveIndex - 1);
+            for (var index = 1; index < boards.Length; index++)
+            {
+                var board = boards[index];
+
+                if (moveIndex != previousBoard.FullMoveIndex)
+                {
+                    resultBuilder.AppendLine();
+
+                    moveIndex = previousBoard.FullMoveIndex;
+                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}.", moveIndex);
+
+                    if (index == 1 && initialBoard.ActiveColor == PieceColor.Black)
+                    {
+                        resultBuilder.Append(" ...");
+                    }
+                }
+
+                resultBuilder.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    " {0}",
+                    board.PreviousMove.ToString(board.LastCapturedPiece != Piece.None));
+
+                previousBoard = board;
+            }
+
+            return resultBuilder.ToString();
         }
 
         #endregion
