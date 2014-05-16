@@ -24,6 +24,9 @@ namespace ChessPlatform
         WhiteMask = WhiteKingSide | WhiteQueenSide,
         BlackMask = BlackKingSide | BlackQueenSide,
 
+        KingSideMask = WhiteKingSide | BlackKingSide,
+        QueenSideMask = WhiteQueenSide | BlackQueenSide,
+
         All = WhiteKingSide | WhiteQueenSide | BlackKingSide | BlackQueenSide
     }
 }

@@ -355,20 +355,21 @@ namespace ChessPlatform.UI.Desktop
 
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            var popupControl = this.BoardViewbox;
 
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
             switch (currentGameBoard.State)
             {
                 case GameState.Check:
-                    this.MainGrid.ShowInfoPopup("Check!");
+                    popupControl.ShowInfoPopup("Check!");
                     break;
 
                 case GameState.DoubleCheck:
-                    this.MainGrid.ShowInfoPopup("Double Check!");
+                    popupControl.ShowInfoPopup("Double Check!");
                     break;
 
                 case GameState.Checkmate:
-                    this.MainGrid.ShowInfoPopup(
+                    popupControl.ShowInfoPopup(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Checkmate! {0}",
@@ -376,11 +377,11 @@ namespace ChessPlatform.UI.Desktop
                     break;
 
                 case GameState.Stalemate:
-                    this.MainGrid.ShowInfoPopup("Stalemate. Draw.");
+                    popupControl.ShowInfoPopup("Stalemate. Draw.");
                     break;
 
                 case GameState.ForcedDrawInsufficientMaterial:
-                    this.MainGrid.ShowInfoPopup("Draw (insufficient material).");
+                    popupControl.ShowInfoPopup("Draw (insufficient material).");
                     break;
             }
         }

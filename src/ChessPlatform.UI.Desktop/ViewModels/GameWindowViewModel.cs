@@ -112,6 +112,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public string MoveHistory
+        {
+            get
+            {
+                return GetMoveHistory();
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -239,10 +247,30 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     }
                 }
 
-                resultBuilder.AppendFormat(
-                    CultureInfo.InvariantCulture,
-                    " {0}",
-                    board.PreviousMove.ToString(board.LastCapturedPiece != Piece.None));
+                var move = board.PreviousMove;
+
+                var castlingInfo = previousBoard.CheckCastlingMove(move);
+                if (castlingInfo != null)
+                {
+                    var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
+                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " {0}", isKingSide ? "O-O" : "O-O-O");
+                }
+                else
+                {
+                    resultBuilder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        " {0}",
+                        move.ToString(board.LastCapturedPiece != Piece.None));
+                }
+
+                if (board.State == GameState.Checkmate)
+                {
+                    resultBuilder.Append("#");
+                }
+                else if (board.State.IsCheck())
+                {
+                    resultBuilder.Append("+");
+                }
 
                 previousBoard = board;
             }
@@ -272,6 +300,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
             ResetSelectionMode();
+            RaisePropertyChanged(() => this.MoveHistory);
         }
 
         #endregion
