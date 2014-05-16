@@ -23,6 +23,7 @@ namespace ChessPlatform
         private readonly int _halfMovesBy50MoveRule;
         private readonly int _fullMoveIndex;
         private readonly PieceMove _previousMove;
+        private readonly Piece _lastCapturedPiece;
         private readonly string _resultString;
 
         #endregion
@@ -35,6 +36,7 @@ namespace ChessPlatform
         public GameBoard()
         {
             _pieceData = new PieceData();
+            _lastCapturedPiece = Piece.None;
 
             SetupDefault(
                 out _activeColor,
@@ -63,6 +65,7 @@ namespace ChessPlatform
             #endregion
 
             _pieceData = new PieceData();
+            _lastCapturedPiece = Piece.None;
 
             SetupByFen(
                 fen,
@@ -116,6 +119,7 @@ namespace ChessPlatform
                 ref _castlingOptions);
 
             _previousMove = makeMoveData.Move;
+            _lastCapturedPiece = makeMoveData.CapturedPiece;
 
             _halfMovesBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
                 ? previous._halfMovesBy50MoveRule + 1
@@ -197,6 +201,15 @@ namespace ChessPlatform
             get
             {
                 return _previousMove;
+            }
+        }
+
+        public Piece LastCapturedPiece
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _lastCapturedPiece;
             }
         }
 
