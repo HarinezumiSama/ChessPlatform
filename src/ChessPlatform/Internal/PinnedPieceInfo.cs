@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal struct PinnedPieceInfo
     {

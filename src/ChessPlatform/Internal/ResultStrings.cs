@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal static class ResultStrings
     {

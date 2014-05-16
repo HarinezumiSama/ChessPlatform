@@ -48,11 +48,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttackInfo.cs" />
-    <Compile Include="AttackInfoKey.cs" />
+    <Compile Include="Internal\AttackInfo.cs" />
+    <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
-    <Compile Include="DebugConstants.cs" />
-    <Compile Include="FenCharAttribute.cs" />
+    <Compile Include="Internal\DebugConstants.cs" />
+    <Compile Include="Internal\FenCharAttribute.cs" />
     <Compile Include="GameBoard.cs" />
     <Compile Include="CastlingInfo.cs" />
     <Compile Include="CastlingOptions.cs" />
@@ -65,14 +65,14 @@
     <Compile Include="EnPassantInfo.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
-    <Compile Include="MovePieceData.cs" />
+    <Compile Include="Internal\MovePieceData.cs" />
     <Compile Include="PerftFlags.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />
-    <Compile Include="PieceAttackInfo.cs" />
-    <Compile Include="PieceData.cs" />
-    <Compile Include="PieceDataExtensions.cs" />
-    <Compile Include="PieceDictionary.cs" />
+    <Compile Include="Internal\PieceAttackInfo.cs" />
+    <Compile Include="Internal\PieceData.cs" />
+    <Compile Include="Internal\PieceDataExtensions.cs" />
+    <Compile Include="Internal\PieceDictionary.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
     <Compile Include="PieceInfo.cs" />
@@ -81,13 +81,13 @@
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />
-    <Compile Include="PinnedPieceInfo.cs" />
+    <Compile Include="Internal\PinnedPieceInfo.cs" />
     <Compile Include="Position.cs" />
-    <Compile Include="PositionBridgeKey.cs" />
+    <Compile Include="Internal\PositionBridgeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RayInfo.cs" />
-    <Compile Include="MakeMoveData.cs" />
-    <Compile Include="ResultStrings.cs" />
+    <Compile Include="Internal\RayInfo.cs" />
+    <Compile Include="Internal\MakeMoveData.cs" />
+    <Compile Include="Internal\ResultStrings.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

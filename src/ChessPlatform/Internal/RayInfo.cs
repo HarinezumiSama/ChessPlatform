@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal struct RayInfo
     {

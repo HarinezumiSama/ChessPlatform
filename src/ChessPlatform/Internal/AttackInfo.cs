@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Omnifactotum;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal struct AttackInfo
     {

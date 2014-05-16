@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Omnifactotum;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal sealed class PieceDictionary<TValue> : IDictionary<Piece, TValue>
     {

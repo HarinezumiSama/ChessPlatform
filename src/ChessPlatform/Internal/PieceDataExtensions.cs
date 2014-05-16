@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using Omnifactotum;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal static class PieceDataExtensions
     {

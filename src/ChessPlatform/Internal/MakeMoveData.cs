@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
-    public sealed class MakeMoveData
+    internal sealed class MakeMoveData
     {
         #region Constructors
 

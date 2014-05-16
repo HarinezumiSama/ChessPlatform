@@ -6,7 +6,7 @@ using System.Linq;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal sealed class PieceData
     {

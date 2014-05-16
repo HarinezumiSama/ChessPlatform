@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using ChessPlatform.Internal;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 

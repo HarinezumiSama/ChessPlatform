@@ -4,7 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Omnifactotum;
 
-namespace ChessPlatform
+namespace ChessPlatform.Internal
 {
     internal struct PositionBridgeKey : IEquatable<PositionBridgeKey>
     {
