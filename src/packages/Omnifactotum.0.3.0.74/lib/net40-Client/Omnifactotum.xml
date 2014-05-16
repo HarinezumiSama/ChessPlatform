@@ -1466,12 +1466,12 @@
                 Gets the <see cref="T:System.Collections.Generic.IComparer`1"/> used for comparing contained values.
             </summary>
         </member>
-        <member name="T:System.OmnifactotumExpressionExtensions">
+        <member name="T:System.Linq.Expressions.OmnifactotumExpressionExtensions">
             <summary>
                 Contains extension methods for the classes in the <b>System.Linq.Expressions</b> namespace.
             </summary>
         </member>
-        <member name="M:System.OmnifactotumExpressionExtensions.GetLastMethod``1(System.Linq.Expressions.Expression{``0})">
+        <member name="M:System.Linq.Expressions.OmnifactotumExpressionExtensions.GetLastMethod``1(System.Linq.Expressions.Expression{``0})">
             <summary>
                 Gets the last method called in the expression.
             </summary>
@@ -1484,6 +1484,97 @@
             <returns>
                 The last called method, or <b>null</b> if the last element in the expression is not a method call.
             </returns>
+        </member>
+        <member name="M:System.Linq.Expressions.OmnifactotumExpressionExtensions.InjectInto``3(System.Linq.Expressions.Expression{System.Func{``0,``1}},System.Linq.Expressions.Expression{System.Func{``1,``2}})">
+            <summary>
+                Injects the specified source lambda expression instead of the sole parameter of the target expression.
+            </summary>
+            <typeparam name="TInput">
+                The type of the sole input parameter of the source lambda expression.
+            </typeparam>
+            <typeparam name="TIntermediate">
+                The type of the result of the source lambda expression
+                (as well as the type of the sole input parameter of the target lambda expression).
+            </typeparam>
+            <typeparam name="TResult">
+                The type of the result of the target lambda expression.
+            </typeparam>
+            <param name="sourceExpression">
+                The lambda expression to inject into the target lambda expression.
+            </param>
+            <param name="targetExpression">
+                The lambda expression to inject the source lambda expression into.
+            </param>
+            <returns>
+                A new lambda expression.
+            </returns>
+        </member>
+        <member name="M:System.Linq.Expressions.OmnifactotumExpressionExtensions.InjectInto(System.Linq.Expressions.LambdaExpression,System.Linq.Expressions.LambdaExpression)">
+            <summary>
+                Injects the specified source lambda expression instead of the sole parameter of the target expression.
+            </summary>
+            <param name="sourceExpression">
+                The lambda expression to inject into the target lambda expression.
+            </param>
+            <param name="targetExpression">
+                The lambda expression to inject the source lambda expression into.
+            </param>
+            <returns>
+                A new lambda expression.
+            </returns>
+        </member>
+        <member name="T:System.Linq.Expressions.OmnifactotumExpressionExtensions.ReplaceExpressionVisitor">
+            <summary>
+                Represents the expression visitor that replaces one expression to another.
+            </summary>
+        </member>
+        <member name="M:System.Linq.Expressions.OmnifactotumExpressionExtensions.ReplaceExpressionVisitor.#ctor(System.Linq.Expressions.Expression,System.Linq.Expressions.Expression)">
+            <summary>
+                Initializes a new instance of the <see cref="T:System.Linq.Expressions.OmnifactotumExpressionExtensions.ReplaceExpressionVisitor"/> class.
+            </summary>
+            <param name="sourceExpression">
+                The expression to replace with the target expression.
+            </param>
+            <param name="targetExpression">
+                The expression to replace the source expression with.
+            </param>
+        </member>
+        <member name="M:System.Linq.Expressions.OmnifactotumExpressionExtensions.ReplaceExpressionVisitor.Visit(System.Linq.Expressions.Expression)">
+            <summary>
+                Dispatches the expression to one of the more specialized visit methods in this class.
+            </summary>
+            <param name="node">
+                The expression to visit.
+            </param>
+            <returns>
+                The modified expression, if it or any subexpression was modified;
+                otherwise, returns the original expression.
+            </returns>
+        </member>
+        <member name="T:Omnifactotum.RecursiveProcessingContext`1">
+            <summary>
+                Represents the context of the recursive processing.
+            </summary>
+            <typeparam name="T">
+                The types of the instances being processed recursively.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.RecursiveProcessingContext`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.RecursiveProcessingContext`1"/> class
+                using the specified equality comparer for the instances being processed recursively.
+            </summary>
+            <param name="equalityComparer">
+                The equality comparer to use for eliminating duplicated instances,
+                or <b>null</b> to use <see cref="T:Omnifactotum.ByReferenceEqualityComparer`1"/>.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.RecursiveProcessingContext`1.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.RecursiveProcessingContext`1"/> class
+                using the by-reference equality comparer for the instances being processed recursively.
+            </summary>
+            <seealso cref="T:Omnifactotum.ByReferenceEqualityComparer`1"/>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.BaseMemberConstraintAttribute">
             <summary>
@@ -1524,30 +1615,32 @@
                 the member annotated with this <see cref="T:Omnifactotum.Validation.Constraints.BaseMemberConstraintAttribute"/> attribute.
             </summary>
         </member>
-        <member name="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute">
+        <member name="T:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2">
             <summary>
-                Specifies how the annotated member item is validated.
+                Represents a base constraint for validating <see cref="T:System.Collections.Generic.KeyValuePair`2"/> instances.
             </summary>
+            <typeparam name="TKey">
+                The type of the key.
+            </typeparam>
+            <typeparam name="TValue">
+                The type of the value.
+            </typeparam>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute.#ctor(System.Type)">
+        <member name="T:Omnifactotum.Validation.Constraints.TypedMemberConstraintBase`1">
             <summary>
-                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute"/> class.
+                <para>
+                    Represents the basic strongly-typed implementation of the <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> interface.
+                </para>
+                <para><b>NOTE to implementers</b>: implementation has to be stateless.</para>
             </summary>
-            <param name="constraintType">
-                The type, implementing the <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> interface, used to validate
-                the member annotated with this <see cref="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute"/> attribute. The type must
-                have parameterless constructor.
-            </param>
-        </member>
-        <member name="T:Omnifactotum.Validation.Constraints.NotNullOrWhiteSpaceStringConstraint">
-            <summary>
-                Specifies that the annotated member of type <see cref="T:System.String"/> should not be <b>null</b> or empty.
-            </summary>
+            <typeparam name="T">
+                The type of the value to validate.
+            </typeparam>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.MemberConstraintBase">
             <summary>
-                The basic implementation of the <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> interface.
-                NOTE to implementers: implementation has to be stateless.
+                <para>Represents the basic implementation of the <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> interface.</para>
+                <para><b>NOTE to implementers</b>: implementation has to be stateless.</para>
             </summary>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.IMemberConstraint">
@@ -1568,50 +1661,47 @@
                 </para>
             </summary>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.IMemberConstraint.Validate(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+        <member name="M:Omnifactotum.Validation.Constraints.IMemberConstraint.Validate(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
             <summary>
-                Validates the specified value is scope of the specified context.
+                Validates the specified value in scope of the specified context.
             </summary>
-            <param name="context">
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
                 The context of validation.
             </param>
             <param name="value">
                 The value to validate.
             </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.Validate(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.Validate(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
             <summary>
-                Validates the specified value is scope of the specified context.
+                Validates the specified value in scope of the specified memberContext.
             </summary>
-            <param name="context">
-                The context of validation.
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member.
             </param>
             <param name="value">
                 The value to validate.
             </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.ValidateInternal(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.ValidateValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
             <summary>
-                Validates the specified value is scope of the specified context.
+                Validates the specified value is scope of the specified memberContext.
             </summary>
-            <param name="context">
-                The context of validation.
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member.
             </param>
             <param name="value">
                 The value to validate.
             </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
         </member>
         <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.CastTo``1(System.Object)">
             <summary>
@@ -1628,65 +1718,260 @@
                 The value cast to the specified target type.
             </returns>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.CreateError(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.String)">
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.AddError(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.String)">
             <summary>
-                Creates a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance using the specified arguments.
+                Creates a new <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance using the specified member context
+                and failure message and then adds the created error to the validator context.
             </summary>
-            <param name="context">
-                The context of validation.
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member to create an error for.
             </param>
             <param name="failureMessage">
-                The error message.
+                The message describing the validation error.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.AddDefaultError(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext)">
+            <summary>
+                Creates a new <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance using the specified member context
+                and default failure message and then adds the created error to the validator context.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member to create an error for.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.TypedMemberConstraintBase`1.ValidateValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+            <summary>
+                Validates the specified value is scope of the specified memberContext.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member.
+            </param>
+            <param name="value">
+                The value to validate.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.TypedMemberConstraintBase`1.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,`0)">
+            <summary>
+                Validates the specified strongly-typed value is scope of the specified memberContext.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of the validated member.
+            </param>
+            <param name="value">
+                The value to validate.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.TypedMemberConstraintBase`1.CreateMemberContext``1(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,`0,System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Creates a new <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext"/> for the member specified
+                by the lambda expression.
+            </summary>
+            <typeparam name="TMember">
+                The type of the member.
+            </typeparam>
+            <param name="valueContext">
+                The parent memberContext.
+            </param>
+            <param name="value">
+                The value which member is accessed.
+            </param>
+            <param name="memberGetterExpression">
+                The member getter lambda expression.
             </param>
             <returns>
-                A created <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance.
+                A new <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext"/> for the member specified
+                by the lambda expression.
             </returns>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintBase.CreateDefaultError(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext)">
+        <member name="M:Omnifactotum.Validation.Constraints.TypedMemberConstraintBase`1.ValidateMember``1(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,`0,System.Linq.Expressions.Expression{System.Func{`0,``0}},System.Type)">
             <summary>
-                Creates a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance using the specified arguments.
+                Validates the member specified by the specified lambda expression.
             </summary>
-            <param name="context">
-                The context of validation.
+            <typeparam name="TMember">
+                The type of the member.
+            </typeparam>
+            <param name="validatorContext">
+                The object validator memberContext.
             </param>
-            <returns>
-                A created <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance.
-            </returns>
+            <param name="valueContext">
+                The memberContext of the value.
+            </param>
+            <param name="value">
+                The value containing the member.
+            </param>
+            <param name="memberGetterExpression">
+                The member getter lambda expression.
+            </param>
+            <param name="constraintType">
+                The type of the constraint.
+            </param>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.NotNullOrWhiteSpaceStringConstraint.ValidateInternal(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+        <member name="M:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2.#ctor(System.Type,System.Type)">
             <summary>
-                Validates the specified value is scope of the specified context.
+                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2"/> class.
             </summary>
-            <param name="context">
+            <param name="keyConstraintType">
+                The type specifying the key constraint.
+            </param>
+            <param name="valueConstraintType">
+                The type specifying the value constraint.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+                Validates the specified strongly-typed value is scope of the specified context.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
                 The context of validation.
             </param>
             <param name="value">
                 The value to validate.
             </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
+        </member>
+        <member name="P:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2.KeyConstraintType">
+            <summary>
+                Gets the type specifying the key constraint.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.Constraints.KeyValuePairConstraintBase`2.ValueConstraintType">
+            <summary>
+                Gets the type specifying the value constraint.
+            </summary>
+        </member>
+        <member name="T:Omnifactotum.Validation.Constraints.NotNullConstraint`1">
+            <summary>
+                Specifies that the annotated member should not be <b>null</b>.
+            </summary>
+            <typeparam name="T">
+                The type of the value to validate.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.NotNullConstraint`1.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,`0)">
+            <summary>
+                Validates the specified strongly-typed value is scope of the specified context.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of validation.
+            </param>
+            <param name="value">
+                The value to validate.
+            </param>
+        </member>
+        <member name="T:Omnifactotum.Validation.Constraints.IgnoredConstraint`1">
+            <summary>
+                Represents the strongly-typed constraint that ignores validation.
+            </summary>
+            <typeparam name="T">
+                The type of the value to validate.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.IgnoredConstraint`1.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,`0)">
+            <summary>
+                Validates the specified strongly-typed value is scope of the specified context.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of validation.
+            </param>
+            <param name="value">
+                The value to validate.
+            </param>
+        </member>
+        <member name="T:Omnifactotum.Validation.Constraints.KeyValuePairConstraint`4">
+            <summary>
+                Represents the constraint for validating <see cref="T:System.Collections.Generic.KeyValuePair`2"/> instances.
+            </summary>
+            <typeparam name="TKey">
+                The type of the key.
+            </typeparam>
+            <typeparam name="TValue">
+                The type of the value.
+            </typeparam>
+            <typeparam name="TKeyConstraint">
+                The type specifying the key constraint.
+            </typeparam>
+            <typeparam name="TValueConstraint">
+                The type specifying the value constraint.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.KeyValuePairConstraint`4.#ctor">
+            <summary>
+                Initializes a new instance of
+                the <see cref="T:Omnifactotum.Validation.Constraints.KeyValuePairConstraint`4"/> class.
+            </summary>
+        </member>
+        <member name="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute">
+            <summary>
+                Specifies how the annotated member item is validated.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute.#ctor(System.Type)">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute"/> class.
+            </summary>
+            <param name="constraintType">
+                The type, implementing the <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> interface, used to validate
+                the member annotated with this <see cref="T:Omnifactotum.Validation.Constraints.MemberItemConstraintAttribute"/> attribute. The type must
+                have parameterless constructor.
+            </param>
+        </member>
+        <member name="T:Omnifactotum.Validation.Constraints.NotNullOrWhiteSpaceStringConstraint">
+            <summary>
+                Specifies that the annotated member of type <see cref="T:System.String"/> should not be <b>null</b> or empty.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.NotNullOrWhiteSpaceStringConstraint.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.String)">
+            <summary>
+                Validates the specified strongly-typed value is scope of the specified context.
+            </summary>
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
+                The context of validation.
+            </param>
+            <param name="value">
+                The value to validate.
+            </param>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.NotNullOrEmptyStringConstraint">
             <summary>
                 Specifies that the annotated member of type <see cref="T:System.String"/> should not be <b>null</b> or empty.
             </summary>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.NotNullOrEmptyStringConstraint.ValidateInternal(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
+        <member name="M:Omnifactotum.Validation.Constraints.NotNullOrEmptyStringConstraint.ValidateTypedValue(Omnifactotum.Validation.ObjectValidatorContext,Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.String)">
             <summary>
-                Validates the specified value is scope of the specified context.
+                Validates the specified strongly-typed value is scope of the specified context.
             </summary>
-            <param name="context">
+            <param name="validatorContext">
+                The context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </param>
+            <param name="memberContext">
                 The context of validation.
             </param>
             <param name="value">
                 The value to validate.
             </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.MemberConstraintAttribute">
             <summary>
@@ -1708,7 +1993,7 @@
                 Represents the context of member constraint validation.
             </summary>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.#ctor(System.Object,System.Object,System.Linq.Expressions.Expression,System.Linq.Expressions.LambdaExpression)">
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.#ctor(System.Object,System.Object,System.Linq.Expressions.Expression,System.Linq.Expressions.ParameterExpression)">
             <summary>
                 Initializes a new instance of the <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext"/> class.
             </summary>
@@ -1721,8 +2006,8 @@
             <param name="expression">
                 The expression describing the path to the value starting from the root object.
             </param>
-            <param name="lambdaExpression">
-                The lambda expression describing the path to the value starting from the root object.
+            <param name="rootParameterExpression">
+                The root parameter expression.
             </param>
         </member>
         <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.CreateLambdaExpression(System.String,System.Linq.Expressions.ParameterExpression@)">
@@ -1747,6 +2032,18 @@
             </summary>
             <param name="parameterName">
                 The name of the parameter to use in the lambda expression.
+            </param>
+            <returns>
+                A lambda expression based on the expression describing the path to the value from the root object.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.CreateLambdaExpression(System.Linq.Expressions.ParameterExpression@)">
+            <summary>
+                Creates a lambda expression, using the default parameter name, based on the expression describing
+                the path to the value from the root object.
+            </summary>
+            <param name="parameterExpression">
+                When this method returns, contains the parameter expression used in the created lambda expression.
             </param>
             <returns>
                 A lambda expression based on the expression describing the path to the value from the root object.
@@ -1779,6 +2076,11 @@
         <member name="P:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.LambdaExpression">
             <summary>
                 Gets the lambda expression describing the path to the value from the root object.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.Constraints.MemberConstraintValidationContext.RootParameterExpression">
+            <summary>
+                Gets the root parameter expression.
             </summary>
         </member>
         <member name="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError">
@@ -1848,25 +2150,90 @@
                 Specifies that the annotated member should not be <b>null</b>.
             </summary>
         </member>
-        <member name="M:Omnifactotum.Validation.Constraints.NotNullConstraint.ValidateInternal(Omnifactotum.Validation.Constraints.MemberConstraintValidationContext,System.Object)">
-            <summary>
-                Validates the specified value is scope of the specified context.
-            </summary>
-            <param name="context">
-                The context of validation.
-            </param>
-            <param name="value">
-                The value to validate.
-            </param>
-            <returns>
-                <b>null</b> if validation succeeded; or a <see cref="T:Omnifactotum.Validation.Constraints.MemberConstraintValidationError"/> instance
-                describing the validation error, if validation failed.
-            </returns>
-        </member>
         <member name="T:Omnifactotum.Validation.Constraints.ValidatableMemberAttribute">
             <summary>
                 Specifies that the content of annotated member is validated.
                 Used for members that do not have constraints applied to them.
+            </summary>
+        </member>
+        <member name="F:Omnifactotum.Validation.InternalMemberDataEqualityComparer.Instance">
+            <summary>
+                The sole instance of the <see cref="T:Omnifactotum.Validation.InternalMemberDataEqualityComparer"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.InternalMemberDataEqualityComparer.Equals(Omnifactotum.Validation.MemberData,Omnifactotum.Validation.MemberData)">
+            <summary>
+                Determines whether the specified objects are equal.
+            </summary>
+            <param name="x">
+                The first object of type <see cref="T:Omnifactotum.Validation.MemberData"/> to compare.
+            </param>
+            <param name="y">
+                The second object of type <see cref="T:Omnifactotum.Validation.MemberData"/> to compare.
+            </param>
+            <returns>
+                <b>true</b> if the specified objects are equal; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Validation.InternalMemberDataEqualityComparer.GetHashCode(Omnifactotum.Validation.MemberData)">
+            <summary>
+                Returns a hash code for the specified instance.
+            </summary>
+            <param name="obj">
+                The object to get a hash code for.
+            </param>
+            <returns>
+                A hash code for the specified instance.
+            </returns>
+        </member>
+        <member name="T:Omnifactotum.Validation.MemberData">
+            <summary>
+                Represents the member data.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.MemberData.#ctor(System.Linq.Expressions.Expression,System.Object,System.Object,Omnifactotum.Validation.Constraints.BaseValidatableMemberAttribute[],Omnifactotum.Validation.Constraints.BaseMemberConstraintAttribute[])">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.MemberData"/> class.
+            </summary>
+            <param name="expression">
+                The expression.
+            </param>
+            <param name="container">
+                The object containing the value that is being validated. Can be <b>null</b>.
+            </param>
+            <param name="value">
+                The member value.
+            </param>
+            <param name="attributes">
+                The constraint attributes.
+            </param>
+            <param name="effectiveAttributes">
+                The effective constraint attributes.
+            </param>
+        </member>
+        <member name="P:Omnifactotum.Validation.MemberData.Expression">
+            <summary>
+                Gets the expression.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.MemberData.Container">
+            <summary>
+                Gets the object containing the value that is being, or was, validated.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.MemberData.Value">
+            <summary>
+                Gets the value.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.MemberData.Attributes">
+            <summary>
+                Gets the constraint attributes.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.Validation.MemberData.EffectiveAttributes">
+            <summary>
+                Gets the effective constraint attributes.
             </summary>
         </member>
         <member name="T:Omnifactotum.Validation.ObjectValidationException">
@@ -1976,55 +2343,158 @@
                 An <see cref="T:Omnifactotum.Validation.ObjectValidationResult"/> representing the validation result.
             </returns>
         </member>
-        <member name="T:Omnifactotum.Validation.ObjectValidator.MemberData">
+        <member name="M:Omnifactotum.Validation.ObjectValidator.Validate``1(``0,Omnifactotum.RecursiveProcessingContext{Omnifactotum.Validation.MemberData})">
             <summary>
-                Represents the member data.
+                Validates the specified instance.
+            </summary>
+            <typeparam name="T">
+                The type of the instance to validate.
+            </typeparam>
+            <param name="instance">
+                The instance to validate.
+            </param>
+            <param name="recursiveProcessingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
+            </param>
+            <returns>
+                An <see cref="T:Omnifactotum.Validation.ObjectValidationResult"/> representing the validation result.
+            </returns>
+        </member>
+        <member name="T:Omnifactotum.Validation.ObjectValidatorContext">
+            <summary>
+                Represents the context of the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
             </summary>
         </member>
-        <member name="M:Omnifactotum.Validation.ObjectValidator.MemberData.#ctor(System.Linq.Expressions.Expression,System.Object,System.Object,Omnifactotum.Validation.Constraints.BaseValidatableMemberAttribute[],Omnifactotum.Validation.Constraints.BaseMemberConstraintAttribute[])">
+        <member name="M:Omnifactotum.Validation.ObjectValidatorContext.#ctor(Omnifactotum.RecursiveProcessingContext{Omnifactotum.Validation.MemberData})">
             <summary>
-                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.ObjectValidator.MemberData"/> class.
+                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.ObjectValidatorContext"/> class.
+            </summary>
+            <param name="recursiveProcessingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.ObjectValidatorContext.ResolveConstraint(System.Type)">
+            <summary>
+                Resolves the constraint with the specified type.
+            </summary>
+            <param name="constraintType">
+                The type of the constraint to resolve.
+            </param>
+            <returns>
+                An <see cref="T:Omnifactotum.Validation.Constraints.IMemberConstraint"/> instance representing the resolved constraint.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Validation.ObjectValidatorContext.ResolveConstraint``1">
+            <summary>
+                Resolves the constraint with the specified type.
+            </summary>
+            <typeparam name="TMemberConstraint">
+                The type of the constraint to resolve.
+            </typeparam>
+            <returns>
+                An <typeparamref name="TMemberConstraint"/> instance representing the resolved constraint.
+            </returns>
+        </member>
+        <member name="P:Omnifactotum.Validation.ObjectValidatorContext.Errors">
+            <summary>
+                Gets the collection of errors.
+            </summary>
+        </member>
+        <member name="T:Omnifactotum.Validation.ValidationErrorCollection">
+            <summary>
+                Represents the collection of validation errors.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationErrorCollection.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.Validation.ValidationErrorCollection"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationErrorCollection.Add(Omnifactotum.Validation.Constraints.MemberConstraintValidationError)">
+            <summary>
+                Adds the specified error to the collection.
+            </summary>
+            <param name="error">
+                <para>The error.</para>
+                <para>Can be <b>null</b>, in which case it is simply not added to the collection.</para>
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationErrorCollection.AddRange(System.Collections.Generic.IEnumerable{Omnifactotum.Validation.Constraints.MemberConstraintValidationError})">
+            <summary>
+                Adds the specified error to the collection.
+            </summary>
+            <param name="errors">
+                The collection of errors.
+                <para>Can be <b>null</b>, in which case it is simply not added to the collection.</para>
+                <para>
+                    One or more items in the collection can be <b>null</b>, in which case those items are
+                    simply not added to the collection.
+                </para>
+            </param>
+        </member>
+        <member name="T:Omnifactotum.Validation.ValidationFactotum">
+            <summary>
+                Represents the internal helper for the <see cref="T:Omnifactotum.Validation.ObjectValidator"/>.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationFactotum.ConvertTypeAuto(System.Linq.Expressions.Expression,System.Type)">
+            <summary>
+                Converts the type of the expression, if needed.
             </summary>
             <param name="expression">
-                The expression.
+                The expression to convert.
             </param>
-            <param name="container">
-                The object containing the value that is being validated. Can be <b>null</b>.
+            <param name="valueType">
+                The type of the value.
+            </param>
+            <returns>
+                An original expression, if conversion was not needed; otherwise, a converted expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationFactotum.ConvertTypeAuto(System.Linq.Expressions.Expression,System.Object)">
+            <summary>
+                Converts the type of the expression, if needed.
+            </summary>
+            <param name="expression">
+                The expression to convert.
             </param>
             <param name="value">
-                The member value.
+                The value to which type to convert the expression.
             </param>
-            <param name="attributes">
-                The constraint attributes.
+            <returns>
+                An original expression, if conversion was not needed; otherwise, a converted expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationFactotum.IsValidMemberConstraintType(System.Type)">
+            <summary>
+                Determines whether the specified constraint type is a valid member constraint type.
+            </summary>
+            <param name="constraintType">
+                The type of the constraint to check.
             </param>
-            <param name="effectiveAttributes">
-                The effective constraint attributes.
+            <returns>
+                <b>true</b> if specified constraint type is a valid member constraint type; otherwise, <b>false</b>.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="constraintType"/> is <b>null</b>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Validation.ValidationFactotum.EnsureValidMemberConstraintType(System.Type)">
+            <summary>
+                Ensures that the specified constraint type is a valid member constraint type.
+            </summary>
+            <param name="constraintType">
+                The type of the constraint to check.
             </param>
-        </member>
-        <member name="P:Omnifactotum.Validation.ObjectValidator.MemberData.Expression">
-            <summary>
-                Gets the expression.
-            </summary>
-        </member>
-        <member name="P:Omnifactotum.Validation.ObjectValidator.MemberData.Container">
-            <summary>
-                Gets the object containing the value that is being, or was, validated.
-            </summary>
-        </member>
-        <member name="P:Omnifactotum.Validation.ObjectValidator.MemberData.Value">
-            <summary>
-                Gets the value.
-            </summary>
-        </member>
-        <member name="P:Omnifactotum.Validation.ObjectValidator.MemberData.Attributes">
-            <summary>
-                Gets the constraint attributes.
-            </summary>
-        </member>
-        <member name="P:Omnifactotum.Validation.ObjectValidator.MemberData.EffectiveAttributes">
-            <summary>
-                Gets the effective constraint attributes.
-            </summary>
+            <returns>
+                The input constraint type, if it is a valid member constraint type.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="constraintType"/> is <b>null</b>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+                The specified constraint type is not a valid member constraint type.
+            </exception>
         </member>
         <member name="T:Omnifactotum.SyncValueContainer`1">
             <summary>
@@ -2368,12 +2838,12 @@
                 The owner is the tail node.
             </summary>
         </member>
-        <member name="T:Omnifactotum.EnumHelper">
+        <member name="T:Omnifactotum.EnumFactotum">
             <summary>
                 Provides utility methods for enumerations.
             </summary>
         </member>
-        <member name="M:Omnifactotum.EnumHelper.GetValue``1(System.String,System.Boolean)">
+        <member name="M:Omnifactotum.EnumFactotum.GetValue``1(System.String,System.Boolean)">
             <summary>
                 Gets the value of the enumeration of the specified type
                 by the string representation of an enumeration value.
@@ -2391,7 +2861,7 @@
                 A strongly-typed value of the enumeration.
             </returns>
         </member>
-        <member name="M:Omnifactotum.EnumHelper.GetValue``1(System.String)">
+        <member name="M:Omnifactotum.EnumFactotum.GetValue``1(System.String)">
             <summary>
                 Gets the value of the enumeration of the specified type by the string representation of
                 an enumeration value. This method is case-sensitive.
@@ -2406,7 +2876,7 @@
                 A strongly-typed value of the enumeration.
             </returns>
         </member>
-        <member name="M:Omnifactotum.EnumHelper.GetAllValues``1">
+        <member name="M:Omnifactotum.EnumFactotum.GetAllValues``1">
             <summary>
                 Gets all values of the specified enumeration.
             </summary>
@@ -2417,7 +2887,7 @@
                 A collection of the enumeration values.
             </returns>
         </member>
-        <member name="M:Omnifactotum.EnumHelper.GetAllFlagValues``1">
+        <member name="M:Omnifactotum.EnumFactotum.GetAllFlagValues``1">
             <summary>
                 Gets all the flag values defined in the specified enumeration.
             </summary>
@@ -4709,6 +5179,100 @@
                 <paramref name="modes"/> does not specify anything to generate.
             </exception>
         </member>
+        <member name="M:Omnifactotum.Factotum.GetExecutableLocalPath">
+            <summary>
+                <para>Gets the local path of the process executable.</para>
+                <para><b>NOTE</b>: The entry assembly is used to determine the executable path.
+                If the entry assembly is not available, the calling assembly is used.</para>
+            </summary>
+            <returns>
+                The local path of the process executable.
+            </returns>
+            <exception cref="T:System.InvalidOperationException">
+                The entry assembly (or the calling assembly) does not have a local path.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetExecutableDirectory">
+            <summary>
+                <para>Gets the directory of the process executable.</para>
+                <para><b>NOTE</b>: The entry assembly is used to determine the executable directory.
+                If the entry assembly is not available, the calling assembly is used.</para>
+            </summary>
+            <returns>
+                The directory of the process executable.
+            </returns>
+            <exception cref="T:System.InvalidOperationException">
+                The entry assembly (or the calling assembly) does not have a local path.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldOrPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field or property.
+            </typeparam>
+            <typeparam name="TMember">
+                The type of the field or property.
+            </typeparam>
+            <param name="memberGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Member</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field specified by the lambda expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetQualifiedFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the type-qualified name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field in the following form: <c>SomeType.Field</c>.
+            </returns>
+        </member>
         <member name="M:Omnifactotum.Factotum.GetPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
                 Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the property specified by the lambda expression.
@@ -4802,6 +5366,36 @@
                 The type-qualified name of the static property.
             </returns>
         </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective},Omnifactotum.RecursiveProcessingContext{``0})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <param name="processingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
         <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective})">
             <summary>
                 Processes the specified instance recursively.
@@ -4818,6 +5412,36 @@
             </param>
             <param name="processItem">
                 A reference to the method that processes each single item.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Action{``0},Omnifactotum.RecursiveProcessingContext{``0})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <param name="processingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
             </param>
             <exception cref="T:System.ArgumentNullException">
                 <para>
@@ -4856,32 +5480,6 @@
                 </para>
             </exception>
         </member>
-        <member name="M:Omnifactotum.Factotum.GetExecutableLocalPath">
-            <summary>
-                <para>Gets the local path of the process executable.</para>
-                <para><b>NOTE</b>: The entry assembly is used to determine the executable path.
-                If the entry assembly is not available, the calling assembly is used.</para>
-            </summary>
-            <returns>
-                The local path of the process executable.
-            </returns>
-            <exception cref="T:System.InvalidOperationException">
-                The entry assembly (or the calling assembly) does not have a local path.
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetExecutableDirectory">
-            <summary>
-                <para>Gets the directory of the process executable.</para>
-                <para><b>NOTE</b>: The entry assembly is used to determine the executable directory.
-                If the entry assembly is not available, the calling assembly is used.</para>
-            </summary>
-            <returns>
-                The directory of the process executable.
-            </returns>
-            <exception cref="T:System.InvalidOperationException">
-                The entry assembly (or the calling assembly) does not have a local path.
-            </exception>
-        </member>
         <member name="T:Omnifactotum.Factotum.For`1">
             <summary>
                 Provides a convenient access to helper methods for the specified type.
@@ -4889,6 +5487,62 @@
             <typeparam name="TObject">
                 The type that the helper methods are provided for.
             </typeparam>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldOrPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
+            </summary>
+            <typeparam name="TMember">
+                The type of the field or property.
+            </typeparam>
+            <param name="memberGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Member</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field specified by the lambda expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetQualifiedFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the type-qualified name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field in the following form: <c>SomeType.Field</c>.
+            </returns>
         </member>
         <member name="M:Omnifactotum.Factotum.For`1.GetPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
             <summary>
@@ -4898,7 +5552,7 @@
                 The type of the property.
             </typeparam>
             <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
             </param>
             <returns>
                 The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required property.
@@ -4912,7 +5566,7 @@
                 The type of the property.
             </typeparam>
             <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
             </param>
             <returns>
                 The name of the property.
@@ -4926,7 +5580,7 @@
                 The type of the property.
             </typeparam>
             <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
             </param>
             <returns>
                 The name of the property in the following form: <c>SomeType.Property</c>.

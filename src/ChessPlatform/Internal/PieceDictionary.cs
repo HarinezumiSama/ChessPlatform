@@ -11,7 +11,7 @@ namespace ChessPlatform.Internal
         #region Constants and Fields
 
         // ReSharper disable once StaticFieldInGenericType
-        private static readonly int MaxIndex = EnumHelper.GetAllValues<Piece>().Max(item => (int)item);
+        private static readonly int MaxIndex = EnumFactotum.GetAllValues<Piece>().Max(item => (int)item);
 
         private readonly ValueHolder[] _items;
 

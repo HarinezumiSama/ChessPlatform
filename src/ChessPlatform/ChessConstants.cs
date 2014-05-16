@@ -43,7 +43,7 @@ namespace ChessPlatform
             new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
 
         public static readonly ReadOnlySet<PieceType> PieceTypes =
-            EnumHelper.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
+            EnumFactotum.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
 
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
             PieceColors

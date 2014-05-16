@@ -35,9 +35,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum, Version=0.2.0.59, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
+    <Reference Include="Omnifactotum">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Omnifactotum.0.2.0.59\lib\net40-Client\Omnifactotum.dll</HintPath>
+      <HintPath>..\packages\Omnifactotum.0.3.0.74\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

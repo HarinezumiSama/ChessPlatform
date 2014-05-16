@@ -39,7 +39,8 @@
       <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Omnifactotum">
-      <HintPath>..\packages\Omnifactotum.0.2.0.59\lib\net40-Client\Omnifactotum.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Omnifactotum.0.3.0.74\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
