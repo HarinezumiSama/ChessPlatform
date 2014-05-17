@@ -1,0 +1,101 @@
+using System.Diagnostics;
+using Omnifactotum;
+using Omnifactotum.Annotations;
+
+namespace ChessPlatform
+{
+    public interface IGameBoard
+    {
+        #region Properties
+
+        PieceColor ActiveColor
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        GameState State
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        CastlingOptions CastlingOptions
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        EnPassantCaptureInfo EnPassantCaptureInfo
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        ReadOnlySet<PieceMove> ValidMoves
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        int FullMoveCountBy50MoveRule
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        int FullMoveIndex
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        PieceMove PreviousMove
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        Piece LastCapturedPiece
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        #endregion
+
+        #region Methods
+
+        [NotNull]
+        string GetFen();
+
+        Piece GetPiece(Position position);
+
+        PieceInfo GetPieceInfo(Position position);
+
+        [NotNull]
+        Position[] GetPiecePositions(Piece piece);
+
+        bool IsValidMove([NotNull] PieceMove move);
+
+        bool IsPawnPromotion([NotNull] PieceMove move);
+
+        [CanBeNull]
+        CastlingInfo CheckCastlingMove([NotNull] PieceMove move);
+
+        Position[] GetAttacks(Position targetPosition, PieceColor attackingColor);
+
+        [NotNull]
+        PieceMove[] GetValidMovesBySource(Position sourcePosition);
+
+        [NotNull]
+        PieceMove[] GetValidMovesByDestination(Position destinationPosition);
+
+        AutoDrawType GetAutoDrawType();
+
+        [NotNull]
+        IGameBoard MakeMove([NotNull] PieceMove move);
+
+        #endregion
+    }
+}

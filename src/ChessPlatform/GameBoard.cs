@@ -9,7 +9,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public sealed class GameBoard
+    public sealed class GameBoard : IGameBoard
     {
         #region Constants and Fields
 
@@ -132,6 +132,19 @@ namespace ChessPlatform
 
         #region Public Properties
 
+        public string ResultString
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _resultString;
+            }
+        }
+
+        #endregion
+
+        #region IGameBoard Members
+
         public PieceColor ActiveColor
         {
             [DebuggerStepThrough]
@@ -213,15 +226,6 @@ namespace ChessPlatform
             }
         }
 
-        public string ResultString
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return _resultString;
-            }
-        }
-
         #endregion
 
         #region Internal Properties
@@ -282,6 +286,15 @@ namespace ChessPlatform
         {
             return Perft(depth, PerftFlags.None);
         }
+
+        public GameBoard MakeMove([NotNull] PieceMove move)
+        {
+            return new GameBoard(this, move);
+        }
+
+        #endregion
+
+        #region IGameBoard Members
 
         public string GetFen()
         {
@@ -359,11 +372,6 @@ namespace ChessPlatform
             return this.ValidMoves.Contains(move) ? _pieceData.CheckCastlingMove(move) : null;
         }
 
-        public GameBoard MakeMove([NotNull] PieceMove move)
-        {
-            return new GameBoard(this, move);
-        }
-
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
             return _pieceData.GetAttackingPositions(targetPosition, attackingColor);
@@ -395,6 +403,11 @@ namespace ChessPlatform
             }
 
             return AutoDrawType.None;
+        }
+
+        IGameBoard IGameBoard.MakeMove(PieceMove move)
+        {
+            return MakeMove(move);
         }
 
         #endregion
