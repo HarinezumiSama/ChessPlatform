@@ -379,10 +379,6 @@ namespace ChessPlatform.UI.Desktop
                 case GameState.Stalemate:
                     popupControl.ShowInfoPopup("Stalemate. Draw.");
                     break;
-
-                case GameState.ForcedDrawInsufficientMaterial:
-                    popupControl.ShowInfoPopup("Draw (insufficient material).");
-                    break;
             }
         }
 

@@ -19,6 +19,8 @@ namespace ChessPlatform
         public const byte WhitePawnPromotionRank = RankCount - 1;
         public const byte BlackPawnPromotionRank = 0;
 
+        public const int FullMoveCountBy50MoveRule = 50;
+
         internal const byte X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;

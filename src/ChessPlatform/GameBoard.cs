@@ -20,7 +20,7 @@ namespace ChessPlatform
         private readonly CastlingOptions _castlingOptions;
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
         private readonly ReadOnlySet<PieceMove> _validMoves;
-        private readonly int _halfMovesBy50MoveRule;
+        private readonly int _halfMoveCountBy50MoveRule;
         private readonly int _fullMoveIndex;
         private readonly PieceMove _previousMove;
         private readonly Piece _lastCapturedPiece;
@@ -42,7 +42,7 @@ namespace ChessPlatform
                 out _activeColor,
                 out _castlingOptions,
                 out _enPassantCaptureInfo,
-                out _halfMovesBy50MoveRule,
+                out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
             FinishInitialization(out _validMoves, out _state, out _resultString);
@@ -72,7 +72,7 @@ namespace ChessPlatform
                 out _activeColor,
                 out _castlingOptions,
                 out _enPassantCaptureInfo,
-                out _halfMovesBy50MoveRule,
+                out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
             FinishInitialization(out _validMoves, out _state, out _resultString);
@@ -121,8 +121,8 @@ namespace ChessPlatform
             _previousMove = makeMoveData.Move;
             _lastCapturedPiece = makeMoveData.CapturedPiece;
 
-            _halfMovesBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
-                ? previous._halfMovesBy50MoveRule + 1
+            _halfMoveCountBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
+                ? previous._halfMoveCountBy50MoveRule + 1
                 : 0;
 
             FinishInitialization(out _validMoves, out _state, out _resultString);
@@ -177,12 +177,12 @@ namespace ChessPlatform
             }
         }
 
-        public int HalfMovesBy50MoveRule
+        public int FullMoveCountBy50MoveRule
         {
             [DebuggerStepThrough]
             get
             {
-                return _halfMovesBy50MoveRule;
+                return _halfMoveCountBy50MoveRule / 2;
             }
         }
 
@@ -219,6 +219,19 @@ namespace ChessPlatform
             get
             {
                 return _resultString;
+            }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal int HalfMoveCountBy50MoveRule
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _halfMoveCountBy50MoveRule;
             }
         }
 
@@ -283,7 +296,7 @@ namespace ChessPlatform
                 activeColorSnippet,
                 castlingOptionsSnippet,
                 enPassantCaptureInfoSnippet,
-                _halfMovesBy50MoveRule.ToString(CultureInfo.InvariantCulture),
+                _halfMoveCountBy50MoveRule.ToString(CultureInfo.InvariantCulture),
                 _fullMoveIndex.ToString(CultureInfo.InvariantCulture));
 
             return result;
@@ -366,6 +379,24 @@ namespace ChessPlatform
             return this.ValidMoves.Where(move => move.To == destinationPosition).ToArray();
         }
 
+        public AutoDrawType GetAutoDrawType()
+        {
+            var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
+            if (isInsufficientMaterialState)
+            {
+                return AutoDrawType.InsufficientMaterial;
+            }
+
+            //// TODO [vmcl] Check threefold repetition
+
+            if (this.FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
+            {
+                return AutoDrawType.FiftyMoveRule;
+            }
+
+            return AutoDrawType.None;
+        }
+
         #endregion
 
         #region Private Methods
@@ -433,14 +464,6 @@ namespace ChessPlatform
 
         private void InitializeValidMovesAndState(out HashSet<PieceMove> validMoves, out GameState state)
         {
-            var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
-            if (isInsufficientMaterialState)
-            {
-                state = GameState.ForcedDrawInsufficientMaterial;
-                validMoves = new HashSet<PieceMove>();
-                return;
-            }
-
             var activeKing = PieceType.King.ToPiece(_activeColor);
             var activeKingPosition = _pieceData.GetPiecePositions(activeKing).Single();
             var oppositeColor = _activeColor.Invert();
@@ -646,7 +669,6 @@ namespace ChessPlatform
                     resultString = _activeColor == PieceColor.White ? ResultStrings.BlackWon : ResultStrings.WhiteWon;
                     break;
 
-                case GameState.ForcedDrawInsufficientMaterial:
                 case GameState.Stalemate:
                     resultString = ResultStrings.Draw;
                     break;

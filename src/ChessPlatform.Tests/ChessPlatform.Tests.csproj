@@ -51,6 +51,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameBoardTestBase.cs" />
+    <Compile Include="GameBoardMoveGeneratorTests.cs" />
     <Compile Include="GameBoardTests.cs" />
     <Compile Include="BitboardTests.cs" />
     <Compile Include="PieceMoveTests.cs" />

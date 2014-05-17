@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutoDrawType.cs" />
     <Compile Include="Internal\AttackInfo.cs" />
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
