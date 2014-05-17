@@ -13,15 +13,16 @@ namespace ChessPlatform
 
         private const string FromGroupName = "from";
         private const string ToGroupName = "to";
-
-        //// TODO [vmcl] Consider promotion in RegEx
+        private const string PromotionGroupName = "promo";
 
         private static readonly Regex StringPatternRegex = new Regex(
             string.Format(
                 CultureInfo.InvariantCulture,
-                @"(?<{0}>[a-h][1-8])\-(?<{1}>[a-h][1-8])",
+                @"^(?<{0}>[a-h][1-8])(?:\-|x)(?<{1}>[a-h][1-8])(\=(?<{2}>[{3}]))?$",
                 FromGroupName,
-                ToGroupName),
+                ToGroupName,
+                PromotionGroupName,
+                new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray())),
             RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
 
         private readonly int _hashCode;
@@ -39,13 +40,13 @@ namespace ChessPlatform
 
             if (from == to)
             {
-                throw new ArgumentException("The source and destination positions must be different.");
+                throw new ArgumentException("The source and destination positions cannot be the same.");
             }
 
             if (promotionResult != PieceType.None && !ChessConstants.ValidPromotions.Contains(promotionResult))
             {
                 throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid promotion: {0}.", promotionResult),
+                    string.Format(CultureInfo.InvariantCulture, "Invalid promotion '{0}'.", promotionResult),
                     "promotionResult");
             }
 
@@ -118,9 +119,9 @@ namespace ChessPlatform
         {
             #region Argument Check
 
-            if (string.IsNullOrEmpty(stringNotation))
+            if (stringNotation == null)
             {
-                throw new ArgumentException(@"The value can be neither empty string nor null.", "stringNotation");
+                throw new ArgumentNullException("stringNotation");
             }
 
             #endregion
@@ -138,7 +139,10 @@ namespace ChessPlatform
 
             var from = match.Groups[FromGroupName].Value;
             var to = match.Groups[ToGroupName].Value;
-            return new PieceMove(Position.FromAlgebraic(from), Position.FromAlgebraic(to));
+            var promotionGroup = match.Groups[PromotionGroupName];
+            var pieceType = promotionGroup.Success ? promotionGroup.Value.Single().ToPieceType() : PieceType.None;
+
+            return new PieceMove(Position.FromAlgebraic(from), Position.FromAlgebraic(to), pieceType);
         }
 
         public override bool Equals(object obj)

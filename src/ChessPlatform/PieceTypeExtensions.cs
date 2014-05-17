@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using ChessPlatform.Internal;
 
@@ -42,7 +43,9 @@ namespace ChessPlatform
             char result;
             if (!ChessConstants.PieceTypeToFenCharMap.TryGetValue(pieceType, out result))
             {
-                throw new ArgumentException("Invalid piece type.", "pieceType");
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "Invalid piece type ({0}).", pieceType),
+                    "pieceType");
             }
 
             return result;

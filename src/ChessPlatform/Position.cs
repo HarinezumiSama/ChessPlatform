@@ -16,7 +16,6 @@ namespace ChessPlatform
         private readonly byte _rank;
         private readonly byte _x88Value;
         private readonly Bitboard _bitboard;
-        private readonly int _hashCode;
 
         #endregion
 
@@ -54,7 +53,6 @@ namespace ChessPlatform
 
             _x88Value = x88Value;
             _bitboard = GetBitboardBit(_file, _rank);
-            _hashCode = _x88Value;
         }
 
         /// <summary>
@@ -97,7 +95,6 @@ namespace ChessPlatform
 
             _x88Value = (byte)((_rank << 4) + _file);
             _bitboard = GetBitboardBit(_file, _rank);
-            _hashCode = _x88Value;
         }
 
         #endregion
@@ -245,7 +242,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return _hashCode;
+            return _x88Value;
         }
 
         #endregion

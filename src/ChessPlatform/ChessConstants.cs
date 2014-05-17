@@ -34,7 +34,7 @@ namespace ChessPlatform
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
 
         public static readonly ReadOnlySet<PieceType> ValidPromotions =
-            new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight }.ToHashSet().AsReadOnly();
+            GetValidPromotions().ToHashSet().AsReadOnly();
 
         public static readonly ReadOnlyCollection<Piece> BothKings =
             new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
@@ -65,38 +65,6 @@ namespace ChessPlatform
 
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
-
-        public static readonly ReadOnlyCollection<CastlingInfo> AllCastlingInfos =
-            new ReadOnlyCollection<CastlingInfo>(
-                new[]
-                {
-                    new CastlingInfo(
-                        CastlingOptions.WhiteKingSide,
-                        new PieceMove(WhiteKingInitialPosition, "g1"),
-                        new PieceMove("h1", "f1"),
-                        "f1",
-                        "g1"),
-                    new CastlingInfo(
-                        CastlingOptions.WhiteQueenSide,
-                        new PieceMove(WhiteKingInitialPosition, "c1"),
-                        new PieceMove("a1", "d1"),
-                        "b1",
-                        "c1",
-                        "d1"),
-                    new CastlingInfo(
-                        CastlingOptions.BlackKingSide,
-                        new PieceMove(BlackKingInitialPosition, "g8"),
-                        new PieceMove("h8", "f8"),
-                        "f8",
-                        "g8"),
-                    new CastlingInfo(
-                        CastlingOptions.BlackQueenSide,
-                        new PieceMove(BlackKingInitialPosition, "c8"),
-                        new PieceMove("a8", "d8"),
-                        "b8",
-                        "c8",
-                        "d8")
-                });
 
         public static readonly ReadOnlyDictionary<PieceColor, EnPassantInfo> ColorToEnPassantInfoMap =
             PieceColors.ToDictionary(Factotum.Identity, item => new EnPassantInfo(item)).AsReadOnly();
@@ -145,6 +113,9 @@ namespace ChessPlatform
                     obj => obj.FenChar.Value)
                 .AsReadOnly();
 
+        public static readonly ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
+            PieceTypeToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
+
         public static readonly ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
             typeof(Piece)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
@@ -157,6 +128,47 @@ namespace ChessPlatform
 
         public static readonly ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
             PieceToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
+
+        public static readonly ReadOnlyCollection<CastlingInfo> AllCastlingInfos =
+            new ReadOnlyCollection<CastlingInfo>(
+                new[]
+                {
+                    new CastlingInfo(
+                        CastlingOptions.WhiteKingSide,
+                        new PieceMove(WhiteKingInitialPosition, "g1"),
+                        new PieceMove("h1", "f1"),
+                        "f1",
+                        "g1"),
+                    new CastlingInfo(
+                        CastlingOptions.WhiteQueenSide,
+                        new PieceMove(WhiteKingInitialPosition, "c1"),
+                        new PieceMove("a1", "d1"),
+                        "b1",
+                        "c1",
+                        "d1"),
+                    new CastlingInfo(
+                        CastlingOptions.BlackKingSide,
+                        new PieceMove(BlackKingInitialPosition, "g8"),
+                        new PieceMove("h8", "f8"),
+                        "f8",
+                        "g8"),
+                    new CastlingInfo(
+                        CastlingOptions.BlackQueenSide,
+                        new PieceMove(BlackKingInitialPosition, "c8"),
+                        new PieceMove("a8", "d8"),
+                        "b8",
+                        "c8",
+                        "d8")
+                });
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static PieceType[] GetValidPromotions()
+        {
+            return new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight };
+        }
 
         #endregion
     }

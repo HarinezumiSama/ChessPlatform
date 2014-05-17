@@ -254,6 +254,19 @@ namespace ChessPlatform
             collection.DoForEach(item => hashSet.Add(item));
         }
 
+        internal static PieceType ToPieceType(this char fenChar)
+        {
+            PieceType result;
+            if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out result))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "Invalid FEN character ({0}).", fenChar),
+                    "fenChar");
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Private Methods
