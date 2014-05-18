@@ -77,6 +77,7 @@ namespace ChessPlatform
 
         #region Public Properties
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public PieceColor ActiveColor
         {
             get
@@ -88,6 +89,7 @@ namespace ChessPlatform
             }
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public GameManagerState State
         {
             get
@@ -99,6 +101,7 @@ namespace ChessPlatform
             }
         }
 
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public GameResult? Result
         {
             get
@@ -113,38 +116,6 @@ namespace ChessPlatform
         #endregion
 
         #region Public Methods
-
-        public static GameManager Create(
-            [NotNull] Type whitePlayerType,
-            [NotNull] Type blackPlayerType,
-            [NotNull] string initialPositionFen)
-        {
-            #region Argument Check
-
-            EnsureValidPlayerType(whitePlayerType, "white player");
-            EnsureValidPlayerType(blackPlayerType, "black player");
-
-            if (string.IsNullOrWhiteSpace(initialPositionFen))
-            {
-                throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
-                    "initialPositionFen");
-            }
-
-            #endregion
-
-            var whitePlayer = CreateChessPlayer(whitePlayerType);
-            var blackPlayer = CreateChessPlayer(blackPlayerType);
-
-            return new GameManager(whitePlayer, blackPlayer, initialPositionFen);
-        }
-
-        public static GameManager Create<TWhite, TBlack>([NotNull] string initialPositionFen)
-            where TWhite : IChessPlayer
-            where TBlack : IChessPlayer
-        {
-            return Create(typeof(TWhite), typeof(TBlack), initialPositionFen);
-        }
 
         public void Play()
         {
@@ -228,41 +199,6 @@ namespace ChessPlatform
         #endregion
 
         #region Private Methods
-
-        private static void EnsureValidPlayerType(Type playerType, [NotNull] string designation)
-        {
-            if (string.IsNullOrWhiteSpace(designation))
-            {
-                throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
-                    "designation");
-            }
-
-            if (playerType == null)
-            {
-                throw new ArgumentNullException(
-                    "playerType",
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The type of {0} is not specified.",
-                        designation));
-            }
-
-            if (!typeof(IChessPlayer).IsAssignableFrom(playerType))
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The type of {0} is invalid ({1}).",
-                        designation,
-                        playerType.GetFullName()));
-            }
-        }
-
-        private static IChessPlayer CreateChessPlayer([NotNull] Type playerType)
-        {
-            return (IChessPlayer)Activator.CreateInstance(playerType, true);
-        }
 
         private void EnsureNotDisposed()
         {

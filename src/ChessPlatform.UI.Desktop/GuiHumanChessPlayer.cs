@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
@@ -24,6 +25,25 @@ namespace ChessPlatform.UI.Desktop
         internal GuiHumanChessPlayer(PieceColor color)
         {
             this.Color = color.EnsureDefined();
+        }
+
+        #endregion
+
+        #region Events
+
+        public event EventHandler MoveRequested;
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{{ {0} : {1} }}",
+                GetType().GetQualifiedName(),
+                this.Color.GetName());
         }
 
         #endregion
@@ -69,7 +89,11 @@ namespace ChessPlatform.UI.Desktop
                         return move;
                     }
 
-                    _isAwaitingMove = true;
+                    if (!_isAwaitingMove)
+                    {
+                        _isAwaitingMove = true;
+                        RaiseMoveRequested();
+                    }
                 }
 
                 Thread.Sleep(10);
@@ -99,7 +123,23 @@ namespace ChessPlatform.UI.Desktop
                 }
 
                 _move = move;
+                _isAwaitingMove = false;
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void RaiseMoveRequested()
+        {
+            var handler = this.MoveRequested;
+            if (handler == null)
+            {
+                return;
+            }
+
+            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
         }
 
         #endregion

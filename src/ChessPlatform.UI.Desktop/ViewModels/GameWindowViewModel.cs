@@ -21,8 +21,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private GameWindowSelectionMode _selectionMode;
         private Position? _currentTargetPosition;
         private GameManager _gameManager;
-        private GuiHumanChessPlayer _whitePlayer;
-        private GuiHumanChessPlayer _blackPlayer;
+        private IChessPlayer _whitePlayer;
+        private IChessPlayer _blackPlayer;
         private GuiHumanChessPlayer _activeGuiHumanChessPlayer;
         private GameBoard[] _boardHistory;
 
@@ -152,7 +152,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _validMoveTargetPositionsInternal.Clear();
             this.CurrentSourcePosition = null;
 
-            this.SelectionMode = GameWindowSelectionMode.Default;
+            this.SelectionMode = _activeGuiHumanChessPlayer == null
+                ? GameWindowSelectionMode.None
+                : GameWindowSelectionMode.Default;
         }
 
         public void SetMovingPieceSelectionMode(Position currentSourcePosition)
@@ -183,21 +185,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             #endregion
 
-            _whitePlayer = new GuiHumanChessPlayer(PieceColor.White);
-            _blackPlayer = new GuiHumanChessPlayer(PieceColor.Black);
-            _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
-            _gameManager.GameBoardChanged += GameManager_GameBoardChanged;
-            _activeGuiHumanChessPlayer = null;
+            Factotum.DisposeAndNull(ref _gameManager);
 
-            this.SelectionMode = GameWindowSelectionMode.None;
+            CreateGuiHumanChessPlayer(ref _whitePlayer, PieceColor.White);
+            CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
+
+            _activeGuiHumanChessPlayer = null;
+            ResetSelectionMode();
+
+            _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
+            _gameManager.GameBoardChanged += this.GameManager_GameBoardChanged;
+
             RefreshBoardHistory();
         }
 
         public void Play()
         {
-            _activeGuiHumanChessPlayer = _gameManager.ActiveColor == PieceColor.White ? _whitePlayer : _blackPlayer;
+            _activeGuiHumanChessPlayer = null;
+            ResetSelectionMode();
+
             _gameManager.Play();
-            this.SelectionMode = GameWindowSelectionMode.Default;
         }
 
         public void MakeMove(PieceMove move)
@@ -218,6 +225,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             _activeGuiHumanChessPlayer = null;
+            ResetSelectionMode();
+
             activeGuiHumanChessPlayer.ApplyMove(move);
         }
 
@@ -326,7 +335,42 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaisePropertyChanged(() => this.MoveHistory);
 
             this.CurrentGameBoard = boardHistory.Last();
-            _activeGuiHumanChessPlayer = _gameManager.ActiveColor == PieceColor.White ? _whitePlayer : _blackPlayer;
+        }
+
+        private void CreateGuiHumanChessPlayer(ref IChessPlayer player, PieceColor color)
+        {
+            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
+            if (guiHumanChessPlayer != null)
+            {
+                guiHumanChessPlayer.MoveRequested -= this.GuiHumanChessPlayer_MoveRequested;
+            }
+
+            guiHumanChessPlayer = new GuiHumanChessPlayer(color);
+            guiHumanChessPlayer.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
+
+            player = guiHumanChessPlayer;
+        }
+
+        private void OnHumanChessPlayerMoveRequested()
+        {
+            if (_activeGuiHumanChessPlayer != null)
+            {
+                throw new InvalidOperationException("The active GUI player is already assigned.");
+            }
+
+            _activeGuiHumanChessPlayer =
+                (_gameManager.ActiveColor == PieceColor.White ? _whitePlayer : _blackPlayer) as GuiHumanChessPlayer;
+
+            ResetSelectionMode();
+        }
+
+        private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
+        {
+            Task.Factory.StartNew(
+                this.OnHumanChessPlayerMoveRequested,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _taskScheduler);
         }
 
         private void GameManager_GameBoardChanged(object sender, EventArgs eventArgs)
