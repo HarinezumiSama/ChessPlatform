@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AutoDrawType.cs" />
+    <Compile Include="ChessPlayerBase.cs" />
     <Compile Include="GameBoardChangedEventArgs.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="GameManagerState.cs" />

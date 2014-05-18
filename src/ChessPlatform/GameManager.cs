@@ -192,7 +192,7 @@ namespace ChessPlatform
                     return false;
                 }
 
-                originalState = _state;
+                originalState = _state == GameManagerState.GameFinished ? GameManagerState.Running : _state;
                 _state = GameManagerState.Paused;
 
                 var getMoveState = _getMoveStateContainer.Value;

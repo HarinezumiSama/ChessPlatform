@@ -7,7 +7,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
 {
-    internal sealed class GuiHumanChessPlayer : IChessPlayer
+    internal sealed class GuiHumanChessPlayer : ChessPlayerBase
     {
         #region Constants and Fields
 
@@ -23,8 +23,9 @@ namespace ChessPlatform.UI.Desktop
         ///     Initializes a new instance of the <see cref="GuiHumanChessPlayer"/> class.
         /// </summary>
         internal GuiHumanChessPlayer(PieceColor color)
+            : base(color)
         {
-            this.Color = color.EnsureDefined();
+            // Nothing to do
         }
 
         #endregion
@@ -50,36 +51,10 @@ namespace ChessPlatform.UI.Desktop
 
         #endregion
 
-        #region IChessPlayer Members
+        #region Protected Methods
 
-        public PieceColor Color
+        protected override Task<PieceMove> DoGetMove(IGameBoard board, CancellationToken cancellationToken)
         {
-            get;
-            private set;
-        }
-
-        public Task<PieceMove> GetMove(IGameBoard board, CancellationToken cancellationToken)
-        {
-            #region Argument Check
-
-            if (board == null)
-            {
-                throw new ArgumentNullException("board");
-            }
-
-            if (board.ActiveColor != this.Color)
-            {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The board's active color '{0}' is inconsistent with the player's color '{1}'.",
-                        board.ActiveColor,
-                        this.Color),
-                    "board");
-            }
-
-            #endregion
-
             var result = new Task<PieceMove>(() => GetMoveInternal(cancellationToken), cancellationToken);
 
             result.ContinueWith(

@@ -82,6 +82,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\StatusLabelTextConverter.cs" />
+    <Compile Include="DummyComputerChessPlayer.cs" />
     <Compile Include="GuiHumanChessPlayer.cs" />
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />

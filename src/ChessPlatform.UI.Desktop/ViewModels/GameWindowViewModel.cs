@@ -188,7 +188,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             Factotum.DisposeAndNull(ref _gameManager);
 
             CreateGuiHumanChessPlayer(ref _whitePlayer, PieceColor.White);
-            CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
+            //CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
+            _blackPlayer = new DummyComputerChessPlayer(PieceColor.Black);
 
             _activeGuiHumanChessPlayer = null;
             ResetSelectionMode();
@@ -365,8 +366,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 throw new InvalidOperationException("The active GUI player is already assigned.");
             }
 
+            var activeColor = _gameManager.ActiveColor;
+
             _activeGuiHumanChessPlayer =
-                (_gameManager.ActiveColor == PieceColor.White ? _whitePlayer : _blackPlayer) as GuiHumanChessPlayer;
+                ((activeColor == PieceColor.White ? _whitePlayer : _blackPlayer) as GuiHumanChessPlayer);
 
             ResetSelectionMode();
         }
