@@ -33,6 +33,8 @@ namespace ChessPlatform.UI.Desktop
 
         public event EventHandler MoveRequested;
 
+        public event EventHandler MoveRequestCancelled;
+
         #endregion
 
         #region Public Methods
@@ -56,7 +58,7 @@ namespace ChessPlatform.UI.Desktop
             private set;
         }
 
-        public PieceMove GetMove(IGameBoard board)
+        public Task<PieceMove> GetMove(IGameBoard board, CancellationToken cancellationToken)
         {
             #region Argument Check
 
@@ -78,26 +80,17 @@ namespace ChessPlatform.UI.Desktop
 
             #endregion
 
-            while (true)
-            {
-                lock (_syncLock)
+            var result = new Task<PieceMove>(() => GetMoveInternal(cancellationToken), cancellationToken);
+
+            result.ContinueWith(
+                t =>
                 {
-                    var move = _move;
-                    if (move != null)
-                    {
-                        _move = null;
-                        return move;
-                    }
+                    _isAwaitingMove = false;
+                    RaiseMoveRequestCancelledAsync();
+                },
+                TaskContinuationOptions.OnlyOnCanceled);
 
-                    if (!_isAwaitingMove)
-                    {
-                        _isAwaitingMove = true;
-                        RaiseMoveRequested();
-                    }
-                }
-
-                Thread.Sleep(10);
-            }
+            return result;
         }
 
         #endregion
@@ -131,7 +124,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Private Methods
 
-        private void RaiseMoveRequested()
+        private void RaiseMoveRequestedAsync()
         {
             var handler = this.MoveRequested;
             if (handler == null)
@@ -140,6 +133,43 @@ namespace ChessPlatform.UI.Desktop
             }
 
             Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+        }
+
+        private void RaiseMoveRequestCancelledAsync()
+        {
+            var handler = this.MoveRequestCancelled;
+            if (handler == null)
+            {
+                return;
+            }
+
+            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+        }
+
+        private PieceMove GetMoveInternal(CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                lock (_syncLock)
+                {
+                    var move = _move;
+                    if (move != null)
+                    {
+                        _move = null;
+                        return move;
+                    }
+
+                    if (!_isAwaitingMove)
+                    {
+                        _isAwaitingMove = true;
+                        RaiseMoveRequestedAsync();
+                    }
+                }
+
+                Thread.Sleep(10);
+            }
         }
 
         #endregion

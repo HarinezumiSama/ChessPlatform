@@ -23,6 +23,7 @@ namespace ChessPlatform
         private readonly IChessPlayer _black;
         private readonly Stack<GameBoard> _gameBoards;
         private readonly Thread _thread;
+        private readonly SyncValueContainer<GetMoveState> _getMoveStateContainer;
         private bool _shouldStop;
         private bool _isDisposed;
         private GameManagerState _state;
@@ -59,6 +60,7 @@ namespace ChessPlatform
             _black = black;
             _gameBoards = new Stack<GameBoard>();
             _thread = new Thread(this.ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
+            _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
             _state = GameManagerState.Paused;
 
             var gameBoard = new GameBoard(initialPositionFen);
@@ -138,16 +140,93 @@ namespace ChessPlatform
 
         public void Pause()
         {
-            EnsureNotDisposed();
+            lock (_syncLock)
+            {
+                EnsureNotDisposed();
 
-            throw new NotImplementedException();
+                throw new NotImplementedException();
+            }
         }
 
-        public void UndoLastMove()
+        public bool CanUndoLastMoves(int moveCount)
         {
-            EnsureNotDisposed();
+            #region Argument Check
 
-            throw new NotImplementedException();
+            if (moveCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "moveCount",
+                    moveCount,
+                    @"The value must be positive.");
+            }
+
+            #endregion
+
+            lock (_syncLock)
+            {
+                EnsureNotDisposed();
+
+                return _gameBoards.Count > moveCount;
+            }
+        }
+
+        public bool UndoLastMoves(int moveCount)
+        {
+            #region Argument Check
+
+            if (moveCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "moveCount",
+                    moveCount,
+                    @"The value must be positive.");
+            }
+
+            #endregion
+
+            GameManagerState originalState;
+            lock (_syncLock)
+            {
+                if (_isDisposed || _gameBoards.Count <= moveCount)
+                {
+                    return false;
+                }
+
+                originalState = _state;
+                _state = GameManagerState.Paused;
+
+                var getMoveState = _getMoveStateContainer.Value;
+                if (getMoveState != null)
+                {
+                    getMoveState.CancellationTokenSource.Cancel();
+                }
+            }
+
+            while (_getMoveStateContainer.Value != null)
+            {
+                Thread.Sleep(IdleTime);
+            }
+
+            lock (_syncLock)
+            {
+                if (_isDisposed)
+                {
+                    return false;
+                }
+
+                for (var index = 0; index < moveCount; index++)
+                {
+                    _gameBoards.Pop();
+                }
+
+                _state = originalState;
+
+                AffectStates();
+
+                RaiseGameBoardChangedAsync();
+            }
+
+            return true;
         }
 
         public GameBoard[] GetBoardHistory()
@@ -235,8 +314,6 @@ namespace ChessPlatform
 
         private void ExecuteGameInternal()
         {
-            var getMoveTaskContainer = new SyncValueContainer<Task<PieceMove>>(null, _syncLock);
-
             while (!_shouldStop && !_isDisposed)
             {
                 if (_state != GameManagerState.Running)
@@ -247,68 +324,101 @@ namespace ChessPlatform
 
                 lock (_syncLock)
                 {
-                    if (_state != GameManagerState.Running || _shouldStop || _isDisposed
-                        || getMoveTaskContainer.Value != null)
+                    if (_shouldStop || _isDisposed)
                     {
                         continue;
                     }
 
                     var originalActiveBoard = GetActiveBoard();
+
+                    var getMoveState = _getMoveStateContainer.Value;
+                    if (getMoveState != null)
+                    {
+                        if ((getMoveState.State != _state || getMoveState.ActiveBoard != originalActiveBoard))
+                        {
+                            getMoveState.CancellationTokenSource.Cancel();
+                        }
+
+                        continue;
+                    }
+
+                    if (_state != GameManagerState.Running || _shouldStop || _isDisposed)
+                    {
+                        continue;
+                    }
+
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
 
-                    var task = new Task<PieceMove>(() => activePlayer.GetMove(originalActiveBoard));
-                    getMoveTaskContainer.Value = task;
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    var task = activePlayer.GetMove(originalActiveBoard, cancellationTokenSource.Token);
+
+                    _getMoveStateContainer.Value = new GetMoveState(
+                        _state,
+                        originalActiveBoard,
+                        cancellationTokenSource);
 
                     task.ContinueWith(
                         t =>
                         {
                             lock (_syncLock)
                             {
-                                getMoveTaskContainer.Value = null;
+                                var moveState = _getMoveStateContainer.Value;
+                                _getMoveStateContainer.Value = null;
 
                                 var move = t.Result.EnsureNotNull();
 
                                 var activeBoard = GetActiveBoard();
-                                if (activeBoard != originalActiveBoard)
+
+                                if (moveState == null || moveState.State != _state
+                                    || moveState.ActiveBoard != activeBoard)
                                 {
-                                    // The board reference had changes since the time that the task was created
-                                    // This could happen if, for instance, a last move was undone in GUI
                                     return;
                                 }
 
                                 var newGameBoard = activeBoard.MakeMove(move).EnsureNotNull();
                                 _gameBoards.Push(newGameBoard);
 
-                                switch (newGameBoard.State)
-                                {
-                                    case GameState.Checkmate:
-                                        _result = newGameBoard.ActiveColor == PieceColor.White
-                                            ? GameResult.BlackWon
-                                            : GameResult.WhiteWon;
-                                        _state = GameManagerState.GameFinished;
-                                        break;
+                                AffectStates();
 
-                                    case GameState.Stalemate:
-                                        _result = GameResult.Draw;
-                                        _state = GameManagerState.GameFinished;
-                                        break;
-
-                                    default:
-                                        _result = null;
-                                        break;
-                                }
+                                RaiseGameBoardChangedAsync();
                             }
-
-                            RaiseGameBoardChanged();
                         },
                         TaskContinuationOptions.OnlyOnRanToCompletion);
+
+                    task.ContinueWith(
+                        t => _getMoveStateContainer.Value = null,
+                        TaskContinuationOptions.OnlyOnCanceled);
 
                     task.Start();
                 }
             }
         }
 
-        private void RaiseGameBoardChanged()
+        private void AffectStates()
+        {
+            var gameBoard = GetActiveBoard();
+
+            switch (gameBoard.State)
+            {
+                case GameState.Checkmate:
+                    _result = gameBoard.ActiveColor == PieceColor.White
+                        ? GameResult.BlackWon
+                        : GameResult.WhiteWon;
+                    _state = GameManagerState.GameFinished;
+                    break;
+
+                case GameState.Stalemate:
+                    _result = GameResult.Draw;
+                    _state = GameManagerState.GameFinished;
+                    break;
+
+                default:
+                    _result = null;
+                    break;
+            }
+        }
+
+        private void RaiseGameBoardChangedAsync()
         {
             var handler = this.GameBoardChanged;
             if (handler == null)
@@ -316,7 +426,50 @@ namespace ChessPlatform
                 return;
             }
 
-            handler(this, EventArgs.Empty);
+            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+        }
+
+        #endregion
+
+        #region GetMoveState Class
+
+        private sealed class GetMoveState
+        {
+            #region Constructors
+
+            public GetMoveState(
+                GameManagerState state,
+                GameBoard activeBoard,
+                CancellationTokenSource cancellationTokenSource)
+            {
+                this.State = state;
+                this.ActiveBoard = activeBoard.EnsureNotNull();
+                this.CancellationTokenSource = cancellationTokenSource.EnsureNotNull();
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            public GameManagerState State
+            {
+                get;
+                private set;
+            }
+
+            public GameBoard ActiveBoard
+            {
+                get;
+                private set;
+            }
+
+            public CancellationTokenSource CancellationTokenSource
+            {
+                get;
+                private set;
+            }
+
+            #endregion
         }
 
         #endregion

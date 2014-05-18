@@ -232,14 +232,19 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public bool CanUndoLastMove()
         {
-            return false;
-            ////var boardHistory = _boardHistory;
-            ////return boardHistory != null && boardHistory.Length != 0;
+            var gameManager = _gameManager;
+            return gameManager != null && _gameManager.CanUndoLastMoves(1);
         }
 
         public void UndoLastMove()
         {
-            throw new NotImplementedException();
+            var gameManager = _gameManager;
+            if (gameManager == null)
+            {
+                return;
+            }
+
+            gameManager.UndoLastMoves(1);
         }
 
         [NotNull]
@@ -343,10 +348,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (guiHumanChessPlayer != null)
             {
                 guiHumanChessPlayer.MoveRequested -= this.GuiHumanChessPlayer_MoveRequested;
+                guiHumanChessPlayer.MoveRequestCancelled -= this.GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
             guiHumanChessPlayer = new GuiHumanChessPlayer(color);
             guiHumanChessPlayer.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
+            guiHumanChessPlayer.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
 
             player = guiHumanChessPlayer;
         }
@@ -364,10 +371,25 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionMode();
         }
 
+        private void OnHumanChessPlayerMoveRequestCancelled()
+        {
+            _activeGuiHumanChessPlayer = null;
+            ResetSelectionMode();
+        }
+
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
                 this.OnHumanChessPlayerMoveRequested,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _taskScheduler);
+        }
+
+        private void GuiHumanChessPlayer_MoveRequestCancelled(object sender, EventArgs eventArgs)
+        {
+            Task.Factory.StartNew(
+                this.OnHumanChessPlayerMoveRequestCancelled,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);

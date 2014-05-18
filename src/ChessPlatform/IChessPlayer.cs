@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
@@ -17,7 +19,7 @@ namespace ChessPlatform
 
         #region Methods
 
-        PieceMove GetMove([NotNull] IGameBoard board);
+        Task<PieceMove> GetMove([NotNull] IGameBoard board, CancellationToken cancellationToken);
 
         #endregion
     }
