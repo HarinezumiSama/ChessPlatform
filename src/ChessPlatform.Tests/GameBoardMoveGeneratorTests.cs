@@ -21,7 +21,7 @@ namespace ChessPlatform.Tests
                 {
                     {
                         PerftPosition.Initial,
-                        DefaultFen
+                        ChessConstants.DefaultInitialFen
                     },
                     {
                         PerftPosition.Position2,

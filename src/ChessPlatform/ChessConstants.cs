@@ -21,6 +21,8 @@ namespace ChessPlatform
 
         public const int FullMoveCountBy50MoveRule = 50;
 
+        public const string DefaultInitialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
         internal const byte X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;

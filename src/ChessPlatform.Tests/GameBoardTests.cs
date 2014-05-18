@@ -25,7 +25,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestConstructionByDefaultFen()
         {
-            var gameBoard = new GameBoard(DefaultFen);
+            var gameBoard = new GameBoard(ChessConstants.DefaultInitialFen);
             AssertDefaultInitialBoard(gameBoard);
         }
 

@@ -41,6 +41,17 @@ namespace ChessPlatform.UI.Desktop
 
         #endregion
 
+        #region Protected Methods
+
+        protected override void OnInitialized(EventArgs e)
+        {
+            base.OnInitialized(e);
+
+            this.ViewModel.Play();
+        }
+
+        #endregion
+
         #region Private Methods: General
 
         private static Position? GetSquarePosition(object element)
@@ -60,7 +71,8 @@ namespace ChessPlatform.UI.Desktop
                 }
             }
 
-            this.ViewModel.StartNewGame();
+            this.ViewModel.InitializeNewGameFromDefaultInitialBoard();
+            this.ViewModel.Play();
         }
 
         private void StartNewGameFromFenFromClipboard(bool confirm)
@@ -91,7 +103,7 @@ namespace ChessPlatform.UI.Desktop
 
             try
             {
-                this.ViewModel.StartNewGameFromFen(fen);
+                this.ViewModel.InitializeNewGame(fen);
             }
             catch (ArgumentException)
             {
@@ -102,6 +114,8 @@ namespace ChessPlatform.UI.Desktop
                         Environment.NewLine,
                         fen));
             }
+
+            this.ViewModel.Play();
         }
 
         private void UndoLastMove(bool confirm)
@@ -390,11 +404,15 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.None)
+            switch (this.ViewModel.SelectionMode)
             {
-                this.ViewModel.CurrentTargetPosition = null;
-                this.ViewModel.SetValidMovesOnlySelectionMode(position.Value);
-                return;
+                case GameWindowSelectionMode.None:
+                    return;
+
+                case GameWindowSelectionMode.Default:
+                    this.ViewModel.CurrentTargetPosition = null;
+                    this.ViewModel.SetValidMovesOnlySelectionMode(position.Value);
+                    return;
             }
 
             this.ViewModel.CurrentTargetPosition = position.Value;
@@ -402,9 +420,14 @@ namespace ChessPlatform.UI.Desktop
 
         private void TextBlockSquare_MouseLeave(object sender, MouseEventArgs args)
         {
-            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.DisplayValidMovesOnly)
+            switch (this.ViewModel.SelectionMode)
             {
-                this.ViewModel.ResetSelectionMode();
+                case GameWindowSelectionMode.None:
+                    return;
+
+                case GameWindowSelectionMode.DisplayValidMovesOnly:
+                    this.ViewModel.ResetSelectionMode();
+                    break;
             }
         }
 
@@ -412,6 +435,11 @@ namespace ChessPlatform.UI.Desktop
         {
             var position = GetSquarePosition(e.OriginalSource);
             if (!position.HasValue)
+            {
+                return;
+            }
+
+            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.None)
             {
                 return;
             }

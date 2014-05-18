@@ -6,12 +6,6 @@ namespace ChessPlatform.Tests
 {
     public abstract class GameBoardTestBase
     {
-        #region Constants and Fields
-
-        protected const string DefaultFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-        #endregion
-
         #region Protected Methods
 
         protected static void AssertBaseProperties(
@@ -89,7 +83,7 @@ namespace ChessPlatform.Tests
         {
             Assert.That(gameBoard, Is.Not.Null);
 
-            Assert.That(gameBoard.GetFen(), Is.EqualTo(DefaultFen));
+            Assert.That(gameBoard.GetFen(), Is.EqualTo(ChessConstants.DefaultInitialFen));
 
             AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
