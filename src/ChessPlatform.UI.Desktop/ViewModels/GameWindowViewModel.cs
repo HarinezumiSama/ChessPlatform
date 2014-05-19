@@ -23,7 +23,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private GameManager _gameManager;
         private IChessPlayer _whitePlayer;
         private IChessPlayer _blackPlayer;
-        private GuiHumanChessPlayer _activeGuiHumanChessPlayer;
         private GameBoard[] _boardHistory;
 
         #endregion
@@ -149,12 +148,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void ResetSelectionMode()
         {
-            _validMoveTargetPositionsInternal.Clear();
-            this.CurrentSourcePosition = null;
-
-            this.SelectionMode = _activeGuiHumanChessPlayer == null
-                ? GameWindowSelectionMode.None
-                : GameWindowSelectionMode.Default;
+            ResetSelectionModeInternal(null);
         }
 
         public void SetMovingPieceSelectionMode(Position currentSourcePosition)
@@ -191,7 +185,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             //CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
             _blackPlayer = new DummyComputerChessPlayer(PieceColor.Black);
 
-            _activeGuiHumanChessPlayer = null;
             ResetSelectionMode();
 
             _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
@@ -202,7 +195,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void Play()
         {
-            _activeGuiHumanChessPlayer = null;
             ResetSelectionMode();
 
             _gameManager.Play();
@@ -219,22 +211,27 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             #endregion
 
-            var activeGuiHumanChessPlayer = _activeGuiHumanChessPlayer;
-            if (activeGuiHumanChessPlayer == null)
+            var activeHumanPlayer = GetActiveHumanPlayer();
+            if (activeHumanPlayer == null)
             {
                 throw new InvalidOperationException("Human player is not active.");
             }
 
-            _activeGuiHumanChessPlayer = null;
             ResetSelectionMode();
 
-            activeGuiHumanChessPlayer.ApplyMove(move);
+            activeHumanPlayer.ApplyMove(move);
         }
 
         public bool CanUndoLastMove()
         {
             var gameManager = _gameManager;
-            return gameManager != null && _gameManager.CanUndoLastMoves(1);
+            if (gameManager == null)
+            {
+                return false;
+            }
+
+            var undoMoveCount = GetUndoMoveCount(gameManager);
+            return _gameManager.CanUndoLastMoves(undoMoveCount);
         }
 
         public void UndoLastMove()
@@ -245,7 +242,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return;
             }
 
-            gameManager.UndoLastMoves(1);
+            var undoMoveCount = GetUndoMoveCount(gameManager);
+            gameManager.UndoLastMoves(undoMoveCount);
         }
 
         [NotNull]
@@ -312,6 +310,40 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Private Methods
 
+        private void ResetSelectionModeInternal(GameWindowSelectionMode? selectionMode)
+        {
+            _validMoveTargetPositionsInternal.Clear();
+            this.CurrentSourcePosition = null;
+
+            if (selectionMode.HasValue)
+            {
+                this.SelectionMode = selectionMode.Value;
+                return;
+            }
+
+            var humanChessPlayer = GetActiveHumanPlayer();
+
+            this.SelectionMode = humanChessPlayer == null
+                ? GameWindowSelectionMode.None
+                : GameWindowSelectionMode.Default;
+        }
+
+        private IChessPlayer GetActivePlayer(GameManager gameManager)
+        {
+            if (gameManager == null)
+            {
+                return null;
+            }
+
+            var activeColor = gameManager.ActiveColor;
+            return activeColor == PieceColor.White ? _whitePlayer : _blackPlayer;
+        }
+
+        private GuiHumanChessPlayer GetActiveHumanPlayer()
+        {
+            return GetActivePlayer() as GuiHumanChessPlayer;
+        }
+
         private void SetModeInternal(Position currentSourcePosition, GameWindowSelectionMode selectionMode)
         {
             var validMoves = this.CurrentGameBoard.GetValidMovesBySource(currentSourcePosition);
@@ -325,6 +357,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             this.CurrentSourcePosition = currentSourcePosition;
             this.SelectionMode = selectionMode;
+        }
+
+        private int GetUndoMoveCount(GameManager gameManager)
+        {
+            if (_whitePlayer is GuiHumanChessPlayer && _blackPlayer is GuiHumanChessPlayer)
+            {
+                return 1;
+            }
+
+            var activePlayer = GetActivePlayer(gameManager);
+            var result = !(activePlayer is GuiHumanChessPlayer) ? 1 : 2;
+            return result;
         }
 
         private void RefreshBoardHistory()
@@ -359,24 +403,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             player = guiHumanChessPlayer;
         }
 
+        private IChessPlayer GetActivePlayer()
+        {
+            return GetActivePlayer(_gameManager);
+        }
+
         private void OnHumanChessPlayerMoveRequested()
         {
-            if (_activeGuiHumanChessPlayer != null)
-            {
-                throw new InvalidOperationException("The active GUI player is already assigned.");
-            }
-
-            var activeColor = _gameManager.ActiveColor;
-
-            _activeGuiHumanChessPlayer =
-                ((activeColor == PieceColor.White ? _whitePlayer : _blackPlayer) as GuiHumanChessPlayer);
-
             ResetSelectionMode();
         }
 
         private void OnHumanChessPlayerMoveRequestCancelled()
         {
-            _activeGuiHumanChessPlayer = null;
             ResetSelectionMode();
         }
 

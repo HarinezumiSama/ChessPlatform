@@ -127,12 +127,7 @@ namespace ChessPlatform.UI.Desktop
 
             if (confirm)
             {
-                var answer = this.ShowYesNoDialog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Do you want to undo the last move ({0})?",
-                        this.ViewModel.CurrentGameBoard.PreviousMove));
-
+                var answer = this.ShowYesNoDialog("Do you want to undo the last move?");
                 if (answer != MessageBoxResult.Yes)
                 {
                     return;

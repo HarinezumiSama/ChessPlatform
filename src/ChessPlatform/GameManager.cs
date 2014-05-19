@@ -198,20 +198,8 @@ namespace ChessPlatform
                 var getMoveState = _getMoveStateContainer.Value;
                 if (getMoveState != null)
                 {
-                    getMoveState.CancellationTokenSource.Cancel();
-                }
-            }
-
-            while (_getMoveStateContainer.Value != null)
-            {
-                Thread.Sleep(IdleTime);
-            }
-
-            lock (_syncLock)
-            {
-                if (_isDisposed)
-                {
-                    return false;
+                    getMoveState.Cancel();
+                    _getMoveStateContainer.Value = null;
                 }
 
                 for (var index = 0; index < moveCount; index++)
@@ -336,7 +324,7 @@ namespace ChessPlatform
                     {
                         if ((getMoveState.State != _state || getMoveState.ActiveBoard != originalActiveBoard))
                         {
-                            getMoveState.CancellationTokenSource.Cancel();
+                            getMoveState.Cancel();
                         }
 
                         continue;
@@ -347,15 +335,13 @@ namespace ChessPlatform
                         continue;
                     }
 
+                    var state = new GetMoveState(_state, originalActiveBoard);
+                    _getMoveStateContainer.Value = state;
+
+                    var isCancelled = state.IsCancelled;
+
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
-
-                    var cancellationTokenSource = new CancellationTokenSource();
-                    var task = activePlayer.GetMove(originalActiveBoard, cancellationTokenSource.Token);
-
-                    _getMoveStateContainer.Value = new GetMoveState(
-                        _state,
-                        originalActiveBoard,
-                        cancellationTokenSource);
+                    var task = activePlayer.GetMove(originalActiveBoard, state.CancellationToken);
 
                     task.ContinueWith(
                         t =>
@@ -364,6 +350,11 @@ namespace ChessPlatform
                             {
                                 var moveState = _getMoveStateContainer.Value;
                                 _getMoveStateContainer.Value = null;
+
+                                if (isCancelled.Value)
+                                {
+                                    return;
+                                }
 
                                 var move = t.Result.EnsureNotNull();
 
@@ -435,16 +426,20 @@ namespace ChessPlatform
 
         private sealed class GetMoveState
         {
+            #region Constants and Fields
+
+            private readonly CancellationTokenSource _cancellationTokenSource;
+
+            #endregion
+
             #region Constructors
 
-            public GetMoveState(
-                GameManagerState state,
-                GameBoard activeBoard,
-                CancellationTokenSource cancellationTokenSource)
+            public GetMoveState(GameManagerState state, GameBoard activeBoard)
             {
                 this.State = state;
                 this.ActiveBoard = activeBoard.EnsureNotNull();
-                this.CancellationTokenSource = cancellationTokenSource.EnsureNotNull();
+                _cancellationTokenSource = new CancellationTokenSource();
+                this.IsCancelled = new SyncValueContainer<bool>();
             }
 
             #endregion
@@ -463,10 +458,30 @@ namespace ChessPlatform
                 private set;
             }
 
-            public CancellationTokenSource CancellationTokenSource
+            public CancellationToken CancellationToken
+            {
+                [DebuggerNonUserCode]
+                get
+                {
+                    return _cancellationTokenSource.Token;
+                }
+            }
+
+            public SyncValueContainer<bool> IsCancelled
             {
                 get;
                 private set;
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public void Cancel()
+            {
+                this.IsCancelled.Value = true; // MUST be set before cancelling task via CTS
+
+                _cancellationTokenSource.Cancel();
             }
 
             #endregion
