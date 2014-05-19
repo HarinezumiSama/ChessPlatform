@@ -51,14 +51,23 @@ namespace ChessPlatform
 
             #endregion
 
-            return DoGetMove(board, cancellationToken);
+            var result = new Task<PieceMove>(() => DoGetMove(board, cancellationToken), cancellationToken);
+            OnGetMoveTaskCreated(result, cancellationToken);
+            return result;
         }
 
         #endregion
 
         #region Protected Methods
 
-        protected abstract Task<PieceMove> DoGetMove([NotNull] IGameBoard board, CancellationToken cancellationToken);
+        protected abstract PieceMove DoGetMove([NotNull] IGameBoard board, CancellationToken cancellationToken);
+
+        protected virtual void OnGetMoveTaskCreated(
+            [NotNull] Task<PieceMove> getMoveTask,
+            CancellationToken cancellationToken)
+        {
+            // Nothing to do; for overriding only
+        }
 
         #endregion
     }

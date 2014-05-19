@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ChessPlatform.ComputerPlayers;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -183,7 +184,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             CreateGuiHumanChessPlayer(ref _whitePlayer, PieceColor.White);
             //CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
-            _blackPlayer = new DummyComputerChessPlayer(PieceColor.Black);
+            _blackPlayer = new DummyPlayer(PieceColor.Black);
 
             ResetSelectionMode();
 

@@ -82,7 +82,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Converters\StatusLabelTextConverter.cs" />
-    <Compile Include="DummyComputerChessPlayer.cs" />
     <Compile Include="GuiHumanChessPlayer.cs" />
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />
@@ -132,6 +131,10 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ChessPlatform.ComputerPlayers\ChessPlatform.ComputerPlayers.csproj">
+      <Project>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</Project>
+      <Name>ChessPlatform.ComputerPlayers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj">
       <Project>{AA84E743-3651-4436-BD27-CDD81D525D3E}</Project>
       <Name>ChessPlatform</Name>

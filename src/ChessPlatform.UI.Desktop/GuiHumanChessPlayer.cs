@@ -53,19 +53,43 @@ namespace ChessPlatform.UI.Desktop
 
         #region Protected Methods
 
-        protected override Task<PieceMove> DoGetMove(IGameBoard board, CancellationToken cancellationToken)
+        protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
         {
-            var result = new Task<PieceMove>(() => GetMoveInternal(cancellationToken), cancellationToken);
+            while (true)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            result.ContinueWith(
+                lock (_syncLock)
+                {
+                    var move = _move;
+                    if (move != null)
+                    {
+                        _move = null;
+                        return move;
+                    }
+
+                    if (!_isAwaitingMove)
+                    {
+                        _isAwaitingMove = true;
+                        RaiseMoveRequestedAsync();
+                    }
+                }
+
+                Thread.Sleep(10);
+            }
+        }
+
+        protected override void OnGetMoveTaskCreated(Task<PieceMove> getMoveTask, CancellationToken cancellationToken)
+        {
+            base.OnGetMoveTaskCreated(getMoveTask, cancellationToken);
+
+            getMoveTask.ContinueWith(
                 t =>
                 {
                     _isAwaitingMove = false;
                     RaiseMoveRequestCancelledAsync();
                 },
                 TaskContinuationOptions.OnlyOnCanceled);
-
-            return result;
         }
 
         #endregion
@@ -119,32 +143,6 @@ namespace ChessPlatform.UI.Desktop
             }
 
             Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
-        }
-
-        private PieceMove GetMoveInternal(CancellationToken cancellationToken)
-        {
-            while (true)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                lock (_syncLock)
-                {
-                    var move = _move;
-                    if (move != null)
-                    {
-                        _move = null;
-                        return move;
-                    }
-
-                    if (!_isAwaitingMove)
-                    {
-                        _isAwaitingMove = true;
-                        RaiseMoveRequestedAsync();
-                    }
-                }
-
-                Thread.Sleep(10);
-            }
         }
 
         #endregion
