@@ -8,7 +8,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
 {
-    public sealed class NegaMaxPlayer : ChessPlayerBase
+    public sealed class SmartEnoughPlayer : ChessPlayerBase
     {
         #region Constants and Fields
 
@@ -46,7 +46,7 @@ namespace ChessPlatform.ComputerPlayers
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
-        public NegaMaxPlayer(PieceColor color, int moveDepth)
+        public SmartEnoughPlayer(PieceColor color, int moveDepth)
             : base(color)
         {
             #region Argument Check
