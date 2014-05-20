@@ -181,6 +181,11 @@ namespace ChessPlatform
             return Math.Abs(value) <= DefaultZeroTolerance;
         }
 
+        public static int ToSign(this bool value)
+        {
+            return value ? 1 : -1;
+        }
+
         #endregion
 
         #region Internal Methods

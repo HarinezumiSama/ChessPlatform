@@ -60,6 +60,7 @@ namespace ChessPlatform
 
         #region Protected Methods
 
+        [NotNull]
         protected abstract PieceMove DoGetMove([NotNull] IGameBoard board, CancellationToken cancellationToken);
 
         protected virtual void OnGetMoveTaskCreated(

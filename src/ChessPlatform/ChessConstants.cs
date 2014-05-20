@@ -49,6 +49,9 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<PieceType> PieceTypes =
             EnumFactotum.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
 
+        public static readonly ReadOnlySet<PieceType> PieceTypesExceptNone =
+            PieceTypes.Where(item => item != PieceType.None).ToHashSet().AsReadOnly();
+
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
             PieceColors
                 .ToDictionary(
@@ -66,6 +69,9 @@ namespace ChessPlatform
                 .SelectMany(color => PieceTypes.Select(item => item.ToPiece(color)))
                 .ToHashSet()
                 .AsReadOnly();
+
+        public static readonly ReadOnlySet<Piece> PiecesExceptNone =
+            Pieces.Where(item => item != Piece.None).ToHashSet().AsReadOnly();
 
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";

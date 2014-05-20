@@ -226,6 +226,14 @@ namespace ChessPlatform
             }
         }
 
+        public Piece this[Position position]
+        {
+            get
+            {
+                return _pieceData[position];
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -313,11 +321,6 @@ namespace ChessPlatform
                 _fullMoveIndex.ToString(CultureInfo.InvariantCulture));
 
             return result;
-        }
-
-        public Piece GetPiece(Position position)
-        {
-            return _pieceData[position];
         }
 
         public PieceInfo GetPieceInfo(Position position)

@@ -195,7 +195,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void UpdatePiece(bool forceRaiseEvent)
         {
-            var piece = _parentViewModel.CurrentGameBoard.GetPiece(this.Position);
+            var piece = _parentViewModel.CurrentGameBoard[this.Position];
             SetPieceInternal(piece, forceRaiseEvent);
         }
 

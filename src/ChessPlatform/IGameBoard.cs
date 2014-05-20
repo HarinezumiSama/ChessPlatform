@@ -62,14 +62,17 @@ namespace ChessPlatform
             get;
         }
 
+        Piece this[Position position]
+        {
+            get;
+        }
+
         #endregion
 
         #region Methods
 
         [NotNull]
         string GetFen();
-
-        Piece GetPiece(Position position);
 
         PieceInfo GetPieceInfo(Position position);
 
