@@ -14,15 +14,27 @@ namespace ChessPlatform.ComputerPlayers
 
         private const int MateScoreAbs = int.MaxValue / 2;
 
-        private static readonly Dictionary<PieceType, int> PieceTypeToWeightMap = new Dictionary<PieceType, int>
-        {
-            { PieceType.King, 20000 },
-            { PieceType.Queen, 900 },
-            { PieceType.Rook, 500 },
-            { PieceType.Bishop, 300 },
-            { PieceType.Knight, 250 },
-            { PieceType.Pawn, 100 },
-        };
+        private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
+            new Dictionary<PieceType, int>
+            {
+                { PieceType.King, 20000 },
+                { PieceType.Queen, 900 },
+                { PieceType.Rook, 500 },
+                { PieceType.Bishop, 300 },
+                { PieceType.Knight, 250 },
+                { PieceType.Pawn, 100 },
+            };
+
+        private static readonly Dictionary<PieceType, int> PieceTypeToMobilityWeightMap =
+            new Dictionary<PieceType, int>
+            {
+                { PieceType.King, 5 },
+                { PieceType.Queen, 20 },
+                { PieceType.Rook, 15 },
+                { PieceType.Bishop, 10 },
+                { PieceType.Knight, 10 },
+                { PieceType.Pawn, 5 },
+            };
 
         private readonly int _moveDepth;
 
@@ -57,23 +69,17 @@ namespace ChessPlatform.ComputerPlayers
 
         protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
         {
-            if (board.ValidMoves.Count == 0)
-            {
-                throw new ArgumentException("There are no valid moves.", "board");
-            }
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            if (board.ValidMoves.Count == 1)
-            {
-                return board.ValidMoves.ToArray().Single();
-            }
+            Trace.TraceInformation("[{0}] Analyzing \"{1}\"...", currentMethodName, board.GetFen());
 
             var stopwatch = Stopwatch.StartNew();
-            var result = NegaMaxRoot(board, cancellationToken);
+            var result = DoGetMoveInternal(board, cancellationToken);
             stopwatch.Stop();
 
             Trace.TraceInformation(
                 "[{0}] Result: {1}, {2} spent, for \"{3}\".",
-                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                currentMethodName,
                 result,
                 stopwatch.Elapsed,
                 board.GetFen());
@@ -84,6 +90,12 @@ namespace ChessPlatform.ComputerPlayers
         #endregion
 
         #region Private Methods
+
+        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
+        private static PieceMove[] OrderMoves([NotNull] IEnumerable<PieceMove> moves)
+        {
+            return moves.OrderBy(move => move.ToString()).ToArray();
+        }
 
         private static int EvaluateMaterial([NotNull] IGameBoard board)
         {
@@ -98,7 +110,7 @@ namespace ChessPlatform.ComputerPlayers
                 var activePiece = pieceType.ToPiece(activeColor);
                 var inactivePiece = pieceType.ToPiece(inactiveColor);
                 var advantage = board.GetPieceCount(activePiece) - board.GetPieceCount(inactivePiece);
-                var weight = PieceTypeToWeightMap[pieceType];
+                var weight = PieceTypeToMaterialWeightMap[pieceType];
                 result += advantage * weight;
             }
 
@@ -107,7 +119,15 @@ namespace ChessPlatform.ComputerPlayers
 
         private static int EvaluateMobility([NotNull] IGameBoard board)
         {
-            return board.ValidMoves.Count * 10;
+            var result = board
+                .ValidMoves
+                .GroupBy(
+                    move => board[move.From].GetPieceType(),
+                    move => 1,
+                    (pieceType, moves) => moves.Sum() * PieceTypeToMobilityWeightMap[pieceType])
+                .Sum();
+
+            return result;
         }
 
         private static int EvaluatePosition([NotNull] IGameBoard board)
@@ -124,7 +144,7 @@ namespace ChessPlatform.ComputerPlayers
             return EvaluateMaterial(board) + EvaluateMobility(board);
         }
 
-        private int NegaMax(IGameBoard board, int plyDepth)
+        private static int NegaMax([NotNull] IGameBoard board, int plyDepth)
         {
             #region Argument Check
 
@@ -159,31 +179,57 @@ namespace ChessPlatform.ComputerPlayers
             return result;
         }
 
+        private static PieceMove FindMateMove([NotNull] IGameBoard board, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var mateMoves = board
+                .ValidMoves
+                .AsParallel()
+                .WithCancellation(cancellationToken)
+                .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                .Where(
+                    move =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var currentBoard = board.MakeMove(move);
+                        return currentBoard.State == GameState.Checkmate;
+                    })
+                .ToArray();
+
+            return mateMoves.FirstOrDefault();
+        }
+
+        private PieceMove DoGetMoveInternal(IGameBoard board, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (board.ValidMoves.Count == 1)
+            {
+                return board.ValidMoves.Single();
+            }
+
+            var mateMove = FindMateMove(board, cancellationToken);
+            if (mateMove != null)
+            {
+                return mateMove;
+            }
+
+            var result = NegaMaxRoot(board, cancellationToken);
+            return result.EnsureNotNull();
+        }
+
         private PieceMove NegaMaxRoot(IGameBoard board, CancellationToken cancellationToken)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var plyDepth = _moveDepth * 2;
 
-            ////var evaluatedMoves = board
-            ////    .ValidMoves
-            ////    .Select(
-            ////        move =>
-            ////        {
-            ////            cancellationToken.ThrowIfCancellationRequested();
+            var orderedMoves = OrderMoves(board.ValidMoves);
 
-            ////            var currentBoard = board.MakeMove(move);
-            ////            var score = -NegaMax(currentBoard, plyDepth - 1);
-            ////            var pair = KeyValuePair.Create(move, score);
-
-            ////            Trace.TraceInformation("[{0}] Move {1}: {2}", currentMethodName, pair.Key, pair.Value);
-
-            ////            return pair;
-            ////        })
-            ////    .ToArray();
-
-            var evaluatedMoves = board
-                .ValidMoves
+            var evaluatedMoves = orderedMoves
                 .AsParallel()
+                .WithCancellation(cancellationToken)
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .Select(
                     move =>

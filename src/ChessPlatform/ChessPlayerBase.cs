@@ -49,6 +49,11 @@ namespace ChessPlatform
                     "board");
             }
 
+            if (board.ValidMoves.Count == 0)
+            {
+                throw new ArgumentException("There are no valid moves.", "board");
+            }
+
             #endregion
 
             var result = new Task<PieceMove>(() => DoGetMove(board, cancellationToken), cancellationToken);

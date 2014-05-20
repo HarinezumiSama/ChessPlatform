@@ -15,8 +15,9 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private static readonly TimeSpan ThreadStopTimeout = TimeSpan.FromSeconds(5d);
-        private static readonly TimeSpan IdleTime = TimeSpan.FromMilliseconds(50d);
+        private static readonly TimeSpan ThreadStopTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan IdleTime = TimeSpan.FromMilliseconds(50);
+        private static readonly TimeSpan MoveWaitingIdleTime = TimeSpan.FromMilliseconds(10);
 
         private readonly object _syncLock = new object();
         private readonly IChessPlayer _white;
@@ -74,6 +75,8 @@ namespace ChessPlatform
         #region Events
 
         public event EventHandler GameBoardChanged;
+
+        public event EventHandler PlayerThinkingStarted;
 
         #endregion
 
@@ -184,7 +187,6 @@ namespace ChessPlatform
 
             #endregion
 
-            GameManagerState originalState;
             lock (_syncLock)
             {
                 if (_isDisposed || _gameBoards.Count <= moveCount)
@@ -192,7 +194,7 @@ namespace ChessPlatform
                     return false;
                 }
 
-                originalState = _state == GameManagerState.GameFinished ? GameManagerState.Running : _state;
+                var originalState = _state == GameManagerState.GameFinished ? GameManagerState.Running : _state;
                 _state = GameManagerState.Paused;
 
                 var getMoveState = _getMoveStateContainer.Value;
@@ -327,6 +329,7 @@ namespace ChessPlatform
                             getMoveState.Cancel();
                         }
 
+                        Thread.Sleep(MoveWaitingIdleTime);
                         continue;
                     }
 
@@ -380,6 +383,7 @@ namespace ChessPlatform
                         t => _getMoveStateContainer.Value = null,
                         TaskContinuationOptions.OnlyOnCanceled);
 
+                    RaisePlayerThinkingStartedAsync();
                     task.Start();
                 }
             }
@@ -412,6 +416,17 @@ namespace ChessPlatform
         private void RaiseGameBoardChangedAsync()
         {
             var handler = this.GameBoardChanged;
+            if (handler == null)
+            {
+                return;
+            }
+
+            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+        }
+
+        private void RaisePlayerThinkingStartedAsync()
+        {
+            var handler = this.PlayerThinkingStarted;
             if (handler == null)
             {
                 return;

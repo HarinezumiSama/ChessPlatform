@@ -127,6 +127,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public bool IsComputerPlayerActive
+        {
+            get
+            {
+                return GetActiveHumanPlayer() == null;
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -191,6 +199,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
             _gameManager.GameBoardChanged += this.GameManager_GameBoardChanged;
+            _gameManager.PlayerThinkingStarted += this.GameManager_PlayerThinkingStarted;
 
             RefreshBoardHistory();
         }
@@ -389,6 +398,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             this.CurrentGameBoard = boardHistory.Last();
         }
 
+        private void OnGameBoardChanged()
+        {
+            RefreshBoardHistory();
+            RaisePropertyChanged(() => this.IsComputerPlayerActive);
+        }
+
         private void CreateGuiHumanChessPlayer(ref IChessPlayer player, PieceColor color)
         {
             var guiHumanChessPlayer = player as GuiHumanChessPlayer;
@@ -420,6 +435,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionMode();
         }
 
+        private void OnPlayerThinkingStarted()
+        {
+            RaisePropertyChanged(() => this.IsComputerPlayerActive);
+        }
+
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
@@ -441,7 +461,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void GameManager_GameBoardChanged(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
-                this.RefreshBoardHistory,
+                this.OnGameBoardChanged,
+                CancellationToken.None,
+                TaskCreationOptions.None,
+                _taskScheduler);
+        }
+
+        private void GameManager_PlayerThinkingStarted(object sender, EventArgs eventArgs)
+        {
+            Task.Factory.StartNew(
+                this.OnPlayerThinkingStarted,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
