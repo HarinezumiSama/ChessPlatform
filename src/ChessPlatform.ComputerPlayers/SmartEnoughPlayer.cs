@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -74,15 +75,19 @@ namespace ChessPlatform.ComputerPlayers
 
             Trace.TraceInformation("[{0}] Analyzing \"{1}\"...", currentMethodName, board.GetFen());
 
+            var transpositionTable = new SimpleTranspositionTable();
+
             var stopwatch = Stopwatch.StartNew();
-            var result = DoGetMoveInternal(board, cancellationToken);
+            var result = DoGetMoveInternal(board, cancellationToken, transpositionTable);
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                "[{0}] Result: {1}, {2} spent, for \"{3}\".",
+                "[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}}}, for \"{5}\".",
                 currentMethodName,
                 result,
                 stopwatch.Elapsed,
+                transpositionTable.HitCount,
+                transpositionTable.MissCount,
                 board.GetFen());
 
             return result.EnsureNotNull();
@@ -154,7 +159,8 @@ namespace ChessPlatform.ComputerPlayers
             int plyDepth,
             int alpha,
             int beta,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            SimpleTranspositionTable transpositionTable)
         {
             #region Argument Check
 
@@ -170,16 +176,31 @@ namespace ChessPlatform.ComputerPlayers
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            var cachedScore = transpositionTable.GetScore(board, plyDepth);
+            if (cachedScore.HasValue)
+            {
+                return cachedScore.Value;
+            }
+
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
-                return EvaluatePosition(board);
+                var result = EvaluatePosition(board);
+                transpositionTable.SaveScore(board, plyDepth, result);
+                return result;
             }
 
             var orderedMoves = OrderMoves(board);
             foreach (var move in orderedMoves)
             {
                 var currentBoard = board.MakeMove(move);
-                var score = -ComputeAlphaBeta(currentBoard, plyDepth - 1, -beta, -alpha, cancellationToken);
+
+                var score = -ComputeAlphaBeta(
+                    currentBoard,
+                    plyDepth - 1,
+                    -beta,
+                    -alpha,
+                    cancellationToken,
+                    transpositionTable);
 
                 if (score >= beta)
                 {
@@ -193,6 +214,7 @@ namespace ChessPlatform.ComputerPlayers
                 }
             }
 
+            transpositionTable.SaveScore(board, plyDepth, alpha);
             return alpha;
         }
 
@@ -218,7 +240,10 @@ namespace ChessPlatform.ComputerPlayers
             return mateMoves.FirstOrDefault();
         }
 
-        private PieceMove DoGetMoveInternal(IGameBoard board, CancellationToken cancellationToken)
+        private PieceMove DoGetMoveInternal(
+            IGameBoard board,
+            CancellationToken cancellationToken,
+            SimpleTranspositionTable transpositionTable)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -233,11 +258,14 @@ namespace ChessPlatform.ComputerPlayers
                 return mateMove;
             }
 
-            var result = ComputeAlphaBetaRoot(board, cancellationToken);
+            var result = ComputeAlphaBetaRoot(board, cancellationToken, transpositionTable);
             return result.EnsureNotNull();
         }
 
-        private PieceMove ComputeAlphaBetaRoot(IGameBoard board, CancellationToken cancellationToken)
+        private PieceMove ComputeAlphaBetaRoot(
+            IGameBoard board,
+            CancellationToken cancellationToken,
+            [NotNull] SimpleTranspositionTable transpositionTable)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var plyDepth = _moveDepth * 2;
@@ -257,7 +285,8 @@ namespace ChessPlatform.ComputerPlayers
                     plyDepth - 1,
                     int.MinValue / 2,
                     -alpha,
-                    cancellationToken);
+                    cancellationToken,
+                    transpositionTable);
 
                 Trace.TraceInformation("[{0}] Move {1}: {2}", currentMethodName, move, score);
 
@@ -269,6 +298,88 @@ namespace ChessPlatform.ComputerPlayers
             }
 
             return result;
+        }
+
+        #endregion
+
+        #region SimpleTranspositionTable Class
+
+        private sealed class SimpleTranspositionTable
+        {
+            #region Constants and Fields
+
+            private readonly Dictionary<string, int> _fenToScoreMap = new Dictionary<string, int>();
+
+            #endregion
+
+            #region Public Properties
+
+            public ulong HitCount
+            {
+                get;
+                private set;
+            }
+
+            public ulong MissCount
+            {
+                get;
+                private set;
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public int? GetScore([NotNull] IGameBoard board, int plyDepth)
+            {
+                #region Argument Check
+
+                if (board == null)
+                {
+                    throw new ArgumentNullException("board");
+                }
+
+                #endregion
+
+                var key = GetKey(board, plyDepth);
+
+                int result;
+                if (!_fenToScoreMap.TryGetValue(key, out result))
+                {
+                    this.MissCount++;
+                    return null;
+                }
+
+                this.HitCount++;
+                return result;
+            }
+
+            public void SaveScore([NotNull] IGameBoard board, int plyDepth, int score)
+            {
+                #region Argument Check
+
+                if (board == null)
+                {
+                    throw new ArgumentNullException("board");
+                }
+
+                #endregion
+
+                var key = GetKey(board, plyDepth);
+                _fenToScoreMap.Add(key, score);
+            }
+
+            #endregion
+
+            #region Private Methods
+
+            private static string GetKey([NotNull] IGameBoard board, int plyDepth)
+            {
+                var fen = board.GetFen();
+                return fen + "|" + plyDepth.ToString(CultureInfo.InvariantCulture);
+            }
+
+            #endregion
         }
 
         #endregion
