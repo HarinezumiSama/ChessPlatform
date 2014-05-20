@@ -23,6 +23,7 @@ namespace ChessPlatform.ComputerPlayers
                 { PieceType.Bishop, 300 },
                 { PieceType.Knight, 250 },
                 { PieceType.Pawn, 100 },
+                { PieceType.None, 0 }
             };
 
         private static readonly Dictionary<PieceType, int> PieceTypeToMobilityWeightMap =
@@ -33,7 +34,7 @@ namespace ChessPlatform.ComputerPlayers
                 { PieceType.Rook, 15 },
                 { PieceType.Bishop, 10 },
                 { PieceType.Knight, 10 },
-                { PieceType.Pawn, 5 },
+                { PieceType.Pawn, 5 }
             };
 
         private readonly int _moveDepth;
@@ -92,9 +93,13 @@ namespace ChessPlatform.ComputerPlayers
         #region Private Methods
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private static PieceMove[] OrderMoves([NotNull] IEnumerable<PieceMove> moves)
+        private static PieceMove[] OrderMoves([NotNull] IGameBoard board)
         {
-            return moves.OrderBy(move => move.ToString()).ToArray();
+            return board
+                .ValidMoves
+                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
+                .ThenBy(move => move.ToString())
+                .ToArray();
         }
 
         private static int EvaluateMaterial([NotNull] IGameBoard board)
@@ -144,7 +149,7 @@ namespace ChessPlatform.ComputerPlayers
             return EvaluateMaterial(board) + EvaluateMobility(board);
         }
 
-        private static int NegaMax([NotNull] IGameBoard board, int plyDepth)
+        private static int ComputeNegaMax([NotNull] IGameBoard board, int plyDepth)
         {
             #region Argument Check
 
@@ -169,7 +174,7 @@ namespace ChessPlatform.ComputerPlayers
             foreach (var move in board.ValidMoves)
             {
                 var currentBoard = board.MakeMove(move);
-                var score = -NegaMax(currentBoard, plyDepth - 1);
+                var score = -ComputeNegaMax(currentBoard, plyDepth - 1);
                 if (score > result)
                 {
                     result = score;
@@ -216,28 +221,28 @@ namespace ChessPlatform.ComputerPlayers
                 return mateMove;
             }
 
-            var result = NegaMaxRoot(board, cancellationToken);
+            var result = ComputeNegaMaxRoot(board, cancellationToken);
             return result.EnsureNotNull();
         }
 
-        private PieceMove NegaMaxRoot(IGameBoard board, CancellationToken cancellationToken)
+        private PieceMove ComputeNegaMaxRoot(IGameBoard board, CancellationToken cancellationToken)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var plyDepth = _moveDepth * 2;
 
-            var orderedMoves = OrderMoves(board.ValidMoves);
+            var orderedMoves = OrderMoves(board);
 
             var evaluatedMoves = orderedMoves
-                .AsParallel()
-                .WithCancellation(cancellationToken)
-                .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                ////.AsParallel()
+                ////.WithCancellation(cancellationToken)
+                ////.WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .Select(
                     move =>
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
                         var currentBoard = board.MakeMove(move);
-                        var score = -NegaMax(currentBoard, plyDepth - 1);
+                        var score = -ComputeNegaMax(currentBoard, plyDepth - 1);
                         var pair = KeyValuePair.Create(move, score);
 
                         Trace.TraceInformation("[{0}] Move {1}: {2}", currentMethodName, pair.Key, pair.Value);
