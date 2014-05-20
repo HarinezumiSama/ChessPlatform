@@ -149,7 +149,12 @@ namespace ChessPlatform.ComputerPlayers
             return EvaluateMaterial(board) + EvaluateMobility(board);
         }
 
-        private static int ComputeNegaMax([NotNull] IGameBoard board, int plyDepth)
+        private static int ComputeAlphaBeta(
+            [NotNull] IGameBoard board,
+            int plyDepth,
+            int alpha,
+            int beta,
+            CancellationToken cancellationToken)
         {
             #region Argument Check
 
@@ -163,25 +168,32 @@ namespace ChessPlatform.ComputerPlayers
 
             #endregion
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
                 return EvaluatePosition(board);
             }
 
-            var result = int.MinValue;
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var move in board.ValidMoves)
+            var orderedMoves = OrderMoves(board);
+            foreach (var move in orderedMoves)
             {
                 var currentBoard = board.MakeMove(move);
-                var score = -ComputeNegaMax(currentBoard, plyDepth - 1);
-                if (score > result)
+                var score = -ComputeAlphaBeta(currentBoard, plyDepth - 1, -beta, -alpha, cancellationToken);
+
+                if (score >= beta)
                 {
-                    result = score;
+                    // Fail-hard beta-cutoff
+                    return beta;
+                }
+
+                if (score > alpha)
+                {
+                    alpha = score;
                 }
             }
 
-            return result;
+            return alpha;
         }
 
         private static PieceMove FindMateMove([NotNull] IGameBoard board, CancellationToken cancellationToken)
@@ -221,43 +233,40 @@ namespace ChessPlatform.ComputerPlayers
                 return mateMove;
             }
 
-            var result = ComputeNegaMaxRoot(board, cancellationToken);
+            var result = ComputeAlphaBetaRoot(board, cancellationToken);
             return result.EnsureNotNull();
         }
 
-        private PieceMove ComputeNegaMaxRoot(IGameBoard board, CancellationToken cancellationToken)
+        private PieceMove ComputeAlphaBetaRoot(IGameBoard board, CancellationToken cancellationToken)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var plyDepth = _moveDepth * 2;
 
             var orderedMoves = OrderMoves(board);
 
-            var evaluatedMoves = orderedMoves
-                ////.AsParallel()
-                ////.WithCancellation(cancellationToken)
-                ////.WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                .Select(
-                    move =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
+            var alpha = int.MinValue / 2;
+            PieceMove result = null;
+            foreach (var move in orderedMoves)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-                        var currentBoard = board.MakeMove(move);
-                        var score = -ComputeNegaMax(currentBoard, plyDepth - 1);
-                        var pair = KeyValuePair.Create(move, score);
+                var currentBoard = board.MakeMove(move);
 
-                        Trace.TraceInformation("[{0}] Move {1}: {2}", currentMethodName, pair.Key, pair.Value);
+                var score = -ComputeAlphaBeta(
+                    currentBoard,
+                    plyDepth - 1,
+                    int.MinValue / 2,
+                    -alpha,
+                    cancellationToken);
 
-                        return pair;
-                    })
-                .ToArray();
+                Trace.TraceInformation("[{0}] Move {1}: {2}", currentMethodName, move, score);
 
-            var result = evaluatedMoves
-                .OrderByDescending(pair => pair.Value)
-                .ThenBy(pair => pair.Key.From.X88Value)
-                .ThenBy(pair => pair.Key.To.X88Value)
-                .ThenBy(pair => pair.Key.PromotionResult)
-                .First()
-                .Key;
+                if (score > alpha)
+                {
+                    alpha = score;
+                    result = move;
+                }
+            }
 
             return result;
         }
