@@ -82,12 +82,13 @@ namespace ChessPlatform.ComputerPlayers
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                "[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}}}, for \"{5}\".",
+                "[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}, size {5}}}, for \"{6}\".",
                 currentMethodName,
                 result,
                 stopwatch.Elapsed,
                 transpositionTable.HitCount,
                 transpositionTable.MissCount,
+                transpositionTable.ItemCount,
                 board.GetFen());
 
             return result.EnsureNotNull();
@@ -324,6 +325,15 @@ namespace ChessPlatform.ComputerPlayers
             {
                 get;
                 private set;
+            }
+
+            public int ItemCount
+            {
+                [DebuggerNonUserCode]
+                get
+                {
+                    return _fenToScoreMap.Count;
+                }
             }
 
             #endregion
