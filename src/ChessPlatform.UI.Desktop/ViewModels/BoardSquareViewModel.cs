@@ -16,6 +16,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private Piece _piece;
         private Brush _foreground;
         private string _text;
+        private bool _isLastMoveTarget;
 
         #endregion
 
@@ -132,6 +133,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             set
             {
                 SetPieceInternal(value, false);
+            }
+        }
+
+        public bool IsLastMoveTarget
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _isLastMoveTarget;
+            }
+
+            set
+            {
+                if (value == _isLastMoveTarget)
+                {
+                    return;
+                }
+
+                _isLastMoveTarget = value;
+                RaisePropertyChanged(() => this.IsLastMoveTarget);
             }
         }
 

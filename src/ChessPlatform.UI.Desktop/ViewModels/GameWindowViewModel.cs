@@ -402,6 +402,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             RefreshBoardHistory();
             RaisePropertyChanged(() => this.IsComputerPlayerActive);
+
+            var currentGameBoard = this.CurrentGameBoard;
+
+            this.SquareViewModels.Values.DoForEach(
+                item => item.IsLastMoveTarget = item.Position == currentGameBoard.PreviousMove.To);
         }
 
         private void CreateGuiHumanChessPlayer(ref IChessPlayer player, PieceColor color)

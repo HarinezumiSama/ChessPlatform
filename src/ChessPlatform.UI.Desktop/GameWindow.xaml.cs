@@ -170,6 +170,17 @@ namespace ChessPlatform.UI.Desktop
                     TextBlock.TextProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Text)));
 
+                textBlock.SetBinding(
+                    TextBlock.TextDecorationsProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.IsLastMoveTarget))
+                    {
+                        Converter = new BooleanToValueConverter<TextDecorationCollection>
+                        {
+                            TrueValue = TextDecorations.Underline,
+                            FalseValue = new TextDecorationCollection()
+                        }
+                    });
+
                 textBlock.MouseEnter += this.TextBlockSquare_MouseEnter;
                 textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
                 textBlock.MouseLeftButtonUp += this.TextBlockSquare_MouseLeftButtonUp;
