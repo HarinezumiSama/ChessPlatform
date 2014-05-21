@@ -193,7 +193,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             CreateGuiHumanChessPlayer(ref _whitePlayer, PieceColor.White);
             //CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
             //_blackPlayer = new DummyPlayer(PieceColor.Black);
-            _blackPlayer = new SmartEnoughPlayer(PieceColor.Black, 2);
+            _blackPlayer = new SmartEnoughPlayer(PieceColor.Black, 4);
 
             ResetSelectionMode();
 

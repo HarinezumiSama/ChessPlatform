@@ -16,6 +16,8 @@ namespace ChessPlatform
         public const byte FileCount = 8;
         public const byte RankCount = 8;
 
+        public const byte SquareCount = FileCount * RankCount;
+
         public const byte WhitePawnPromotionRank = RankCount - 1;
         public const byte BlackPawnPromotionRank = 0;
 
