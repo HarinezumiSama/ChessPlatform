@@ -500,7 +500,8 @@ namespace ChessPlatform.ComputerPlayers
             const int RootAlpha = checked(-MateScoreAbs - 1);
             const int RootBeta = checked(MateScoreAbs + 1);
 
-            var bestMoves = new Dictionary<PieceMove, int>(orderedMoves.Length);
+            PieceMove bestMove = null;
+            var bestMoveLocalScore = int.MinValue;
             var alpha = RootAlpha;
 
             foreach (var move in orderedMoves)
@@ -523,33 +524,19 @@ namespace ChessPlatform.ComputerPlayers
                 if (score > alpha)
                 {
                     alpha = score;
-
-                    bestMoves.Clear();
-                    bestMoves.Add(move, localScore);
-                }
-                else if (score == alpha)
-                {
-                    bestMoves.Add(move, localScore);
+                    bestMove = move;
+                    bestMoveLocalScore = localScore;
                 }
             }
-
-            var orderedBestMoves = bestMoves
-                .OrderByDescending(pair => pair.Value)
-                .ThenBy(pair => pair.Key.From.X88Value)
-                .ThenBy(pair => pair.Key.To.X88Value)
-                .ThenBy(pair => pair.Key.PromotionResult)
-                .ToArray();
-
-            var resultPair = orderedBestMoves.First();
 
             Trace.TraceInformation(
                 "[{0}] Best move {1}: {2} (local {3})",
                 currentMethodName,
-                resultPair.Key,
+                bestMove,
                 alpha,
-                resultPair.Value);
+                bestMoveLocalScore);
 
-            return resultPair.Key;
+            return bestMove;
         }
 
         #endregion
