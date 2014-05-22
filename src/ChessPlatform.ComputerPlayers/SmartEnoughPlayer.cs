@@ -303,7 +303,10 @@ namespace ChessPlatform.ComputerPlayers
             return board
                 .ValidMoves
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
-                .ThenBy(move => move.ToString())
+                .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenBy(move => move.From.X88Value)
+                .ThenBy(move => move.To.X88Value)
+                .ThenBy(move => move.PromotionResult)
                 .ToArray();
         }
 
