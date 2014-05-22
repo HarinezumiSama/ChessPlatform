@@ -58,11 +58,16 @@
     <Compile Include="PieceMoveTests.cs" />
     <Compile Include="PositionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SmartEnoughPlayerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ChessPlatform.ComputerPlayers\ChessPlatform.ComputerPlayers.csproj">
+      <Project>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</Project>
+      <Name>ChessPlatform.ComputerPlayers</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj">
       <Project>{AA84E743-3651-4436-BD27-CDD81D525D3E}</Project>
       <Name>ChessPlatform</Name>
