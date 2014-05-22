@@ -30,7 +30,11 @@ namespace ChessPlatform.UI.Desktop.Commands
             "_Undo Last Move...",
             "UndoLastMove",
             typeof(GameWindowCommands),
-            new InputGestureCollection { new KeyGesture(Key.Z, ModifierKeys.Control) });
+            new InputGestureCollection
+            {
+                new KeyGesture(Key.Z, ModifierKeys.Control),
+                new KeyGesture(Key.Z, ModifierKeys.Control | ModifierKeys.Alt)
+            });
 
         public static readonly RoutedUICommand CopyFenToClipboard = new RoutedUICommand(
             "_Copy FEN to Clipboard",
