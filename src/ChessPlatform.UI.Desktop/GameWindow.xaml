@@ -36,7 +36,7 @@
         </Grid.ColumnDefinitions>
 
         <Menu Name="MainMenu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
-              VerticalAlignment="Top">
+              VerticalAlignment="Top" Focusable="False">
             <MenuItem Name="GameMenuItem" Header="_Game">
                 <MenuItem Command="commands:GameWindowCommands.NewGame" />
                 <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard" />

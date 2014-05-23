@@ -32,8 +32,8 @@ namespace ChessPlatform.UI.Desktop.Commands
             typeof(GameWindowCommands),
             new InputGestureCollection
             {
-                new KeyGesture(Key.Z, ModifierKeys.Control),
-                new KeyGesture(Key.Z, ModifierKeys.Control | ModifierKeys.Alt)
+                new KeyGesture(Key.Z, ModifierKeys.Control | ModifierKeys.Alt),
+                new KeyGesture(Key.Z, ModifierKeys.Control)
             });
 
         public static readonly RoutedUICommand CopyFenToClipboard = new RoutedUICommand(
