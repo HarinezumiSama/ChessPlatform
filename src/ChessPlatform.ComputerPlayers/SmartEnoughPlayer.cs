@@ -127,7 +127,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (weights.Length != ChessConstants.SquareCount)
             {
-                throw new ArgumentException("Invalid array length.", "weights");
+                throw new ArgumentException(@"Invalid array length.", "weights");
             }
 
             #endregion
