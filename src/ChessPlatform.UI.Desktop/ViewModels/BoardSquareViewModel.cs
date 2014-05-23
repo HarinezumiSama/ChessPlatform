@@ -216,6 +216,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void UpdatePiece(bool forceRaiseEvent)
         {
+            if (_parentViewModel.CurrentGameBoard == null)
+            {
+                return;
+            }
+
             var piece = _parentViewModel.CurrentGameBoard[this.Position];
             SetPieceInternal(piece, forceRaiseEvent);
         }

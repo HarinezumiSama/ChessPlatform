@@ -71,8 +71,8 @@
         </Viewbox>
 
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MoveHistory, Mode=OneWay}" Margin="0"
-                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left" TextWrapping="NoWrap"
-                 IsReadOnly="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                 FontSize="14" />
+                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left"
+                 TextWrapping="WrapWithOverflow" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto" FontSize="12" FontFamily="Courier New" />
     </Grid>
 </Window>

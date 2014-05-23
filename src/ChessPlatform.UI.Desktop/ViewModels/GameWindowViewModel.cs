@@ -42,11 +42,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _selectionMode = GameWindowSelectionMode.Default;
             this.ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
 
-            InitializeNewGameFromDefaultInitialBoard();
-
             this.SquareViewModels = ChessHelper.AllPositions
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
                 .AsReadOnly();
+
+            InitializeNewGameFromDefaultInitialBoard();
         }
 
         #endregion
@@ -296,9 +296,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
                 else
                 {
+                    var movedPiece = previousBoard[move.From].GetPieceType();
+
                     resultBuilder.AppendFormat(
                         CultureInfo.InvariantCulture,
-                        " {0}",
+                        " {0}{1}",
+                        movedPiece == PieceType.Pawn || movedPiece == PieceType.None
+                            ? string.Empty
+                            : movedPiece.GetFenChar().ToString(CultureInfo.InvariantCulture),
                         move.ToString(board.LastCapturedPiece != Piece.None));
                 }
 
@@ -312,6 +317,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 previousBoard = board;
+            }
+
+            var currentBoard = boardHistory.Last();
+            if (currentBoard.State.IsOneOf(GameState.Checkmate, GameState.Stalemate))
+            {
+                resultBuilder.AppendLine();
+                resultBuilder.Append(currentBoard.ResultString);
             }
 
             return resultBuilder.ToString();
@@ -395,18 +407,21 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionMode();
             RaisePropertyChanged(() => this.MoveHistory);
 
-            this.CurrentGameBoard = boardHistory.Last();
+            var currentGameBoard = boardHistory.Last();
+
+            this.SquareViewModels.Values.DoForEach(
+                item =>
+                    item.IsLastMoveTarget =
+                        currentGameBoard.PreviousMove != null && item.Position == currentGameBoard.PreviousMove.To);
+
+            this.CurrentGameBoard = currentGameBoard;
+
+            RaisePropertyChanged(() => this.IsComputerPlayerActive);
         }
 
         private void OnGameBoardChanged()
         {
             RefreshBoardHistory();
-            RaisePropertyChanged(() => this.IsComputerPlayerActive);
-
-            var currentGameBoard = this.CurrentGameBoard;
-
-            this.SquareViewModels.Values.DoForEach(
-                item => item.IsLastMoveTarget = item.Position == currentGameBoard.PreviousMove.To);
         }
 
         private void CreateGuiHumanChessPlayer(ref IChessPlayer player, PieceColor color)
