@@ -267,7 +267,7 @@ namespace ChessPlatform
                 return null;
             }
 
-            var file = algebraicNotation[0] - 'a';
+            var file = char.ToLowerInvariant(algebraicNotation[0]) - 'a';
             var rank = algebraicNotation[1] - '1';
 
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)

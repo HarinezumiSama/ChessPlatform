@@ -15,15 +15,31 @@ namespace ChessPlatform
         private const string ToGroupName = "to";
         private const string PromotionGroupName = "promo";
 
-        private static readonly Regex StringPatternRegex = new Regex(
+        private const RegexOptions BasicPatternRegexOptions =
+            RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace
+                | RegexOptions.IgnoreCase;
+
+        private static readonly Regex MainStringPatternRegex = new Regex(
             string.Format(
                 CultureInfo.InvariantCulture,
-                @"^(?<{0}>[a-h][1-8])(?:\-|x)(?<{1}>[a-h][1-8])(\=(?<{2}>[{3}]))?$",
+                @"^ (?<{0}>[a-h][1-8]) (?:\-|x) (?<{1}>[a-h][1-8]) (\=(?<{2}>[{3}]))? $",
                 FromGroupName,
                 ToGroupName,
                 PromotionGroupName,
                 new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray())),
-            RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
+            BasicPatternRegexOptions);
+
+        private static readonly Regex UciStringPatternRegex = new Regex(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                @"^ (?<{0}>[a-h][1-8]) (?<{1}>[a-h][1-8]) (?<{2}>[{3}])? $",
+                FromGroupName,
+                ToGroupName,
+                PromotionGroupName,
+                new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray())),
+            BasicPatternRegexOptions);
+
+        private static readonly Regex[] StringPatternRegexes = { MainStringPatternRegex, UciStringPatternRegex };
 
         private readonly int _hashCode;
 
@@ -114,7 +130,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        [DebuggerNonUserCode]
+        //[DebuggerNonUserCode]
         public static PieceMove FromStringNotation(string stringNotation)
         {
             #region Argument Check
@@ -126,23 +142,31 @@ namespace ChessPlatform
 
             #endregion
 
-            var match = StringPatternRegex.Match(stringNotation);
-            if (!match.Success)
+            foreach (var stringPatternRegex in StringPatternRegexes)
             {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Invalid string notation of a move '{0}'.",
-                        stringNotation),
-                    "stringNotation");
+                var match = stringPatternRegex.Match(stringNotation);
+                if (!match.Success)
+                {
+                    continue;
+                }
+
+                var from = match.Groups[FromGroupName].Value;
+                var to = match.Groups[ToGroupName].Value;
+                var promotionGroup = match.Groups[PromotionGroupName];
+
+                var pieceType = promotionGroup.Success
+                    ? char.ToUpperInvariant(promotionGroup.Value.Single()).ToPieceType()
+                    : PieceType.None;
+
+                return new PieceMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), pieceType);
             }
 
-            var from = match.Groups[FromGroupName].Value;
-            var to = match.Groups[ToGroupName].Value;
-            var promotionGroup = match.Groups[PromotionGroupName];
-            var pieceType = promotionGroup.Success ? promotionGroup.Value.Single().ToPieceType() : PieceType.None;
-
-            return new PieceMove(Position.FromAlgebraic(from), Position.FromAlgebraic(to), pieceType);
+            throw new ArgumentException(
+                string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Invalid string notation of a move '{0}'.",
+                    stringNotation),
+                "stringNotation");
         }
 
         public override bool Equals(object obj)
@@ -215,6 +239,10 @@ namespace ChessPlatform
 
             return other.From == this.From && other.To == this.To && other.PromotionResult == this.PromotionResult;
         }
+
+        #endregion
+
+        #region Private Methods
 
         #endregion
     }

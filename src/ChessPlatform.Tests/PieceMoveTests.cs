@@ -54,18 +54,35 @@ namespace ChessPlatform.Tests
         [TestCaseSource(typeof(FromStringNotationCases))]
         public void TestFromStringNotation(
             string input,
-            string expectedFromString,
-            string expectedToString,
+            Position expectedFrom,
+            Position expectedTo,
             PieceType expectedPromotionResult)
         {
-            var expectedFrom = Position.FromAlgebraic(expectedFromString);
-            var expectedTo = Position.FromAlgebraic(expectedToString);
+            foreach (var useExplicitMethod in new[] { false, true })
+            {
+                var move = useExplicitMethod ? PieceMove.FromStringNotation(input) : input;
 
-            var move = PieceMove.FromStringNotation(input);
-            Assert.That(move, Is.Not.Null);
-            Assert.That(move.From, Is.EqualTo(expectedFrom));
-            Assert.That(move.To, Is.EqualTo(expectedTo));
-            Assert.That(move.PromotionResult, Is.EqualTo(expectedPromotionResult));
+                Assert.That(move, Is.Not.Null);
+                Assert.That(move.From, Is.EqualTo(expectedFrom));
+                Assert.That(move.To, Is.EqualTo(expectedTo));
+                Assert.That(move.PromotionResult, Is.EqualTo(expectedPromotionResult));
+            }
+        }
+
+        [Test]
+        public void TestFromStringNotationNegativeCases()
+        {
+            Assert.That(() => PieceMove.FromStringNotation(null), Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => PieceMove.FromStringNotation("a2a1=q"), Throws.TypeOf<ArgumentException>());
+            Assert.That(() => PieceMove.FromStringNotation("a2-a1Q"), Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
+        public void TestOperatorFromStringNegativeCases()
+        {
+            Assert.That(() => (PieceMove)(string)null, Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => (PieceMove)"a2a1=q", Throws.TypeOf<ArgumentException>());
+            Assert.That(() => (PieceMove)"a2-a1Q", Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
@@ -92,6 +109,30 @@ namespace ChessPlatform.Tests
 
         #endregion
 
+        #region FromStringNotationCaseData Class
+
+        private sealed class FromStringNotationCaseData : TestCaseData
+        {
+            #region Constructors
+
+            /// <summary>
+            ///     Initializes a new instance of the <see cref="FromStringNotationCaseData"/> class.
+            /// </summary>
+            internal FromStringNotationCaseData(
+                string input,
+                Position expectedFrom,
+                Position expectedTo,
+                PieceType expectedPromotionResult)
+                : base(input, expectedFrom, expectedTo, expectedPromotionResult)
+            {
+                // Nothing to do
+            }
+
+            #endregion
+        }
+
+        #endregion
+
         #region FromStringNotationCases Class
 
         public sealed class FromStringNotationCases : IEnumerable<TestCaseData>
@@ -100,12 +141,23 @@ namespace ChessPlatform.Tests
 
             public IEnumerator<TestCaseData> GetEnumerator()
             {
-                yield return new TestCaseData("a1-c2", "a1", "c2", PieceType.None);
-                yield return new TestCaseData("c1-g5", "c1", "g5", PieceType.None);
-                yield return new TestCaseData("c7xd8=Q", "c7", "d8", PieceType.Queen);
-                yield return new TestCaseData("h2xg1=R", "h2", "g1", PieceType.Rook);
-                yield return new TestCaseData("a7-a8=B", "a7", "a8", PieceType.Bishop);
-                yield return new TestCaseData("b2-b1=N", "b2", "b1", PieceType.Knight);
+                yield return new FromStringNotationCaseData("a1-c2", "a1", "c2", PieceType.None);
+                yield return new FromStringNotationCaseData("a1c2", "a1", "c2", PieceType.None);
+
+                yield return new FromStringNotationCaseData("c1-g5", "c1", "g5", PieceType.None);
+                yield return new FromStringNotationCaseData("c1g5", "c1", "g5", PieceType.None);
+
+                yield return new FromStringNotationCaseData("c7xd8=Q", "c7", "d8", PieceType.Queen);
+                yield return new FromStringNotationCaseData("c7d8q", "c7", "d8", PieceType.Queen);
+
+                yield return new FromStringNotationCaseData("h2xg1=R", "h2", "g1", PieceType.Rook);
+                yield return new FromStringNotationCaseData("h2g1R", "h2", "g1", PieceType.Rook);
+
+                yield return new FromStringNotationCaseData("A7-a8=B", "a7", "a8", PieceType.Bishop);
+                yield return new FromStringNotationCaseData("A7a8B", "a7", "a8", PieceType.Bishop);
+
+                yield return new FromStringNotationCaseData("b2-B1=n", "b2", "b1", PieceType.Knight);
+                yield return new FromStringNotationCaseData("b2B1n", "b2", "b1", PieceType.Knight);
             }
 
             #endregion

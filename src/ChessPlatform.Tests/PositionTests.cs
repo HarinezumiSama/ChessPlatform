@@ -27,6 +27,26 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestConstructionByFileAndRankNegativeCases()
+        {
+            Assert.That(
+                () => new Position(checked(ChessConstants.FileRange.Lower - 1), ChessConstants.RankRange.Lower),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            Assert.That(
+                () => new Position(checked(ChessConstants.FileRange.Upper + 1), ChessConstants.RankRange.Lower),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            Assert.That(
+                () => new Position(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Lower - 1)),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
+
+            Assert.That(
+                () => new Position(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Upper + 1)),
+                Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
+        [Test]
         public void TestToString()
         {
             for (var file = ChessConstants.FileRange.Lower; file <= ChessConstants.FileRange.Upper; file++)
@@ -48,13 +68,53 @@ namespace ChessPlatform.Tests
             {
                 for (var rank = ChessConstants.RankRange.Lower; file <= ChessConstants.RankRange.Upper; file++)
                 {
-                    var algebraicNotation = GetPositionString(file, rank);
-                    var position = Position.FromAlgebraic(algebraicNotation);
+                    var positionString = GetPositionString(file, rank);
+                    foreach (var useUpperCase in new[] { false, true })
+                    {
+                        var algebraicNotation = useUpperCase
+                            ? positionString.ToUpperInvariant()
+                            : positionString.ToLowerInvariant();
 
-                    Assert.That(position.File, Is.EqualTo(file));
-                    Assert.That(position.Rank, Is.EqualTo(rank));
+                        var positionFromUpper = new Position();
+                        Assert.That(
+                            () => positionFromUpper = Position.FromAlgebraic(algebraicNotation),
+                            Throws.Nothing,
+                            "Notation '{0}'.",
+                            algebraicNotation);
+
+                        Assert.That(positionFromUpper.File, Is.EqualTo(file), "Notation '{0}'.", algebraicNotation);
+                        Assert.That(positionFromUpper.Rank, Is.EqualTo(rank), "Notation '{0}'.", algebraicNotation);
+                    }
                 }
             }
+        }
+
+        [Test]
+        public void TestFromAlgebraicNegativeCases()
+        {
+            Assert.That(() => Position.FromAlgebraic(null), Throws.ArgumentException);
+            Assert.That(() => Position.FromAlgebraic("1a"), Throws.ArgumentException);
+            Assert.That(() => Position.FromAlgebraic("a0"), Throws.ArgumentException);
+            Assert.That(() => Position.FromAlgebraic("b9"), Throws.ArgumentException);
+            Assert.That(() => Position.FromAlgebraic("i1"), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void TestOperatorFromString()
+        {
+            var position = (Position)"a3";
+            Assert.That(position.File, Is.EqualTo(0));
+            Assert.That(position.Rank, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void TestOperatorFromStringNegativeCases()
+        {
+            Assert.That(() => (Position)(string)null, Throws.ArgumentException);
+            Assert.That(() => (Position)"1a", Throws.ArgumentException);
+            Assert.That(() => (Position)"a0", Throws.ArgumentException);
+            Assert.That(() => (Position)"b9", Throws.ArgumentException);
+            Assert.That(() => (Position)"i1", Throws.ArgumentException);
         }
 
         [Test]
