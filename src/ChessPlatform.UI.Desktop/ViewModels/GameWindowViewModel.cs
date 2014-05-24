@@ -286,7 +286,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     }
                 }
 
-                var move = board.PreviousMove;
+                var move = board.PreviousMove.EnsureNotNull();
 
                 var castlingInfo = previousBoard.CheckCastlingMove(move);
                 if (castlingInfo != null)

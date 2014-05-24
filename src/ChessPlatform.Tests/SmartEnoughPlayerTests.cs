@@ -28,7 +28,7 @@ namespace ChessPlatform.Tests
             stopwatch.Stop();
 
             Console.WriteLine(
-                "[{0}] GetMove took {1} (move {2}).",
+                @"[{0}] GetMove took {1} (move {2}).",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 stopwatch.Elapsed,
                 move);
