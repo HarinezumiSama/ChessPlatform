@@ -26,12 +26,14 @@ namespace ChessPlatform
             get;
         }
 
+        [CanBeNull]
         EnPassantCaptureInfo EnPassantCaptureInfo
         {
             [DebuggerStepThrough]
             get;
         }
 
+        [NotNull]
         ReadOnlySet<PieceMove> ValidMoves
         {
             [DebuggerStepThrough]
@@ -50,6 +52,7 @@ namespace ChessPlatform
             get;
         }
 
+        [CanBeNull]
         PieceMove PreviousMove
         {
             [DebuggerStepThrough]
@@ -95,6 +98,9 @@ namespace ChessPlatform
         PieceMove[] GetValidMovesByDestination(Position destinationPosition);
 
         AutoDrawType GetAutoDrawType();
+
+        [NotNull]
+        PackedGameBoard Serialize();
 
         [NotNull]
         IGameBoard MakeMove([NotNull] PieceMove move);

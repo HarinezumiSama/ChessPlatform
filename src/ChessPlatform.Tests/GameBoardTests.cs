@@ -306,6 +306,63 @@ namespace ChessPlatform.Tests
             AssertNoValidMoves(gameBoard);
         }
 
+        [Test]
+        public void TestSerializeDefaultInitialPosition()
+        {
+            var gameBoard = new GameBoard();
+
+            var packedGameBoard = gameBoard.Serialize();
+
+            Assert.That(packedGameBoard, Is.Not.Null);
+            Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.White));
+            Assert.That(packedGameBoard.CastlingOptions, Is.EqualTo(CastlingOptions.All));
+            Assert.That(packedGameBoard.EnPassantMoveCapturePositionIndex, Is.EqualTo(-1));
+            Assert.That(packedGameBoard.FullMoveIndex, Is.EqualTo(1));
+            Assert.That(packedGameBoard.HalfMoveCountBy50MoveRule, Is.EqualTo(0));
+
+            var expectedPieces =
+                new byte[] { 0x26, 0x75, 0x53, 0x62 }
+                    .Concat(new byte[] { 0x11, 0x11, 0x11, 0x11 })
+                    .Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 })
+                    .Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 })
+                    .Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 })
+                    .Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 })
+                    .Concat(new byte[] { 0x99, 0x99, 0x99, 0x99 })
+                    .Concat(new byte[] { 0xAE, 0xFD, 0xDB, 0xEA })
+                    .ToArray();
+
+            CollectionAssert.AreEqual(expectedPieces, packedGameBoard.GetPieces());
+        }
+
+        [Test]
+        public void TestSerializeSpecificPosition()
+        {
+            const string Fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 7 17";
+            var gameBoard = new GameBoard(Fen);
+
+            var packedGameBoard = gameBoard.Serialize();
+
+            Assert.That(packedGameBoard, Is.Not.Null);
+            Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.Black));
+            Assert.That(packedGameBoard.CastlingOptions, Is.EqualTo(CastlingOptions.BlackMask));
+            Assert.That(packedGameBoard.EnPassantMoveCapturePositionIndex, Is.EqualTo(19));
+            Assert.That(packedGameBoard.FullMoveIndex, Is.EqualTo(17));
+            Assert.That(packedGameBoard.HalfMoveCountBy50MoveRule, Is.EqualTo(7));
+
+            var expectedPieces =
+                new byte[] { 0x06, 0x70, 0x60, 0x03 }
+                    .Concat(new byte[] { 0x91, 0x00, 0x00, 0x11 })
+                    .Concat(new byte[] { 0x0F, 0x00, 0x20, 0x00 })
+                    .Concat(new byte[] { 0x55, 0x11, 0x01, 0x00 })
+                    .Concat(new byte[] { 0x1A, 0x00, 0x00, 0x00 })
+                    .Concat(new byte[] { 0xD0, 0x00, 0xA0, 0x2D })
+                    .Concat(new byte[] { 0x91, 0x99, 0x90, 0x99 })
+                    .Concat(new byte[] { 0x0E, 0x00, 0x0B, 0xE0 })
+                    .ToArray();
+
+            CollectionAssert.AreEqual(expectedPieces, packedGameBoard.GetPieces());
+        }
+
         #endregion
 
         #region Private Methods

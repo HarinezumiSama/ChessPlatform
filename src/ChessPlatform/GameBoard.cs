@@ -408,6 +408,11 @@ namespace ChessPlatform
             return AutoDrawType.None;
         }
 
+        public PackedGameBoard Serialize()
+        {
+            return new PackedGameBoard(this);
+        }
+
         IGameBoard IGameBoard.MakeMove(PieceMove move)
         {
             return MakeMove(move);
@@ -475,7 +480,7 @@ namespace ChessPlatform
                 }
             }
 
-            //// TODO [vmcl] (*) No non-promoted pawns at their last rank, (*) etc.
+            //// TODO [vmcl] (*) No pawns at invalid ranks, (*) etc.
         }
 
         private void InitializeValidMovesAndState(out HashSet<PieceMove> validMoves, out GameState state)
@@ -887,8 +892,8 @@ namespace ChessPlatform
                         })
                     .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-                var totalData = topDatas.Aggregate(new PerftData(), (acc, pair) => acc + pair.Value);
-                perftData.Include(totalData);
+                var totalTopDatas = topDatas.Aggregate(new PerftData(), (acc, pair) => acc + pair.Value);
+                perftData.Include(totalTopDatas);
                 topDatas.DoForEach(pair => perftData.DividedMoves.Add(pair.Key, pair.Value.NodeCount));
 
                 return;

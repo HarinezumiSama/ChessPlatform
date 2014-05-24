@@ -130,7 +130,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        //[DebuggerNonUserCode]
+        [DebuggerNonUserCode]
         public static PieceMove FromStringNotation(string stringNotation)
         {
             #region Argument Check
