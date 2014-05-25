@@ -12,10 +12,7 @@ namespace ChessPlatform
 
         internal const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
 
-        //private readonly byte _file;
-        //private readonly byte _rank;
         private readonly byte _x88Value;
-        //private readonly Bitboard _bitboard;
 
         #endregion
 
@@ -48,11 +45,7 @@ namespace ChessPlatform
 
             #endregion
 
-            //_file = (byte)(x88Value & 0x07);
-            //_rank = (byte)(x88Value >> 4);
-
             _x88Value = x88Value;
-            //_bitboard = GetBitboardBit(_file, _rank);
         }
 
         /// <summary>
@@ -90,11 +83,7 @@ namespace ChessPlatform
 
             #endregion
 
-            //_file = (byte)file;
-            //_rank = (byte)rank;
-
             _x88Value = (byte)((rank << 4) | file);
-            //_bitboard = GetBitboardBit(_file, _rank);
         }
 
         #endregion
@@ -107,7 +96,6 @@ namespace ChessPlatform
             get
             {
                 return (byte)(_x88Value & 0x07);
-                //return _file;
             }
         }
 
@@ -117,7 +105,6 @@ namespace ChessPlatform
             get
             {
                 return (byte)(_x88Value >> 4);
-                //return _rank;
             }
         }
 
@@ -149,7 +136,6 @@ namespace ChessPlatform
             get
             {
                 return new Bitboard(1L << this.SquareIndex);
-                //return _bitboard;
             }
         }
 
@@ -308,15 +294,6 @@ namespace ChessPlatform
             var x88Value = (byte)(((index & 0x38) << 1) | (index & 7));
             return new Position(x88Value);
         }
-
-        #endregion
-
-        #region Private Methods
-
-        //private static Bitboard GetBitboardBit(int file, int rank)
-        //{
-        //    return new Bitboard(1L << (file | (rank << 3)));
-        //}
 
         #endregion
 
