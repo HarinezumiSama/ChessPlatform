@@ -19,7 +19,7 @@ namespace ChessPlatform.Tests
             const string Fen = "r1bqkbnr/pppp1ppp/4p3/n7/4P3/3B1N2/PPPP1PPP/RNBQK2R b KQkq - 3 4";
             var gameBoard = new GameBoard(Fen);
 
-            var player = new SmartEnoughPlayer(PieceColor.Black, 4);
+            var player = new SmartEnoughPlayer(PieceColor.Black, 4, false);
 
             var stopwatch = Stopwatch.StartNew();
             var task = player.GetMove(gameBoard, CancellationToken.None);

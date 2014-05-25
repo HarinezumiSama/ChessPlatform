@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using ChessPlatform.ComputerPlayers.Properties;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
@@ -26,7 +28,20 @@ namespace ChessPlatform.ComputerPlayers
         private static readonly Dictionary<Piece, Dictionary<Position, int>> PieceToPositionWeightMap =
             CreatePieceToPositionWeightMap();
 
+        private static readonly Lazy<OpeningBook> GlobalOpeningBook = Lazy.Create(
+            () =>
+            {
+                using (var reader = new StringReader(Resources.OpeningBook))
+                {
+                    return new OpeningBook(reader);
+                }
+            },
+            LazyThreadSafetyMode.ExecutionAndPublication);
+
         private readonly int _maxPlyDepth;
+
+        private readonly OpeningBook _openingBook;
+        private readonly Random _openingBookRandom = new Random();
 
         #endregion
 
@@ -35,7 +50,7 @@ namespace ChessPlatform.ComputerPlayers
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
-        public SmartEnoughPlayer(PieceColor color, int maxPlyDepth)
+        public SmartEnoughPlayer(PieceColor color, int maxPlyDepth, bool useOpeningBook)
             : base(color)
         {
             #region Argument Check
@@ -54,6 +69,7 @@ namespace ChessPlatform.ComputerPlayers
             #endregion
 
             _maxPlyDepth = maxPlyDepth;
+            _openingBook = useOpeningBook ? GlobalOpeningBook.Value : null;
         }
 
         #endregion
@@ -480,6 +496,25 @@ namespace ChessPlatform.ComputerPlayers
                 return board.ValidMoves.Single();
             }
 
+            if (_openingBook != null)
+            {
+                var openingMoves = _openingBook.FindPossibleMoves(board);
+                if (openingMoves.Length != 0)
+                {
+                    var index = _openingBookRandom.Next(openingMoves.Length);
+                    var openingMove = openingMoves[index];
+                    var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+                    Trace.TraceInformation(
+                        "[{0}] From the opening move(s): {1}, chosen {2}.",
+                        currentMethodName,
+                        openingMoves.Select(move => move.ToString()).Join(", "),
+                        openingMove);
+
+                    return openingMove;
+                }
+            }
+
             var mateMove = FindMateMove(board, cancellationToken);
             if (mateMove != null)
             {
@@ -670,7 +705,7 @@ namespace ChessPlatform.ComputerPlayers
 
             private static Tuple<PackedGameBoard, int> GetKey([NotNull] IGameBoard board, int plyDepth)
             {
-                var packedGameBoard = board.Serialize();
+                var packedGameBoard = board.Pack();
                 return Tuple.Create(packedGameBoard, plyDepth);
             }
 

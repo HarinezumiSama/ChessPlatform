@@ -100,7 +100,7 @@ namespace ChessPlatform
         AutoDrawType GetAutoDrawType();
 
         [NotNull]
-        PackedGameBoard Serialize();
+        PackedGameBoard Pack();
 
         [NotNull]
         IGameBoard MakeMove([NotNull] PieceMove move);

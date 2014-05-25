@@ -311,7 +311,7 @@ namespace ChessPlatform.Tests
         {
             var gameBoard = new GameBoard();
 
-            var packedGameBoard = gameBoard.Serialize();
+            var packedGameBoard = gameBoard.Pack();
 
             Assert.That(packedGameBoard, Is.Not.Null);
             Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.White));
@@ -340,7 +340,7 @@ namespace ChessPlatform.Tests
             const string Fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 7 17";
             var gameBoard = new GameBoard(Fen);
 
-            var packedGameBoard = gameBoard.Serialize();
+            var packedGameBoard = gameBoard.Pack();
 
             Assert.That(packedGameBoard, Is.Not.Null);
             Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.Black));

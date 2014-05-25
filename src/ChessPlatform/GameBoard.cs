@@ -408,7 +408,7 @@ namespace ChessPlatform
             return AutoDrawType.None;
         }
 
-        public PackedGameBoard Serialize()
+        public PackedGameBoard Pack()
         {
             return new PackedGameBoard(this);
         }
