@@ -22,8 +22,8 @@ namespace ChessPlatform.ComputerPlayers
         {
             var result = board
                 .ValidMoves
-                .OrderBy(move => move.From.X88Value)
-                .ThenBy(move => move.To.X88Value)
+                .OrderBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
                 .ThenBy(move => move.PromotionResult)
                 .First();
 

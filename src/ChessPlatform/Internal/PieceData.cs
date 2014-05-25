@@ -132,8 +132,8 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var capturePosition = new Position(move.From.File, enPassantInfo.CaptureTargetRank);
-            var targetPiecePosition = new Position(move.From.File, enPassantInfo.EndRank);
+            var capturePosition = new Position(false, move.From.File, enPassantInfo.CaptureTargetRank);
+            var targetPiecePosition = new Position(false, move.From.File, enPassantInfo.EndRank);
 
             return new EnPassantCaptureInfo(capturePosition, targetPiecePosition);
         }
@@ -394,8 +394,8 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var destinationPosition = new Position(sourcePosition.File, enPassantInfo.EndRank);
-            var intermediatePosition = new Position(sourcePosition.File, enPassantInfo.CaptureTargetRank);
+            var destinationPosition = new Position(false, sourcePosition.File, enPassantInfo.EndRank);
+            var intermediatePosition = new Position(false, sourcePosition.File, enPassantInfo.CaptureTargetRank);
             var isEnPassant = CheckSquares(Piece.None, intermediatePosition, destinationPosition);
 
             return isEnPassant ? new PieceMove(sourcePosition, destinationPosition) : null;

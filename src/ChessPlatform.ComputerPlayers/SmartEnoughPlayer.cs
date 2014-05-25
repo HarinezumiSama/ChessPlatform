@@ -66,7 +66,7 @@ namespace ChessPlatform.ComputerPlayers
 
             Trace.TraceInformation("[{0}] Analyzing \"{1}\"...", currentMethodName, board.GetFen());
 
-            var transpositionTable = new SimpleTranspositionTable();
+            var transpositionTable = new SimpleTranspositionTable(10000000);
 
             var stopwatch = Stopwatch.StartNew();
             var result = DoGetMoveInternal(board, cancellationToken, transpositionTable);
@@ -304,8 +304,8 @@ namespace ChessPlatform.ComputerPlayers
                 .ValidMoves
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
                 .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenBy(move => move.From.X88Value)
-                .ThenBy(move => move.To.X88Value)
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
                 .ThenBy(move => move.PromotionResult)
                 .ToArray();
         }
@@ -323,7 +323,7 @@ namespace ChessPlatform.ComputerPlayers
                     continue;
                 }
 
-                int materialScore = 0;
+                var materialScore = 0;
                 if (pieceType != PieceType.King)
                 {
                     var materialWeight = PieceTypeToMaterialWeightMap[pieceType];
@@ -550,11 +550,42 @@ namespace ChessPlatform.ComputerPlayers
         {
             #region Constants and Fields
 
-            private readonly Dictionary<string, int> _fenToScoreMap = new Dictionary<string, int>();
+            private readonly Dictionary<Tuple<PackedGameBoard, int>, int> _scoreMap =
+                new Dictionary<Tuple<PackedGameBoard, int>, int>();
+
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            ///     Initializes a new instance of the <see cref="SimpleTranspositionTable"/> class.
+            /// </summary>
+            internal SimpleTranspositionTable(int maximumEntryCount)
+            {
+                #region Argument Check
+
+                if (maximumEntryCount <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "maximumEntryCount",
+                        maximumEntryCount,
+                        @"The value must be positive.");
+                }
+
+                #endregion
+
+                this.MaximumEntryCount = maximumEntryCount;
+            }
 
             #endregion
 
             #region Public Properties
+
+            public int MaximumEntryCount
+            {
+                get;
+                private set;
+            }
 
             public ulong HitCount
             {
@@ -573,7 +604,7 @@ namespace ChessPlatform.ComputerPlayers
                 [DebuggerNonUserCode]
                 get
                 {
-                    return _fenToScoreMap.Count;
+                    return _scoreMap.Count;
                 }
             }
 
@@ -595,7 +626,7 @@ namespace ChessPlatform.ComputerPlayers
                 var key = GetKey(board, plyDepth);
 
                 int result;
-                if (!_fenToScoreMap.TryGetValue(key, out result))
+                if (!_scoreMap.TryGetValue(key, out result))
                 {
                     this.MissCount++;
                     return null;
@@ -616,18 +647,31 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
+                if (_scoreMap.Count >= this.MaximumEntryCount)
+                {
+                    return;
+                }
+
                 var key = GetKey(board, plyDepth);
-                _fenToScoreMap.Add(key, score);
+                _scoreMap.Add(key, score);
+
+                if (_scoreMap.Count >= this.MaximumEntryCount)
+                {
+                    Trace.TraceWarning(
+                        "[{0}] Maximum entry count has been reached ({1}).",
+                        MethodBase.GetCurrentMethod().GetQualifiedName(),
+                        this.MaximumEntryCount);
+                }
             }
 
             #endregion
 
             #region Private Methods
 
-            private static string GetKey([NotNull] IGameBoard board, int plyDepth)
+            private static Tuple<PackedGameBoard, int> GetKey([NotNull] IGameBoard board, int plyDepth)
             {
-                var fen = board.GetFen();
-                return fen + "|" + plyDepth.ToString(CultureInfo.InvariantCulture);
+                var packedGameBoard = board.Serialize();
+                return Tuple.Create(packedGameBoard, plyDepth);
             }
 
             #endregion

@@ -12,10 +12,10 @@ namespace ChessPlatform
 
         internal const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
 
-        private readonly byte _file;
-        private readonly byte _rank;
+        //private readonly byte _file;
+        //private readonly byte _rank;
         private readonly byte _x88Value;
-        private readonly Bitboard _bitboard;
+        //private readonly Bitboard _bitboard;
 
         #endregion
 
@@ -48,18 +48,18 @@ namespace ChessPlatform
 
             #endregion
 
-            _file = (byte)(x88Value & 0x07);
-            _rank = (byte)(x88Value >> 4);
+            //_file = (byte)(x88Value & 0x07);
+            //_rank = (byte)(x88Value >> 4);
 
             _x88Value = x88Value;
-            _bitboard = GetBitboardBit(_file, _rank);
+            //_bitboard = GetBitboardBit(_file, _rank);
         }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Position"/> class.
         /// </summary>
         [DebuggerNonUserCode]
-        private Position(bool checkArguments, int file, int rank)
+        internal Position(bool checkArguments, int file, int rank)
         {
             #region Argument Check
 
@@ -90,11 +90,11 @@ namespace ChessPlatform
 
             #endregion
 
-            _file = (byte)file;
-            _rank = (byte)rank;
+            //_file = (byte)file;
+            //_rank = (byte)rank;
 
-            _x88Value = (byte)((_rank << 4) + _file);
-            _bitboard = GetBitboardBit(_file, _rank);
+            _x88Value = (byte)((rank << 4) | file);
+            //_bitboard = GetBitboardBit(_file, _rank);
         }
 
         #endregion
@@ -106,7 +106,8 @@ namespace ChessPlatform
             [DebuggerStepThrough]
             get
             {
-                return _file;
+                return (byte)(_x88Value & 0x07);
+                //return _file;
             }
         }
 
@@ -115,11 +116,25 @@ namespace ChessPlatform
             [DebuggerStepThrough]
             get
             {
-                return _rank;
+                return (byte)(_x88Value >> 4);
+                //return _rank;
             }
         }
 
-        public byte X88Value
+        public int SquareIndex
+        {
+            [DebuggerNonUserCode]
+            get
+            {
+                return this.File | (this.Rank << 3);
+            }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal byte X88Value
         {
             [DebuggerNonUserCode]
             get
@@ -128,16 +143,13 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region Internal Properties
-
         internal Bitboard Bitboard
         {
             [DebuggerStepThrough]
             get
             {
-                return _bitboard;
+                return new Bitboard(1L << this.SquareIndex);
+                //return _bitboard;
             }
         }
 
@@ -196,7 +208,7 @@ namespace ChessPlatform
 
             return Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .Select(rank => new Position(file, (byte)rank))
+                .Select(rank => new Position(false, file, (byte)rank))
                 .ToArray();
         }
 
@@ -225,7 +237,7 @@ namespace ChessPlatform
 
             return Enumerable
                 .Range(0, ChessConstants.FileCount)
-                .Select(file => new Position((byte)file, rank))
+                .Select(file => new Position(false, (byte)file, rank))
                 .ToArray();
         }
 
@@ -293,19 +305,18 @@ namespace ChessPlatform
 
             #endregion
 
-            var file = index & 7;
-            var rank = (index >> 3) & 7;
-            return new Position(false, file, rank);
+            var x88Value = (byte)(((index & 0x38) << 1) | (index & 7));
+            return new Position(x88Value);
         }
 
         #endregion
 
         #region Private Methods
 
-        private static Bitboard GetBitboardBit(int file, int rank)
-        {
-            return new Bitboard(1L << (file | (rank << 3)));
-        }
+        //private static Bitboard GetBitboardBit(int file, int rank)
+        //{
+        //    return new Bitboard(1L << (file | (rank << 3)));
+        //}
 
         #endregion
 

@@ -812,7 +812,7 @@ namespace ChessPlatform
 
                 enPassantCaptureTarget = new EnPassantCaptureInfo(
                     capturePosition.Value,
-                    new Position(capturePosition.Value.File, enPassantInfo.EndRank));
+                    new Position(false, capturePosition.Value.File, enPassantInfo.EndRank));
             }
 
             var halfMovesBy50MoveRuleSnippet = fenSnippets[4];
