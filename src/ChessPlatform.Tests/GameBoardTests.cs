@@ -273,6 +273,23 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestCanHideFromCheckByPromotingPawn()
+        {
+            var gameBoard = new GameBoard("1K5q/2P5/k7/8/8/8/8/8 w - - 0 1");
+
+            AssertBaseProperties(
+                gameBoard,
+                PieceColor.White,
+                CastlingOptions.None,
+                null,
+                0,
+                1,
+                GameState.Check);
+
+            AssertValidMoves(gameBoard, "c7-c8=Q", "c7-c8=R", "c7-c8=B", "c7-c8=N");
+        }
+
+        [Test]
         public void TestCanCaptureCheckingPieceByPromotingPawn()
         {
             var gameBoard = new GameBoard("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1");
