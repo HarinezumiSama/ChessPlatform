@@ -68,13 +68,30 @@ namespace ChessPlatform.ComputerPlayers
 
         #endregion
 
+        #region Public Properties
+
+        public int MaxPlyDepth
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _maxPlyDepth;
+            }
+        }
+
+        #endregion
+
         #region Protected Methods
 
         protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.TraceInformation("[{0}] Analyzing \"{1}\"...", currentMethodName, board.GetFen());
+            Trace.TraceInformation(
+                "[{0}] Max ply depth: {1}. Analyzing \"{2}\"...",
+                currentMethodName,
+                _maxPlyDepth,
+                board.GetFen());
 
             var transpositionTable = new SimpleTranspositionTable(10000000);
 
