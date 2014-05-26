@@ -27,10 +27,11 @@ namespace ChessPlatform.Tests
             stopwatch.Stop();
 
             Console.WriteLine(
-                @"[{0}] GetMove took {1} (move {2}).",
+                @"[{0}] GetMove took {1} (move {2}, max ply depth {3}).",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 stopwatch.Elapsed,
-                move);
+                move,
+                player.MaxPlyDepth);
 
             Assert.That(move, Is.Not.Null);
         }
