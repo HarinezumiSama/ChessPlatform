@@ -29,13 +29,7 @@ namespace ChessPlatform.ComputerPlayers
             CreatePieceToPositionWeightMap();
 
         private static readonly Lazy<OpeningBook> GlobalOpeningBook = Lazy.Create(
-            () =>
-            {
-                using (var reader = new StringReader(Resources.OpeningBook))
-                {
-                    return new OpeningBook(reader);
-                }
-            },
+            InitializeGlobalOpeningBook,
             LazyThreadSafetyMode.ExecutionAndPublication);
 
         private readonly int _maxPlyDepth;
@@ -104,6 +98,30 @@ namespace ChessPlatform.ComputerPlayers
         #endregion
 
         #region Private Methods
+
+        private static OpeningBook InitializeGlobalOpeningBook()
+        {
+            OpeningBook openingBook;
+
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            Trace.TraceInformation("[{0}] Initializing the opening book...", currentMethodName);
+
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = new StringReader(Resources.OpeningBook))
+            {
+                openingBook = new OpeningBook(reader);
+            }
+
+            stopwatch.Stop();
+
+            Trace.TraceInformation(
+                "[{0}] The opening book has been initialized in {1}.",
+                currentMethodName,
+                stopwatch.Elapsed);
+
+            return openingBook;
+        }
 
         private static Dictionary<PieceType, int> CreatePieceTypeToMaterialWeightMap()
         {
@@ -318,6 +336,7 @@ namespace ChessPlatform.ComputerPlayers
         {
             return board
                 .ValidMoves
+                .Keys
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
                 .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
                 .ThenBy(move => move.From.SquareIndex)
@@ -468,6 +487,7 @@ namespace ChessPlatform.ComputerPlayers
 
             var mateMoves = board
                 .ValidMoves
+                .Keys
                 .AsParallel()
                 .WithCancellation(cancellationToken)
                 .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
@@ -493,7 +513,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (board.ValidMoves.Count == 1)
             {
-                return board.ValidMoves.Single();
+                return board.ValidMoves.Keys.Single();
             }
 
             if (_openingBook != null)

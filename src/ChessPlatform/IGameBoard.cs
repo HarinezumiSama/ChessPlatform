@@ -34,7 +34,7 @@ namespace ChessPlatform
         }
 
         [NotNull]
-        ReadOnlySet<PieceMove> ValidMoves
+        ReadOnlyDictionary<PieceMove, PieceMoveInfo> ValidMoves
         {
             [DebuggerStepThrough]
             get;
@@ -84,7 +84,9 @@ namespace ChessPlatform
 
         bool IsValidMove([NotNull] PieceMove move);
 
-        bool IsPawnPromotion([NotNull] PieceMove move);
+        bool IsPawnPromotionMove([NotNull] PieceMove move);
+
+        bool IsCapturingMove([NotNull] PieceMove move);
 
         [CanBeNull]
         CastlingInfo CheckCastlingMove([NotNull] PieceMove move);

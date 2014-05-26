@@ -309,7 +309,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void MakeMove(PieceMove move)
         {
-            var isPawnPromotion = this.ViewModel.CurrentGameBoard.IsPawnPromotion(move);
+            var isPawnPromotion = this.ViewModel.CurrentGameBoard.IsPawnPromotionMove(move);
             if (isPawnPromotion)
             {
                 move = move.MakePromotion(ChessHelper.DefaultPromotion);

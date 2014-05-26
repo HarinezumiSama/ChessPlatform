@@ -53,12 +53,13 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             var result = string.Format(
                 culture,
-                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}",
+                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}. Auto draw: {5}",
                 gameBoard.FullMoveIndex,
                 gameBoard.ActiveColor,
                 gameBoard.State,
                 gameBoard.ValidMoves.Count,
-                gameBoard.ResultString);
+                gameBoard.ResultString,
+                gameBoard.GetAutoDrawType());
 
             return result;
         }

@@ -212,7 +212,7 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            Assert.That(gameBoard.ValidMoves.Contains("f4-e3"), Is.False);
+            Assert.That(gameBoard.ValidMoves.Keys.Contains("f4-e3"), Is.False);
             Assert.That(gameBoard.ValidMoves.Count, Is.EqualTo(16));
         }
 

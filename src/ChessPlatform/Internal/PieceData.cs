@@ -138,29 +138,24 @@ namespace ChessPlatform.Internal
             return new EnPassantCaptureInfo(capturePosition, targetPiecePosition);
         }
 
-        public bool IsEnPassantCapture(PieceMove move, EnPassantCaptureInfo enPassantCaptureInfo)
+        public bool IsEnPassantCapture(
+            Position source,
+            Position destination,
+            EnPassantCaptureInfo enPassantCaptureInfo)
         {
-            #region Argument Check
-
-            if (move == null)
+            if (enPassantCaptureInfo == null || enPassantCaptureInfo.CapturePosition != destination)
             {
-                throw new ArgumentNullException("move");
+                return false;
             }
 
-            #endregion
-
-            if (enPassantCaptureInfo == null)
+            var pieceInfo = GetPieceInfo(source);
+            if (pieceInfo.PieceType != PieceType.Pawn)
             {
                 return false;
             }
 
             var targetPieceInfo = GetPieceInfo(enPassantCaptureInfo.TargetPiecePosition);
-            var pieceInfo = GetPieceInfo(move.From);
-
-            var result = pieceInfo.PieceType == PieceType.Pawn && targetPieceInfo.PieceType == PieceType.Pawn
-                && enPassantCaptureInfo.CapturePosition == move.To;
-
-            return result;
+            return targetPieceInfo.PieceType == PieceType.Pawn;
         }
 
         public bool IsPawnPromotion(Position from, Position to)
@@ -171,20 +166,6 @@ namespace ChessPlatform.Internal
                 && to.Rank == ChessHelper.ColorToPawnPromotionRankMap[pieceInfo.Color.Value];
 
             return result;
-        }
-
-        public bool IsPawnPromotion(PieceMove move)
-        {
-            #region Argument Check
-
-            if (move == null)
-            {
-                throw new ArgumentNullException("move");
-            }
-
-            #endregion
-
-            return IsPawnPromotion(move.From, move.To);
         }
 
         public CastlingInfo CheckCastlingMove(PieceMove move)
@@ -537,8 +518,8 @@ namespace ChessPlatform.Internal
 
             // Performing checks before actual move!
             var castlingInfo = CheckCastlingMove(move);
-            var isEnPassantCapture = IsEnPassantCapture(move, enPassantCaptureInfo);
-            var isPawnPromotion = IsPawnPromotion(move);
+            var isEnPassantCapture = IsEnPassantCapture(move.From, move.To, enPassantCaptureInfo);
+            var isPawnPromotion = IsPawnPromotion(move.From, move.To);
 
             var moveData = MovePieceInternal(move);
             var capturedPiece = moveData.CapturedPiece;

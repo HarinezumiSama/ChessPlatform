@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -58,7 +58,7 @@ namespace ChessPlatform.Tests
             Assert.That(gameBoard, Is.Not.Null);
             Assert.That(expectedValidMoves, Is.Not.Null);
 
-            var actualValidMoves = gameBoard.ValidMoves.OrderBy(move => move.ToString()).ToArray();
+            var actualValidMoves = gameBoard.ValidMoves.Keys.OrderBy(move => move.ToString()).ToArray();
             var expectedValidMovesSorted = expectedValidMoves.OrderBy(move => move.ToString()).ToArray();
 
             Assert.That(actualValidMoves, Is.EquivalentTo(expectedValidMovesSorted));

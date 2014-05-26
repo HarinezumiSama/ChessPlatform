@@ -19,7 +19,7 @@ namespace ChessPlatform
         private readonly GameState _state;
         private readonly CastlingOptions _castlingOptions;
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
-        private readonly ReadOnlySet<PieceMove> _validMoves;
+        private readonly ReadOnlyDictionary<PieceMove, PieceMoveInfo> _validMoves;
         private readonly int _halfMoveCountBy50MoveRule;
         private readonly int _fullMoveIndex;
         private readonly PieceMove _previousMove;
@@ -96,7 +96,7 @@ namespace ChessPlatform
                 throw new ArgumentNullException("move");
             }
 
-            if (!previous._validMoves.Contains(move))
+            if (!previous._validMoves.ContainsKey(move))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
@@ -181,7 +181,7 @@ namespace ChessPlatform
             }
         }
 
-        public ReadOnlySet<PieceMove> ValidMoves
+        public ReadOnlyDictionary<PieceMove, PieceMoveInfo> ValidMoves
         {
             [DebuggerStepThrough]
             get
@@ -344,10 +344,10 @@ namespace ChessPlatform
 
             #endregion
 
-            return this.ValidMoves.Contains(move);
+            return _validMoves.ContainsKey(move);
         }
 
-        public bool IsPawnPromotion(PieceMove move)
+        public bool IsPawnPromotionMove(PieceMove move)
         {
             #region Argument Check
 
@@ -358,7 +358,45 @@ namespace ChessPlatform
 
             #endregion
 
-            return _pieceData.IsPawnPromotion(move);
+            var pieceMoveInfo = _validMoves.GetValueOrDefault(move);
+            if (pieceMoveInfo != null)
+            {
+                return pieceMoveInfo.IsPawnPromotion;
+            }
+
+            var result = _pieceData.IsPawnPromotion(move.From, move.To);
+            return result;
+        }
+
+        public bool IsCapturingMove(PieceMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            var pieceMoveInfo = _validMoves.GetValueOrDefault(move);
+            if (pieceMoveInfo != null)
+            {
+                return pieceMoveInfo.IsCapture;
+            }
+
+            if (_pieceData.IsEnPassantCapture(move.From, move.To, _enPassantCaptureInfo))
+            {
+                return true;
+            }
+
+            var sourcePieceInfo = GetPieceInfo(move.From);
+            var destinationPieceInfo = GetPieceInfo(move.To);
+
+            var result = sourcePieceInfo.Color == _activeColor
+                && destinationPieceInfo.Color == _activeColor.Invert();
+
+            return result;
         }
 
         public CastlingInfo CheckCastlingMove(PieceMove move)
@@ -372,7 +410,7 @@ namespace ChessPlatform
 
             #endregion
 
-            return this.ValidMoves.Contains(move) ? _pieceData.CheckCastlingMove(move) : null;
+            return this.ValidMoves.ContainsKey(move) ? _pieceData.CheckCastlingMove(move) : null;
         }
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
@@ -382,12 +420,12 @@ namespace ChessPlatform
 
         public PieceMove[] GetValidMovesBySource(Position sourcePosition)
         {
-            return this.ValidMoves.Where(move => move.From == sourcePosition).ToArray();
+            return this.ValidMoves.Keys.Where(move => move.From == sourcePosition).ToArray();
         }
 
         public PieceMove[] GetValidMovesByDestination(Position destinationPosition)
         {
-            return this.ValidMoves.Where(move => move.To == destinationPosition).ToArray();
+            return this.ValidMoves.Keys.Where(move => move.To == destinationPosition).ToArray();
         }
 
         public AutoDrawType GetAutoDrawType()
@@ -483,7 +521,9 @@ namespace ChessPlatform
             //// TODO [vmcl] (*) No pawns at invalid ranks, (*) etc.
         }
 
-        private void InitializeValidMovesAndState(out HashSet<PieceMove> validMoves, out GameState state)
+        private void InitializeValidMovesAndState(
+            out Dictionary<PieceMove, PieceMoveInfo> validMoves,
+            out GameState state)
         {
             var activeKing = PieceType.King.ToPiece(_activeColor);
             var activeKingPosition = _pieceData.GetPiecePositions(activeKing).Single();
@@ -505,11 +545,11 @@ namespace ChessPlatform
                     return !found || ((bitboard & targetPosition.Bitboard) == targetPosition.Bitboard);
                 };
 
-            validMoves = new HashSet<PieceMove>();
-            var validMoveReference = validMoves;
+            validMoves = new Dictionary<PieceMove, PieceMoveInfo>();
+            var validMovesReference = validMoves;
 
-            Action<Position, Position, Func<PieceMove, bool>> addBasicMove =
-                (sourcePosition, targetPosition, checkMove) =>
+            Action<Position, Position, bool, Func<PieceMove, bool>> addBasicMove =
+                (sourcePosition, targetPosition, isCapturing, checkMove) =>
                 {
                     var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, targetPosition);
                     var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
@@ -520,11 +560,24 @@ namespace ChessPlatform
                         return;
                     }
 
-                    validMoveReference.Add(basicMove);
+                    var moveFlags = PieceMoveFlags.None;
+                    if (isPawnPromotion)
+                    {
+                        moveFlags |= PieceMoveFlags.IsPawnPromotion;
+                    }
+
+                    if (isCapturing)
+                    {
+                        moveFlags |= PieceMoveFlags.IsCapture;
+                    }
+
+                    var pieceMoveInfo = new PieceMoveInfo(moveFlags);
+                    validMovesReference.Add(basicMove, pieceMoveInfo);
 
                     if (isPawnPromotion)
                     {
-                        validMoveReference.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
+                        ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion).DoForEach(
+                            move => validMovesReference.Add(move, pieceMoveInfo));
                     }
                 };
 
@@ -551,9 +604,19 @@ namespace ChessPlatform
                             || _pieceData
                                 .CheckCastlingMove(move)
                                 .Morph(info => !_pieceData.IsUnderAttack(info.PassedPosition, oppositeColor), true))
+                .Select(
+                    move =>
+                        new
+                        {
+                            Move = move,
+                            Flags = _pieceData[move.To] == Piece.None ? PieceMoveFlags.None : PieceMoveFlags.IsCapture
+                        })
                 .ToArray();
 
-            validMoveReference.AddRange(activeKingMoves);
+            foreach (var activeKingMove in activeKingMoves)
+            {
+                validMovesReference.Add(activeKingMove.Move, new PieceMoveInfo(activeKingMove.Flags));
+            }
 
             if (isInCheck)
             {
@@ -571,7 +634,7 @@ namespace ChessPlatform
                         .ToArray();
 
                     capturingSourcePositions.DoForEach(
-                        sourcePosition => addBasicMove(sourcePosition, checkAttackPosition, null));
+                        sourcePosition => addBasicMove(sourcePosition, checkAttackPosition, true, null));
 
                     if (_enPassantCaptureInfo != null
                         && _enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
@@ -592,7 +655,7 @@ namespace ChessPlatform
 
                             if (canCapture && isValidMoveByPinning(activePawnPosition, capturePosition))
                             {
-                                addBasicMove(activePawnPosition, capturePosition, null);
+                                addBasicMove(activePawnPosition, capturePosition, true, null);
                             }
                         }
                     }
@@ -602,21 +665,27 @@ namespace ChessPlatform
                         var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
                         var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
 
-                        var moves = activePieceNoKingPositions.Value
-                            .SelectMany(
-                                sourcePosition => _pieceData
-                                    .GetPotentialMovePositions(
-                                        _castlingOptions,
-                                        _enPassantCaptureInfo,
-                                        sourcePosition)
-                                    .Where(
-                                        targetPosition =>
-                                            !(targetPosition.Bitboard & positionBridge).IsZero()
-                                                && isValidMoveByPinning(sourcePosition, targetPosition))
-                                    .Select(targetPosition => new PieceMove(sourcePosition, targetPosition)))
-                            .ToArray();
+                        if (!positionBridge.IsZero())
+                        {
+                            var moves = activePieceNoKingPositions.Value
+                                .SelectMany(
+                                    sourcePosition => _pieceData
+                                        .GetPotentialMovePositions(
+                                            _castlingOptions,
+                                            _enPassantCaptureInfo,
+                                            sourcePosition)
+                                        .Where(
+                                            targetPosition =>
+                                                !(targetPosition.Bitboard & positionBridge).IsZero()
+                                                    && isValidMoveByPinning(sourcePosition, targetPosition))
+                                        .Select(targetPosition => new PieceMove(sourcePosition, targetPosition)))
+                                .ToArray();
 
-                        validMoveReference.AddRange(moves);
+                            foreach (var move in moves)
+                            {
+                                addBasicMove(move.From, move.To, false, null);
+                            }
+                        }
                     }
                 }
 
@@ -640,17 +709,18 @@ namespace ChessPlatform
 
                 foreach (var destinationPosition in filteredDestinationPositions)
                 {
-                    var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, destinationPosition);
-                    var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
-                    var basicMove = new PieceMove(sourcePosition, destinationPosition, promotionResult);
-
-                    var isEnPassantCapture = _pieceData.IsEnPassantCapture(basicMove, _enPassantCaptureInfo);
+                    var isEnPassantCapture = _pieceData.IsEnPassantCapture(
+                        sourcePosition,
+                        destinationPosition,
+                        _enPassantCaptureInfo);
                     if (isEnPassantCapture)
                     {
                         var temporaryCastlingOptions = _castlingOptions;
 
+                        var move = new PieceMove(sourcePosition, destinationPosition);
+
                         _pieceData.MakeMove(
-                            basicMove,
+                            move,
                             _activeColor,
                             _enPassantCaptureInfo,
                             ref temporaryCastlingOptions);
@@ -664,12 +734,11 @@ namespace ChessPlatform
                         }
                     }
 
-                    validMoveReference.Add(basicMove);
-
-                    if (isPawnPromotion)
-                    {
-                        validMoveReference.AddRange(ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion));
-                    }
+                    addBasicMove(
+                        sourcePosition,
+                        destinationPosition,
+                        isEnPassantCapture || _pieceData[destinationPosition] != Piece.None,
+                        null);
                 }
             }
 
@@ -700,15 +769,15 @@ namespace ChessPlatform
         }
 
         private void FinishInitialization(
-            out ReadOnlySet<PieceMove> validMoves,
+            out ReadOnlyDictionary<PieceMove, PieceMoveInfo> validMoves,
             out GameState state,
             out string resultString)
         {
             Validate();
 
-            HashSet<PieceMove> validMoveSet;
-            InitializeValidMovesAndState(out validMoveSet, out state);
-            validMoves = validMoveSet.AsReadOnly();
+            Dictionary<PieceMove, PieceMoveInfo> validMoveMap;
+            InitializeValidMovesAndState(out validMoveMap, out state);
+            validMoves = validMoveMap.AsReadOnly();
 
             InitializeResultString(out resultString);
         }
@@ -870,7 +939,7 @@ namespace ChessPlatform
                 return;
             }
 
-            var moves = gameBoard.ValidMoves;
+            var moves = gameBoard.ValidMoves.Keys;
             if (depth == 1 && !includeExtraCountTypes && !includeDivideMap)
             {
                 perftData.NodeCount += checked((ulong)moves.Count);
