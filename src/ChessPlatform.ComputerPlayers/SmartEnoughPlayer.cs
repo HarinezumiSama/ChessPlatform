@@ -83,13 +83,14 @@ namespace ChessPlatform.ComputerPlayers
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                "[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}, size {5}}}, for \"{6}\".",
+                @"[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}, size {5}/{6}}}, for ""{7}"".",
                 currentMethodName,
                 result,
                 stopwatch.Elapsed,
                 transpositionTable.HitCount,
                 transpositionTable.MissCount,
                 transpositionTable.ItemCount,
+                transpositionTable.MaximumItemCount,
                 board.GetFen());
 
             return result.EnsureNotNull();
@@ -334,15 +335,31 @@ namespace ChessPlatform.ComputerPlayers
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private static PieceMove[] OrderMoves([NotNull] IGameBoard board)
         {
-            return board
+            var capturingMoves = board
                 .ValidMoves
-                .Keys
+                .Where(pair => pair.Value.IsCapture)
+                .Select(pair => pair.Key)
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
                 .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .ThenBy(move => move.PromotionResult)
                 .ThenBy(move => move.From.SquareIndex)
                 .ThenBy(move => move.To.SquareIndex)
-                .ThenBy(move => move.PromotionResult)
                 .ToArray();
+
+            var nonCapturingMoves = board
+                .ValidMoves
+                .Where(pair => !pair.Value.IsCapture)
+                .Select(pair => pair.Key)
+                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .ThenBy(move => move.PromotionResult)
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ToArray();
+
+            var result = capturingMoves.Concat(nonCapturingMoves).ToArray();
+            return result;
         }
 
         private static int EvaluateMaterialAndItsPositionByColor([NotNull] IGameBoard board, PieceColor color)
@@ -615,28 +632,28 @@ namespace ChessPlatform.ComputerPlayers
             /// <summary>
             ///     Initializes a new instance of the <see cref="SimpleTranspositionTable"/> class.
             /// </summary>
-            internal SimpleTranspositionTable(int maximumEntryCount)
+            internal SimpleTranspositionTable(int maximumItemCount)
             {
                 #region Argument Check
 
-                if (maximumEntryCount <= 0)
+                if (maximumItemCount <= 0)
                 {
                     throw new ArgumentOutOfRangeException(
-                        "maximumEntryCount",
-                        maximumEntryCount,
+                        "maximumItemCount",
+                        maximumItemCount,
                         @"The value must be positive.");
                 }
 
                 #endregion
 
-                this.MaximumEntryCount = maximumEntryCount;
+                this.MaximumItemCount = maximumItemCount;
             }
 
             #endregion
 
             #region Public Properties
 
-            public int MaximumEntryCount
+            public int MaximumItemCount
             {
                 get;
                 private set;
@@ -702,7 +719,7 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
-                if (_scoreMap.Count >= this.MaximumEntryCount)
+                if (_scoreMap.Count >= this.MaximumItemCount)
                 {
                     return;
                 }
@@ -710,12 +727,12 @@ namespace ChessPlatform.ComputerPlayers
                 var key = GetKey(board, plyDepth);
                 _scoreMap.Add(key, score);
 
-                if (_scoreMap.Count >= this.MaximumEntryCount)
+                if (_scoreMap.Count >= this.MaximumItemCount)
                 {
                     Trace.TraceWarning(
                         "[{0}] Maximum entry count has been reached ({1}).",
                         MethodBase.GetCurrentMethod().GetQualifiedName(),
-                        this.MaximumEntryCount);
+                        this.MaximumItemCount);
                 }
             }
 

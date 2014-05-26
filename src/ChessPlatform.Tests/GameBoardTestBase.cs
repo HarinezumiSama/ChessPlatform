@@ -62,6 +62,17 @@ namespace ChessPlatform.Tests
             var expectedValidMovesSorted = expectedValidMoves.OrderBy(move => move.ToString()).ToArray();
 
             Assert.That(actualValidMoves, Is.EquivalentTo(expectedValidMovesSorted));
+
+            foreach (var actualValidMove in actualValidMoves)
+            {
+                Assert.That(
+                    gameBoard.ValidMoves[actualValidMove].IsCapture,
+                    Is.EqualTo(gameBoard.IsCapturingMove(actualValidMove)));
+
+                Assert.That(
+                    gameBoard.ValidMoves[actualValidMove].IsPawnPromotion,
+                    Is.EqualTo(gameBoard.IsPawnPromotionMove(actualValidMove)));
+            }
         }
 
         protected static void AssertValidMoves(GameBoard gameBoard, IEnumerable<PieceMove> expectedValidMoves)
