@@ -595,10 +595,13 @@ namespace ChessPlatform.ComputerPlayers
             PieceMove bestMove = null;
             var bestMoveLocalScore = int.MinValue;
             var alpha = RootAlpha;
+            var stopwatch = new Stopwatch();
 
             foreach (var move in orderedMoves)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                stopwatch.Restart();
 
                 var currentBoard = board.MakeMove(move);
                 var localScore = -EvaluatePositionScore(currentBoard);
@@ -611,14 +614,24 @@ namespace ChessPlatform.ComputerPlayers
                     cancellationToken,
                     transpositionTable);
 
-                Trace.TraceInformation("[{0}] Move {1}: {2} (local {3})", currentMethodName, move, score, localScore);
+                stopwatch.Stop();
 
-                if (score > alpha)
+                Trace.TraceInformation(
+                    "[{0}] Move {1}: {2} (local {3}). Time spent: {4}",
+                    currentMethodName,
+                    move,
+                    score,
+                    localScore,
+                    stopwatch.Elapsed);
+
+                if (score <= alpha)
                 {
-                    alpha = score;
-                    bestMove = move;
-                    bestMoveLocalScore = localScore;
+                    continue;
                 }
+
+                alpha = score;
+                bestMove = move;
+                bestMoveLocalScore = localScore;
             }
 
             Trace.TraceInformation(
