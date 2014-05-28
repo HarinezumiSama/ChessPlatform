@@ -75,6 +75,7 @@
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="Internal\MovePieceData.cs" />
+    <Compile Include="Internal\PieceDictionaryHelper.cs" />
     <Compile Include="Internal\PieceMoveFlags.cs" />
     <Compile Include="PackedGameBoard.cs" />
     <Compile Include="PerftFlags.cs" />

@@ -2,16 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Omnifactotum;
 
 namespace ChessPlatform.Internal
 {
     internal sealed class PieceDictionary<TValue> : IDictionary<Piece, TValue>
     {
         #region Constants and Fields
-
-        // ReSharper disable once StaticFieldInGenericType
-        private static readonly int MaxIndex = EnumFactotum.GetAllValues<Piece>().Max(item => (int)item);
 
         private readonly ValueHolder[] _items;
 
@@ -20,11 +16,9 @@ namespace ChessPlatform.Internal
         #region Constructors
 
         public PieceDictionary()
+            : this(new ValueHolder[PieceDictionaryHelper.Length])
         {
-            _items = new ValueHolder[MaxIndex + 1];
-
-            this.Keys = new KeyCollection(this);
-            this.Values = new ValueCollection(this);
+            // Nothing to do
         }
 
         public PieceDictionary(IEnumerable<KeyValuePair<Piece, TValue>> dictionary)
@@ -43,6 +37,23 @@ namespace ChessPlatform.Internal
             {
                 Add(pair.Key, pair.Value);
             }
+        }
+
+        public PieceDictionary(PieceDictionary<TValue> dictionary)
+            : this(dictionary.EnsureNotNull()._items.Copy())
+        {
+            if (_items.Length != PieceDictionaryHelper.Length)
+            {
+                throw new InvalidOperationException("Invalid item array length in the source dictionary.");
+            }
+        }
+
+        private PieceDictionary(ValueHolder[] items)
+        {
+            _items = items.EnsureNotNull();
+
+            this.Keys = new KeyCollection(this);
+            this.Values = new ValueCollection(this);
         }
 
         #endregion
