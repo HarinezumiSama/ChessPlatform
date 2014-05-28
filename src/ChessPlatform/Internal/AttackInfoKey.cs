@@ -22,7 +22,7 @@ namespace ChessPlatform.Internal
             _targetPosition = targetPosition;
             _attackingColor = attackingColor;
 
-            _hashCode = _attackingColor.CombineHashCodes(_targetPosition);
+            _hashCode = (byte)_attackingColor << 8 | _targetPosition.X88Value;
         }
 
         #endregion

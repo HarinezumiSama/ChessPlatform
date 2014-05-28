@@ -72,7 +72,7 @@ namespace ChessPlatform
             this.To = to;
             this.PromotionResult = promotionResult;
 
-            _hashCode = this.From.CombineHashCodes(this.To).CombineHashCodes(this.PromotionResult);
+            _hashCode = ((byte)this.PromotionResult << 16) | (this.To.X88Value << 8) | this.From.X88Value;
         }
 
         /// <summary>

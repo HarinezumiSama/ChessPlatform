@@ -176,13 +176,8 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var castlingOptions = ChessHelper.ColorToCastlingOptionSetMap[pieceInfo.Color.Value];
 
-            var result = ChessHelper.CastlingOptionToInfoMap
-                .SingleOrDefault(pair => castlingOptions.Contains(pair.Key) && pair.Value.KingMove == move)
-                .Value;
-
-            return result;
+            return ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move);
         }
 
         public Position[] GetAttackingPositions(Position targetPosition, PieceColor attackingColor)

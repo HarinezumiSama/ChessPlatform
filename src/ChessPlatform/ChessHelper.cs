@@ -17,6 +17,9 @@ namespace ChessPlatform
         public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
 
+        public static readonly ReadOnlyDictionary<PieceMove, CastlingInfo> KingMoveToCastlingInfoMap =
+            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();
+
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
             ColorToCastlingOptionSetMap =
                 new ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(

@@ -37,7 +37,7 @@ namespace ChessPlatform.Internal
             _first = first;
             _second = second;
 
-            _hashCode = _first.CombineHashCodes(_second);
+            _hashCode = (_first.X88Value << 8) | second.X88Value;
         }
 
         #endregion

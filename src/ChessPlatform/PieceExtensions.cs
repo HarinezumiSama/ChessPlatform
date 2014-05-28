@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using ChessPlatform.Internal;
-using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -12,24 +11,15 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private static readonly ReadOnlyDictionary<int, PieceColor> PieceToColorMap =
-            ChessConstants
-                .Pieces
-                .Where(item => item != Piece.None)
-                .ToDictionary(item => (int)item, GetColorNonCached)
-                .AsReadOnly();
+        private static readonly PieceDictionary<PieceColor> PieceToColorMap =
+            new PieceDictionary<PieceColor>(
+                ChessConstants.Pieces.Where(item => item != Piece.None).ToDictionary(item => item, GetColorNonCached));
 
-        private static readonly ReadOnlyDictionary<int, PieceType> PieceToPieceTypeMap =
-            ChessConstants
-                .Pieces
-                .ToDictionary(item => (int)item, GetPieceTypeNonCached)
-                .AsReadOnly();
+        private static readonly PieceDictionary<PieceType> PieceToPieceTypeMap =
+            new PieceDictionary<PieceType>(ChessConstants.Pieces.ToDictionary(item => item, GetPieceTypeNonCached));
 
-        private static readonly ReadOnlyDictionary<int, PieceInfo> PieceToPieceInfoMap =
-            ChessConstants
-                .Pieces
-                .ToDictionary(item => (int)item, GetPieceInfoNonCached)
-                .AsReadOnly();
+        private static readonly PieceDictionary<PieceInfo> PieceToPieceInfoMap =
+            new PieceDictionary<PieceInfo>(ChessConstants.Pieces.ToDictionary(item => item, GetPieceInfoNonCached));
 
         #endregion
 
@@ -53,7 +43,7 @@ namespace ChessPlatform
             }
 
             PieceColor result;
-            if (!PieceToColorMap.TryGetValue((int)piece, out result))
+            if (!PieceToColorMap.TryGetValue(piece, out result))
             {
                 throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
             }
@@ -64,7 +54,7 @@ namespace ChessPlatform
         public static PieceType GetPieceType(this Piece piece)
         {
             PieceType result;
-            if (!PieceToPieceTypeMap.TryGetValue((int)piece, out result))
+            if (!PieceToPieceTypeMap.TryGetValue(piece, out result))
             {
                 throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
             }
@@ -75,7 +65,7 @@ namespace ChessPlatform
         public static PieceInfo GetPieceInfo(this Piece piece)
         {
             PieceInfo result;
-            if (!PieceToPieceInfoMap.TryGetValue((int)piece, out result))
+            if (!PieceToPieceInfoMap.TryGetValue(piece, out result))
             {
                 throw new InvalidEnumArgumentException("piece", (int)piece, piece.GetType());
             }

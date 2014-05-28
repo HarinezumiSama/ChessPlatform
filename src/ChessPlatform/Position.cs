@@ -151,7 +151,7 @@ namespace ChessPlatform
 
         public static bool operator ==(Position left, Position right)
         {
-            return EqualityComparer<Position>.Default.Equals(left, right);
+            return Equals(left, right);
         }
 
         public static bool operator !=(Position left, Position right)
@@ -162,6 +162,11 @@ namespace ChessPlatform
         #endregion
 
         #region Public Methods
+
+        public static bool Equals(Position left, Position right)
+        {
+            return left._x88Value == right._x88Value;
+        }
 
         [DebuggerNonUserCode]
         public static Position FromAlgebraic(string algebraicNotation)
@@ -301,7 +306,7 @@ namespace ChessPlatform
 
         public bool Equals(Position other)
         {
-            return other._x88Value == _x88Value;
+            return Equals(other, this);
         }
 
         #endregion
