@@ -19,6 +19,9 @@ namespace ChessPlatform.Tests
         [TestCase(4)]
         [TestCase(5)]
         [TestCase(6, Explicit = true)]
+        [TestCase(7, Explicit = true)]
+        [TestCase(8, Explicit = true)]
+        [TestCase(9, Explicit = true)]
         public void TestPerformanceOfGetMoveForPosition1(int maxPlyDepth)
         {
             var gameBoard = new GameBoard("r1bqkbnr/pppp1ppp/4p3/n7/4P3/3B1N2/PPPP1PPP/RNBQK2R b KQkq - 3 4");
