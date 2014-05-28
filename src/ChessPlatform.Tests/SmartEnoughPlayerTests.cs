@@ -14,11 +14,16 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
-        public void TestPerformanceOfGetMoveForPosition1()
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        [TestCase(6, Explicit = true)]
+        public void TestPerformanceOfGetMoveForPosition1(int maxPlyDepth)
         {
             var gameBoard = new GameBoard("r1bqkbnr/pppp1ppp/4p3/n7/4P3/3B1N2/PPPP1PPP/RNBQK2R b KQkq - 3 4");
 
-            var player = new SmartEnoughPlayer(PieceColor.Black, 4, false);
+            var player = new SmartEnoughPlayer(PieceColor.Black, maxPlyDepth, false);
 
             var stopwatch = Stopwatch.StartNew();
             var task = player.GetMove(gameBoard, CancellationToken.None);
