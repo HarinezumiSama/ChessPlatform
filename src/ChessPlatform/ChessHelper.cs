@@ -153,7 +153,7 @@ namespace ChessPlatform
         internal static readonly ReadOnlySet<Position> AllPawnPositions =
             Enumerable
                 .Range(1, ChessConstants.RankCount - 2)
-                .SelectMany(rank => Position.GenerateRank((byte)rank))
+                .SelectMany(rank => Position.GenerateRank(checked((byte)rank)))
                 .ToHashSet()
                 .AsReadOnly();
 

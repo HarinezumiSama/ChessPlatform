@@ -60,7 +60,10 @@
     <Compile Include="Internal\AttackInfo.cs" />
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
+    <Compile Include="Internal\DoublePushInfo.cs" />
+    <Compile Include="Internal\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />
+    <Compile Include="Internal\DictionaryValueHolder.cs" />
     <Compile Include="Internal\FenCharAttribute.cs" />
     <Compile Include="GameBoard.cs" />
     <Compile Include="CastlingInfo.cs" />

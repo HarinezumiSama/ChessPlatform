@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace ChessPlatform.Internal
 {
-    internal sealed class PieceDictionary<TValue> : IDictionary<Piece, TValue>
+    internal sealed class PositionDictionary<TValue> : IDictionary<Position, TValue>
     {
         #region Constants and Fields
 
@@ -15,13 +15,13 @@ namespace ChessPlatform.Internal
 
         #region Constructors
 
-        public PieceDictionary()
-            : this(new DictionaryValueHolder<TValue>[PieceDictionaryHelper.Length])
+        public PositionDictionary()
+            : this(new DictionaryValueHolder<TValue>[ChessConstants.X88Length])
         {
             // Nothing to do
         }
 
-        public PieceDictionary(IEnumerable<KeyValuePair<Piece, TValue>> dictionary)
+        public PositionDictionary(IEnumerable<KeyValuePair<Position, TValue>> dictionary)
             : this()
         {
             #region Argument Check
@@ -39,7 +39,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public PieceDictionary(PieceDictionary<TValue> dictionary)
+        public PositionDictionary(PositionDictionary<TValue> dictionary)
             : this(dictionary.EnsureNotNull()._items.Copy())
         {
             if (_items.Length != PieceDictionaryHelper.Length)
@@ -48,7 +48,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        private PieceDictionary(DictionaryValueHolder<TValue>[] items)
+        private PositionDictionary(DictionaryValueHolder<TValue>[] items)
         {
             _items = items.EnsureNotNull();
 
@@ -58,9 +58,9 @@ namespace ChessPlatform.Internal
 
         #endregion
 
-        #region IDictionary<Piece, TValue> Members
+        #region IDictionary<Position, TValue> Members
 
-        public ICollection<Piece> Keys
+        public ICollection<Position> Keys
         {
             get;
             private set;
@@ -72,7 +72,7 @@ namespace ChessPlatform.Internal
             private set;
         }
 
-        public TValue this[Piece key]
+        public TValue this[Position key]
         {
             get
             {
@@ -93,7 +93,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public void Add(Piece key, TValue value)
+        public void Add(Position key, TValue value)
         {
             var index = GetIndex(key);
             var item = _items[index];
@@ -105,14 +105,14 @@ namespace ChessPlatform.Internal
             _items[index] = new DictionaryValueHolder<TValue> { IsSet = true, Value = value };
         }
 
-        public bool ContainsKey(Piece key)
+        public bool ContainsKey(Position key)
         {
             var index = GetIndex(key);
             var item = _items[index];
             return item.IsSet;
         }
 
-        public bool Remove(Piece key)
+        public bool Remove(Position key)
         {
             var index = GetIndex(key);
 
@@ -121,7 +121,7 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        public bool TryGetValue(Piece key, out TValue value)
+        public bool TryGetValue(Position key, out TValue value)
         {
             var index = GetIndex(key);
             var item = _items[index];
@@ -133,7 +133,7 @@ namespace ChessPlatform.Internal
 
         #endregion
 
-        #region ICollection<KeyValuePair<Piece, TValue>> Members
+        #region ICollection<KeyValuePair<Position, TValue>> Members
 
         public int Count
         {
@@ -151,7 +151,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        void ICollection<KeyValuePair<Piece, TValue>>.Add(KeyValuePair<Piece, TValue> pair)
+        void ICollection<KeyValuePair<Position, TValue>>.Add(KeyValuePair<Position, TValue> pair)
         {
             Add(pair.Key, pair.Value);
         }
@@ -164,37 +164,37 @@ namespace ChessPlatform.Internal
             }
         }
 
-        bool ICollection<KeyValuePair<Piece, TValue>>.Contains(KeyValuePair<Piece, TValue> pair)
+        bool ICollection<KeyValuePair<Position, TValue>>.Contains(KeyValuePair<Position, TValue> pair)
         {
             TValue value;
             return TryGetValue(pair.Key, out value) && EqualityComparer<TValue>.Default.Equals(value, pair.Value);
         }
 
-        void ICollection<KeyValuePair<Piece, TValue>>.CopyTo(KeyValuePair<Piece, TValue>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<Position, TValue>>.CopyTo(KeyValuePair<Position, TValue>[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }
 
-        bool ICollection<KeyValuePair<Piece, TValue>>.Remove(KeyValuePair<Piece, TValue> pair)
+        bool ICollection<KeyValuePair<Position, TValue>>.Remove(KeyValuePair<Position, TValue> pair)
         {
             throw new NotImplementedException();
         }
 
         #endregion
 
-        #region IEnumerable<KeyValuePair<Piece,TValue>> Members
+        #region IEnumerable<KeyValuePair<Position, TValue>> Members
 
-        public IEnumerator<KeyValuePair<Piece, TValue>> GetEnumerator()
+        public IEnumerator<KeyValuePair<Position, TValue>> GetEnumerator()
         {
             // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var piece in ChessConstants.Pieces)
+            foreach (var position in ChessHelper.AllPositions)
             {
-                var index = GetIndex(piece);
+                var index = GetIndex(position);
                 var item = _items[index];
 
                 if (item.IsSet)
                 {
-                    yield return new KeyValuePair<Piece, TValue>(piece, item.Value);
+                    yield return new KeyValuePair<Position, TValue>(position, item.Value);
                 }
             }
         }
@@ -212,33 +212,33 @@ namespace ChessPlatform.Internal
 
         #region Private Methods
 
-        private static int GetIndex(Piece key)
+        private static int GetIndex(Position key)
         {
-            return (int)key;
+            return key.X88Value;
         }
 
         #endregion
 
         #region KeyCollection Class
 
-        private sealed class KeyCollection : ICollection<Piece>
+        private sealed class KeyCollection : ICollection<Position>
         {
             #region Constants and Fields
 
-            private readonly PieceDictionary<TValue> _dictionary;
+            private readonly PositionDictionary<TValue> _dictionary;
 
             #endregion
 
             #region Constructors
 
-            internal KeyCollection(PieceDictionary<TValue> dictionary)
+            internal KeyCollection(PositionDictionary<TValue> dictionary)
             {
                 _dictionary = dictionary.EnsureNotNull();
             }
 
             #endregion
 
-            #region ICollection<Piece> Members
+            #region ICollection<Position> Members
 
             public int Count
             {
@@ -256,7 +256,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            public void Add(Piece item)
+            public void Add(Position item)
             {
                 throw new NotSupportedException();
             }
@@ -266,12 +266,12 @@ namespace ChessPlatform.Internal
                 throw new NotSupportedException();
             }
 
-            public bool Contains(Piece item)
+            public bool Contains(Position item)
             {
                 throw new NotImplementedException();
             }
 
-            public void CopyTo(Piece[] array, int arrayIndex)
+            public void CopyTo(Position[] array, int arrayIndex)
             {
                 var index = arrayIndex;
                 foreach (var item in this)
@@ -280,16 +280,16 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            public bool Remove(Piece item)
+            public bool Remove(Position item)
             {
                 throw new NotSupportedException();
             }
 
             #endregion
 
-            #region IEnumerable<Piece> Members
+            #region IEnumerable<Position> Members
 
-            public IEnumerator<Piece> GetEnumerator()
+            public IEnumerator<Position> GetEnumerator()
             {
                 return _dictionary.Select(pair => pair.Key).GetEnumerator();
             }
@@ -314,13 +314,13 @@ namespace ChessPlatform.Internal
         {
             #region Constants and Fields
 
-            private readonly PieceDictionary<TValue> _dictionary;
+            private readonly PositionDictionary<TValue> _dictionary;
 
             #endregion
 
             #region Constructors
 
-            internal ValueCollection(PieceDictionary<TValue> dictionary)
+            internal ValueCollection(PositionDictionary<TValue> dictionary)
             {
                 _dictionary = dictionary.EnsureNotNull();
             }
