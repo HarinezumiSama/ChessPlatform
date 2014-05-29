@@ -25,13 +25,7 @@ namespace ChessPlatform.Internal
             InitializePawnAttackMoveMap();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
-
-        private readonly PieceDictionary<Bitboard> _bitboards =
-            new PieceDictionary<Bitboard>(
-                ChessConstants.Pieces.ToDictionary(
-                    Factotum.Identity,
-                    item => new Bitboard(item == Piece.None ? -1L : 0L)));
-
+        private readonly PieceDictionary<Bitboard> _bitboards;
         private readonly Piece[] _pieces;
 
         #endregion
@@ -43,6 +37,11 @@ namespace ChessPlatform.Internal
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
             _pieces = new Piece[ChessConstants.X88Length];
+
+            _bitboards = new PieceDictionary<Bitboard>(
+                ChessConstants.Pieces.ToDictionary(
+                    Factotum.Identity,
+                    item => new Bitboard(item == Piece.None ? -1L : 0L)));
         }
 
         private PieceData(PieceData other)
