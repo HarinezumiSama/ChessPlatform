@@ -9,17 +9,25 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="PieceMoveInfo"/> class.
+        ///     Initializes a new instance of the <see cref="PieceMoveInfo"/> class
+        ///     using the specified flags.
         /// </summary>
         internal PieceMoveInfo(PieceMoveFlags flags)
         {
-            this.IsCapture = (flags & PieceMoveFlags.IsCapture) != 0;
             this.IsPawnPromotion = (flags & PieceMoveFlags.IsPawnPromotion) != 0;
+            this.IsCapture = (flags & (PieceMoveFlags.IsCapture | PieceMoveFlags.IsEnPassantCapture)) != 0;
+            this.IsEnPassantCapture = (flags & PieceMoveFlags.IsEnPassantCapture) != 0;
         }
 
         #endregion
 
         #region Public Properties
+
+        public bool IsPawnPromotion
+        {
+            get;
+            private set;
+        }
 
         public bool IsCapture
         {
@@ -27,7 +35,7 @@ namespace ChessPlatform
             private set;
         }
 
-        public bool IsPawnPromotion
+        public bool IsEnPassantCapture
         {
             get;
             private set;

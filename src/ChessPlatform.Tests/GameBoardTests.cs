@@ -390,6 +390,39 @@ namespace ChessPlatform.Tests
             CollectionAssert.AreEqual(expectedPieces, packedGameBoard.GetPieces());
         }
 
+        [Test]
+        public void TestMakeNullMove()
+        {
+            const string Fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
+
+            Assert.That(gameBoard.CanMakeNullMove, Is.True);
+            var nullMoveGameBoard = gameBoard.MakeNullMove();
+
+            AssertBaseProperties(
+                nullMoveGameBoard,
+                PieceColor.Black,
+                CastlingOptions.All,
+                null,
+                0,
+                1,
+                GameState.Default);
+
+            Assert.That(nullMoveGameBoard.CanMakeNullMove, Is.True);
+            var doubleNullMoveGameBoard = nullMoveGameBoard.MakeNullMove();
+
+            AssertBaseProperties(
+                doubleNullMoveGameBoard,
+                gameBoard.ActiveColor,
+                gameBoard.CastlingOptions,
+                gameBoard.EnPassantCaptureInfo,
+                gameBoard.HalfMoveCountBy50MoveRule,
+                gameBoard.FullMoveIndex,
+                GameState.Default);
+
+            Assert.That(doubleNullMoveGameBoard.GetFen(), Is.EqualTo(gameBoard.GetFen()));
+        }
+
         #endregion
 
         #region Private Methods

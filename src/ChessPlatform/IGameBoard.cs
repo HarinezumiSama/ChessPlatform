@@ -10,58 +10,54 @@ namespace ChessPlatform
 
         PieceColor ActiveColor
         {
-            [DebuggerStepThrough]
             get;
         }
 
         GameState State
         {
-            [DebuggerStepThrough]
             get;
         }
 
         CastlingOptions CastlingOptions
         {
-            [DebuggerStepThrough]
             get;
         }
 
         [CanBeNull]
         EnPassantCaptureInfo EnPassantCaptureInfo
         {
-            [DebuggerStepThrough]
             get;
         }
 
         [NotNull]
         ReadOnlyDictionary<PieceMove, PieceMoveInfo> ValidMoves
         {
-            [DebuggerStepThrough]
             get;
         }
 
         int FullMoveCountBy50MoveRule
         {
-            [DebuggerStepThrough]
             get;
         }
 
         int FullMoveIndex
         {
-            [DebuggerStepThrough]
             get;
         }
 
         [CanBeNull]
         PieceMove PreviousMove
         {
-            [DebuggerStepThrough]
             get;
         }
 
         Piece LastCapturedPiece
         {
-            [DebuggerStepThrough]
+            get;
+        }
+
+        bool CanMakeNullMove
+        {
             get;
         }
 
@@ -106,6 +102,9 @@ namespace ChessPlatform
 
         [NotNull]
         IGameBoard MakeMove([NotNull] PieceMove move);
+
+        [NotNull]
+        IGameBoard MakeNullMove();
 
         #endregion
     }

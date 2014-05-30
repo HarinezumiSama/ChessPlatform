@@ -107,25 +107,13 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="GameBoard"/> class
         ///     using the specified previous state and specified move.
         /// </summary>
-        private GameBoard([NotNull] GameBoard previous, [NotNull] PieceMove move)
+        private GameBoard([NotNull] GameBoard previous, [CanBeNull] PieceMove move)
         {
             #region Argument Check
 
             if (previous == null)
             {
                 throw new ArgumentNullException("previous");
-            }
-
-            if (move == null)
-            {
-                throw new ArgumentNullException("move");
-            }
-
-            if (!previous._validMoves.ContainsKey(move))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
-                    "move");
             }
 
             #endregion
@@ -135,21 +123,32 @@ namespace ChessPlatform
             _activeColor = previous._activeColor.Invert();
             _castlingOptions = previous._castlingOptions;
 
-            _fullMoveIndex = previous._fullMoveIndex + (_activeColor == PieceColor.White ? 1 : 0);
-            _enPassantCaptureInfo = _pieceData.GetEnPassantCaptureInfo(move);
+            _fullMoveIndex = previous._fullMoveIndex + (move != null && _activeColor == PieceColor.White ? 1 : 0);
 
-            var makeMoveData = _pieceData.MakeMove(
-                move,
-                previous._activeColor,
-                previous._enPassantCaptureInfo,
-                ref _castlingOptions);
+            if (move == null)
+            {
+                _enPassantCaptureInfo = previous._enPassantCaptureInfo;
+                _previousMove = previous._previousMove;
+                _lastCapturedPiece = previous._lastCapturedPiece;
+                _halfMoveCountBy50MoveRule = previous._halfMoveCountBy50MoveRule;
+            }
+            else
+            {
+                _enPassantCaptureInfo = _pieceData.GetEnPassantCaptureInfo(move);
 
-            _previousMove = makeMoveData.Move;
-            _lastCapturedPiece = makeMoveData.CapturedPiece;
+                var makeMoveData = _pieceData.MakeMove(
+                    move,
+                    previous._activeColor,
+                    previous._enPassantCaptureInfo,
+                    ref _castlingOptions);
 
-            _halfMoveCountBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
-                ? previous._halfMoveCountBy50MoveRule + 1
-                : 0;
+                _previousMove = makeMoveData.Move;
+                _lastCapturedPiece = makeMoveData.CapturedPiece;
+
+                _halfMoveCountBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
+                    ? previous._halfMoveCountBy50MoveRule + 1
+                    : 0;
+            }
 
             FinishInitialization(false, out _validMoves, out _state, out _resultString);
         }
@@ -169,7 +168,7 @@ namespace ChessPlatform
 
         #endregion
 
-        #region IGameBoard Members
+        #region IGameBoard Members: Properties
 
         public PieceColor ActiveColor
         {
@@ -252,6 +251,14 @@ namespace ChessPlatform
             }
         }
 
+        public bool CanMakeNullMove
+        {
+            get
+            {
+                return !_state.IsAnyCheck();
+            }
+        }
+
         public Piece this[Position position]
         {
             get
@@ -323,12 +330,38 @@ namespace ChessPlatform
 
         public GameBoard MakeMove([NotNull] PieceMove move)
         {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            if (!_validMoves.ContainsKey(move))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
+                    "move");
+            }
+
+            #endregion
+
             return new GameBoard(this, move);
+        }
+
+        public GameBoard MakeNullMove()
+        {
+            if (!this.CanMakeNullMove)
+            {
+                throw new InvalidOperationException(@"The null move is not allowed.");
+            }
+
+            return new GameBoard(this, null);
         }
 
         #endregion
 
-        #region IGameBoard Members
+        #region IGameBoard Members: Methods
 
         public string GetFen()
         {
@@ -482,6 +515,11 @@ namespace ChessPlatform
             return MakeMove(move);
         }
 
+        IGameBoard IGameBoard.MakeNullMove()
+        {
+            return MakeNullMove();
+        }
+
         #endregion
 
         #region Private Methods
@@ -580,7 +618,7 @@ namespace ChessPlatform
             var validMovesReference = validMoves;
 
             Action<Position, Position, bool, Func<PieceMove, bool>> addBasicMove =
-                (sourcePosition, targetPosition, isCapturing, checkMove) =>
+                (sourcePosition, targetPosition, isCapture, checkMove) =>
                 {
                     var isPawnPromotion = _pieceData.IsPawnPromotion(sourcePosition, targetPosition);
                     var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
@@ -597,9 +635,19 @@ namespace ChessPlatform
                         moveFlags |= PieceMoveFlags.IsPawnPromotion;
                     }
 
-                    if (isCapturing)
+                    if (isCapture)
                     {
                         moveFlags |= PieceMoveFlags.IsCapture;
+                    }
+
+                    var isEnPassantCapture = _pieceData.IsEnPassantCapture(
+                        sourcePosition,
+                        targetPosition,
+                        _enPassantCaptureInfo);
+
+                    if (isEnPassantCapture)
+                    {
+                        moveFlags |= PieceMoveFlags.IsEnPassantCapture;
                     }
 
                     var pieceMoveInfo = new PieceMoveInfo(moveFlags);

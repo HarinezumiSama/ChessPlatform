@@ -7,7 +7,8 @@ namespace ChessPlatform.Internal
     public enum PieceMoveFlags
     {
         None = 0,
-        IsCapture = 0x01,
-        IsPawnPromotion = 0x02
+        IsPawnPromotion = 0x01,
+        IsCapture = 0x02,
+        IsEnPassantCapture = 0x04
     }
 }

@@ -116,7 +116,7 @@ namespace ChessPlatform.Internal
             return GetPiecePositions(piece).Length;
         }
 
-        public EnPassantCaptureInfo GetEnPassantCaptureInfo(PieceMove move)
+        public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] PieceMove move)
         {
             #region Argument Check
 
@@ -176,7 +176,7 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        public CastlingInfo CheckCastlingMove(PieceMove move)
+        public CastlingInfo CheckCastlingMove([NotNull] PieceMove move)
         {
             var pieceInfo = GetPieceInfo(move.From);
             if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Color.HasValue)
@@ -202,7 +202,7 @@ namespace ChessPlatform.Internal
         }
 
         public bool IsAnyUnderAttack(
-            IEnumerable<Position> targetPositions,
+            [NotNull] IEnumerable<Position> targetPositions,
             PieceColor attackingColor)
         {
             #region Argument Check
@@ -304,7 +304,7 @@ namespace ChessPlatform.Internal
 
         public Position[] GetPotentialMovePositions(
             CastlingOptions castlingOptions,
-            EnPassantCaptureInfo enPassantCaptureInfo,
+            [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             Position sourcePosition)
         {
             var pieceInfo = GetPieceInfo(sourcePosition);
@@ -974,7 +974,7 @@ namespace ChessPlatform.Internal
         }
 
         private Position[] GetPawnPotentialMovePositions(
-            EnPassantCaptureInfo enPassantCaptureTarget,
+            [CanBeNull] EnPassantCaptureInfo enPassantCaptureTarget,
             Position sourcePosition,
             PieceColor pieceColor)
         {
