@@ -71,13 +71,35 @@ namespace ChessPlatform.Tests
 
             foreach (var actualValidMove in actualValidMoves)
             {
+                var pieceMoveInfo = gameBoard.ValidMoves[actualValidMove];
+
                 Assert.That(
-                    gameBoard.ValidMoves[actualValidMove].IsCapture,
+                    pieceMoveInfo.IsCapture,
                     Is.EqualTo(gameBoard.IsCapturingMove(actualValidMove)));
 
                 Assert.That(
-                    gameBoard.ValidMoves[actualValidMove].IsPawnPromotion,
+                    gameBoard[actualValidMove.To].GetColor(),
+                    Is.EqualTo(
+                        pieceMoveInfo.IsCapture && !pieceMoveInfo.IsEnPassantCapture
+                            ? gameBoard.ActiveColor.Invert()
+                            : (PieceColor?)null));
+
+                if (pieceMoveInfo.IsEnPassantCapture)
+                {
+                    Assert.That(
+                        gameBoard[actualValidMove.From],
+                        Is.EqualTo(PieceType.Pawn.ToPiece(gameBoard.ActiveColor)));
+
+                    Assert.That(gameBoard[actualValidMove.To].GetPieceType(), Is.EqualTo(PieceType.None));
+                }
+
+                Assert.That(
+                    pieceMoveInfo.IsPawnPromotion,
                     Is.EqualTo(gameBoard.IsPawnPromotionMove(actualValidMove)));
+
+                Assert.That(
+                    pieceMoveInfo.IsPawnPromotion,
+                    Is.EqualTo(actualValidMove.PromotionResult != PieceType.None));
             }
         }
 
