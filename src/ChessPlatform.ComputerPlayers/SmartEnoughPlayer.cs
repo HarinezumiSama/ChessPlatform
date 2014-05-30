@@ -522,9 +522,6 @@ namespace ChessPlatform.ComputerPlayers
             var mateMoves = board
                 .ValidMoves
                 .Keys
-                .AsParallel()
-                .WithCancellation(cancellationToken)
-                .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                 .Where(
                     move =>
                     {
@@ -535,7 +532,17 @@ namespace ChessPlatform.ComputerPlayers
                     })
                 .ToArray();
 
-            return mateMoves.FirstOrDefault();
+            if (mateMoves.Length == 0)
+            {
+                return null;
+            }
+
+            return mateMoves
+                .OrderBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ThenBy(move => move.PromotionResult)
+                .First();
         }
 
         private PieceMove DoGetMoveInternal(
