@@ -6,6 +6,12 @@ namespace ChessPlatform.Tests
 {
     public abstract class GameBoardTestBase
     {
+        #region Constants and Fields
+
+        protected const bool PerformInternalBoardValidation = true;
+
+        #endregion
+
         #region Protected Methods
 
         protected static void AssertBaseProperties(

@@ -25,16 +25,29 @@ namespace ChessPlatform
         private readonly PieceMove _previousMove;
         private readonly Piece _lastCapturedPiece;
         private readonly string _resultString;
+        private readonly bool _validateAfterMove;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GameBoard"/> class.
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class
+        ///     using the default initial chess position.
         /// </summary>
         public GameBoard()
+            : this(false)
         {
+            // Nothing to do
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class
+        ///     using the default initial chess position.
+        /// </summary>
+        public GameBoard(bool validateAfterMove)
+        {
+            _validateAfterMove = validateAfterMove;
             _pieceData = new PieceData();
             _lastCapturedPiece = Piece.None;
 
@@ -45,13 +58,24 @@ namespace ChessPlatform
                 out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
-            FinishInitialization(out _validMoves, out _state, out _resultString);
+            FinishInitialization(true, out _validMoves, out _state, out _resultString);
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GameBoard"/> class.
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class
+        ///     using the specified FEN.
         /// </summary>
         public GameBoard([NotNull] string fen)
+            : this(fen, false)
+        {
+            // Nothing to do
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="GameBoard"/> class
+        ///     using the specified FEN.
+        /// </summary>
+        public GameBoard([NotNull] string fen, bool validateAfterMove)
         {
             #region Argument Check
 
@@ -64,6 +88,7 @@ namespace ChessPlatform
 
             #endregion
 
+            _validateAfterMove = validateAfterMove;
             _pieceData = new PieceData();
             _lastCapturedPiece = Piece.None;
 
@@ -75,7 +100,7 @@ namespace ChessPlatform
                 out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
-            FinishInitialization(out _validMoves, out _state, out _resultString);
+            FinishInitialization(true, out _validMoves, out _state, out _resultString);
         }
 
         /// <summary>
@@ -105,6 +130,7 @@ namespace ChessPlatform
 
             #endregion
 
+            _validateAfterMove = previous._validateAfterMove;
             _pieceData = previous._pieceData.Copy();
             _activeColor = previous._activeColor.Invert();
             _castlingOptions = previous._castlingOptions;
@@ -125,7 +151,7 @@ namespace ChessPlatform
                 ? previous._halfMoveCountBy50MoveRule + 1
                 : 0;
 
-            FinishInitialization(out _validMoves, out _state, out _resultString);
+            FinishInitialization(false, out _validMoves, out _state, out _resultString);
         }
 
         #endregion
@@ -460,8 +486,13 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private void Validate()
+        private void Validate(bool forceValidation)
         {
+            if (!forceValidation && !_validateAfterMove)
+            {
+                return;
+            }
+
             _pieceData.EnsureConsistency();
 
             foreach (var king in ChessConstants.BothKings)
@@ -769,11 +800,12 @@ namespace ChessPlatform
         }
 
         private void FinishInitialization(
+            bool forceValidation,
             out ReadOnlyDictionary<PieceMove, PieceMoveInfo> validMoves,
             out GameState state,
             out string resultString)
         {
-            Validate();
+            Validate(forceValidation);
 
             Dictionary<PieceMove, PieceMoveInfo> validMoveMap;
             InitializeValidMovesAndState(out validMoveMap, out state);

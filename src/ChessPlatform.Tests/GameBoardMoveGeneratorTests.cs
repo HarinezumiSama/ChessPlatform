@@ -75,7 +75,7 @@ namespace ChessPlatform.Tests
         [TestCase(int.MinValue)]
         public void TestPerftForInvalidArgument(int depth)
         {
-            var gameBoard = new GameBoard();
+            var gameBoard = new GameBoard(PerformInternalBoardValidation);
             Assert.That(() => gameBoard.Perft(depth), Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
@@ -84,7 +84,7 @@ namespace ChessPlatform.Tests
         public void TestPerft(PerftPosition perftPosition, ExpectedPerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
-            var gameBoard = new GameBoard(fen);
+            var gameBoard = new GameBoard(fen, PerformInternalBoardValidation);
 
             var flags = PerftFlags.IncludeDivideMap;
 

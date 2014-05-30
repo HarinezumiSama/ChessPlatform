@@ -9,23 +9,19 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameBoardTests : GameBoardTestBase
     {
-        #region Constants and Fields
-
-        #endregion
-
         #region Tests
 
         [Test]
         public void TestDefaultConstruction()
         {
-            var gameBoard = new GameBoard();
+            var gameBoard = new GameBoard(PerformInternalBoardValidation);
             AssertDefaultInitialBoard(gameBoard);
         }
 
         [Test]
         public void TestConstructionByDefaultFen()
         {
-            var gameBoard = new GameBoard(ChessConstants.DefaultInitialFen);
+            var gameBoard = new GameBoard(ChessConstants.DefaultInitialFen, PerformInternalBoardValidation);
             AssertDefaultInitialBoard(gameBoard);
         }
 
@@ -34,7 +30,7 @@ namespace ChessPlatform.Tests
         {
             const string StalemateFen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
 
-            var gameBoard = new GameBoard(StalemateFen);
+            var gameBoard = new GameBoard(StalemateFen, PerformInternalBoardValidation);
             AssertBaseProperties(gameBoard, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
             AssertNoValidMoves(gameBoard);
         }
@@ -54,7 +50,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestMakeMoveFoolsMateScenario()
         {
-            var gameBoard1W = new GameBoard();
+            var gameBoard1W = new GameBoard(PerformInternalBoardValidation);
             var gameBoard1B = TestMakeMoveFoolsMateScenario1B(gameBoard1W);
             var gameBoard2W = TestMakeMoveFoolsMateScenario2W(gameBoard1B);
             var gameBoard2B = TestMakeMoveFoolsMateScenario2B(gameBoard2W);
@@ -64,7 +60,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestTwoKingsOnlyCase()
         {
-            var gameBoard = new GameBoard("k7/8/K7/8/8/8/8/8 b - - 0 1");
+            var gameBoard = new GameBoard("k7/8/K7/8/8/8/8/8 b - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -82,7 +78,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestKingInCheckByCloseQueenCase()
         {
-            var gameBoard = new GameBoard("r3k2r/p1ppqQ2/1n2p1pb/3PN2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard(
+                "r3k2r/p1ppqQ2/1n2p1pb/3PN2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -99,7 +97,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase1()
         {
-            var gameBoard = new GameBoard("r3k2r/p1ppq3/3n2Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard(
+                "r3k2r/p1ppq3/3n2Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -116,7 +116,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestKingInCheckByFarQueenAndPinnedOwnQueenCase2()
         {
-            var gameBoard = new GameBoard("r3k2r/p1pp4/3nq1Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard(
+                "r3k2r/p1pp4/3nq1Qb/3PR2b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -133,7 +135,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestPinnedOwnQueenCase()
         {
-            var gameBoard = new GameBoard("k7/8/8/3q4/4Q3/5P2/5K2/8 b - - 0 1");
+            var gameBoard = new GameBoard("k7/8/8/3q4/4Q3/5P2/5K2/8 b - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -150,7 +152,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestKingInCheckByFarQueenAndCanBlockByEnPassantB2B4Case()
         {
-            var gameBoard = new GameBoard("rnb1kbnr/pp1ppppp/2p5/q7/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1");
+            var gameBoard = new GameBoard(
+                "rnb1kbnr/pp1ppppp/2p5/q7/2PP4/8/PP2PPPP/RNBQKBNR w KQkq - 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -167,7 +171,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestKingInDoubleCheckByQueenAndKnight()
         {
-            var gameBoard = new GameBoard("r3k2r/p1ppq3/1n1Np1Qb/3P3b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1");
+            var gameBoard = new GameBoard(
+                "r3k2r/p1ppq3/1n1Np1Qb/3P3b/1p2P3/2N4p/PPPBBPPP/R3K2R b KQkq - 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -184,7 +190,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCanCaptureCheckingPawnByEnPassantCapture()
         {
-            var gameBoard = new GameBoard("8/8/3p4/1Pp3kr/1K3p2/1R6/4P1P1/8 w - c6 0 1");
+            var gameBoard = new GameBoard(
+                "8/8/3p4/1Pp3kr/1K3p2/1R6/4P1P1/8 w - c6 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -201,7 +209,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCannotCaptureEnPassantPawnByPinnedPawn()
         {
-            var gameBoard = new GameBoard("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1");
+            var gameBoard = new GameBoard("8/2p5/3p4/KP5r/1R2Pp1k/8/6P1/8 b - e3 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -219,7 +227,9 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCannotCaptureEnPassantCheckingPawnByPinnedPawn()
         {
-            var gameBoard = new GameBoard("8/2p5/3p4/KP3k1r/5pP1/8/4P3/5R2 b - g3 0 1");
+            var gameBoard = new GameBoard(
+                "8/2p5/3p4/KP3k1r/5pP1/8/4P3/5R2 b - g3 0 1",
+                PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -236,7 +246,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCannotCaptureCheckingPieceByPinnedPiece()
         {
-            var gameBoard = new GameBoard("Q2k4/8/1n6/B7/8/8/8/7K b - - 0 1");
+            var gameBoard = new GameBoard("Q2k4/8/1n6/B7/8/8/8/7K b - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -253,7 +263,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCanPromoteByMovingAndByCapturing()
         {
-            var gameBoard = new GameBoard("r6k/1P6/8/8/8/8/8/7K w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/8/8/8/8/8/7K w - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -275,7 +285,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCanHideFromCheckByPromotingPawn()
         {
-            var gameBoard = new GameBoard("1K5q/2P5/k7/8/8/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("1K5q/2P5/k7/8/8/8/8/8 w - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -292,7 +302,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCanCaptureCheckingPieceByPromotingPawn()
         {
-            var gameBoard = new GameBoard("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/1P6/KR6/1R6/8/8/8 w - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -309,7 +319,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestCheckmateByDoubleCheckAndPawnCannotCapture()
         {
-            var gameBoard = new GameBoard("r6k/1P6/1Pn5/KR6/1R6/8/8/8 w - - 0 1");
+            var gameBoard = new GameBoard("r6k/1P6/1Pn5/KR6/1R6/8/8/8 w - - 0 1", PerformInternalBoardValidation);
 
             AssertBaseProperties(
                 gameBoard,
@@ -326,7 +336,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestSerializeDefaultInitialPosition()
         {
-            var gameBoard = new GameBoard();
+            var gameBoard = new GameBoard(PerformInternalBoardValidation);
 
             var packedGameBoard = gameBoard.Pack();
 
@@ -355,7 +365,7 @@ namespace ChessPlatform.Tests
         public void TestSerializeSpecificPosition()
         {
             const string Fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 7 17";
-            var gameBoard = new GameBoard(Fen);
+            var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
 
             var packedGameBoard = gameBoard.Pack();
 
@@ -386,7 +396,7 @@ namespace ChessPlatform.Tests
 
         private static GameBoard TestMakeMoveBasicScenario1W()
         {
-            var gameBoard1W = new GameBoard();
+            var gameBoard1W = new GameBoard(PerformInternalBoardValidation);
 
             // Testing invalid move (no piece at the source position)
             Assert.That(() => gameBoard1W.MakeMove("a3-a4"), Throws.ArgumentException);
