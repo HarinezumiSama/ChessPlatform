@@ -35,6 +35,11 @@ namespace ChessPlatform.UI.Desktop
         {
             InitializeComponent();
 
+            this.Title = string.Format(
+                CultureInfo.InvariantCulture,
+                "Chess Platform UI for Desktop {0}",
+                ChessHelper.GetPlatformVersion(true));
+
             InitializeControls();
             this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.CurrentGameBoard, this.OnCurrentGameBoardChanged);
         }

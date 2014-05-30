@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:commands="clr-namespace:ChessPlatform.UI.Desktop.Commands"
         xmlns:converters="clr-namespace:ChessPlatform.UI.Desktop.Converters"
-        xmlns:viewModels="clr-namespace:ChessPlatform.UI.Desktop.ViewModels" Title="Chess Platform UI for Desktop"
+        xmlns:viewModels="clr-namespace:ChessPlatform.UI.Desktop.ViewModels"
         Width="800" Height="450" MinWidth="800" MinHeight="450" WindowStartupLocation="CenterScreen" Margin="0"
         WindowState="Maximized" x:ClassModifier="internal">
     <Window.Resources>

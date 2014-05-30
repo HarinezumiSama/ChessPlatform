@@ -57,6 +57,7 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
+    <Compile Include="ChessHelperTests.cs" />
     <Compile Include="GameBoardTestBase.cs" />
     <Compile Include="GameBoardMoveGeneratorTests.cs" />
     <Compile Include="GameBoardTests.cs" />

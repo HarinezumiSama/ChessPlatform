@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Text;
+using ChessPlatform.Annotations;
 using ChessPlatform.Internal;
 using Omnifactotum;
 
@@ -170,9 +173,27 @@ namespace ChessPlatform
                     position => GetKnightMovePositionsNonCached(position).AsReadOnly())
                 .AsReadOnly();
 
+        private static readonly Assembly PlatformAssembly = typeof(ChessHelper).Assembly;
+        private static readonly Version PlatformVersion = PlatformAssembly.GetName().Version;
+
+        private static readonly string PlatformRevisionId =
+            PlatformAssembly.GetSingleCustomAttribute<RevisionIdAttribute>(false).RevisionId.EnsureNotNull();
+
         #endregion
 
         #region Public Methods
+
+        public static string GetPlatformVersion(bool fullVersion)
+        {
+            var resultBuilder = new StringBuilder(PlatformVersion.ToString());
+
+            if (fullVersion)
+            {
+                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " [rev. '{0}']", PlatformRevisionId);
+            }
+
+            return resultBuilder.ToString();
+        }
 
         public static ReadOnlyCollection<Position> GetKnightMovePositions(Position position)
         {
