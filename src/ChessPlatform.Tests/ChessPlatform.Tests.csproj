@@ -51,6 +51,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Solution Items\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
+      <Link>Properties\Generated.GlobalVersion.cs</Link>
+    </Compile>
     <Compile Include="GameBoardTestBase.cs" />
     <Compile Include="GameBoardMoveGeneratorTests.cs" />
     <Compile Include="GameBoardTests.cs" />

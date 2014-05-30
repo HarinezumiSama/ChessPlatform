@@ -2,7 +2,6 @@ glob:bin/*
 glob:obj/*
 glob:*/bin/*
 glob:*/obj/*
-glob:_Output_/*
 glob:*.suo
 glob:*.csproj.user
 glob:build*.log
@@ -14,5 +13,5 @@ glob:*.DotSettings
 glob:*.DotSettings.user
 glob:StyleCop.Cache
 glob:Generated.*
-glob:SolutionItems/Omnifactotum.pfx
+glob:SolutionItems/*.pfx
 glob:published/

@@ -48,6 +48,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Solution Items\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
+      <Link>Properties\Generated.GlobalVersion.cs</Link>
+    </Compile>
     <Compile Include="AutoDrawType.cs" />
     <Compile Include="ChessPlayerBase.cs" />
     <Compile Include="GameBoardChangedEventArgs.cs" />
@@ -109,6 +115,41 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <CompileDependsOn>UpdateGlobalVersion;$(CompileDependsOn)</CompileDependsOn>
+    <!--CleanDependsOn>UpdateGlobalVersion;$(CleanDependsOn)</CleanDependsOn-->
+    <BuildDependsOn>UpdateGlobalVersion;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="UpdateGlobalVersion">
+    <PropertyGroup>
+      <BaseVersionFile>$(ProjectDir)\..\Solution Items\Version\BaseVersion.txt</BaseVersionFile>
+      <RevisionFile>$(ProjectDir)\..\Solution Items\Version\Generated.Revision.txt</RevisionFile>
+    </PropertyGroup>
+    <Message Importance="high" Text="* Reading base version from '$(BaseVersionFile)'..." />
+    <ReadLinesFromFile File="$(BaseVersionFile)">
+      <Output TaskParameter="Lines" PropertyName="BaseVersion" />
+    </ReadLinesFromFile>
+    <Message Importance="high" Text="* Base version: '$(BaseVersion)'" />
+    <Exec Command="&quot;$(ProjectDir)\..\Solution Items\Scripts\hg.cmd&quot; identify -n -r tip &gt;&quot;$(RevisionFile)&quot;" />
+    <Message Importance="high" Text="* Reading HG revision number from '$(RevisionFile)'..." />
+    <ReadLinesFromFile File="$(RevisionFile)">
+      <Output TaskParameter="Lines" PropertyName="Revision" />
+    </ReadLinesFromFile>
+    <Message Importance="high" Text="* Revision number: '$(Revision)'" />
+    <PropertyGroup>
+      <GlobalVersion>$(BaseVersion).0.$(Revision)</GlobalVersion>
+    </PropertyGroup>
+    <Message Importance="high" Text="* Global version: '$(GlobalVersion)'" />
+    <ItemGroup>
+      <AssemblyVersion Include="global::System.Reflection.AssemblyVersion">
+        <_Parameter1>$(GlobalVersion)</_Parameter1>
+      </AssemblyVersion>
+      <AssemblyFileVersion Include="global::System.Reflection.AssemblyFileVersion">
+        <_Parameter1>$(GlobalVersion)</_Parameter1>
+      </AssemblyFileVersion>
+    </ItemGroup>
+    <WriteCodeFragment Language="C#" OutputFile="$(ProjectDir)\..\Solution Items\Version\Generated.GlobalVersion.cs" AssemblyAttributes="@(AssemblyVersion);@(AssemblyFileVersion)" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
