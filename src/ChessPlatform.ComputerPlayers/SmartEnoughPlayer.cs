@@ -519,6 +519,8 @@ namespace ChessPlatform.ComputerPlayers
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            //// TODO [vmcl] Ideally this method has to search for a guaranteed mate in a number of moves (rather than in mate-in-one only)
+
             var mateMoves = board
                 .ValidMoves
                 .Keys
