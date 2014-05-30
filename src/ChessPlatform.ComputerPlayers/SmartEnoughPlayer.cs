@@ -416,16 +416,17 @@ namespace ChessPlatform.ComputerPlayers
             return activeScore - inactiveScore;
         }
 
+        // ReSharper disable once UnusedParameter.Local
         private static int EvaluateBoardMobility([NotNull] IGameBoard board)
         {
-            //return 0;
+            return 0;
 
-            var result = board
-                .ValidMoves
-                .Keys
-                .Sum(move => PieceTypeToMobilityWeightMap[board[move.From].GetPieceType()]);
+            ////var result = board
+            ////    .ValidMoves
+            ////    .Keys
+            ////    .Sum(move => PieceTypeToMobilityWeightMap[board[move.From].GetPieceType()]);
 
-            return result;
+            ////return result;
         }
 
         private static int EvaluateMobility([NotNull] IGameBoard board)
