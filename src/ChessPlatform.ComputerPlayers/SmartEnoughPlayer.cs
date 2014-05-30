@@ -159,12 +159,12 @@ namespace ChessPlatform.ComputerPlayers
         {
             return new Dictionary<PieceType, int>
             {
-                { PieceType.King, 10 },
+                { PieceType.King, 20 },
                 { PieceType.Queen, 10 },
-                { PieceType.Rook, 10 },
-                { PieceType.Bishop, 10 },
-                { PieceType.Knight, 10 },
-                { PieceType.Pawn, 10 }
+                { PieceType.Rook, 6 },
+                { PieceType.Bishop, 5 },
+                { PieceType.Knight, 5 },
+                { PieceType.Pawn, 4 }
             };
         }
 
@@ -416,21 +416,30 @@ namespace ChessPlatform.ComputerPlayers
             return activeScore - inactiveScore;
         }
 
-        // ReSharper disable once UnusedParameter.Local
+        private static int EvaluateBoardMobility([NotNull] IGameBoard board)
+        {
+            //return 0;
+
+            var result = board
+                .ValidMoves
+                .Keys
+                .Sum(move => PieceTypeToMobilityWeightMap[board[move.From].GetPieceType()]);
+
+            return result;
+        }
+
         private static int EvaluateMobility([NotNull] IGameBoard board)
         {
-            //// TODO [vmcl] Think on how determine mobility for inactive player
-            return 0;
+            if (!board.CanMakeNullMove)
+            {
+                return 0;
+            }
 
-            ////var result = board
-            ////    .ValidMoves
-            ////    .GroupBy(
-            ////        move => board[move.From].GetPieceType(),
-            ////        move => 1,
-            ////        (pieceType, moves) => moves.Sum() * PieceTypeToMobilityWeightMap[pieceType])
-            ////    .Sum();
+            var mobility = EvaluateBoardMobility(board);
+            var opponentMobility = EvaluateBoardMobility(board.MakeNullMove());
 
-            ////return result;
+            var result = mobility - opponentMobility;
+            return result;
         }
 
         private static int EvaluatePositionScore([NotNull] IGameBoard board)
