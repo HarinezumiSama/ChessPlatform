@@ -557,6 +557,12 @@ namespace ChessPlatform.ComputerPlayers
                 return board.ValidMoves.Keys.Single();
             }
 
+            var mateMove = FindMateMove(board, cancellationToken);
+            if (mateMove != null)
+            {
+                return mateMove;
+            }
+
             if (_openingBook != null)
             {
                 var openingMoves = _openingBook.FindPossibleMoves(board);
@@ -574,12 +580,6 @@ namespace ChessPlatform.ComputerPlayers
 
                     return openingMove;
                 }
-            }
-
-            var mateMove = FindMateMove(board, cancellationToken);
-            if (mateMove != null)
-            {
-                return mateMove;
             }
 
             var result = ComputeAlphaBetaRoot(board, cancellationToken, transpositionTable);
