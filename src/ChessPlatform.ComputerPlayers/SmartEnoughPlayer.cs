@@ -694,7 +694,8 @@ namespace ChessPlatform.ComputerPlayers
             [NotNull] SimpleTranspositionTable transpositionTable)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
-            var plyDepth = _maxPlyDepth;
+
+            //// TODO [vmcl] Implement the cache of boards which is applicable at each level (ply)
 
             var orderedMoves = OrderMoves(board);
 
@@ -717,7 +718,7 @@ namespace ChessPlatform.ComputerPlayers
 
                 var score = -ComputeAlphaBeta(
                     currentBoard,
-                    plyDepth - 1,
+                    _maxPlyDepth - 1,
                     -RootBeta,
                     -alpha,
                     cancellationToken,
