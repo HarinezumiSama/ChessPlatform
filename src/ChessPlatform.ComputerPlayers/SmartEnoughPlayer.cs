@@ -461,6 +461,94 @@ namespace ChessPlatform.ComputerPlayers
             return result;
         }
 
+        private static PieceMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
+        {
+            //// TODO [vmcl] Consider en passant capture
+
+            var cheapestAttackerMove = board
+                .ValidMoves
+                .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
+                .Select(pair => pair.Key)
+                .OrderBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .FirstOrDefault();
+
+            return cheapestAttackerMove;
+        }
+
+        private static int ComputeStaticExchangeEvaluationScore(
+            [NotNull] IGameBoard board,
+            Position position,
+            [CanBeNull] PieceMove move)
+        {
+            var actualMove = move ?? GetCheapestAttackerMove(board, position);
+            if (actualMove == null)
+            {
+                return 0;
+            }
+
+            var currentBoard = board.MakeMove(actualMove);
+            var weight = PieceTypeToMaterialWeightMap[currentBoard.LastCapturedPiece.GetPieceType()];
+
+            var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
+
+            if (move == null && result < 0)
+            {
+                // If it's not the root move, then the side to move has an option to stand pat
+                result = 0;
+            }
+
+            return result;
+        }
+
+        private static int Quiesce(
+            [NotNull] IGameBoard board,
+            int alpha,
+            int beta,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var standPatScore = EvaluatePositionScore(board);
+            if (beta <= standPatScore)
+            {
+                return beta;
+            }
+
+            if (alpha < standPatScore)
+            {
+                alpha = standPatScore;
+            }
+
+            var captureMoves = board.ValidMoves.Where(pair => pair.Value.IsCapture).Select(pair => pair.Key).ToArray();
+            foreach (var captureMove in captureMoves)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var seeScore = ComputeStaticExchangeEvaluationScore(board, captureMove.To, captureMove);
+                if (seeScore < 0)
+                {
+                    continue;
+                }
+
+                var currentBoard = board.MakeMove(captureMove);
+                var score = -Quiesce(currentBoard, -beta, -alpha, cancellationToken);
+
+                if (beta <= score)
+                {
+                    // Fail-hard beta-cutoff
+                    return beta;
+                }
+
+                if (alpha < score)
+                {
+                    alpha = score;
+                }
+            }
+
+            return alpha;
+        }
+
         private static int ComputeAlphaBeta(
             [NotNull] IGameBoard board,
             int plyDepth,
@@ -491,7 +579,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
-                var result = EvaluatePositionScore(board);
+                var result = Quiesce(board, alpha, beta, cancellationToken);
                 transpositionTable.SaveScore(board, plyDepth, result);
                 return result;
             }
@@ -499,6 +587,8 @@ namespace ChessPlatform.ComputerPlayers
             var orderedMoves = OrderMoves(board);
             foreach (var move in orderedMoves)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var currentBoard = board.MakeMove(move);
 
                 var score = -ComputeAlphaBeta(
@@ -509,13 +599,13 @@ namespace ChessPlatform.ComputerPlayers
                     cancellationToken,
                     transpositionTable);
 
-                if (score >= beta)
+                if (beta <= score)
                 {
                     // Fail-hard beta-cutoff
                     return beta;
                 }
 
-                if (score > alpha)
+                if (alpha < score)
                 {
                     alpha = score;
                 }
