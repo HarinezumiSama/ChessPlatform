@@ -42,7 +42,7 @@ namespace ChessPlatform.Internal
         public PositionDictionary(PositionDictionary<TValue> dictionary)
             : this(dictionary.EnsureNotNull()._items.Copy())
         {
-            if (_items.Length != PieceDictionaryHelper.Length)
+            if (_items.Length != ChessConstants.SquareCount)
             {
                 throw new InvalidOperationException("Invalid item array length in the source dictionary.");
             }
@@ -214,7 +214,7 @@ namespace ChessPlatform.Internal
 
         private static int GetIndex(Position key)
         {
-            return key.X88Value;
+            return key.SquareIndex;
         }
 
         #endregion
