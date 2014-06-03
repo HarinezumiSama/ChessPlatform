@@ -9,6 +9,7 @@ namespace ChessPlatform
         None = 0,
         IncludeExtraCountTypes = 0x01,
         IncludeDivideMap = 0x02,
-        All = IncludeExtraCountTypes | IncludeDivideMap
+        DisableParallelism = 0x04,
+        All = IncludeExtraCountTypes | IncludeDivideMap | DisableParallelism
     }
 }
