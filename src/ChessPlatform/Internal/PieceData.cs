@@ -25,7 +25,7 @@ namespace ChessPlatform.Internal
             InitializePawnAttackMoveMap();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
-        private readonly PieceDictionary<Bitboard> _bitboards;
+        private readonly EnumFixedSizeDictionary<Piece, Bitboard> _bitboards;
         private readonly Piece[] _pieces;
 
         #endregion
@@ -38,7 +38,7 @@ namespace ChessPlatform.Internal
 
             _pieces = new Piece[ChessConstants.X88Length];
 
-            _bitboards = new PieceDictionary<Bitboard>(
+            _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(
                 ChessConstants.Pieces.ToDictionary(
                     Factotum.Identity,
                     item => new Bitboard(item == Piece.None ? -1L : 0L)));
@@ -56,7 +56,7 @@ namespace ChessPlatform.Internal
             #endregion
 
             _pieces = other._pieces.Copy();
-            _bitboards = new PieceDictionary<Bitboard>(other._bitboards);
+            _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(other._bitboards);
         }
 
         #endregion

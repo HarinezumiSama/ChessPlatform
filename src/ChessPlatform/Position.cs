@@ -180,6 +180,27 @@ namespace ChessPlatform
             return position.Value;
         }
 
+        [DebuggerNonUserCode]
+        public static Position? TryFromAlgebraic(string algebraicNotation)
+        {
+            if (algebraicNotation == null)
+            {
+                return null;
+            }
+
+            if (algebraicNotation.Length != 2)
+            {
+                return null;
+            }
+
+            var file = char.ToLowerInvariant(algebraicNotation[0]) - 'a';
+            var rank = algebraicNotation[1] - '1';
+
+            return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
+                ? new Position(false, file, rank)
+                : null;
+        }
+
         public static Position[] GenerateFile(byte file)
         {
             #region Argument Check
@@ -234,7 +255,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            //// TODO [vmcl] Cache, if needed
+            //// TODO [vmcl] Use global cache
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}", (char)('a' + this.File), this.Rank + 1);
         }
 
@@ -255,27 +276,6 @@ namespace ChessPlatform
         internal static bool IsValidX88Value(byte x88Value)
         {
             return (x88Value & 0x88) == 0;
-        }
-
-        [DebuggerNonUserCode]
-        internal static Position? TryFromAlgebraic(string algebraicNotation)
-        {
-            if (algebraicNotation == null)
-            {
-                return null;
-            }
-
-            if (algebraicNotation.Length != 2)
-            {
-                return null;
-            }
-
-            var file = char.ToLowerInvariant(algebraicNotation[0]) - 'a';
-            var rank = algebraicNotation[1] - '1';
-
-            return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
-                ? new Position(false, file, rank)
-                : null;
         }
 
         internal static Position FromBitboardBitIndex(int index)

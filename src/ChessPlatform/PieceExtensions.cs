@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using ChessPlatform.Internal;
+using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -11,15 +12,17 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private static readonly PieceDictionary<PieceColor> PieceToColorMap =
-            new PieceDictionary<PieceColor>(
+        private static readonly EnumFixedSizeDictionary<Piece, PieceColor> PieceToColorMap =
+            new EnumFixedSizeDictionary<Piece, PieceColor>(
                 ChessConstants.Pieces.Where(item => item != Piece.None).ToDictionary(item => item, GetColorNonCached));
 
-        private static readonly PieceDictionary<PieceType> PieceToPieceTypeMap =
-            new PieceDictionary<PieceType>(ChessConstants.Pieces.ToDictionary(item => item, GetPieceTypeNonCached));
+        private static readonly EnumFixedSizeDictionary<Piece, PieceType> PieceToPieceTypeMap =
+            new EnumFixedSizeDictionary<Piece, PieceType>(
+                ChessConstants.Pieces.ToDictionary(item => item, GetPieceTypeNonCached));
 
-        private static readonly PieceDictionary<PieceInfo> PieceToPieceInfoMap =
-            new PieceDictionary<PieceInfo>(ChessConstants.Pieces.ToDictionary(item => item, GetPieceInfoNonCached));
+        private static readonly EnumFixedSizeDictionary<Piece, PieceInfo> PieceToPieceInfoMap =
+            new EnumFixedSizeDictionary<Piece, PieceInfo>(
+                ChessConstants.Pieces.ToDictionary(item => item, GetPieceInfoNonCached));
 
         #endregion
 

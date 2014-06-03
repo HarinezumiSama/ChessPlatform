@@ -69,6 +69,7 @@
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushInfo.cs" />
+    <Compile Include="Internal\PositionDeterminant.cs" />
     <Compile Include="Internal\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />
     <Compile Include="Internal\DictionaryValueHolder.cs" />
@@ -86,7 +87,6 @@
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="Internal\MovePieceData.cs" />
-    <Compile Include="Internal\PieceDictionaryHelper.cs" />
     <Compile Include="Internal\PieceMoveFlags.cs" />
     <Compile Include="PackedGameBoard.cs" />
     <Compile Include="PerftFlags.cs" />
@@ -95,7 +95,6 @@
     <Compile Include="Internal\PieceAttackInfo.cs" />
     <Compile Include="Internal\PieceData.cs" />
     <Compile Include="Internal\PieceDataExtensions.cs" />
-    <Compile Include="Internal\PieceDictionary.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
     <Compile Include="PieceInfo.cs" />
