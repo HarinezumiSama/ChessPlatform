@@ -26,6 +26,7 @@ namespace ChessPlatform
         private readonly Piece _lastCapturedPiece;
         private readonly string _resultString;
         private readonly bool _validateAfterMove;
+        private readonly GameBoard _previousBoard;
 
         #endregion
 
@@ -107,30 +108,31 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="GameBoard"/> class
         ///     using the specified previous state and specified move.
         /// </summary>
-        private GameBoard([NotNull] GameBoard previous, [CanBeNull] PieceMove move)
+        private GameBoard([NotNull] GameBoard previousBoard, [CanBeNull] PieceMove move)
         {
             #region Argument Check
 
-            if (previous == null)
+            if (previousBoard == null)
             {
-                throw new ArgumentNullException("previous");
+                throw new ArgumentNullException("previousBoard");
             }
 
             #endregion
 
-            _validateAfterMove = previous._validateAfterMove;
-            _pieceData = previous._pieceData.Copy();
-            _activeColor = previous._activeColor.Invert();
-            _castlingOptions = previous._castlingOptions;
+            _previousBoard = previousBoard;
+            _validateAfterMove = previousBoard._validateAfterMove;
+            _pieceData = previousBoard._pieceData.Copy();
+            _activeColor = previousBoard._activeColor.Invert();
+            _castlingOptions = previousBoard._castlingOptions;
 
-            _fullMoveIndex = previous._fullMoveIndex + (move != null && _activeColor == PieceColor.White ? 1 : 0);
+            _fullMoveIndex = previousBoard._fullMoveIndex + (move != null && _activeColor == PieceColor.White ? 1 : 0);
 
             if (move == null)
             {
-                _enPassantCaptureInfo = previous._enPassantCaptureInfo;
-                _previousMove = previous._previousMove;
-                _lastCapturedPiece = previous._lastCapturedPiece;
-                _halfMoveCountBy50MoveRule = previous._halfMoveCountBy50MoveRule;
+                _enPassantCaptureInfo = previousBoard._enPassantCaptureInfo;
+                _previousMove = previousBoard._previousMove;
+                _lastCapturedPiece = previousBoard._lastCapturedPiece;
+                _halfMoveCountBy50MoveRule = previousBoard._halfMoveCountBy50MoveRule;
             }
             else
             {
@@ -138,15 +140,15 @@ namespace ChessPlatform
 
                 var makeMoveData = _pieceData.MakeMove(
                     move,
-                    previous._activeColor,
-                    previous._enPassantCaptureInfo,
+                    previousBoard._activeColor,
+                    previousBoard._enPassantCaptureInfo,
                     ref _castlingOptions);
 
                 _previousMove = makeMoveData.Move;
                 _lastCapturedPiece = makeMoveData.CapturedPiece;
 
                 _halfMoveCountBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
-                    ? previous._halfMoveCountBy50MoveRule + 1
+                    ? previousBoard._halfMoveCountBy50MoveRule + 1
                     : 0;
             }
 
@@ -163,6 +165,15 @@ namespace ChessPlatform
             get
             {
                 return _resultString;
+            }
+        }
+
+        public GameBoard PreviousBoard
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _previousBoard;
             }
         }
 
@@ -230,6 +241,15 @@ namespace ChessPlatform
             get
             {
                 return _fullMoveIndex;
+            }
+        }
+
+        IGameBoard IGameBoard.PreviousBoard
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return this.PreviousBoard;
             }
         }
 

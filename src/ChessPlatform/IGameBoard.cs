@@ -45,6 +45,11 @@ namespace ChessPlatform
             get;
         }
 
+        IGameBoard PreviousBoard
+        {
+            get;
+        }
+
         [CanBeNull]
         PieceMove PreviousMove
         {
