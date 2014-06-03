@@ -61,6 +61,7 @@
     <Compile Include="GameBoardExtensions.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="GameManagerState.cs" />
+    <Compile Include="GamePhase.cs" />
     <Compile Include="GameResult.cs" />
     <Compile Include="IChessPlayer.cs" />
     <Compile Include="IGameBoard.cs" />

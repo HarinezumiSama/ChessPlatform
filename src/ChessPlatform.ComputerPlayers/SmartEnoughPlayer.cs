@@ -349,6 +349,23 @@ namespace ChessPlatform.ComputerPlayers
             return weights;
         }
 
+        // ReSharper disable once UnusedParameter.Local - Temporary
+        private static GamePhase GetGamePhase([NotNull] IGameBoard board)
+        {
+            //////// TODO [vmcl] Think up  a good idea of determining the game phase
+            
+            return GamePhase.Undetermined;
+
+            ////var endGameScoreLimit = PieceTypeToMaterialWeightMap[PieceType.Rook] * 2;
+
+            ////var whiteMaterialScore = EvaluateMaterialAndItsPositionByColor(board, PieceColor.White, null);
+            ////var blackMaterialScore = EvaluateMaterialAndItsPositionByColor(board, PieceColor.Black, null);
+
+            ////return whiteMaterialScore <= endGameScoreLimit || blackMaterialScore <= endGameScoreLimit
+            ////    ? GamePhase.Endgame
+            ////    : GamePhase.Middlegame;
+        }
+
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private static PieceMove[] OrderMoves([NotNull] IGameBoard board)
         {
@@ -379,7 +396,10 @@ namespace ChessPlatform.ComputerPlayers
             return result;
         }
 
-        private static int EvaluateMaterialAndItsPositionByColor([NotNull] IGameBoard board, PieceColor color)
+        private static int EvaluateMaterialAndItsPositionByColor(
+            [NotNull] IGameBoard board,
+            PieceColor color,
+            GamePhase? gamePhase)
         {
             var result = 0;
 
@@ -392,26 +412,30 @@ namespace ChessPlatform.ComputerPlayers
                     continue;
                 }
 
-                var materialScore = 0;
                 if (pieceType != PieceType.King)
                 {
                     var materialWeight = PieceTypeToMaterialWeightMap[pieceType];
-                    materialScore = piecePositions.Length * materialWeight;
+                    var materialScore = piecePositions.Length * materialWeight;
+                    result += materialScore;
+                }
+
+                if (!gamePhase.HasValue)
+                {
+                    continue;
                 }
 
                 var positionWeightMap = PieceToPositionWeightMap[piece];
                 var positionScore = piecePositions.Sum(position => positionWeightMap[position]);
-
-                result += materialScore + positionScore;
+                result += positionScore;
             }
 
             return result;
         }
 
-        private static int EvaluateMaterialAndItsPosition([NotNull] IGameBoard board)
+        private static int EvaluateMaterialAndItsPosition([NotNull] IGameBoard board, GamePhase? gamePhase)
         {
-            var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor);
-            var inactiveScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor.Invert());
+            var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
+            var inactiveScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor.Invert(), gamePhase);
 
             return activeScore - inactiveScore;
         }
@@ -454,7 +478,8 @@ namespace ChessPlatform.ComputerPlayers
                     return 0;
             }
 
-            var materialAndItsPosition = EvaluateMaterialAndItsPosition(board);
+            var gamePhase = GetGamePhase(board);
+            var materialAndItsPosition = EvaluateMaterialAndItsPosition(board, gamePhase);
             var mobility = EvaluateMobility(board);
 
             var result = materialAndItsPosition + mobility;
