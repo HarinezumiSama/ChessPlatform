@@ -1466,6 +1466,346 @@
                 Gets the <see cref="T:System.Collections.Generic.IComparer`1"/> used for comparing contained values.
             </summary>
         </member>
+        <member name="T:Omnifactotum.EnumFixedSizeDictionary`2">
+            <summary>
+                Represents a generic dictionary which is internally handled by a fixed size array due to limitation for
+                the maximum number of possible keys, and whose keys are enumeration values.
+            </summary>
+            <typeparam name="TKey">
+                The type of the keys in the dictionary.
+            </typeparam>
+            <typeparam name="TValue">
+                The type of the values in the dictionary.
+            </typeparam>
+        </member>
+        <member name="T:Omnifactotum.FixedSizeDictionary`3">
+            <summary>
+                Represents a generic dictionary which is internally handled by a fixed size array due to limitation for
+                the maximum number of possible keys.
+            </summary>
+            <typeparam name="TKey">
+                The type of the keys in the dictionary.
+            </typeparam>
+            <typeparam name="TValue">
+                The type of the values in the dictionary.
+            </typeparam>
+            <typeparam name="TDeterminant">
+                The type of the determinant. See <see cref="T:Omnifactotum.FixedSizeDictionaryDeterminant`1"/>.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.#ctor(System.Collections.Generic.IDictionary{`0,`1})">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> class
+                by copying the key/values pairs from the specified dictionary.
+            </summary>
+            <param name="dictionary">
+                The dictionary to copy the key/values pairs from.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="dictionary"/> is <b>null</b>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.#ctor(Omnifactotum.FixedSizeDictionary{`0,`1,`2})">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> class
+                by copying the key/values pairs from the specified dictionary.
+            </summary>
+            <param name="dictionary">
+                The dictionary to copy the key/values pairs from.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="dictionary"/> is <b>null</b>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.Add(`0,`1)">
+            <summary>
+                Adds an element with the specified key and value to
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+            <param name="key">
+                The object to use as the key of the element to add.
+            </param>
+            <param name="value">
+                The object to use as the value of the element to add.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="key"/> is <b>null</b>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+                An element with the same key already exists in
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.ContainsKey(`0)">
+            <summary>
+                Determines whether the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> contains
+                an element with the specified key.
+            </summary>
+            <param name="key">
+                The key to locate in the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </param>
+            <returns>
+                <b>true</b> if the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> contains an element
+                with the specified key; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.Remove(`0)">
+            <summary>
+                Removes the element with the specified key from
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+            <param name="key">
+                The key of the element to remove.
+            </param>
+            <returns>
+                <b>true</b> if the element is successfully removed; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.TryGetValue(`0,`1@)">
+            <summary>
+                Gets the value associated with the specified key.
+            </summary>
+            <param name="key">
+                The key whose value to get.
+            </param>
+            <param name="value">
+                When this method returns, the value associated with the specified key, if the key is found;
+                otherwise, the default value for the type of the <paramref name="value"/> parameter.
+                This parameter is passed uninitialized.
+            </param>
+            <returns>
+                <b>true</b> if the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> contains an element
+                with the specified key; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+                Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </summary>
+            <param name="item">
+                The object to add to the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.Clear">
+            <summary>
+                Removes all items from the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+                Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains the specified value.
+            </summary>
+            <param name="item">
+                The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </param>
+            <returns>
+                <b>true</b> if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <summary>
+                Copies the elements of the <see cref="T:System.Collections.Generic.ICollection`1"/> to an <see cref="T:System.Array"/>,
+                starting at a particular <see cref="T:System.Array"/> index.
+            </summary>
+            <param name="array">
+                The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied
+                from <see cref="T:System.Collections.Generic.ICollection`1"/>. The <see cref="T:System.Array"/> must have zero-based indexing.
+            </param>
+            <param name="arrayIndex">
+                The zero-based index in <paramref name="array"/> at which copying begins.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="array"/> is <b>null</b>.
+            </exception>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+                <paramref name="arrayIndex"/> is less than 0.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+                The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1"/> is greater than the available
+                space from <paramref name="arrayIndex"/> to the end of the destination <paramref name="array"/>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.System#Collections#Generic#ICollection{System#Collections#Generic#KeyValuePair{TKey@TValue}}#Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <summary>
+                Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </summary>
+            <param name="item">
+                The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+            </param>
+            <returns>
+                <b>true</b> if <paramref name="item"/> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1"/>;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.GetEnumerator">
+            <summary>
+                Returns an enumerator that iterates through
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+            <returns>
+                An <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionary`3.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+                Returns an enumerator that iterates through
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>..
+            </summary>
+            <returns>
+                An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionary`3.Keys">
+            <summary>
+                Gets an <see cref="T:System.Collections.Generic.ICollection`1"/> containing the keys of
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionary`3.Values">
+            <summary>
+                Gets an <see cref="T:System.Collections.Generic.ICollection`1"/> containing the values of
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionary`3.Item(`0)">
+            <summary>
+                Gets or sets the element with the specified key.
+            </summary>
+            <param name="key">
+                The key of the element to get or set.
+            </param>
+            <returns>
+                The element with the specified key.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="key"/> is <b>null</b>.
+            </exception>
+            <exception cref="T:System.Collections.Generic.KeyNotFoundException">
+                An element with the specified key was not found.
+            </exception>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionary`3.Count">
+            <summary>
+                Gets the number of elements contained in
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionary`3.IsReadOnly">
+            <summary>
+                Gets a value indicating whether
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> is read-only.
+            </summary>
+        </member>
+        <member name="T:Omnifactotum.FixedSizeDictionaryDeterminant`1">
+            <summary>
+                Specifies the size of a <see cref="T:Omnifactotum.FixedSizeDictionary`3"/> as well as mapping
+                of between keys and internal indexes.
+            </summary>
+            <typeparam name="TKey">
+                The type of the key in the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionaryDeterminant`1.GetIndex(`0)">
+            <summary>
+                Gets the internal index corresponding to the specified key.
+            </summary>
+            <param name="key">
+                The key to get the index of.
+            </param>
+            <returns>
+                The internal index corresponding to the specified key.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.FixedSizeDictionaryDeterminant`1.GetKey(System.Int32)">
+            <summary>
+                Gets the key corresponding to the specified internal index.
+            </summary>
+            <param name="index">
+                The index to get the key for.
+            </param>
+            <returns>
+                The key corresponding to the specified internal index.
+            </returns>
+        </member>
+        <member name="P:Omnifactotum.FixedSizeDictionaryDeterminant`1.Size">
+            <summary>
+                Gets the constant size of an internal array used in
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.#ctor(System.Collections.Generic.IDictionary{`0,`1})">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class
+                by copying the key/values pairs from the specified dictionary.
+            </summary>
+            <param name="dictionary">
+                The dictionary to copy the key/values pairs from.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="dictionary"/> is <b>null</b>.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.#ctor(Omnifactotum.FixedSizeDictionary{`0,`1,Omnifactotum.EnumFixedSizeDictionary{`0,`1}.EnumDeterminant})">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class
+                by copying the key/values pairs from the specified dictionary.
+            </summary>
+            <param name="dictionary">
+                The dictionary to copy the key/values pairs from.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <paramref name="dictionary"/> is <b>null</b>.
+            </exception>
+        </member>
+        <member name="T:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant">
+            <summary>
+                Represents the determinant for the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.#ctor">
+            <summary>
+                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant"/> class.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.GetIndex(`0)">
+            <summary>
+                Gets the internal index corresponding to the specified key.
+            </summary>
+            <param name="key">
+                The key to get the index of.
+            </param>
+            <returns>
+                The internal index corresponding to the specified key.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.GetKey(System.Int32)">
+            <summary>
+                Gets the key corresponding to the specified internal index.
+            </summary>
+            <param name="index">
+                The index to get the key for.
+            </param>
+            <returns>
+                The key corresponding to the specified internal index.
+            </returns>
+        </member>
+        <member name="P:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.Size">
+            <summary>
+                Gets the constant size of an internal array used in
+                the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
+            </summary>
+        </member>
         <member name="T:System.Linq.Expressions.OmnifactotumExpressionExtensions">
             <summary>
                 Contains extension methods for the classes in the <b>System.Linq.Expressions</b> namespace.

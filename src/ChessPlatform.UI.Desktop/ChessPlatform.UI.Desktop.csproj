@@ -43,9 +43,9 @@
     <ApplicationIcon>..\Solution Items\Icons\ChessPlatformIcon-256.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum">
+    <Reference Include="Omnifactotum, Version=0.3.0.79, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Omnifactotum.0.3.0.74\lib\net40-Client\Omnifactotum.dll</HintPath>
+      <HintPath>..\packages\Omnifactotum.0.3.0.79\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

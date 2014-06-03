@@ -31,8 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum">
-      <HintPath>..\packages\Omnifactotum.0.3.0.74\lib\net40-Client\Omnifactotum.dll</HintPath>
+    <Reference Include="Omnifactotum, Version=0.3.0.79, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Omnifactotum.0.3.0.79\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,7 +64,6 @@
     <Compile Include="SmartEnoughPlayer.cs" />
     <Compile Include="DummyPlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj">
@@ -72,6 +72,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="packages.config" />
     <None Include="Resources\OpeningBook.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
