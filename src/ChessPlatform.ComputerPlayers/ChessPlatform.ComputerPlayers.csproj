@@ -51,6 +51,7 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
+    <Compile Include="SmartEnoughPlayerMoveChooser.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
