@@ -26,6 +26,7 @@ namespace ChessPlatform.Internal
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
         private readonly EnumFixedSizeDictionary<Piece, Bitboard> _bitboards;
+        private readonly EnumFixedSizeDictionary<PieceColor, Bitboard> _entireColorBitboards;
         private readonly Piece[] _pieces;
 
         #endregion
@@ -41,7 +42,12 @@ namespace ChessPlatform.Internal
             _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(
                 ChessConstants.Pieces.ToDictionary(
                     Factotum.Identity,
-                    item => new Bitboard(item == Piece.None ? -1L : 0L)));
+                    item => new Bitboard(item == Piece.None ? ~0L : 0L)));
+
+            _entireColorBitboards = new EnumFixedSizeDictionary<PieceColor, Bitboard>(
+                ChessConstants.PieceColors.ToDictionary(
+                    Factotum.Identity,
+                    this.GetEntireColorBitboardNonCached));
         }
 
         private PieceData(PieceData other)
@@ -57,6 +63,7 @@ namespace ChessPlatform.Internal
 
             _pieces = other._pieces.Copy();
             _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(other._bitboards);
+            _entireColorBitboards = new EnumFixedSizeDictionary<PieceColor, Bitboard>(other._entireColorBitboards);
         }
 
         #endregion
@@ -231,8 +238,8 @@ namespace ChessPlatform.Internal
             var targetColor = targetPieceInfo.Color.Value;
             var attackingColor = targetColor.Invert();
 
-            var targetColorBitboard = GetEntireColorBitboard(targetColor);
-            var attackingColorBitboard = GetEntireColorBitboard(attackingColor);
+            var targetColorBitboard = _entireColorBitboards[targetColor];
+            var attackingColorBitboard = _entireColorBitboards[attackingColor];
 
             var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
             var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
@@ -395,8 +402,22 @@ namespace ChessPlatform.Internal
 
             var oldPiece = _pieces[x88Value];
             _pieces[x88Value] = piece;
+
             _bitboards[oldPiece] &= ~bitboardBit;
+
+            var oldPieceColor = oldPiece.GetColor();
+            if (oldPieceColor.HasValue)
+            {
+                _entireColorBitboards[oldPieceColor.Value] &= ~bitboardBit;
+            }
+
             _bitboards[piece] |= bitboardBit;
+
+            var pieceColor = piece.GetColor();
+            if (pieceColor.HasValue)
+            {
+                _entireColorBitboards[pieceColor.Value] |= bitboardBit;
+            }
 
             return oldPiece;
         }
@@ -800,6 +821,21 @@ namespace ChessPlatform.Internal
                             intersectingPositions));
                 }
             }
+
+            foreach (var color in ChessConstants.PieceColors)
+            {
+                var actual = _entireColorBitboards[color];
+                var expected = GetEntireColorBitboardNonCached(color);
+                if (actual != expected)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Entire-color-bitboard inconsistency: expected '{0}', actual '{1}'.",
+                            expected,
+                            actual));
+                }
+            }
         }
 
         private MovePieceData MovePieceInternal(PieceMove move)
@@ -924,7 +960,7 @@ namespace ChessPlatform.Internal
             return CheckSquares(expectedPiece, (IEnumerable<Position>)positions);
         }
 
-        private Bitboard GetEntireColorBitboard(PieceColor color)
+        private Bitboard GetEntireColorBitboardNonCached(PieceColor color)
         {
             return ChessConstants.ColorToPiecesMap[color].Aggregate(
                 Bitboard.Zero,
