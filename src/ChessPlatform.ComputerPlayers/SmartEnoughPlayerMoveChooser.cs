@@ -531,32 +531,33 @@ namespace ChessPlatform.ComputerPlayers
             return alpha;
         }
 
-        private int ComputeAlphaBeta([NotNull] IGameBoard board, int plyDepth, int alpha, int beta)
+        private int ComputeAlphaBeta([NotNull] IGameBoard board, int plyDistance, int alpha, int beta)
         {
             #region Argument Check
 
-            if (plyDepth < 0)
+            if (plyDistance <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "plyDepth",
-                    plyDepth,
-                    @"The value cannot be negative.");
+                    "plyDistance",
+                    plyDistance,
+                    @"The value must be positive.");
             }
 
             #endregion
 
             _cancellationToken.ThrowIfCancellationRequested();
 
-            var cachedScore = _transpositionTable.GetScore(board, plyDepth);
+            var cachedScore = _transpositionTable.GetScore(board, plyDistance);
             if (cachedScore.HasValue)
             {
                 return cachedScore.Value;
             }
 
+            var plyDepth = _maxPlyDepth - plyDistance;
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
                 var result = Quiesce(board, alpha, beta);
-                _transpositionTable.SaveScore(board, plyDepth, result);
+                _transpositionTable.SaveScore(board, plyDistance, result);
                 return result;
             }
 
@@ -567,7 +568,7 @@ namespace ChessPlatform.ComputerPlayers
 
                 var currentBoard = board.MakeMove(move);
 
-                var score = -ComputeAlphaBeta(currentBoard, plyDepth - 1, -beta, -alpha);
+                var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (beta <= score)
                 {
@@ -581,7 +582,7 @@ namespace ChessPlatform.ComputerPlayers
                 }
             }
 
-            _transpositionTable.SaveScore(board, plyDepth, alpha);
+            _transpositionTable.SaveScore(board, plyDistance, alpha);
             return alpha;
         }
 
@@ -610,7 +611,7 @@ namespace ChessPlatform.ComputerPlayers
                 var currentBoard = board.MakeMove(move);
                 var localScore = -EvaluatePositionScore(currentBoard);
 
-                var score = -ComputeAlphaBeta(currentBoard, _maxPlyDepth - 1, -RootBeta, -alpha);
+                var score = -ComputeAlphaBeta(currentBoard, 1, -RootBeta, -alpha);
 
                 stopwatch.Stop();
 
@@ -758,7 +759,7 @@ namespace ChessPlatform.ComputerPlayers
 
             #region Public Methods
 
-            public int? GetScore([NotNull] IGameBoard board, int plyDepth)
+            public int? GetScore([NotNull] IGameBoard board, int plyDistance)
             {
                 #region Argument Check
 
@@ -769,7 +770,7 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
-                var key = GetKey(board, plyDepth);
+                var key = GetKey(board, plyDistance);
 
                 int result;
                 if (!_scoreMap.TryGetValue(key, out result))
@@ -782,7 +783,7 @@ namespace ChessPlatform.ComputerPlayers
                 return result;
             }
 
-            public void SaveScore([NotNull] IGameBoard board, int plyDepth, int score)
+            public void SaveScore([NotNull] IGameBoard board, int plyDistance, int score)
             {
                 #region Argument Check
 
@@ -798,7 +799,7 @@ namespace ChessPlatform.ComputerPlayers
                     return;
                 }
 
-                var key = GetKey(board, plyDepth);
+                var key = GetKey(board, plyDistance);
                 _scoreMap.Add(key, score);
 
                 if (_scoreMap.Count >= this.MaximumItemCount)
