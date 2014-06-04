@@ -17,14 +17,14 @@ namespace ChessPlatform.ComputerPlayers
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
 
-        internal static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
+        private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             CreatePieceTypeToMaterialWeightMap();
 
         // ReSharper disable once UnusedMember.Local
-        internal static readonly Dictionary<PieceType, int> PieceTypeToMobilityWeightMap =
+        private static readonly Dictionary<PieceType, int> PieceTypeToMobilityWeightMap =
             CreatePieceTypeToMobilityWeightMap();
 
-        internal static readonly Dictionary<Piece, Dictionary<Position, int>> PieceToPositionWeightMap =
+        private static readonly Dictionary<Piece, Dictionary<Position, int>> PieceToPositionWeightMap =
             CreatePieceToPositionWeightMap();
 
         private readonly IGameBoard _rootBoard;
@@ -642,9 +642,47 @@ namespace ChessPlatform.ComputerPlayers
             return bestMove;
         }
 
+        private PieceMove FindMateMove()
+        {
+            _cancellationToken.ThrowIfCancellationRequested();
+
+            //// TODO [vmcl] Ideally this method has to search for a guaranteed mate in a number of moves (rather than in mate-in-one only)
+
+            var mateMoves = _rootBoard
+                .ValidMoves
+                .Keys
+                .Where(
+                    move =>
+                    {
+                        _cancellationToken.ThrowIfCancellationRequested();
+
+                        var currentBoard = _rootBoard.MakeMove(move);
+                        return currentBoard.State == GameState.Checkmate;
+                    })
+                .ToArray();
+
+            if (mateMoves.Length == 0)
+            {
+                return null;
+            }
+
+            return mateMoves
+                .OrderBy(move => PieceTypeToMaterialWeightMap[_rootBoard[move.From].GetPieceType()])
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ThenBy(move => move.PromotionResult)
+                .First();
+        }
+
         private PieceMove GetBestMoveInternal()
         {
             _cancellationToken.ThrowIfCancellationRequested();
+
+            var mateMove = FindMateMove();
+            if (mateMove != null)
+            {
+                return mateMove;
+            }
 
             var result = ComputeAlphaBetaRoot(_rootBoard);
             return result.EnsureNotNull();

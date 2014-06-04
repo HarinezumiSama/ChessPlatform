@@ -122,52 +122,13 @@ namespace ChessPlatform.ComputerPlayers
             return openingBook;
         }
 
-        private static PieceMove FindMateMove([NotNull] IGameBoard board, CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            //// TODO [vmcl] Ideally this method has to search for a guaranteed mate in a number of moves (rather than in mate-in-one only)
-
-            var mateMoves = board
-                .ValidMoves
-                .Keys
-                .Where(
-                    move =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var currentBoard = board.MakeMove(move);
-                        return currentBoard.State == GameState.Checkmate;
-                    })
-                .ToArray();
-
-            if (mateMoves.Length == 0)
-            {
-                return null;
-            }
-
-            return mateMoves
-                .OrderBy(
-                    move => SmartEnoughPlayerMoveChooser.PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ThenBy(move => move.PromotionResult)
-                .First();
-        }
-
-        private PieceMove DoGetMoveInternal(IGameBoard board, CancellationToken cancellationToken)
+        private PieceMove DoGetMoveInternal([NotNull] IGameBoard board, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (board.ValidMoves.Count == 1)
             {
                 return board.ValidMoves.Keys.Single();
-            }
-
-            var mateMove = FindMateMove(board, cancellationToken);
-            if (mateMove != null)
-            {
-                return mateMove;
             }
 
             if (_openingBook != null)
