@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
@@ -16,6 +17,8 @@ namespace ChessPlatform.ComputerPlayers
         public const int MinimumMaxPlyDepth = 2;
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
+
+        private const int MaxInitialCapacity = 100000;
 
         private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             CreatePieceTypeToMaterialWeightMap();
@@ -31,6 +34,7 @@ namespace ChessPlatform.ComputerPlayers
         private readonly int _maxPlyDepth;
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
+        private readonly BoardCache _boardCache;
 
         #endregion
 
@@ -67,7 +71,8 @@ namespace ChessPlatform.ComputerPlayers
             _rootBoard = rootBoard;
             _maxPlyDepth = maxPlyDepth;
             _cancellationToken = cancellationToken;
-            _transpositionTable = new SimpleTranspositionTable(10000000);
+            _transpositionTable = new SimpleTranspositionTable(5000000);
+            _boardCache = new BoardCache(2000000);
         }
 
         #endregion
@@ -83,14 +88,19 @@ namespace ChessPlatform.ComputerPlayers
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, TT {{hits {3}, misses {4}, size {5}/{6}}}, for ""{7}"".",
+                @"[{0}] Result: {1}, {2} spent, TT {{hits {3}/{4}, size {5}/{6}}}"
+                    + @", B-Cache {{hits {7}/{8}, size {9}/{10}}}, for ""{11}"".",
                 currentMethodName,
                 result,
                 stopwatch.Elapsed,
                 _transpositionTable.HitCount,
-                _transpositionTable.MissCount,
+                _transpositionTable.TotalRequestCount,
                 _transpositionTable.ItemCount,
                 _transpositionTable.MaximumItemCount,
+                _boardCache.HitCount,
+                _boardCache.TotalRequestCount,
+                _boardCache.ItemCount,
+                _boardCache.MaximumItemCount,
                 _rootBoard.GetFen());
 
             return result;
@@ -412,21 +422,38 @@ namespace ChessPlatform.ComputerPlayers
             ////return result;
         }
 
-        private static int EvaluateMobility([NotNull] IGameBoard board)
+        private static PieceMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
+        {
+            //// TODO [vmcl] Consider en passant capture
+
+            var cheapestAttackerMove = board
+                .ValidMoves
+                .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
+                .Select(pair => pair.Key)
+                .OrderBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .FirstOrDefault();
+
+            return cheapestAttackerMove;
+        }
+
+        private int EvaluateMobility([NotNull] IGameBoard board)
         {
             if (!board.CanMakeNullMove)
             {
                 return 0;
             }
 
+            var nullMoveBoard = _boardCache.MakeNullMove(board);
+
             var mobility = EvaluateBoardMobility(board);
-            var opponentMobility = EvaluateBoardMobility(board.MakeNullMove());
+            var opponentMobility = EvaluateBoardMobility(nullMoveBoard);
 
             var result = mobility - opponentMobility;
             return result;
         }
 
-        private static int EvaluatePositionScore([NotNull] IGameBoard board)
+        private int EvaluatePositionScore([NotNull] IGameBoard board)
         {
             switch (board.State)
             {
@@ -445,19 +472,10 @@ namespace ChessPlatform.ComputerPlayers
             return result;
         }
 
-        private static PieceMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
+        private IGameBoard MakeMoveOptimized([NotNull] IGameBoard board, [NotNull] PieceMove move)
         {
-            //// TODO [vmcl] Consider en passant capture
-
-            var cheapestAttackerMove = board
-                .ValidMoves
-                .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
-                .FirstOrDefault();
-
-            return cheapestAttackerMove;
+            var result = _boardCache.MakeMove(board, move);
+            return result;
         }
 
         private int ComputeStaticExchangeEvaluationScore(
@@ -473,7 +491,7 @@ namespace ChessPlatform.ComputerPlayers
                 return 0;
             }
 
-            var currentBoard = board.MakeMove(actualMove);
+            var currentBoard = MakeMoveOptimized(board, actualMove);
             var weight = PieceTypeToMaterialWeightMap[currentBoard.LastCapturedPiece.GetPieceType()];
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
@@ -513,7 +531,7 @@ namespace ChessPlatform.ComputerPlayers
                     continue;
                 }
 
-                var currentBoard = board.MakeMove(captureMove);
+                var currentBoard = MakeMoveOptimized(board, captureMove);
                 var score = -Quiesce(currentBoard, -beta, -alpha);
 
                 if (beta <= score)
@@ -566,7 +584,7 @@ namespace ChessPlatform.ComputerPlayers
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                var currentBoard = board.MakeMove(move);
+                var currentBoard = MakeMoveOptimized(board, move);
 
                 var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
@@ -608,7 +626,7 @@ namespace ChessPlatform.ComputerPlayers
 
                 stopwatch.Restart();
 
-                var currentBoard = board.MakeMove(move);
+                var currentBoard = MakeMoveOptimized(board, move);
                 var localScore = -EvaluatePositionScore(currentBoard);
 
                 var score = -ComputeAlphaBeta(currentBoard, 1, -RootBeta, -alpha);
@@ -657,7 +675,7 @@ namespace ChessPlatform.ComputerPlayers
                     {
                         _cancellationToken.ThrowIfCancellationRequested();
 
-                        var currentBoard = _rootBoard.MakeMove(move);
+                        var currentBoard = MakeMoveOptimized(_rootBoard, move);
                         return currentBoard.State == GameState.Checkmate;
                     })
                 .ToArray();
@@ -697,8 +715,7 @@ namespace ChessPlatform.ComputerPlayers
         {
             #region Constants and Fields
 
-            private readonly Dictionary<Tuple<PackedGameBoard, int>, int> _scoreMap =
-                new Dictionary<Tuple<PackedGameBoard, int>, int>();
+            private readonly Dictionary<Tuple<PackedGameBoard, int>, int> _scoreMap;
 
             #endregion
 
@@ -721,7 +738,10 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
+                var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+
                 this.MaximumItemCount = maximumItemCount;
+                _scoreMap = new Dictionary<Tuple<PackedGameBoard, int>, int>(initialCapacity);
             }
 
             #endregion
@@ -740,7 +760,7 @@ namespace ChessPlatform.ComputerPlayers
                 private set;
             }
 
-            public ulong MissCount
+            public ulong TotalRequestCount
             {
                 get;
                 private set;
@@ -770,12 +790,13 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
+                this.TotalRequestCount++;
+
                 var key = GetKey(board, plyDistance);
 
                 int result;
                 if (!_scoreMap.TryGetValue(key, out result))
                 {
-                    this.MissCount++;
                     return null;
                 }
 
@@ -804,8 +825,8 @@ namespace ChessPlatform.ComputerPlayers
 
                 if (_scoreMap.Count >= this.MaximumItemCount)
                 {
-                    Trace.TraceWarning(
-                        "[{0}] Maximum entry count has been reached ({1}).",
+                    Trace.TraceInformation(
+                        "[{0}] Maximum item count has been reached ({1}).",
                         MethodBase.GetCurrentMethod().GetQualifiedName(),
                         this.MaximumItemCount);
                 }
@@ -819,6 +840,204 @@ namespace ChessPlatform.ComputerPlayers
             {
                 var packedGameBoard = board.Pack();
                 return Tuple.Create(packedGameBoard, plyDepth);
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region BoardCacheKey Class
+
+        private sealed class BoardCacheKey : IEquatable<BoardCacheKey>
+        {
+            #region Constants and Fields
+
+            private static readonly ByReferenceEqualityComparer<IGameBoard> BoardEqualityComparer =
+                ByReferenceEqualityComparer<IGameBoard>.Instance;
+
+            private static readonly EqualityComparer<PieceMove> MoveEqualityComparer =
+                EqualityComparer<PieceMove>.Default;
+
+            private readonly IGameBoard _board;
+            private readonly PieceMove _move;
+            private readonly int _hashCode;
+
+            #endregion
+
+            #region Constructors
+
+            internal BoardCacheKey([NotNull] IGameBoard board, [CanBeNull] PieceMove move)
+            {
+                #region Argument Check
+
+                if (board == null)
+                {
+                    throw new ArgumentNullException("board");
+                }
+
+                #endregion
+
+                _board = board;
+                _move = move;
+                _hashCode = BoardEqualityComparer.GetHashCode(_board)
+                    ^ (_move == null ? 0 : MoveEqualityComparer.GetHashCode(_move));
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public override bool Equals(object obj)
+            {
+                //return obj is BoardCacheKey && Equals((BoardCacheKey)obj);
+                return Equals(obj as BoardCacheKey);
+            }
+
+            public override int GetHashCode()
+            {
+                return _hashCode;
+            }
+
+            #endregion
+
+            #region IEquatable<BoardCacheKey> Members
+
+            public bool Equals(BoardCacheKey other)
+            {
+                if (ReferenceEquals(other, null))
+                {
+                    return false;
+                }
+
+                if (ReferenceEquals(other, this))
+                {
+                    return true;
+                }
+
+                return other._hashCode == _hashCode
+                    && BoardEqualityComparer.Equals(other._board, _board)
+                    && MoveEqualityComparer.Equals(other._move, _move);
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region BoardCache Class
+
+        private sealed class BoardCache
+        {
+            #region Constants and Fields
+
+            private readonly Dictionary<BoardCacheKey, IGameBoard> _boards;
+
+            #endregion
+
+            #region Constructors
+
+            internal BoardCache(int maximumItemCount)
+            {
+                #region Argument Check
+
+                if (maximumItemCount <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        "maximumItemCount",
+                        maximumItemCount,
+                        @"The value must be positive.");
+                }
+
+                #endregion
+
+                var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+
+                this.MaximumItemCount = maximumItemCount;
+                _boards = new Dictionary<BoardCacheKey, IGameBoard>(initialCapacity);
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            public int MaximumItemCount
+            {
+                get;
+                private set;
+            }
+
+            public int ItemCount
+            {
+                [DebuggerStepThrough]
+                get
+                {
+                    return _boards.Count;
+                }
+            }
+
+            public int HitCount
+            {
+                get;
+                private set;
+            }
+
+            public int TotalRequestCount
+            {
+                get;
+                private set;
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public IGameBoard MakeMove([NotNull] IGameBoard board, [NotNull] PieceMove move)
+            {
+                var result = MakeMoveInternal(board, move);
+                return result;
+            }
+
+            public IGameBoard MakeNullMove([NotNull] IGameBoard board)
+            {
+                var result = MakeMoveInternal(board, null);
+                return result;
+            }
+
+            #endregion
+
+            #region Private Methods
+
+            private IGameBoard MakeMoveInternal([NotNull] IGameBoard board, [CanBeNull] PieceMove move)
+            {
+                var key = new BoardCacheKey(board, move);
+
+                this.TotalRequestCount++;
+
+                IGameBoard result;
+                if (_boards.TryGetValue(key, out result))
+                {
+                    this.HitCount++;
+                    return result;
+                }
+
+                result = move == null ? board.MakeNullMove() : board.MakeMove(move);
+
+                if (_boards.Count >= this.MaximumItemCount)
+                {
+                    return result;
+                }
+
+                _boards.Add(key, result);
+                if (_boards.Count >= this.MaximumItemCount)
+                {
+                    Trace.TraceInformation(
+                        "[{0}] Maximum item count has been reached ({1}).",
+                        MethodBase.GetCurrentMethod().GetQualifiedName(),
+                        this.MaximumItemCount);
+                }
+
+                return result;
             }
 
             #endregion
