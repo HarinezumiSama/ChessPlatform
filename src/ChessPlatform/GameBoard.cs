@@ -27,6 +27,7 @@ namespace ChessPlatform
         private readonly string _resultString;
         private readonly bool _validateAfterMove;
         private readonly GameBoard _previousBoard;
+        private PackedGameBoard _packedGameBoard;
 
         #endregion
 
@@ -528,7 +529,12 @@ namespace ChessPlatform
 
         public PackedGameBoard Pack()
         {
-            return new PackedGameBoard(this);
+            if (_packedGameBoard == null)
+            {
+                _packedGameBoard = new PackedGameBoard(this);
+            }
+
+            return _packedGameBoard;
         }
 
         IGameBoard IGameBoard.MakeMove(PieceMove move)
