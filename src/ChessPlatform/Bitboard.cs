@@ -14,10 +14,77 @@ namespace ChessPlatform
 
         public static readonly Bitboard Zero = new Bitboard(0L);
 
-        private static readonly Dictionary<long, int> BitToIndexMap =
-            Enumerable.Range(0, sizeof(long) * 8)
-                .Select(i => new { Key = 1L << i, Value = i })
-                .ToDictionary(obj => obj.Key, obj => obj.Value);
+        #region Index64
+
+        private static readonly int[] Index64 =
+        {
+            0,
+            1,
+            48,
+            2,
+            57,
+            49,
+            28,
+            3,
+            61,
+            58,
+            50,
+            42,
+            38,
+            29,
+            17,
+            4,
+            62,
+            55,
+            59,
+            36,
+            53,
+            51,
+            43,
+            22,
+            45,
+            39,
+            33,
+            30,
+            24,
+            18,
+            12,
+            5,
+            63,
+            47,
+            56,
+            27,
+            60,
+            41,
+            37,
+            16,
+            54,
+            35,
+            52,
+            21,
+            44,
+            32,
+            23,
+            11,
+            46,
+            26,
+            40,
+            15,
+            34,
+            20,
+            31,
+            10,
+            25,
+            14,
+            19,
+            9,
+            13,
+            8,
+            7,
+            6
+        };
+
+        #endregion
 
         private readonly long _value;
 
@@ -25,13 +92,18 @@ namespace ChessPlatform
 
         #region Constructors
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Bitboard"/> structure
+        ///     using the specified value.
+        /// </summary>
         public Bitboard(long value)
         {
             _value = value;
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Bitboard"/> class.
+        ///     Initializes a new instance of the <see cref="Bitboard"/> structure
+        ///     using the specified positions.
         /// </summary>
         public Bitboard(IEnumerable<Position> positions)
         {
@@ -173,9 +245,11 @@ namespace ChessPlatform
                 return NoBitSetIndex;
             }
 
+            const long Debruijn64 = 0x03f79d71b4cb0a89L;
+
             var firstBitOnly = value & -value;
 
-            var result = BitToIndexMap[firstBitOnly];
+            var result = Index64[((ulong)(firstBitOnly * Debruijn64)) >> 58];
             return result;
         }
 
