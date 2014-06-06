@@ -8,6 +8,7 @@
         WindowState="Maximized" x:ClassModifier="internal">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="IsComputerPlayerActiveConverter" />
+        <converters:KeyGestureConverter x:Key="KeyGestureConverter" />
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="commands:GameWindowCommands.Exit" Executed="Exit_Executed" />
@@ -38,15 +39,20 @@
         <Menu Name="MainMenu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
               VerticalAlignment="Top" Focusable="False">
             <MenuItem Name="GameMenuItem" Header="_Game">
-                <MenuItem Command="commands:GameWindowCommands.NewGame" />
-                <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard" />
+                <MenuItem Command="commands:GameWindowCommands.NewGame"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
-                <MenuItem Command="commands:GameWindowCommands.Exit" />
+                <MenuItem Command="commands:GameWindowCommands.Exit"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
             <MenuItem Name="HistoryMenuItem" Header="_History">
-                <MenuItem Command="commands:GameWindowCommands.UndoLastMove" />
+                <MenuItem Command="commands:GameWindowCommands.UndoLastMove"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
-                <MenuItem Command="commands:GameWindowCommands.CopyFenToClipboard" />
+                <MenuItem Command="commands:GameWindowCommands.CopyFenToClipboard"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
         </Menu>
 

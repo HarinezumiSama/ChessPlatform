@@ -40,7 +40,7 @@ namespace ChessPlatform.UI.Desktop.Commands
             "_Copy FEN to Clipboard",
             "CopyFenToClipboard",
             typeof(GameWindowCommands),
-            new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control) });
+            new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Alt) });
 
         #endregion
     }

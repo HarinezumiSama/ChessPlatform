@@ -74,6 +74,7 @@
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanToValueConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\StatusLabelTextConverter.cs" />
     <Compile Include="GuiHumanChessPlayer.cs" />
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
