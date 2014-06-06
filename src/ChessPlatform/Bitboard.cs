@@ -10,6 +10,8 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
+        public const int NoBitSetIndex = -1;
+
         public static readonly Bitboard Zero = new Bitboard(0L);
 
         private static readonly Dictionary<long, int> BitToIndexMap =
@@ -168,7 +170,7 @@ namespace ChessPlatform
         {
             if (value == 0)
             {
-                return -1;
+                return NoBitSetIndex;
             }
 
             var firstBitOnly = value & -value;

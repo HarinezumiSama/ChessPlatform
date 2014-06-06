@@ -10,12 +10,31 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
-        [TestCase(0L, -1)]
-        [TestCase(1L, 0)]
-        [TestCase(1L << 1, 1)]
-        [TestCase(1L << 49, 49)]
+        public void TestFindFirstBitSetWhenNoBitsAreSet()
+        {
+            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
+
+            var bitboard = new Bitboard(0L);
+            var actualResult = bitboard.FindFirstBitSet();
+            Assert.That(actualResult, Is.EqualTo(Bitboard.NoBitSetIndex));
+        }
+
+        [Test]
+        public void TestFindFirstBitSetWhenSingleBitIsSet()
+        {
+            for (var index = 0; index < ChessConstants.SquareCount; index++)
+            {
+                var value = 1L << index;
+                var bitboard = new Bitboard(value);
+                var actualResult = bitboard.FindFirstBitSet();
+                Assert.That(actualResult, Is.EqualTo(index), "Failed for the bit {0}", index);
+            }
+        }
+
+        [Test]
+        [TestCase((1L << 0) | (1L << 17), 0)]
         [TestCase((1L << 49) | (1L << 23), 23)]
-        public void TestFindFirstBitSet(long value, int expectedResult)
+        public void TestFindFirstBitSetWhenMultipleBitsAreSet(long value, int expectedResult)
         {
             var bitboard = new Bitboard(value);
             var actualResult = bitboard.FindFirstBitSet();
