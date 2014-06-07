@@ -4,11 +4,13 @@
         xmlns:commands="clr-namespace:ChessPlatform.UI.Desktop.Commands"
         xmlns:converters="clr-namespace:ChessPlatform.UI.Desktop.Converters"
         xmlns:viewModels="clr-namespace:ChessPlatform.UI.Desktop.ViewModels"
-        Width="800" Height="450" MinWidth="800" MinHeight="450" WindowStartupLocation="CenterScreen" Margin="0"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        Width="800" Height="600" MinWidth="800" MinHeight="600" WindowStartupLocation="CenterScreen" Margin="0"
         WindowState="Maximized" x:ClassModifier="internal">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="IsComputerPlayerActiveConverter" />
         <converters:KeyGestureConverter x:Key="KeyGestureConverter" />
+        <system:Boolean x:Key="DebugShowGridLines">False</system:Boolean>
     </Window.Resources>
     <Window.CommandBindings>
         <CommandBinding Command="commands:GameWindowCommands.Exit" Executed="Exit_Executed" />
@@ -25,7 +27,7 @@
         <viewModels:GameWindowViewModel x:Name="ViewModel" />
     </Window.DataContext>
 
-    <Grid Name="MainGrid" Margin="5">
+    <Grid Name="MainGrid" Margin="5" ShowGridLines="{StaticResource DebugShowGridLines}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -61,19 +63,41 @@
 
         <Viewbox Name="BoardViewbox" Grid.Row="2" Grid.Column="0" Margin="0" HorizontalAlignment="Stretch"
                  VerticalAlignment="Top" Stretch="Uniform" StretchDirection="Both">
-            <Border BorderBrush="Black" BorderThickness="2">
-                <Grid>
-                    <Grid Name="BoardGrid" Margin="0" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch" />
+            <Grid ShowGridLines="{StaticResource DebugShowGridLines}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
 
-                    <Grid Name="PromotionContainerGrid" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch" Grid.ZIndex="10000" Background="Gray" Opacity="0.5" />
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
 
-                    <Grid Name="ComputerThinkingGrid" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch" Grid.ZIndex="20000" Background="Gray" Opacity="0.3"
-                          Visibility="{Binding IsComputerPlayerActive,Converter={StaticResource ResourceKey=IsComputerPlayerActiveConverter}}" />
-                </Grid>
-            </Border>
+                <Border BorderBrush="Transparent" BorderThickness="0,2,0,2" Grid.Row="0" Grid.Column="0" Margin="0">
+                    <Grid Name="RankSymbolGrid" Margin="0" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch" ShowGridLines="{StaticResource DebugShowGridLines}" />
+                </Border>
+
+                <Border BorderBrush="Black" BorderThickness="2" Grid.Row="0" Grid.Column="1" Margin="0">
+                    <Grid ShowGridLines="{StaticResource DebugShowGridLines}">
+                        <Grid Name="BoardGrid" Margin="0" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch" ShowGridLines="{StaticResource DebugShowGridLines}" />
+
+                        <Grid Name="PromotionContainerGrid" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch" Grid.ZIndex="10000" Background="Gray" Opacity="0.5" />
+
+                        <Grid Name="ComputerThinkingGrid" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch" Grid.ZIndex="20000" Background="Gray" Opacity="0.3"
+                              Visibility="{Binding IsComputerPlayerActive,Converter={StaticResource ResourceKey=IsComputerPlayerActiveConverter}}" />
+                    </Grid>
+                </Border>
+
+                <Border BorderBrush="Transparent" BorderThickness="2,0,2,0" Grid.Row="1" Grid.Column="1" Margin="0">
+                    <Grid Name="FileSymbolGrid" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          ShowGridLines="{StaticResource DebugShowGridLines}" />
+                </Border>
+            </Grid>
         </Viewbox>
 
         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MoveHistory, Mode=OneWay}" Margin="0"

@@ -198,6 +198,51 @@ namespace ChessPlatform.UI.Desktop
                 this.BoardGrid.Children.Add(textBlock);
             }
 
+            Enumerable
+                .Range(0, ChessConstants.RankCount)
+                .DoForEach(i => this.RankSymbolGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
+
+            for (var rank = 0; rank < ChessConstants.RankCount; rank++)
+            {
+                var textBlock = new TextBlock
+                {
+                    Margin = new Thickness(1),
+                    LayoutTransform = new ScaleTransform(0.25d, 0.25d),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Text = (rank + 1).ToString(CultureInfo.InvariantCulture),
+                    Foreground = Brushes.CadetBlue
+                };
+
+                textBlock.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - rank);
+                textBlock.SetValue(Grid.ColumnProperty, 0);
+
+                this.RankSymbolGrid.Children.Add(textBlock);
+            }
+
+            Enumerable
+                .Range(0, ChessConstants.FileCount)
+                .DoForEach(
+                    i => this.FileSymbolGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
+
+            for (var file = 0; file < ChessConstants.FileCount; file++)
+            {
+                var textBlock = new TextBlock
+                {
+                    Margin = new Thickness(1),
+                    LayoutTransform = new ScaleTransform(0.25d, 0.25d),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Text = ((char)('A' + file)).ToString(CultureInfo.InvariantCulture),
+                    Foreground = Brushes.CadetBlue
+                };
+
+                textBlock.SetValue(Grid.RowProperty, 0);
+                textBlock.SetValue(Grid.ColumnProperty, file);
+
+                this.FileSymbolGrid.Children.Add(textBlock);
+            }
+
             this.StatusLabel.SetBinding(
                 ContentProperty,
                 new Binding(Factotum.For<GameWindowViewModel>.GetPropertyName(obj => obj.CurrentGameBoard))
