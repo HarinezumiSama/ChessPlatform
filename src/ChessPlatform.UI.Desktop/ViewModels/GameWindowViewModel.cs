@@ -179,7 +179,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             #region Argument Check
 
-            if (string.IsNullOrWhiteSpace(fen))
+            if (!GameBoard.IsValidFen(fen))
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
@@ -206,6 +206,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void Play()
         {
+            if (_gameManager == null)
+            {
+                throw new InvalidOperationException("Game Manager is not initialized.");
+            }
+
             ResetSelectionMode();
 
             _gameManager.Play();

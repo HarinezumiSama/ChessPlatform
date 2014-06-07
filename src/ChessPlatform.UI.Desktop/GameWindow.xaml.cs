@@ -118,6 +118,8 @@ namespace ChessPlatform.UI.Desktop
                         "Invalid FEN:{0}{1}",
                         Environment.NewLine,
                         fen));
+
+                return;
             }
 
             this.ViewModel.Play();

@@ -305,6 +305,28 @@ namespace ChessPlatform
 
         #region Public Methods
 
+        [DebuggerStepThrough]
+        public static bool IsValidFen(string fen)
+        {
+            if (fen.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            try
+            {
+                //// TODO [vmcl] Create FEN verification which is NOT exception based
+                // ReSharper disable once ObjectCreationAsStatement
+                new GameBoard(fen);
+            }
+            catch (ArgumentException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public override string ToString()
         {
             return GetFen();
