@@ -44,15 +44,10 @@ namespace ChessPlatform
                     ? -1
                     : board.EnPassantCaptureInfo.CapturePosition.Bitboard.FindFirstBitSet();
 
-            this.HalfMoveCountBy50MoveRule = board.HalfMoveCountBy50MoveRule;
-            this.FullMoveIndex = board.FullMoveIndex;
-
             this.HashCode = _pieces.ComputeCollectionHashCode()
                 .CombineHashCodes(ActiveColor)
                 .CombineHashCodes(CastlingOptions)
-                .CombineHashCodes(EnPassantMoveCapturePositionIndex)
-                .CombineHashCodes(HalfMoveCountBy50MoveRule)
-                .CombineHashCodes(FullMoveIndex);
+                .CombineHashCodes(EnPassantMoveCapturePositionIndex);
         }
 
         #endregion
@@ -72,18 +67,6 @@ namespace ChessPlatform
         }
 
         internal int EnPassantMoveCapturePositionIndex
-        {
-            get;
-            private set;
-        }
-
-        internal int HalfMoveCountBy50MoveRule
-        {
-            get;
-            private set;
-        }
-
-        internal int FullMoveIndex
         {
             get;
             private set;
@@ -129,8 +112,6 @@ namespace ChessPlatform
                 && other.ActiveColor == this.ActiveColor
                 && other.CastlingOptions == this.CastlingOptions
                 && other.EnPassantMoveCapturePositionIndex == this.EnPassantMoveCapturePositionIndex
-                && other.HalfMoveCountBy50MoveRule == this.HalfMoveCountBy50MoveRule
-                && other.FullMoveIndex == this.FullMoveIndex
                 && ByteArraysEqual(other._pieces, _pieces);
         }
 
