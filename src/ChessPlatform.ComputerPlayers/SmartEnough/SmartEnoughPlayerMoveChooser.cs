@@ -482,15 +482,26 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private int EvaluatePositionScore([NotNull] IGameBoard board)
+        private int EvaluatePositionScore([NotNull] IGameBoard board, int plyDistance)
         {
             switch (board.State)
             {
                 case GameState.Checkmate:
-                    return -MateScoreAbs;
+                    return -MateScoreAbs + plyDistance;
 
                 case GameState.Stalemate:
                     return 0;
+
+                default:
+                    {
+                        var autoDrawType = board.GetAutoDrawType();
+                        if (autoDrawType != AutoDrawType.None)
+                        {
+                            return 0;
+                        }
+                    }
+
+                    break;
             }
 
             var gamePhase = GetGamePhase(board);
@@ -534,11 +545,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private int Quiesce([NotNull] IGameBoard board, int alpha, int beta)
+        private int Quiesce([NotNull] IGameBoard board, int alpha, int beta, int plyDistance)
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
-            var standPatScore = EvaluatePositionScore(board);
+            var standPatScore = EvaluatePositionScore(board, plyDistance);
             if (beta <= standPatScore)
             {
                 return beta;
@@ -561,7 +572,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
 
                 var currentBoard = MakeMoveOptimized(board, captureMove);
-                var score = -Quiesce(currentBoard, -beta, -alpha);
+                var score = -Quiesce(currentBoard, -beta, -alpha, plyDistance);
 
                 if (beta <= score)
                 {
@@ -603,7 +614,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var plyDepth = _maxPlyDepth - plyDistance;
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
-                var result = Quiesce(board, alpha, beta);
+                var result = Quiesce(board, alpha, beta, plyDistance);
                 _transpositionTable.SaveScore(board, plyDistance, result);
                 return result;
             }
@@ -654,7 +665,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 stopwatch.Restart();
 
                 var currentBoard = MakeMoveOptimized(board, move);
-                var localScore = -EvaluatePositionScore(currentBoard);
+                var localScore = -EvaluatePositionScore(currentBoard, 1);
 
                 var score = -ComputeAlphaBeta(currentBoard, 1, -RootBeta, -alpha);
 
