@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.ComputerPlayers.SmartEnough
 {
     internal sealed class SmartEnoughPlayerMoveChooser
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ChessPlatform.ComputerPlayers;
+using ChessPlatform.ComputerPlayers.SmartEnough;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 

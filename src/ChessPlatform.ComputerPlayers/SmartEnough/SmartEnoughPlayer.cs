@@ -9,7 +9,7 @@ using System.Threading;
 using ChessPlatform.ComputerPlayers.Properties;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.ComputerPlayers.SmartEnough
 {
     public sealed class SmartEnoughPlayer : ChessPlayerBase
     {

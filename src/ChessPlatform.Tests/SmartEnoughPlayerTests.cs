@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ChessPlatform.ComputerPlayers;
+using ChessPlatform.ComputerPlayers.SmartEnough;
 using NUnit.Framework;
 
 namespace ChessPlatform.Tests

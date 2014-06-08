@@ -51,7 +51,7 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
-    <Compile Include="SmartEnoughPlayerMoveChooser.cs" />
+    <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -62,7 +62,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="OpeningBook.cs" />
-    <Compile Include="SmartEnoughPlayer.cs" />
+    <Compile Include="SmartEnough\SmartEnoughPlayer.cs" />
     <Compile Include="DummyPlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
