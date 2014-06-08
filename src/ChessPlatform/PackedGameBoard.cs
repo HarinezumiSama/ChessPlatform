@@ -80,7 +80,40 @@ namespace ChessPlatform
 
         #endregion
 
+        #region Operators
+
+        public static bool operator ==(PackedGameBoard left, PackedGameBoard right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(PackedGameBoard left, PackedGameBoard right)
+        {
+            return !(left == right);
+        }
+
+        #endregion
+
         #region Public Methods
+
+        public static bool Equals(PackedGameBoard left, PackedGameBoard right)
+        {
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(left, null) || ReferenceEquals(right, null))
+            {
+                return false;
+            }
+
+            return left.HashCode == right.HashCode
+                && left.ActiveColor == right.ActiveColor
+                && left.CastlingOptions == right.CastlingOptions
+                && left.EnPassantMoveCapturePositionIndex == right.EnPassantMoveCapturePositionIndex
+                && ByteArraysEqual(left._pieces, right._pieces);
+        }
 
         public override bool Equals(object obj)
         {
@@ -98,21 +131,7 @@ namespace ChessPlatform
 
         public bool Equals(PackedGameBoard other)
         {
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(other, this))
-            {
-                return true;
-            }
-
-            return other.HashCode == this.HashCode
-                && other.ActiveColor == this.ActiveColor
-                && other.CastlingOptions == this.CastlingOptions
-                && other.EnPassantMoveCapturePositionIndex == this.EnPassantMoveCapturePositionIndex
-                && ByteArraysEqual(other._pieces, _pieces);
+            return Equals(this, other);
         }
 
         #endregion

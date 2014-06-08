@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
@@ -18,7 +17,7 @@ namespace ChessPlatform.ComputerPlayers
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
 
-        private const int MaxInitialCapacity = 100000;
+        ////private const int MaxInitialCapacity = 100000;
 
         private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             CreatePieceTypeToMaterialWeightMap();
@@ -32,6 +31,7 @@ namespace ChessPlatform.ComputerPlayers
 
         private readonly IGameBoard _rootBoard;
         private readonly int _maxPlyDepth;
+        private readonly PieceMove _previousIterationBestMove;
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
@@ -46,6 +46,7 @@ namespace ChessPlatform.ComputerPlayers
         internal SmartEnoughPlayerMoveChooser(
             [NotNull] IGameBoard rootBoard,
             int maxPlyDepth,
+            [CanBeNull] PieceMove previousIterationBestMove,
             CancellationToken cancellationToken)
         {
             #region Argument Check
@@ -70,9 +71,11 @@ namespace ChessPlatform.ComputerPlayers
 
             _rootBoard = rootBoard;
             _maxPlyDepth = maxPlyDepth;
+            _previousIterationBestMove = previousIterationBestMove;
             _cancellationToken = cancellationToken;
-            _transpositionTable = new SimpleTranspositionTable(5000000);
-            _boardCache = new BoardCache(2000000);
+
+            _transpositionTable = new SimpleTranspositionTable(1000000);
+            _boardCache = new BoardCache(100000);
         }
 
         #endregion
@@ -336,10 +339,28 @@ namespace ChessPlatform.ComputerPlayers
         }
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private static PieceMove[] OrderMoves([NotNull] IGameBoard board)
+        private PieceMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
         {
-            var capturingMoves = board
-                .ValidMoves
+            var result = new List<PieceMove>(board.ValidMoves.Count);
+
+            var validMoves = board.ValidMoves.ToArray();
+
+            if (_previousIterationBestMove != null && plyDistance == 0)
+            {
+                if (!board.ValidMoves.ContainsKey(_previousIterationBestMove))
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Invalid PV move ({0}).",
+                            _previousIterationBestMove));
+                }
+
+                result.Add(_previousIterationBestMove);
+                validMoves = validMoves.Where(pair => pair.Key != _previousIterationBestMove).ToArray();
+            }
+
+            var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)
                 .Select(pair => pair.Key)
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
@@ -350,8 +371,9 @@ namespace ChessPlatform.ComputerPlayers
                 .ThenBy(move => move.To.SquareIndex)
                 .ToArray();
 
-            var nonCapturingMoves = board
-                .ValidMoves
+            result.AddRange(capturingMoves);
+
+            var nonCapturingMoves = validMoves
                 .Where(pair => !pair.Value.IsCapture)
                 .Select(pair => pair.Key)
                 .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
@@ -361,8 +383,14 @@ namespace ChessPlatform.ComputerPlayers
                 .ThenBy(move => move.To.SquareIndex)
                 .ToArray();
 
-            var result = capturingMoves.Concat(nonCapturingMoves).ToArray();
-            return result;
+            result.AddRange(nonCapturingMoves);
+
+            if (result.Count != board.ValidMoves.Count)
+            {
+                throw new InvalidOperationException("Internal logic error in move ordering procedure.");
+            }
+
+            return result.ToArray();
         }
 
         private static int EvaluateMaterialAndItsPositionByColor(
@@ -579,7 +607,7 @@ namespace ChessPlatform.ComputerPlayers
                 return result;
             }
 
-            var orderedMoves = OrderMoves(board);
+            var orderedMoves = OrderMoves(board, plyDistance);
             foreach (var move in orderedMoves)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
@@ -608,9 +636,7 @@ namespace ChessPlatform.ComputerPlayers
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            //// TODO [vmcl] Implement the cache of boards which is applicable at each level (ply)
-
-            var orderedMoves = OrderMoves(board);
+            var orderedMoves = OrderMoves(board, 0);
 
             const int RootAlpha = checked(-MateScoreAbs - 1);
             const int RootBeta = checked(MateScoreAbs + 1);
@@ -738,7 +764,8 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
-                var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+                ////var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+                var initialCapacity = maximumItemCount;
 
                 this.MaximumItemCount = maximumItemCount;
                 _scoreMap = new Dictionary<Tuple<PackedGameBoard, int>, int>(initialCapacity);
@@ -853,13 +880,7 @@ namespace ChessPlatform.ComputerPlayers
         {
             #region Constants and Fields
 
-            private static readonly ByReferenceEqualityComparer<IGameBoard> BoardEqualityComparer =
-                ByReferenceEqualityComparer<IGameBoard>.Instance;
-
-            private static readonly EqualityComparer<PieceMove> MoveEqualityComparer =
-                EqualityComparer<PieceMove>.Default;
-
-            private readonly IGameBoard _board;
+            private readonly PackedGameBoard _packedGameBoard;
             private readonly PieceMove _move;
             private readonly int _hashCode;
 
@@ -878,10 +899,9 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
-                _board = board;
+                _packedGameBoard = board.Pack();
                 _move = move;
-                _hashCode = BoardEqualityComparer.GetHashCode(_board)
-                    ^ (_move == null ? 0 : MoveEqualityComparer.GetHashCode(_move));
+                _hashCode = _packedGameBoard.GetHashCode() ^ (_move == null ? 0 : _move.GetHashCode());
             }
 
             #endregion
@@ -916,8 +936,8 @@ namespace ChessPlatform.ComputerPlayers
                 }
 
                 return other._hashCode == _hashCode
-                    && BoardEqualityComparer.Equals(other._board, _board)
-                    && MoveEqualityComparer.Equals(other._move, _move);
+                    && other._packedGameBoard == _packedGameBoard
+                    && other._move == _move;
             }
 
             #endregion
@@ -951,7 +971,8 @@ namespace ChessPlatform.ComputerPlayers
 
                 #endregion
 
-                var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+                ////var initialCapacity = Math.Min(maximumItemCount, MaxInitialCapacity);
+                var initialCapacity = maximumItemCount;
 
                 this.MaximumItemCount = maximumItemCount;
                 _boards = new Dictionary<BoardCacheKey, IGameBoard>(initialCapacity);

@@ -131,6 +131,8 @@ namespace ChessPlatform.ComputerPlayers
                 return board.ValidMoves.Keys.Single();
             }
 
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
             if (_openingBook != null)
             {
                 var openingMoves = _openingBook.FindPossibleMoves(board);
@@ -138,7 +140,6 @@ namespace ChessPlatform.ComputerPlayers
                 {
                     var index = _openingBookRandom.Next(openingMoves.Length);
                     var openingMove = openingMoves[index];
-                    var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
                     Trace.TraceInformation(
                         "[{0}] From the opening move(s): {1}, chosen {2}.",
@@ -150,9 +151,24 @@ namespace ChessPlatform.ComputerPlayers
                 }
             }
 
-            var moveChooser = new SmartEnoughPlayerMoveChooser(board, _maxPlyDepth, cancellationToken);
-            var result = moveChooser.GetBestMove();
-            return result.EnsureNotNull();
+            PieceMove bestMove = null;
+
+            for (var plyDepth = SmartEnoughPlayerMoveChooser.MinimumMaxPlyDepth;
+                plyDepth <= _maxPlyDepth;
+                plyDepth++)
+            {
+                Trace.TraceInformation("[{0}] Iterative deepening: {1}.", currentMethodName, plyDepth);
+
+                var moveChooser = new SmartEnoughPlayerMoveChooser(
+                    board,
+                    plyDepth,
+                    bestMove,
+                    cancellationToken);
+
+                bestMove = moveChooser.GetBestMove();
+            }
+
+            return bestMove.EnsureNotNull();
         }
 
         #endregion

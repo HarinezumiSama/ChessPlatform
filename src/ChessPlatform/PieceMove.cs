@@ -112,7 +112,7 @@ namespace ChessPlatform
 
         public static bool operator ==(PieceMove left, PieceMove right)
         {
-            return EqualityComparer<PieceMove>.Default.Equals(left, right);
+            return Equals(left, right);
         }
 
         public static bool operator !=(PieceMove left, PieceMove right)
@@ -129,6 +129,21 @@ namespace ChessPlatform
         #endregion
 
         #region Public Methods
+
+        public static bool Equals(PieceMove left, PieceMove right)
+        {
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (ReferenceEquals(left, null) || ReferenceEquals(right, null))
+            {
+                return false;
+            }
+
+            return left.From == right.From && left.To == right.To && left.PromotionResult == right.PromotionResult;
+        }
 
         [DebuggerNonUserCode]
         public static PieceMove FromStringNotation(string stringNotation)
@@ -227,17 +242,7 @@ namespace ChessPlatform
 
         public bool Equals(PieceMove other)
         {
-            if (ReferenceEquals(other, null))
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(other, this))
-            {
-                return true;
-            }
-
-            return other.From == this.From && other.To == this.To && other.PromotionResult == this.PromotionResult;
+            return Equals(this, other);
         }
 
         #endregion
