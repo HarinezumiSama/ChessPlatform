@@ -24,7 +24,8 @@ namespace ChessPlatform.UI.Desktop
 
         private static readonly GridLength StarGridLength = new GridLength(1d, GridUnitType.Star);
 
-        private bool _canExecuteCopyFenToClipboard = true;
+        private bool _canExecuteCopyFenToClipboard;
+        private bool _canExecuteCopyHistoryToClipboard;
         private Popup _promotionPopup;
 
         #endregion
@@ -34,6 +35,9 @@ namespace ChessPlatform.UI.Desktop
         public GameWindow()
         {
             InitializeComponent();
+
+            _canExecuteCopyFenToClipboard = true;
+            _canExecuteCopyHistoryToClipboard = true;
 
             this.Title = string.Format(
                 CultureInfo.InvariantCulture,
@@ -554,6 +558,22 @@ namespace ChessPlatform.UI.Desktop
         private void CopyFenToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = _canExecuteCopyFenToClipboard;
+        }
+
+        private void CopyHistoryToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            var moveHistory = this.ViewModel.MoveHistory;
+            Clipboard.SetText(moveHistory);
+
+            this.MainGrid.ShowInfoPopup(
+                "History has been copied to the clipboard.",
+                popupOpened: () => _canExecuteCopyHistoryToClipboard = false,
+                popupClosed: () => _canExecuteCopyHistoryToClipboard = true);
+        }
+
+        private void CopyHistoryToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = _canExecuteCopyHistoryToClipboard;
         }
 
         private void NewGameFromFenFromClipboard_Executed(object sender, ExecutedRoutedEventArgs e)

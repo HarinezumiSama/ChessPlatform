@@ -42,6 +42,12 @@ namespace ChessPlatform.UI.Desktop.Commands
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Alt) });
 
+        public static readonly RoutedUICommand CopyHistoryToClipboard = new RoutedUICommand(
+            "Copy _History to Clipboard",
+            "CopyHistoryToClipboard",
+            typeof(GameWindowCommands),
+            new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift) });
+
         #endregion
     }
 }

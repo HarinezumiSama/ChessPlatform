@@ -262,78 +262,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             gameManager.UndoLastMoves(undoMoveCount);
         }
 
-        [NotNull]
-        public string GetMoveHistory()
-        {
-            var resultBuilder = new StringBuilder();
-
-            var boardHistory = _boardHistory;
-
-            var initialBoard = boardHistory[0];
-            resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"[FEN ""{0}""]", initialBoard.GetFen());
-
-            var previousBoard = initialBoard;
-            var moveIndex = unchecked(previousBoard.FullMoveIndex - 1);
-            for (var index = 1; index < boardHistory.Length; index++)
-            {
-                var board = boardHistory[index];
-
-                if (moveIndex != previousBoard.FullMoveIndex)
-                {
-                    resultBuilder.AppendLine();
-
-                    moveIndex = previousBoard.FullMoveIndex;
-                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}.", moveIndex);
-
-                    if (index == 1 && initialBoard.ActiveColor == PieceColor.Black)
-                    {
-                        resultBuilder.Append(" ...");
-                    }
-                }
-
-                var move = board.PreviousMove.EnsureNotNull();
-
-                var castlingInfo = previousBoard.CheckCastlingMove(move);
-                if (castlingInfo != null)
-                {
-                    var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
-                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " {0}", isKingSide ? "O-O" : "O-O-O");
-                }
-                else
-                {
-                    var movedPiece = previousBoard[move.From].GetPieceType();
-
-                    resultBuilder.AppendFormat(
-                        CultureInfo.InvariantCulture,
-                        " {0}{1}",
-                        movedPiece == PieceType.Pawn || movedPiece == PieceType.None
-                            ? string.Empty
-                            : movedPiece.GetFenChar().ToString(CultureInfo.InvariantCulture),
-                        move.ToString(board.LastCapturedPiece != Piece.None));
-                }
-
-                if (board.State == GameState.Checkmate)
-                {
-                    resultBuilder.Append("#");
-                }
-                else if (board.State.IsCheck())
-                {
-                    resultBuilder.Append("+");
-                }
-
-                previousBoard = board;
-            }
-
-            var currentBoard = boardHistory.Last();
-            if (currentBoard.State.IsOneOf(GameState.Checkmate, GameState.Stalemate))
-            {
-                resultBuilder.AppendLine();
-                resultBuilder.Append(currentBoard.ResultString);
-            }
-
-            return resultBuilder.ToString();
-        }
-
         #endregion
 
         #region Private Methods
@@ -422,6 +350,96 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             this.CurrentGameBoard = currentGameBoard;
 
             RaisePropertyChanged(() => this.IsComputerPlayerActive);
+        }
+
+        [NotNull]
+        private string GetMoveHistory()
+        {
+            var resultBuilder = new StringBuilder();
+
+            var boardHistory = _boardHistory;
+
+            var initialBoard = boardHistory[0];
+
+            var initialFen = initialBoard.GetFen();
+            var isDefaultInitialPosition = initialFen == ChessConstants.DefaultInitialFen;
+            if (!isDefaultInitialPosition)
+            {
+                resultBuilder.AppendLine(@"[SetUp ""1""]");
+                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"[FEN ""{0}""]", initialFen);
+                resultBuilder.AppendLine();
+            }
+
+            var previousBoard = initialBoard;
+            var moveIndex = unchecked(previousBoard.FullMoveIndex - 1);
+            for (var index = 1; index < boardHistory.Length; index++)
+            {
+                var board = boardHistory[index];
+
+                if (moveIndex != previousBoard.FullMoveIndex)
+                {
+                    if (resultBuilder.Length != 0)
+                    {
+                        resultBuilder.AppendLine();
+                    }
+
+                    moveIndex = previousBoard.FullMoveIndex;
+                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}.", moveIndex);
+
+                    if (index == 1 && initialBoard.ActiveColor == PieceColor.Black)
+                    {
+                        resultBuilder.Append(" ...");
+                    }
+                }
+
+                var move = board.PreviousMove.EnsureNotNull();
+
+                var castlingInfo = previousBoard.CheckCastlingMove(move);
+                if (castlingInfo != null)
+                {
+                    var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
+                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " {0}", isKingSide ? "O-O" : "O-O-O");
+                }
+                else
+                {
+                    var movedPiece = previousBoard[move.From].GetPieceType();
+
+                    resultBuilder.AppendFormat(
+                        CultureInfo.InvariantCulture,
+                        " {0}{1}",
+                        movedPiece == PieceType.Pawn || movedPiece == PieceType.None
+                            ? string.Empty
+                            : movedPiece.GetFenChar().ToString(CultureInfo.InvariantCulture),
+                        move.ToString(board.LastCapturedPiece != Piece.None));
+                }
+
+                if (board.State == GameState.Checkmate)
+                {
+                    resultBuilder.Append("#");
+                }
+                else if (board.State.IsCheck())
+                {
+                    resultBuilder.Append("+");
+                }
+
+                previousBoard = board;
+            }
+
+            var currentBoard = boardHistory.Last();
+            if (currentBoard.State.IsOneOf(GameState.Checkmate, GameState.Stalemate))
+            {
+                resultBuilder.AppendLine();
+                resultBuilder.Append(currentBoard.ResultString);
+            }
+
+            if (boardHistory.Length > 1)
+            {
+                resultBuilder.AppendLine();
+                resultBuilder.AppendLine();
+                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"{{ FEN ""{0}"" }}", currentBoard.GetFen());
+            }
+
+            return resultBuilder.ToString();
         }
 
         private void OnGameBoardChanged()
