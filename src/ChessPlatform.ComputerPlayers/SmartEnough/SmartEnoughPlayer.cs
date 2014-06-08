@@ -151,6 +151,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
             }
 
+            var boardCache = new BoardCache(100000);
+
             PieceMove bestMove = null;
 
             for (var plyDepth = SmartEnoughPlayerMoveChooser.MinimumMaxPlyDepth;
@@ -162,6 +164,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
                     plyDepth,
+                    boardCache,
                     bestMove,
                     cancellationToken);
 
