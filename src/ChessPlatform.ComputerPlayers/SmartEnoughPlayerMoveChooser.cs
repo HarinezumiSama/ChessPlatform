@@ -338,61 +338,6 @@ namespace ChessPlatform.ComputerPlayers
             ////    : GamePhase.Middlegame;
         }
 
-        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private PieceMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
-        {
-            var result = new List<PieceMove>(board.ValidMoves.Count);
-
-            var validMoves = board.ValidMoves.ToArray();
-
-            if (_previousIterationBestMove != null && plyDistance == 0)
-            {
-                if (!board.ValidMoves.ContainsKey(_previousIterationBestMove))
-                {
-                    throw new InvalidOperationException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Invalid PV move ({0}).",
-                            _previousIterationBestMove));
-                }
-
-                result.Add(_previousIterationBestMove);
-                validMoves = validMoves.Where(pair => pair.Key != _previousIterationBestMove).ToArray();
-            }
-
-            var capturingMoves = validMoves
-                .Where(pair => pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
-                .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ToArray();
-
-            result.AddRange(capturingMoves);
-
-            var nonCapturingMoves = validMoves
-                .Where(pair => !pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ToArray();
-
-            result.AddRange(nonCapturingMoves);
-
-            if (result.Count != board.ValidMoves.Count)
-            {
-                throw new InvalidOperationException("Internal logic error in move ordering procedure.");
-            }
-
-            return result.ToArray();
-        }
-
         private static int EvaluateMaterialAndItsPositionByColor(
             [NotNull] IGameBoard board,
             PieceColor color,
@@ -463,6 +408,61 @@ namespace ChessPlatform.ComputerPlayers
                 .FirstOrDefault();
 
             return cheapestAttackerMove;
+        }
+
+        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
+        private PieceMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
+        {
+            var result = new List<PieceMove>(board.ValidMoves.Count);
+
+            var validMoves = board.ValidMoves.ToArray();
+
+            if (_previousIterationBestMove != null && plyDistance == 0)
+            {
+                if (!board.ValidMoves.ContainsKey(_previousIterationBestMove))
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Invalid PV move ({0}).",
+                            _previousIterationBestMove));
+                }
+
+                result.Add(_previousIterationBestMove);
+                validMoves = validMoves.Where(pair => pair.Key != _previousIterationBestMove).ToArray();
+            }
+
+            var capturingMoves = validMoves
+                .Where(pair => pair.Value.IsCapture)
+                .Select(pair => pair.Key)
+                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
+                .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .ThenBy(move => move.PromotionResult)
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ToArray();
+
+            result.AddRange(capturingMoves);
+
+            var nonCapturingMoves = validMoves
+                .Where(pair => !pair.Value.IsCapture)
+                .Select(pair => pair.Key)
+                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .ThenBy(move => move.PromotionResult)
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ToArray();
+
+            result.AddRange(nonCapturingMoves);
+
+            if (result.Count != board.ValidMoves.Count)
+            {
+                throw new InvalidOperationException("Internal logic error in move ordering procedure.");
+            }
+
+            return result.ToArray();
         }
 
         private int EvaluateMobility([NotNull] IGameBoard board)
