@@ -334,7 +334,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestSerializeDefaultInitialPosition()
+        public void TestPackDefaultInitialPosition()
         {
             var gameBoard = new GameBoard(PerformInternalBoardValidation);
 
@@ -344,8 +344,6 @@ namespace ChessPlatform.Tests
             Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.White));
             Assert.That(packedGameBoard.CastlingOptions, Is.EqualTo(CastlingOptions.All));
             Assert.That(packedGameBoard.EnPassantMoveCapturePositionIndex, Is.EqualTo(-1));
-            Assert.That(packedGameBoard.FullMoveIndex, Is.EqualTo(1));
-            Assert.That(packedGameBoard.HalfMoveCountBy50MoveRule, Is.EqualTo(0));
 
             var expectedPieces =
                 new byte[] { 0x26, 0x75, 0x53, 0x62 }
@@ -362,7 +360,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestSerializeSpecificPosition()
+        public void TestPackSpecificPosition()
         {
             const string Fen = "r3k2r/Pppp1ppp/1b3nbN/nP6/BBPPP3/q4N2/Pp4PP/R2Q1RK1 b kq d3 7 17";
             var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
@@ -373,8 +371,6 @@ namespace ChessPlatform.Tests
             Assert.That(packedGameBoard.ActiveColor, Is.EqualTo(PieceColor.Black));
             Assert.That(packedGameBoard.CastlingOptions, Is.EqualTo(CastlingOptions.BlackMask));
             Assert.That(packedGameBoard.EnPassantMoveCapturePositionIndex, Is.EqualTo(19));
-            Assert.That(packedGameBoard.FullMoveIndex, Is.EqualTo(17));
-            Assert.That(packedGameBoard.HalfMoveCountBy50MoveRule, Is.EqualTo(7));
 
             var expectedPieces =
                 new byte[] { 0x06, 0x70, 0x60, 0x03 }
