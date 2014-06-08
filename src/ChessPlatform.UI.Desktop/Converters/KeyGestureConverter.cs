@@ -42,7 +42,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                 }
             }
 
-            return value;
+            return string.Empty;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
