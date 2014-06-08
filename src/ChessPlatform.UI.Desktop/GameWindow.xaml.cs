@@ -87,9 +87,9 @@ namespace ChessPlatform.UI.Desktop
         private void StartNewGameFromFenFromClipboard(bool confirm)
         {
             var fen = Clipboard.GetText();
-            if (fen.IsNullOrWhiteSpace())
+            if (!ChessHelper.IsValidFenFormat(fen))
             {
-                this.ShowWarningDialog("No valid FEN in the clipboard.");
+                this.ShowWarningDialog("The Clipboard does not contain a properly formatted FEN.");
                 return;
             }
 

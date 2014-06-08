@@ -182,7 +182,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (!GameBoard.IsValidFen(fen))
             {
                 throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
+                    @"The specified FEN has invalid format or represents an invalid position.",
                     "fen");
             }
 

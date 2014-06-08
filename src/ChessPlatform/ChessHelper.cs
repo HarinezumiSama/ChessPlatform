@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using ChessPlatform.Annotations;
 using ChessPlatform.Internal;
 using Omnifactotum;
@@ -166,6 +167,8 @@ namespace ChessPlatform
         internal static readonly ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
+        private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
+
         private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
             AllPositions
                 .ToDictionary(
@@ -178,6 +181,13 @@ namespace ChessPlatform
 
         private static readonly string PlatformRevisionId =
             PlatformAssembly.GetSingleCustomAttribute<RevisionIdAttribute>(false).RevisionId.EnsureNotNull();
+
+        private static readonly Regex ValidFenRegex = new Regex(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                @"^ \s* {0}/{0}/{0}/{0}/{0}/{0}/{0}/{0} \s+ (?:w|b) \s+ (?:[KkQq]+|\-) \s+ (?:[a-h][1-8]|\-) \s+ \d+ \s+ \d+ \s* $",
+                FenRankRegexSnippet),
+            RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
         #endregion
 
@@ -208,6 +218,11 @@ namespace ChessPlatform
         public static int ToSign(this bool value)
         {
             return value ? 1 : -1;
+        }
+
+        public static bool IsValidFenFormat(string fen)
+        {
+            return !fen.IsNullOrEmpty() && ValidFenRegex.IsMatch(fen);
         }
 
         #endregion

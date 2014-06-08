@@ -308,7 +308,7 @@ namespace ChessPlatform
         [DebuggerStepThrough]
         public static bool IsValidFen(string fen)
         {
-            if (fen.IsNullOrWhiteSpace())
+            if (!ChessHelper.IsValidFenFormat(fen))
             {
                 return false;
             }
