@@ -455,6 +455,38 @@ namespace ChessPlatform.UI.Desktop
                 case GameState.Stalemate:
                     popupControl.ShowInfoPopup("Stalemate. Draw.");
                     break;
+
+                default:
+                    switch (this.ViewModel.GameManagerResult)
+                    {
+                        case GameResult.Draw:
+                            string drawType;
+                            switch (this.ViewModel.GameManagerAutoDrawType)
+                            {
+                                case AutoDrawType.InsufficientMaterial:
+                                    drawType = "insufficient material";
+                                    break;
+
+                                case AutoDrawType.ThreefoldRepetition:
+                                    drawType = "threefold repetition";
+                                    break;
+
+                                case AutoDrawType.FiftyMoveRule:
+                                    drawType = "50-move rule";
+                                    break;
+
+                                default:
+                                    drawType = "?";
+                                    break;
+                            }
+
+                            popupControl.ShowInfoPopup(
+                                string.Format(CultureInfo.InvariantCulture, "Draw: {0}.", drawType));
+
+                            break;
+                    }
+
+                    break;
             }
         }
 

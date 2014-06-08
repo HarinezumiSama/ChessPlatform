@@ -135,6 +135,22 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public GameResult? GameManagerResult
+        {
+            get
+            {
+                return _gameManager == null ? null : _gameManager.Result;
+            }
+        }
+
+        public AutoDrawType GameManagerAutoDrawType
+        {
+            get
+            {
+                return _gameManager == null ? AutoDrawType.None : _gameManager.AutoDrawType;
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -279,7 +295,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var humanChessPlayer = GetActiveHumanPlayer();
 
-            this.SelectionMode = humanChessPlayer == null
+            this.SelectionMode = humanChessPlayer == null || _gameManager == null
+                || _gameManager.State == GameManagerState.GameFinished
                 ? GameWindowSelectionMode.None
                 : GameWindowSelectionMode.Default;
         }

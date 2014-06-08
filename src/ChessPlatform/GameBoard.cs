@@ -539,7 +539,25 @@ namespace ChessPlatform
                 return AutoDrawType.InsufficientMaterial;
             }
 
-            //// TODO [vmcl] Check threefold repetition
+            var fens = new List<PackedGameBoard>();
+
+            var currentBoard = this;
+            while (currentBoard != null)
+            {
+                var fen = currentBoard.Pack();
+                fens.Add(fen);
+
+                currentBoard = currentBoard._previousBoard;
+            }
+
+            var fenMap = fens
+                .GroupBy(Factotum.Identity)
+                .ToDictionary(grouping => grouping.Key, grouping => grouping.Count());
+
+            if (fenMap.Values.Any(item => item >= 3))
+            {
+                return AutoDrawType.ThreefoldRepetition;
+            }
 
             if (this.FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
             {

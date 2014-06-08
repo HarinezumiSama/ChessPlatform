@@ -29,6 +29,7 @@ namespace ChessPlatform
         private bool _isDisposed;
         private GameManagerState _state;
         private GameResult? _result;
+        private AutoDrawType _autoDrawType;
 
         #endregion
 
@@ -114,6 +115,18 @@ namespace ChessPlatform
                 lock (_syncLock)
                 {
                     return _result;
+                }
+            }
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        public AutoDrawType AutoDrawType
+        {
+            get
+            {
+                lock (_syncLock)
+                {
+                    return _autoDrawType;
                 }
             }
         }
@@ -393,6 +406,7 @@ namespace ChessPlatform
         {
             var gameBoard = GetActiveBoard();
 
+            _autoDrawType = AutoDrawType.None;
             switch (gameBoard.State)
             {
                 case GameState.Checkmate:
@@ -409,6 +423,14 @@ namespace ChessPlatform
 
                 default:
                     _result = null;
+
+                    _autoDrawType = gameBoard.GetAutoDrawType();
+                    if (_autoDrawType != AutoDrawType.None)
+                    {
+                        _result = GameResult.Draw;
+                        _state = GameManagerState.GameFinished;
+                    }
+
                     break;
             }
         }
