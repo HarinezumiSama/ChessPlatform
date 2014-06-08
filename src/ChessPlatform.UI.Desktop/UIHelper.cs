@@ -91,8 +91,8 @@ namespace ChessPlatform.UI.Desktop
         }
 
         public static void ShowInfoPopup(
-            this UIElement popupElement,
-            string text,
+            [NotNull] this UIElement popupElement,
+            [NotNull] string text,
             Point? popupPoint = null,
             Action popupOpened = null,
             Action popupClosed = null)
@@ -190,6 +190,22 @@ namespace ChessPlatform.UI.Desktop
 
             // Must be the final statement
             popup.IsOpen = true;
+        }
+
+        public static void ClearGrid([NotNull] this Grid grid)
+        {
+            #region Argument Check
+
+            if (grid == null)
+            {
+                throw new ArgumentNullException("grid");
+            }
+
+            #endregion
+
+            grid.Children.Clear();
+            grid.ColumnDefinitions.Clear();
+            grid.RowDefinitions.Clear();
         }
 
         #endregion

@@ -48,6 +48,12 @@ namespace ChessPlatform.UI.Desktop.Commands
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift) });
 
+        public static readonly RoutedUICommand ReversedBoardView = new RoutedUICommand(
+            "_Reversed Board View",
+            "ReversedBoardView",
+            typeof(GameWindowCommands),
+            new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
+
         #endregion
     }
 }

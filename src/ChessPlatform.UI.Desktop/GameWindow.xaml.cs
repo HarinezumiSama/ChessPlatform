@@ -44,8 +44,11 @@ namespace ChessPlatform.UI.Desktop
                 "Chess Platform UI for Desktop {0}",
                 ChessHelper.GetPlatformVersion(true));
 
-            InitializeControls();
+            InitializeControls(false);
+            InitializePromotionControls();
+
             this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.CurrentGameBoard, this.OnCurrentGameBoardChanged);
+            this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.IsReversedView, this.OnIsReversedViewChanged);
         }
 
         #endregion
@@ -148,8 +151,14 @@ namespace ChessPlatform.UI.Desktop
             this.ViewModel.UndoLastMove();
         }
 
-        private void InitializeControls()
+        private void InitializeControls(bool reversedView)
         {
+            this.BoardGrid.Children.OfType<FrameworkElement>().DoForEach(obj => obj.DataContext = null);
+            this.BoardGrid.ClearGrid();
+
+            this.RankSymbolGrid.ClearGrid();
+            this.FileSymbolGrid.ClearGrid();
+
             Enumerable
                 .Range(0, ChessConstants.RankCount)
                 .DoForEach(i => this.BoardGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
@@ -196,8 +205,16 @@ namespace ChessPlatform.UI.Desktop
                 textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
                 textBlock.MouseLeftButtonUp += this.TextBlockSquare_MouseLeftButtonUp;
 
-                textBlock.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - position.Rank);
-                textBlock.SetValue(Grid.ColumnProperty, (int)position.File);
+                var row = reversedView
+                    ? ChessConstants.RankRange.Lower + position.Rank
+                    : ChessConstants.RankRange.Upper - position.Rank;
+
+                var column = reversedView
+                    ? ChessConstants.FileRange.Upper - position.File
+                    : ChessConstants.FileRange.Lower + position.File;
+
+                textBlock.SetValue(Grid.RowProperty, row);
+                textBlock.SetValue(Grid.ColumnProperty, column);
 
                 this.BoardGrid.Children.Add(textBlock);
             }
@@ -218,7 +235,11 @@ namespace ChessPlatform.UI.Desktop
                     Foreground = Brushes.CadetBlue
                 };
 
-                textBlock.SetValue(Grid.RowProperty, ChessConstants.RankRange.Upper - rank);
+                var row = reversedView
+                    ? ChessConstants.RankRange.Lower + rank
+                    : ChessConstants.RankRange.Upper - rank;
+
+                textBlock.SetValue(Grid.RowProperty, row);
                 textBlock.SetValue(Grid.ColumnProperty, 0);
 
                 this.RankSymbolGrid.Children.Add(textBlock);
@@ -241,8 +262,12 @@ namespace ChessPlatform.UI.Desktop
                     Foreground = Brushes.CadetBlue
                 };
 
+                var column = reversedView
+                    ? ChessConstants.FileRange.Upper - file
+                    : ChessConstants.FileRange.Lower + file;
+
                 textBlock.SetValue(Grid.RowProperty, 0);
-                textBlock.SetValue(Grid.ColumnProperty, file);
+                textBlock.SetValue(Grid.ColumnProperty, column);
 
                 this.FileSymbolGrid.Children.Add(textBlock);
             }
@@ -253,8 +278,6 @@ namespace ChessPlatform.UI.Desktop
                 {
                     Converter = StatusLabelTextConverter.Instance
                 });
-
-            InitializePromotionControls();
         }
 
         private void InitializePromotionControls()
@@ -490,6 +513,11 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
+        private void OnIsReversedViewChanged(object sender, EventArgs e)
+        {
+            InitializeControls(this.ViewModel.IsReversedView);
+        }
+
         private void TextBlockSquare_MouseEnter(object sender, MouseEventArgs args)
         {
             var position = GetSquarePosition(args.OriginalSource);
@@ -629,6 +657,11 @@ namespace ChessPlatform.UI.Desktop
         private void PromotionPopup_Closed(object sender, EventArgs e)
         {
             ClosePromotion(false);
+        }
+
+        private void ReversedBoardView_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            this.ViewModel.IsReversedView = !this.ViewModel.IsReversedView;
         }
 
         #endregion

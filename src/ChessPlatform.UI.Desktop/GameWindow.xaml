@@ -22,7 +22,9 @@
         <CommandBinding Command="commands:GameWindowCommands.CopyFenToClipboard"
                         Executed="CopyFenToClipboard_Executed" CanExecute="CopyFenToClipboard_CanExecute" />
         <CommandBinding Command="commands:GameWindowCommands.CopyHistoryToClipboard"
-                        Executed="CopyHistoryToClipboard_Executed"  CanExecute="CopyHistoryToClipboard_CanExecute" />
+                        Executed="CopyHistoryToClipboard_Executed" CanExecute="CopyHistoryToClipboard_CanExecute" />
+        <CommandBinding Command="commands:GameWindowCommands.ReversedBoardView"
+                        Executed="ReversedBoardView_Executed" />
     </Window.CommandBindings>
 
     <Window.DataContext>
@@ -42,7 +44,7 @@
 
         <Menu Name="MainMenu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
               VerticalAlignment="Top" Focusable="False">
-            <MenuItem Name="GameMenuItem" Header="_Game">
+            <MenuItem Header="_Game">
                 <MenuItem Command="commands:GameWindowCommands.NewGame"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard"
@@ -51,13 +53,17 @@
                 <MenuItem Command="commands:GameWindowCommands.Exit"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
-            <MenuItem Name="HistoryMenuItem" Header="_History">
+            <MenuItem Header="_History">
                 <MenuItem Command="commands:GameWindowCommands.UndoLastMove"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
                 <MenuItem Command="commands:GameWindowCommands.CopyFenToClipboard"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <MenuItem Command="commands:GameWindowCommands.CopyHistoryToClipboard"
+                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Command="commands:GameWindowCommands.ReversedBoardView" IsChecked="{Binding IsReversedView}"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
         </Menu>

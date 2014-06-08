@@ -25,6 +25,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private IChessPlayer _whitePlayer;
         private IChessPlayer _blackPlayer;
         private GameBoard[] _boardHistory;
+        private bool _isReversedView;
 
         #endregion
 
@@ -148,6 +149,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             get
             {
                 return _gameManager == null ? AutoDrawType.None : _gameManager.AutoDrawType;
+            }
+        }
+
+        public bool IsReversedView
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _isReversedView;
+            }
+
+            set
+            {
+                if (_isReversedView == value)
+                {
+                    return;
+                }
+
+                _isReversedView = value;
+                RaisePropertyChanged(() => this.IsReversedView);
             }
         }
 
