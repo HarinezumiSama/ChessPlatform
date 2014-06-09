@@ -74,6 +74,15 @@ namespace ChessPlatform.UI.Desktop
 
         private void StartNewGame(bool confirm)
         {
+            ////var newGameWindow = new NewGameWindow { Owner = this };
+            ////if (!newGameWindow.ShowDialog().GetValueOrDefault())
+            ////{
+            ////    return;
+            ////}
+
+            ////newGameWindow.WhitePlayerType.EnsureNotNull();
+            ////newGameWindow.BlackPlayerType.EnsureNotNull();
+
             if (confirm)
             {
                 var answer = this.ShowYesNoDialog("Do you want to start a new game?");

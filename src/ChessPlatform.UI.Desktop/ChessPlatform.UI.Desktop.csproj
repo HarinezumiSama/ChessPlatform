@@ -78,6 +78,12 @@
     <Compile Include="Converters\KeyGestureConverter.cs" />
     <Compile Include="Converters\StatusLabelTextConverter.cs" />
     <Compile Include="GuiHumanChessPlayer.cs" />
+    <Compile Include="NewGameWindow.xaml.cs">
+      <DependentUpon>NewGameWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="PlayerChoiceControl.xaml.cs">
+      <DependentUpon>PlayerChoiceControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />
     <Compile Include="Converters\RatioDoubleConverter.cs" />
@@ -86,6 +92,7 @@
     <Compile Include="SquareColors.cs" />
     <Compile Include="SquareMode.cs" />
     <Compile Include="UIHelper.cs" />
+    <Compile Include="ViewModels\PlayerChoiceControlViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Page Include="GameWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -99,6 +106,14 @@
       <DependentUpon>GameWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NewGameWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="PlayerChoiceControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

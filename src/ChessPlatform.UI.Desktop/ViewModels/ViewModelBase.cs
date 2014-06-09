@@ -8,7 +8,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop.ViewModels
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    internal abstract class ViewModelBase : INotifyPropertyChanged
     {
         #region Constants and Fields
 

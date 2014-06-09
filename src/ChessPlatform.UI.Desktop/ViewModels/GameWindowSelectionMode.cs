@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.UI.Desktop.ViewModels
 {
-    public enum GameWindowSelectionMode
+    internal enum GameWindowSelectionMode
     {
         None,
         Default,
