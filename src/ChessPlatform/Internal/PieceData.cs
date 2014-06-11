@@ -12,17 +12,14 @@ namespace ChessPlatform.Internal
     {
         #region Constants and Fields
 
+        private const int ColorAndPositionArrayLength = ChessConstants.SquareCount * 2;
+
         private static readonly ReadOnlySet<PieceType> ForcedDrawPieceTypes =
             new[] { PieceType.None, PieceType.King }.ToHashSet().AsReadOnly();
 
-        private static readonly Dictionary<PieceColor, PositionDictionary<Position>> PawnPushMoveMap =
-            InitializePawnMoveMap();
-
-        private static readonly Dictionary<PieceColor, PositionDictionary<DoublePushInfo>> PawnDoublePushMoveMap =
-            InitializePawnDoublePushMoveMap();
-
-        private static readonly Dictionary<PieceColor, PositionDictionary<PieceAttackInfo>> PawnAttackMoveMap =
-            InitializePawnAttackMoveMap();
+        private static readonly int[] PawnPushes = InitializePawnPushes();
+        private static readonly DoublePushInfo[] PawnDoublePushes = InitializePawnDoublePushes();
+        private static readonly PieceAttackInfo[] PawnAttackMoves = InitializePawnAttackMoves();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
         private readonly EnumFixedSizeDictionary<Piece, Bitboard> _bitboards;
@@ -693,33 +690,35 @@ namespace ChessPlatform.Internal
 
         #region Private Methods
 
-        private static Dictionary<PieceColor, PositionDictionary<Position>> InitializePawnMoveMap()
+        private static int GetColorAndPositionIndex(PieceColor color, Position position)
         {
-            var result = new Dictionary<PieceColor, PositionDictionary<Position>>();
+            return ((int)color) * ChessConstants.SquareCount + position.SquareIndex;
+        }
+
+        private static int[] InitializePawnPushes()
+        {
+            var result = new int[ColorAndPositionArrayLength];
+            result.Initialize(i => int.MaxValue);
 
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
                 var moveRay = ChessHelper.PawnMoveRayMap[pieceColor];
 
-                var positions = new PositionDictionary<Position>();
                 foreach (var sourcePosition in ChessHelper.AllPawnPositions)
                 {
                     var destinationPosition = new Position((byte)(sourcePosition.X88Value + moveRay.Offset));
-                    positions.Add(sourcePosition, destinationPosition);
-                }
-
-                if (positions.Count != 0)
-                {
-                    result.Add(pieceColor, positions);
+                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+                    result[index] = destinationPosition.SquareIndex;
                 }
             }
 
             return result;
         }
 
-        private static Dictionary<PieceColor, PositionDictionary<DoublePushInfo>> InitializePawnDoublePushMoveMap()
+        private static DoublePushInfo[] InitializePawnDoublePushes()
         {
-            var result = new Dictionary<PieceColor, PositionDictionary<DoublePushInfo>>();
+            var result = new DoublePushInfo[ColorAndPositionArrayLength];
+            result.Initialize(i => new DoublePushInfo(new Position(), Bitboard.Everything));
 
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
@@ -727,7 +726,6 @@ namespace ChessPlatform.Internal
                 var moveRay = ChessHelper.PawnEnPassantMoveRayMap[pieceColor];
                 var intermediateRay = ChessHelper.PawnMoveRayMap[pieceColor];
 
-                var positions = new PositionDictionary<DoublePushInfo>();
                 foreach (var sourcePosition in ChessHelper.AllPawnPositions)
                 {
                     if (sourcePosition.Rank != enPassantInfo.StartRank)
@@ -737,40 +735,32 @@ namespace ChessPlatform.Internal
 
                     var destinationPosition = new Position((byte)(sourcePosition.X88Value + moveRay.Offset));
                     var intermediatePosition = new Position((byte)(sourcePosition.X88Value + intermediateRay.Offset));
-                    positions.Add(
-                        sourcePosition,
-                        new DoublePushInfo(
-                            destinationPosition,
-                            destinationPosition.Bitboard | intermediatePosition.Bitboard));
-                }
 
-                if (positions.Count != 0)
-                {
-                    result.Add(pieceColor, positions);
+                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+
+                    result[index] = new DoublePushInfo(
+                        destinationPosition,
+                        destinationPosition.Bitboard | intermediatePosition.Bitboard);
                 }
             }
 
             return result;
         }
 
-        private static Dictionary<PieceColor, PositionDictionary<PieceAttackInfo>> InitializePawnAttackMoveMap()
+        private static PieceAttackInfo[] InitializePawnAttackMoves()
         {
-            var result = new Dictionary<PieceColor, PositionDictionary<PieceAttackInfo>>();
+            var result = new PieceAttackInfo[ColorAndPositionArrayLength];
+            result.Initialize(i => new PieceAttackInfo());
 
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
                 var attackOffsets = ChessHelper.PawnAttackOffsetMap[pieceColor];
 
-                var positions = new PositionDictionary<PieceAttackInfo>();
                 foreach (var sourcePosition in ChessHelper.AllPawnPositions)
                 {
                     var attackPositions = ChessHelper.GetOnboardPositions(sourcePosition, attackOffsets);
-                    positions.Add(sourcePosition, new PieceAttackInfo(attackPositions, true));
-                }
-
-                if (positions.Count != 0)
-                {
-                    result.Add(pieceColor, positions);
+                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+                    result[index] = new PieceAttackInfo(attackPositions, true);
                 }
             }
 
@@ -779,7 +769,7 @@ namespace ChessPlatform.Internal
 
         private static bool IsDoublePushPotentiallyAllowed(Position pawnPosition, PieceColor pawnColor)
         {
-            var allowedStartRank = (byte)(pawnColor == PieceColor.White ? 1 : ChessConstants.RankCount - 2);
+            var allowedStartRank = 1 + (5 * (int)pawnColor);
             return pawnPosition.Rank == allowedStartRank;
         }
 
@@ -1026,39 +1016,35 @@ namespace ChessPlatform.Internal
         {
             var resultList = new List<Position>(4);
 
-            Position destinationPosition;
-            if (PawnPushMoveMap[pieceColor].TryGetValue(sourcePosition, out destinationPosition)
-                && this[destinationPosition] == Piece.None)
+            var colorAndPositionIndex = GetColorAndPositionIndex(pieceColor, sourcePosition);
+            var pawnPush = PawnPushes[colorAndPositionIndex];
+            if (!(_bitboards[Piece.None] & Bitboard.FromSquareIndex(pawnPush)).IsZero())
             {
-                resultList.Add(destinationPosition);
+                resultList.Add(Position.FromSquareIndex(pawnPush));
             }
 
             if (IsDoublePushPotentiallyAllowed(sourcePosition, pieceColor))
             {
-                DoublePushInfo pawnPushInfo;
-                if (PawnDoublePushMoveMap[pieceColor].TryGetValue(sourcePosition, out pawnPushInfo)
-                    && (_bitboards[Piece.None] & pawnPushInfo.EmptyPositions) == pawnPushInfo.EmptyPositions)
+                var pawnPushInfo = PawnDoublePushes[colorAndPositionIndex];
+                if ((_bitboards[Piece.None] & pawnPushInfo.EmptyPositions) == pawnPushInfo.EmptyPositions)
                 {
                     resultList.Add(pawnPushInfo.DestinationPosition);
                 }
             }
 
-            PieceAttackInfo pieceAttackInfo;
-            if (PawnAttackMoveMap[pieceColor].TryGetValue(sourcePosition, out pieceAttackInfo))
-            {
-                var attackPositions = pieceAttackInfo.Bitboard.GetPositions();
-                var oppositeColor = pieceColor.Invert();
+            var pieceAttackInfo = PawnAttackMoves[colorAndPositionIndex];
+            var attackPositions = pieceAttackInfo.Bitboard.GetPositions();
+            var oppositeColor = pieceColor.Invert();
 
-                //// ReSharper disable once LoopCanBeConvertedToQuery
-                foreach (var attackPosition in attackPositions)
+            //// ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var attackPosition in attackPositions)
+            {
+                var attackedPieceInfo = GetPieceInfo(attackPosition);
+                if (attackedPieceInfo.Color == oppositeColor
+                    || (enPassantCaptureTarget != null
+                        && attackPosition == enPassantCaptureTarget.CapturePosition))
                 {
-                    var attackedPieceInfo = GetPieceInfo(attackPosition);
-                    if (attackedPieceInfo.Color == oppositeColor
-                        || (enPassantCaptureTarget != null
-                            && attackPosition == enPassantCaptureTarget.CapturePosition))
-                    {
-                        resultList.Add(attackPosition);
-                    }
+                    resultList.Add(attackPosition);
                 }
             }
 

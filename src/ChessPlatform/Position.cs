@@ -133,7 +133,7 @@ namespace ChessPlatform
             [DebuggerStepThrough]
             get
             {
-                return new Bitboard(1L << this.SquareIndex);
+                return Bitboard.FromSquareIndex(this.SquareIndex);
             }
         }
 

@@ -14,6 +14,8 @@ namespace ChessPlatform
 
         public static readonly Bitboard Zero = new Bitboard(0L);
 
+        public static readonly Bitboard Everything = new Bitboard(~0L);
+
         #region Index64
 
         private static readonly int[] Index64 =
@@ -178,6 +180,11 @@ namespace ChessPlatform
         public static bool Equals(Bitboard left, Bitboard right)
         {
             return left._value == right._value;
+        }
+
+        public static Bitboard FromSquareIndex(int squareIndex)
+        {
+            return new Bitboard(1L << squareIndex);
         }
 
         public override bool Equals(object obj)

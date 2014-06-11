@@ -27,7 +27,7 @@ namespace ChessPlatform.Internal
 
             if (positions.Count == 0)
             {
-                throw new ArgumentException("No positions.", "positions");
+                throw new ArgumentException("No positions specified.", "positions");
             }
 
             #endregion
