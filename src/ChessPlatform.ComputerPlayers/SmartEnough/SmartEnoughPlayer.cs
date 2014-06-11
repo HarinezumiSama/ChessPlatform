@@ -142,7 +142,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     var openingMove = openingMoves[index];
 
                     Trace.TraceInformation(
-                        "[{0}] From the opening move(s): {1}, chosen {2}.",
+                        "[{0}] From the opening move(s) [ {1} ]: chosen {2}.",
                         currentMethodName,
                         openingMoves.Select(move => move.ToString()).Join(", "),
                         openingMove);

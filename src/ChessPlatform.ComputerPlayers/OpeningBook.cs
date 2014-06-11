@@ -33,39 +33,25 @@ namespace ChessPlatform.ComputerPlayers
 
             #endregion
 
-            const int MoveLength = 4;
-
-            var openingMap = new Dictionary<PackedGameBoard, HashSet<PieceMove>>();
             var initialBoard = new GameBoard();
+
+            var openingLines = new List<List<Tuple<PackedGameBoard, PieceMove>>>();
 
             string line;
             while ((line = reader.ReadLine()) != null)
             {
-                line = line.Trim();
-                var lineLength = line.Length;
+                var openingLine = ParseLine(line, initialBoard);
+                openingLines.Add(openingLine);
+            }
 
-                if (lineLength % MoveLength != 0)
+            var openingMap = new Dictionary<PackedGameBoard, HashSet<PieceMove>>();
+            foreach (var openingLine in openingLines)
+            {
+                foreach (var tuple in openingLine)
                 {
-                    throw new InvalidOperationException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Invalid line '{0}'.",
-                            line));
-                }
-
-                GameBoard currentBoard = null;
-                var moves = new PieceMove[lineLength / MoveLength];
-                for (int startIndex = 0, index = 0; startIndex < lineLength; startIndex += MoveLength, index++)
-                {
-                    currentBoard = currentBoard == null ? initialBoard : currentBoard.MakeMove(moves[index - 1]);
-
-                    var stringNotation = line.Substring(startIndex, MoveLength);
-                    var move = PieceMove.FromStringNotation(stringNotation);
-                    moves[index] = move;
-
-                    var packedGameBoard = currentBoard.Pack();
+                    var packedGameBoard = tuple.Item1;
                     var openingMoves = openingMap.GetValueOrCreate(packedGameBoard);
-                    openingMoves.Add(move);
+                    openingMoves.Add(tuple.Item2);
                 }
             }
 
@@ -90,6 +76,44 @@ namespace ChessPlatform.ComputerPlayers
             var packedGameBoard = board.Pack();
             var moves = _openingMap.GetValueOrDefault(packedGameBoard);
             return moves == null ? NoMoves : moves.Copy();
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static List<Tuple<PackedGameBoard, PieceMove>> ParseLine(
+            [NotNull] string line,
+            [NotNull] GameBoard initialBoard)
+        {
+            const int MoveLength = 4;
+
+            line = line.Trim();
+            var lineLength = line.Length;
+
+            if (lineLength % MoveLength != 0)
+            {
+                throw new InvalidOperationException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "Invalid line '{0}'.",
+                        line));
+            }
+
+            const int OpeningLineCapacity = 20;
+            var openingLine = new List<Tuple<PackedGameBoard, PieceMove>>(OpeningLineCapacity);
+
+            var currentBoard = initialBoard;
+            for (int startIndex = 0, index = 0; startIndex < lineLength; startIndex += MoveLength, index++)
+            {
+                var stringNotation = line.Substring(startIndex, MoveLength);
+                var move = PieceMove.FromStringNotation(stringNotation);
+
+                openingLine.Add(Tuple.Create(currentBoard.Pack(), move));
+                currentBoard = currentBoard.MakeMove(move);
+            }
+
+            return openingLine;
         }
 
         #endregion
