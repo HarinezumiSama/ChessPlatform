@@ -27,7 +27,7 @@ namespace ChessPlatform.Internal
 
         public override Position GetKey(int index)
         {
-            return Position.FromBitboardBitIndex(index);
+            return Position.FromSquareIndex(index);
         }
 
         #endregion

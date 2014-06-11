@@ -86,7 +86,7 @@ namespace ChessPlatform.Tests
             var fen = PerftPositionToFenMap[perftPosition];
             var gameBoard = new GameBoard(fen, PerformInternalBoardValidation);
 
-            var flags = PerftFlags.IncludeDivideMap; // | PerftFlags.DisableParallelism;
+            var flags = PerftFlags.IncludeDivideMap | PerftFlags.DisableParallelism;
 
             var includeExtraCountTypes = expectedResult.CheckCount.HasValue || expectedResult.CheckmateCount.HasValue;
             if (includeExtraCountTypes)

@@ -7,9 +7,9 @@ namespace ChessPlatform
     public enum PieceColor
     {
         [FenChar('w')]
-        White,
+        White = 0,
 
         [FenChar('b')]
-        Black
+        Black = 1
     }
 }

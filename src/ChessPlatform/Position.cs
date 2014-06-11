@@ -10,9 +10,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        internal const int MaxBitboardBitIndex = sizeof(long) * 8 - 1;
-
-        private readonly byte _x88Value;
+        private readonly int _x88Value;
 
         #endregion
 
@@ -34,7 +32,7 @@ namespace ChessPlatform
         ///     using the specified 0x88 board representation value.
         /// </summary>
         [DebuggerNonUserCode]
-        internal Position(byte x88Value)
+        internal Position(int x88Value)
         {
             #region Argument Check
 
@@ -58,7 +56,7 @@ namespace ChessPlatform
 
             if (checkArguments)
             {
-                if (!ChessConstants.FileRange.Contains(file))
+                if ((file & ~0x07) != 0)
                 {
                     throw new ArgumentOutOfRangeException(
                         "file",
@@ -69,7 +67,7 @@ namespace ChessPlatform
                             ChessConstants.FileRange));
                 }
 
-                if (!ChessConstants.RankRange.Contains(rank))
+                if ((rank & ~0x07) != 0)
                 {
                     throw new ArgumentOutOfRangeException(
                         "rank",
@@ -90,21 +88,21 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public byte File
+        public int File
         {
             [DebuggerStepThrough]
             get
             {
-                return (byte)(_x88Value & 0x07);
+                return _x88Value & 0x07;
             }
         }
 
-        public byte Rank
+        public int Rank
         {
             [DebuggerStepThrough]
             get
             {
-                return (byte)(_x88Value >> 4);
+                return _x88Value >> 4;
             }
         }
 
@@ -113,7 +111,7 @@ namespace ChessPlatform
             [DebuggerNonUserCode]
             get
             {
-                return this.File | (this.Rank << 3);
+                return (this.Rank << 3) | this.File;
             }
         }
 
@@ -121,7 +119,7 @@ namespace ChessPlatform
 
         #region Internal Properties
 
-        internal byte X88Value
+        internal int X88Value
         {
             [DebuggerNonUserCode]
             get
@@ -201,7 +199,7 @@ namespace ChessPlatform
                 : null;
         }
 
-        public static Position[] GenerateFile(byte file)
+        public static Position[] GenerateFile(int file)
         {
             #region Argument Check
 
@@ -230,7 +228,7 @@ namespace ChessPlatform
             return GenerateFile(Convert.ToByte(fileValue));
         }
 
-        public static Position[] GenerateRank(byte rank)
+        public static Position[] GenerateRank(int rank)
         {
             #region Argument Check
 
@@ -273,30 +271,30 @@ namespace ChessPlatform
 
         #region Internal Methods
 
-        internal static bool IsValidX88Value(byte x88Value)
+        internal static bool IsValidX88Value(int x88Value)
         {
-            return (x88Value & 0x88) == 0;
+            return (x88Value & 0xFFFFFF88) == 0;
         }
 
-        internal static Position FromBitboardBitIndex(int index)
+        internal static Position FromSquareIndex(int squareIndex)
         {
             #region Argument Check
 
-            if (index < 0 || index > MaxBitboardBitIndex)
+            if ((squareIndex & ~0x3F) != 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "index",
-                    index,
+                    "squareIndex",
+                    squareIndex,
                     string.Format(
                         CultureInfo.InvariantCulture,
                         @"The value is out of the valid range ({0} .. {1}).",
                         0,
-                        MaxBitboardBitIndex));
+                        ChessConstants.SquareCount - 1));
             }
 
             #endregion
 
-            var x88Value = (byte)(((index & 0x38) << 1) | (index & 7));
+            var x88Value = (byte)(((squareIndex & 0x38) << 1) | (squareIndex & 7));
             return new Position(x88Value);
         }
 
@@ -306,7 +304,7 @@ namespace ChessPlatform
 
         public bool Equals(Position other)
         {
-            return Equals(other, this);
+            return Equals(this, other);
         }
 
         #endregion

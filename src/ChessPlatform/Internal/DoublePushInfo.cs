@@ -9,25 +9,25 @@ namespace ChessPlatform.Internal
         #region Constants and Fields
 
         private readonly Position _destinationPosition;
-        private readonly Position _intermediatePosition;
+        private readonly Bitboard _emptyPositions;
 
         #endregion
 
         #region Constructors
 
-        internal DoublePushInfo(Position destinationPosition, Position intermediatePosition)
+        internal DoublePushInfo(Position destinationPosition, Bitboard emptyPositions)
         {
             #region Argument Check
 
-            if (destinationPosition == intermediatePosition)
+            if ((destinationPosition.Bitboard & emptyPositions) == 0)
             {
-                throw new ArgumentException("Positions must be different.");
+                throw new ArgumentException("Empty positions should contain destination position.");
             }
 
             #endregion
 
             _destinationPosition = destinationPosition;
-            _intermediatePosition = intermediatePosition;
+            _emptyPositions = emptyPositions;
         }
 
         #endregion
@@ -43,12 +43,12 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public Position IntermediatePosition
+        public Bitboard EmptyPositions
         {
             [DebuggerStepThrough]
             get
             {
-                return _intermediatePosition;
+                return _emptyPositions;
             }
         }
 

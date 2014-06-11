@@ -173,7 +173,7 @@ namespace ChessPlatform
 
             for (int index = 0, bitOffset = 0; index < PositionCount; index++, bitOffset += BitsPerPosition)
             {
-                var position = Position.FromBitboardBitIndex(index);
+                var position = Position.FromSquareIndex(index);
                 var pieceValue = (int)board[position];
 
                 //// TODO [vmcl] Remove this temporary verification

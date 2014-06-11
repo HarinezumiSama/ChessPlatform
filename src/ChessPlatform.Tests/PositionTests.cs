@@ -148,6 +148,28 @@ namespace ChessPlatform.Tests
             }
         }
 
+        [Test]
+        public void TestFromSquareIndex()
+        {
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var position = Position.FromSquareIndex(squareIndex);
+                Assert.That(position.SquareIndex, Is.EqualTo(squareIndex));
+                Assert.That(position.Rank, Is.EqualTo(squareIndex / 8));
+                Assert.That(position.File, Is.EqualTo(squareIndex % 8));
+            }
+        }
+
+        [Test]
+        [TestCase(-1)]
+        [TestCase(ChessConstants.SquareCount)]
+        [TestCase(int.MinValue)]
+        [TestCase(int.MaxValue)]
+        public void TestFromSquareIndexNegativeCases(int squareIndex)
+        {
+            Assert.That(() => Position.FromSquareIndex(squareIndex), Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
+
         #endregion
 
         #region Private Methods

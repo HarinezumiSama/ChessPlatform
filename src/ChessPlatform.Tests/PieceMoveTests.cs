@@ -21,18 +21,18 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestConstruction()
         {
-            for (var fromIndex = 0; fromIndex < Position.MaxBitboardBitIndex; fromIndex++)
+            for (var fromIndex = 0; fromIndex < ChessConstants.SquareCount; fromIndex++)
             {
-                var from = Position.FromBitboardBitIndex(fromIndex);
+                var from = Position.FromSquareIndex(fromIndex);
 
-                for (var toIndex = 0; toIndex < Position.MaxBitboardBitIndex; toIndex++)
+                for (var toIndex = 0; toIndex < ChessConstants.SquareCount; toIndex++)
                 {
                     if (fromIndex == toIndex)
                     {
                         continue;
                     }
 
-                    var to = Position.FromBitboardBitIndex(toIndex);
+                    var to = Position.FromSquareIndex(toIndex);
 
                     var outerMove = new PieceMove(from, to);
                     Assert.That(outerMove.From, Is.EqualTo(from));

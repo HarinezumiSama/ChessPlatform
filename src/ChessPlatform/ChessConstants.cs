@@ -13,19 +13,19 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        public const byte FileCount = 8;
-        public const byte RankCount = 8;
+        public const int FileCount = 8;
+        public const int RankCount = 8;
 
-        public const byte SquareCount = FileCount * RankCount;
+        public const int SquareCount = FileCount * RankCount;
 
-        public const byte WhitePawnPromotionRank = RankCount - 1;
-        public const byte BlackPawnPromotionRank = 0;
+        public const int WhitePawnPromotionRank = RankCount - 1;
+        public const int BlackPawnPromotionRank = 0;
 
         public const int FullMoveCountBy50MoveRule = 50;
 
         public const string DefaultInitialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        internal const byte X88Length = FileCount * RankCount * 2;
+        internal const int X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;
         internal const int MaxPawnCountPerColor = 8;

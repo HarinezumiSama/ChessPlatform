@@ -166,6 +166,11 @@ namespace ChessPlatform
             return new Bitboard(left._value | right._value);
         }
 
+        public static Bitboard operator ^(Bitboard left, Bitboard right)
+        {
+            return new Bitboard(left._value ^ right._value);
+        }
+
         #endregion
 
         #region Public Methods
@@ -211,14 +216,14 @@ namespace ChessPlatform
 
         public Position[] GetPositions()
         {
-            var resultList = new List<Position>();
+            var resultList = new List<Position>(ChessConstants.SquareCount);
 
             var currentValue = _value;
 
             int index;
             while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
             {
-                resultList.Add(Position.FromBitboardBitIndex(index));
+                resultList.Add(Position.FromSquareIndex(index));
                 currentValue &= ~(1L << index);
             }
 
@@ -231,7 +236,7 @@ namespace ChessPlatform
 
         public bool Equals(Bitboard other)
         {
-            return Equals(other, this);
+            return Equals(this, other);
         }
 
         #endregion
@@ -245,7 +250,7 @@ namespace ChessPlatform
                 return NoBitSetIndex;
             }
 
-            const long Debruijn64 = 0x03f79d71b4cb0a89L;
+            const long Debruijn64 = 0x03F79D71B4CB0A89L;
 
             var firstBitOnly = value & -value;
 

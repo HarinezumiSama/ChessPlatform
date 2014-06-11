@@ -50,7 +50,7 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 1) | (1L << 59), 1, 59)]
         public void TestFindAllBitsSet(long value, params int[] expectedIndexesResult)
         {
-            var expectedResult = expectedIndexesResult.Select(Position.FromBitboardBitIndex).ToArray();
+            var expectedResult = expectedIndexesResult.Select(Position.FromSquareIndex).ToArray();
 
             var bitboard = new Bitboard(value);
             var actualResult = bitboard.GetPositions();
