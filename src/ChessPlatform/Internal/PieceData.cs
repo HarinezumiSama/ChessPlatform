@@ -108,10 +108,7 @@ namespace ChessPlatform.Internal
 
         public Position[] GetPiecePositions(PieceColor color)
         {
-            var pieces =
-                ChessConstants.PieceTypes.Where(item => item != PieceType.None).Select(item => item.ToPiece(color));
-
-            var result = pieces.SelectMany(this.GetPiecePositions).ToArray();
+            var result = _entireColorBitboards[color].GetPositions();
             return result;
         }
 

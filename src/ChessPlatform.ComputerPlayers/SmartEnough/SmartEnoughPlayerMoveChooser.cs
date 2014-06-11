@@ -29,6 +29,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static readonly Dictionary<Piece, Dictionary<Position, int>> PieceToPositionWeightMap =
             CreatePieceToPositionWeightMap();
 
+        private static readonly Dictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
+            new Dictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
+
         private readonly IGameBoard _rootBoard;
         private readonly int _maxPlyDepth;
         private readonly PieceMove _previousIterationBestMove;
@@ -411,6 +414,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return cheapestAttackerMove;
         }
 
+        private static int EvaluateKingTropism([NotNull] IGameBoard board, PieceColor kingColor)
+        {
+            var king = PieceType.King.ToPiece(kingColor);
+            var kingPosition = board.GetPiecePositions(king).Single();
+            var attackerPositions = board.GetPiecePositions(kingColor.Invert());
+
+            const int NormingFactor = 14;
+
+            var result = 0;
+            foreach (var attackerPosition in attackerPositions)
+            {
+                var distance = NormingFactor
+                    - (Math.Abs(attackerPosition.Rank - kingPosition.Rank)
+                        + Math.Abs(attackerPosition.File - kingPosition.File));
+
+                var attackerPieceType = board[attackerPosition].GetPieceType();
+                var score = distance * PieceTypeToKingTropismWeightMap[attackerPieceType] / NormingFactor;
+
+                result -= score;
+            }
+
+            return result;
+        }
+
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private PieceMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
         {
@@ -507,8 +534,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var gamePhase = GetGamePhase(board);
             var materialAndItsPosition = EvaluateMaterialAndItsPosition(board, gamePhase);
             var mobility = EvaluateMobility(board);
+            var kingTropism = EvaluateKingTropism(board, board.ActiveColor)
+                - EvaluateKingTropism(board, board.ActiveColor.Invert());
 
-            var result = materialAndItsPosition + mobility;
+            var result = materialAndItsPosition + mobility + kingTropism;
             return result;
         }
 

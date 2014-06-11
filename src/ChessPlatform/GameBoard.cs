@@ -436,6 +436,11 @@ namespace ChessPlatform
             return _pieceData.GetPiecePositions(piece);
         }
 
+        public Position[] GetPiecePositions(PieceColor color)
+        {
+            return _pieceData.GetPiecePositions(color);
+        }
+
         public bool IsValidMove(PieceMove move)
         {
             #region Argument Check

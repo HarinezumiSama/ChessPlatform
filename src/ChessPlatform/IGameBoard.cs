@@ -83,6 +83,9 @@ namespace ChessPlatform
         [NotNull]
         Position[] GetPiecePositions(Piece piece);
 
+        [NotNull]
+        Position[] GetPiecePositions(PieceColor color);
+
         bool IsValidMove([NotNull] PieceMove move);
 
         bool IsPawnPromotionMove([NotNull] PieceMove move);
