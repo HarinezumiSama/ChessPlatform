@@ -141,11 +141,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     var index = _openingBookRandom.Next(openingMoves.Length);
                     var openingMove = openingMoves[index];
 
+                    var boardAfterOpeningMove = board.MakeMove(openingMove);
+                    var furtherOpeningMoves = _openingBook.FindPossibleMoves(boardAfterOpeningMove);
+
                     Trace.TraceInformation(
-                        "[{0}] From the opening move(s) [ {1} ]: chosen {2}.",
+                        "[{0}] From the opening moves [ {1} ]: chosen {2}. Further opening moves [ {3} ].",
                         currentMethodName,
                         openingMoves.Select(move => move.ToString()).Join(", "),
-                        openingMove);
+                        openingMove,
+                        furtherOpeningMoves.Select(move => move.ToString()).Join(", "));
 
                     return openingMove;
                 }
