@@ -33,16 +33,21 @@ namespace ChessPlatform.ComputerPlayers
 
             #endregion
 
-            var initialBoard = new GameBoard();
-
-            var openingLines = new List<List<Tuple<PackedGameBoard, PieceMove>>>();
+            var lines = new List<string>(1024);
 
             string line;
             while ((line = reader.ReadLine()) != null)
             {
-                var openingLine = ParseLine(line, initialBoard);
-                openingLines.Add(openingLine);
+                lines.Add(line);
             }
+
+            var initialBoard = new GameBoard();
+
+            var openingLines = lines
+                .AsParallel()
+                .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                .Select(s => ParseLine(s, initialBoard))
+                .ToArray();
 
             var openingMap = new Dictionary<PackedGameBoard, HashSet<PieceMove>>();
             foreach (var openingLine in openingLines)
@@ -62,6 +67,21 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Public Methods
 
+        public PieceMove[] FindPossibleMoves([NotNull] PackedGameBoard packedGameBoard)
+        {
+            #region Argument Check
+
+            if (packedGameBoard == null)
+            {
+                throw new ArgumentNullException("packedGameBoard");
+            }
+
+            #endregion
+
+            var moves = _openingMap.GetValueOrDefault(packedGameBoard);
+            return moves == null ? NoMoves : moves.Copy();
+        }
+
         public PieceMove[] FindPossibleMoves([NotNull] IGameBoard board)
         {
             #region Argument Check
@@ -74,8 +94,7 @@ namespace ChessPlatform.ComputerPlayers
             #endregion
 
             var packedGameBoard = board.Pack();
-            var moves = _openingMap.GetValueOrDefault(packedGameBoard);
-            return moves == null ? NoMoves : moves.Copy();
+            return FindPossibleMoves(packedGameBoard);
         }
 
         #endregion
@@ -104,13 +123,28 @@ namespace ChessPlatform.ComputerPlayers
             var openingLine = new List<Tuple<PackedGameBoard, PieceMove>>(OpeningLineCapacity);
 
             var currentBoard = initialBoard;
+            PieceMove lastMove = null;
             for (int startIndex = 0, index = 0; startIndex < lineLength; startIndex += MoveLength, index++)
             {
-                var stringNotation = line.Substring(startIndex, MoveLength);
-                var move = PieceMove.FromStringNotation(stringNotation);
+                if (lastMove != null)
+                {
+                    currentBoard = currentBoard.MakeMove(lastMove);
+                }
 
-                openingLine.Add(Tuple.Create(currentBoard.Pack(), move));
-                currentBoard = currentBoard.MakeMove(move);
+                var stringNotation = line.Substring(startIndex, MoveLength);
+                lastMove = PieceMove.FromStringNotation(stringNotation);
+
+                if (!currentBoard.IsValidMove(lastMove))
+                {
+                    throw new InvalidOperationException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "Invalid move '{0}' for {{ {1} }}.",
+                            lastMove,
+                            currentBoard.GetFen()));
+                }
+
+                openingLine.Add(Tuple.Create(currentBoard.Pack(), lastMove));
             }
 
             return openingLine;
