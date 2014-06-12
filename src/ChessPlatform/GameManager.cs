@@ -35,7 +35,10 @@ namespace ChessPlatform
 
         #region Constructors
 
-        public GameManager([NotNull] IChessPlayer white, [NotNull] IChessPlayer black, string initialPositionFen)
+        public GameManager(
+            [NotNull] IChessPlayer white,
+            [NotNull] IChessPlayer black,
+            [NotNull] GameBoard gameBoard)
         {
             #region Argument Check
 
@@ -49,26 +52,30 @@ namespace ChessPlatform
                 throw new ArgumentNullException("black");
             }
 
-            if (string.IsNullOrWhiteSpace(initialPositionFen))
+            if (gameBoard == null)
             {
-                throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
-                    "initialPositionFen");
+                throw new ArgumentNullException("gameBoard");
             }
 
             #endregion
 
             _white = white;
             _black = black;
-            _gameBoards = new Stack<GameBoard>();
+            _gameBoards = new Stack<GameBoard>(gameBoard.GetHistory());
             _thread = new Thread(this.ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
             _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
             _state = GameManagerState.Paused;
 
-            var gameBoard = new GameBoard(initialPositionFen);
-            _gameBoards.Push(gameBoard);
-
             _thread.Start();
+        }
+
+        public GameManager(
+            [NotNull] IChessPlayer white,
+            [NotNull] IChessPlayer black,
+            [NotNull] string initialPositionFen)
+            : this(white, black, new GameBoard(initialPositionFen))
+        {
+            // Nothing to do
         }
 
         #endregion
@@ -300,6 +307,12 @@ namespace ChessPlatform
             try
             {
                 ExecuteGameInternal();
+
+                var getMoveState = _getMoveStateContainer.Value;
+                if (getMoveState != null)
+                {
+                    getMoveState.Cancel();
+                }
             }
             catch (Exception ex)
             {
@@ -471,11 +484,11 @@ namespace ChessPlatform
 
             #region Constructors
 
-            public GetMoveState(GameManagerState state, GameBoard activeBoard)
+            public GetMoveState(GameManagerState state, [NotNull] GameBoard activeBoard)
             {
+                _cancellationTokenSource = new CancellationTokenSource();
                 this.State = state;
                 this.ActiveBoard = activeBoard.EnsureNotNull();
-                _cancellationTokenSource = new CancellationTokenSource();
                 this.IsCancelled = new SyncValueContainer<bool>();
             }
 

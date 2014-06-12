@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 
@@ -8,32 +9,48 @@ namespace ChessPlatform.UI.Desktop
     /// <summary>
     ///     Interaction logic for <b>NewGameWindow.xaml</b>.
     /// </summary>
-    public partial class NewGameWindow
+    internal partial class NewGameWindow
     {
         #region Constructors
 
         public NewGameWindow()
         {
             InitializeComponent();
+
+            this.Title = string.Format(CultureInfo.InvariantCulture, "New Game – {0}", App.Title);
+
+            var clipboardText = Clipboard.GetText();
+
+            this.FenTextBox.Text = GameBoard.IsValidFen(clipboardText)
+                ? clipboardText
+                : ChessConstants.DefaultInitialFen;
         }
 
         #endregion
 
         #region Public Properties
 
-        public Type WhitePlayerType
+        public PlayerInfo WhitePlayer
         {
             get
             {
-                return this.WhitePlayerChoiceControl.ViewModel.SelectedPlayerType;
+                return this.WhitePlayerChoiceControl.ViewModel.SelectedPlayerControlItem.EnsureNotNull().Value;
             }
         }
 
-        public Type BlackPlayerType
+        public PlayerInfo BlackPlayer
         {
             get
             {
-                return this.BlackPlayerChoiceControl.ViewModel.SelectedPlayerType;
+                return this.BlackPlayerChoiceControl.ViewModel.SelectedPlayerControlItem.EnsureNotNull().Value;
+            }
+        }
+
+        public string InitialFen
+        {
+            get
+            {
+                return this.FenTextBox.Text.TrimSafely();
             }
         }
 
@@ -46,10 +63,11 @@ namespace ChessPlatform.UI.Desktop
             this.DialogResult = null;
         }
 
-        private void OKButton_OnClick(object sender, RoutedEventArgs e)
+        private void OKButton_Click(object sender, RoutedEventArgs e)
         {
-            if (this.WhitePlayerType == null || this.BlackPlayerType == null)
+            if (!GameBoard.IsValidFen(this.InitialFen))
             {
+                this.ShowErrorDialog("The specified FEN has invalid format or represents an invalid board position.");
                 return;
             }
 
@@ -57,10 +75,20 @@ namespace ChessPlatform.UI.Desktop
             Close();
         }
 
-        private void CancelButton_OnClick(object sender, RoutedEventArgs e)
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             this.DialogResult = false;
             Close();
+        }
+
+        private void DefaultButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.FenTextBox.Text = ChessConstants.DefaultInitialFen;
+        }
+
+        private void FromClipboardButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.FenTextBox.Text = Clipboard.GetText();
         }
 
         #endregion

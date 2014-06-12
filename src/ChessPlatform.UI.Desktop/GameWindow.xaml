@@ -15,8 +15,6 @@
     <Window.CommandBindings>
         <CommandBinding Command="commands:GameWindowCommands.Exit" Executed="Exit_Executed" />
         <CommandBinding Command="commands:GameWindowCommands.NewGame" Executed="NewGame_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.NewGameFromFenFromClipboard"
-                        Executed="NewGameFromFenFromClipboard_Executed" />
         <CommandBinding Command="commands:GameWindowCommands.UndoLastMove" Executed="UndoLastMove_Executed"
                         CanExecute="UndoLastMove_CanExecute" />
         <CommandBinding Command="commands:GameWindowCommands.CopyFenToClipboard"
@@ -46,8 +44,6 @@
               VerticalAlignment="Top" Focusable="False">
             <MenuItem Header="_Game">
                 <MenuItem Command="commands:GameWindowCommands.NewGame"
-                          InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
-                <MenuItem Command="commands:GameWindowCommands.NewGameFromFenFromClipboard"
                           InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
                 <MenuItem Command="commands:GameWindowCommands.Exit"

@@ -114,6 +114,9 @@ namespace ChessPlatform
         [NotNull]
         IGameBoard MakeNullMove();
 
+        [NotNull]
+        IGameBoard[] GetHistory();
+
         #endregion
     }
 }

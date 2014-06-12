@@ -332,6 +332,7 @@ namespace ChessPlatform
             return GetFen();
         }
 
+        [NotNull]
         [CLSCompliant(false)]
         public PerftResult Perft(int depth, PerftFlags flags)
         {
@@ -366,6 +367,7 @@ namespace ChessPlatform
                 includeExtraCountTypes ? perftData.CheckmateCount : (ulong?)null);
         }
 
+        [NotNull]
         [CLSCompliant(false)]
         public PerftResult Perft(int depth)
         {
@@ -401,6 +403,23 @@ namespace ChessPlatform
             }
 
             return new GameBoard(this, null);
+        }
+
+        [NotNull]
+        public GameBoard[] GetHistory()
+        {
+            var boards = new List<GameBoard>(_fullMoveIndex * 2);
+
+            var currentBoard = this;
+            while (currentBoard != null)
+            {
+                boards.Add(currentBoard);
+                currentBoard = currentBoard._previousBoard;
+            }
+
+            boards.Reverse();
+
+            return boards.ToArray();
         }
 
         #endregion
@@ -590,6 +609,12 @@ namespace ChessPlatform
         IGameBoard IGameBoard.MakeNullMove()
         {
             return MakeNullMove();
+        }
+
+        IGameBoard[] IGameBoard.GetHistory()
+        {
+            // ReSharper disable once CoVariantArrayConversion
+            return GetHistory();
         }
 
         #endregion

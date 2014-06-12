@@ -72,6 +72,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\ControlItem.cs" />
+    <Compile Include="Controls\ControlItem.Helper.cs" />
     <Compile Include="Converters\BooleanToValueConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DebugConverter.cs" />
@@ -81,9 +83,10 @@
     <Compile Include="NewGameWindow.xaml.cs">
       <DependentUpon>NewGameWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PlayerChoiceControl.xaml.cs">
+    <Compile Include="Controls\PlayerChoiceControl.xaml.cs">
       <DependentUpon>PlayerChoiceControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="PlayerInfo.cs" />
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />
     <Compile Include="Converters\RatioDoubleConverter.cs" />
@@ -110,7 +113,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="PlayerChoiceControl.xaml">
+    <Page Include="Controls\PlayerChoiceControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

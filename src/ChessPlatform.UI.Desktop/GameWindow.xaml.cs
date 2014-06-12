@@ -39,10 +39,7 @@ namespace ChessPlatform.UI.Desktop
             _canExecuteCopyFenToClipboard = true;
             _canExecuteCopyHistoryToClipboard = true;
 
-            this.Title = string.Format(
-                CultureInfo.InvariantCulture,
-                "Chess Platform UI for Desktop {0}",
-                ChessHelper.GetPlatformVersion(true));
+            this.Title = App.Title;
 
             InitializeControls(false);
             InitializePromotionControls();
@@ -72,71 +69,18 @@ namespace ChessPlatform.UI.Desktop
             return source == null || !(source.Tag is Position) ? null : (Position)source.Tag;
         }
 
-        private void StartNewGame(bool confirm)
+        private void StartNewGame()
         {
-            ////var newGameWindow = new NewGameWindow { Owner = this };
-            ////if (!newGameWindow.ShowDialog().GetValueOrDefault())
-            ////{
-            ////    return;
-            ////}
-
-            ////newGameWindow.WhitePlayerType.EnsureNotNull();
-            ////newGameWindow.BlackPlayerType.EnsureNotNull();
-
-            if (confirm)
+            var newGameWindow = new NewGameWindow { Owner = this };
+            if (!newGameWindow.ShowDialog().GetValueOrDefault())
             {
-                var answer = this.ShowYesNoDialog("Do you want to start a new game?");
-                if (answer != MessageBoxResult.Yes)
-                {
-                    return;
-                }
-            }
-
-            this.ViewModel.InitializeNewGameFromDefaultInitialBoard();
-            this.ViewModel.Play();
-        }
-
-        private void StartNewGameFromFenFromClipboard(bool confirm)
-        {
-            var fen = Clipboard.GetText();
-            if (!ChessHelper.IsValidFenFormat(fen))
-            {
-                this.ShowWarningDialog("The Clipboard does not contain a properly formatted FEN.");
                 return;
             }
 
-            if (confirm)
-            {
-                var answer = this.ShowYesNoDialog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Do you want to start a new game using the following FEN?{0}"
-                            + "{0}"
-                            + "{1}",
-                        Environment.NewLine,
-                        fen));
-
-                if (answer != MessageBoxResult.Yes)
-                {
-                    return;
-                }
-            }
-
-            try
-            {
-                this.ViewModel.InitializeNewGame(fen);
-            }
-            catch (ArgumentException)
-            {
-                this.ShowErrorDialog(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Invalid FEN:{0}{1}",
-                        Environment.NewLine,
-                        fen));
-
-                return;
-            }
+            this.ViewModel.InitializeNewGame(
+                newGameWindow.InitialFen,
+                newGameWindow.WhitePlayer,
+                newGameWindow.BlackPlayer);
 
             this.ViewModel.Play();
         }
@@ -600,7 +544,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void NewGame_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            StartNewGame(true);
+            StartNewGame();
         }
 
         private void UndoLastMove_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -643,11 +587,6 @@ namespace ChessPlatform.UI.Desktop
         private void CopyHistoryToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = _canExecuteCopyHistoryToClipboard;
-        }
-
-        private void NewGameFromFenFromClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
-        {
-            StartNewGameFromFenFromClipboard(true);
         }
 
         private void PromotionPopup_PreviewKeyDown(object sender, KeyEventArgs e)

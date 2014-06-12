@@ -8,10 +8,19 @@ using System.Windows;
 namespace ChessPlatform.UI.Desktop
 {
     /// <summary>
-    /// Interaction logic for App.xaml
+    ///     Interaction logic for <b>App.xaml</b>.
     /// </summary>
     public partial class App
     {
+        #region Constants and Fields
+
+        public static readonly string Title = string.Format(
+            CultureInfo.InvariantCulture,
+            "Chess Platform UI for Desktop {0}",
+            ChessHelper.GetPlatformVersion(true));
+
+        #endregion
+
         #region Protected Methods
 
         protected override void OnStartup(StartupEventArgs e)

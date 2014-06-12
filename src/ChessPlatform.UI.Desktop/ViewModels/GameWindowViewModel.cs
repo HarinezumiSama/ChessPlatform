@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ChessPlatform.ComputerPlayers.SmartEnough;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -47,7 +46,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
                 .AsReadOnly();
 
-            InitializeNewGameFromDefaultInitialBoard();
+            InitializeNewGame(ChessConstants.DefaultInitialFen, null, null);
         }
 
         #endregion
@@ -207,12 +206,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             SetModeInternal(currentSourcePosition, GameWindowSelectionMode.DisplayValidMovesOnly);
         }
 
-        public void InitializeNewGameFromDefaultInitialBoard()
-        {
-            InitializeNewGame(ChessConstants.DefaultInitialFen);
-        }
-
-        public void InitializeNewGame(string fen)
+        public void InitializeNewGame(
+            [NotNull] string fen,
+            [CanBeNull] PlayerInfo whitePlayerInfo,
+            [CanBeNull] PlayerInfo blackPlayerInfo)
         {
             #region Argument Check
 
@@ -227,10 +224,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             Factotum.DisposeAndNull(ref _gameManager);
 
-            CreateGuiHumanChessPlayer(ref _whitePlayer, PieceColor.White);
-            //CreateGuiHumanChessPlayer(ref _blackPlayer, PieceColor.Black);
-            //_blackPlayer = new DummyPlayer(PieceColor.Black);
-            _blackPlayer = new SmartEnoughPlayer(PieceColor.Black, 4, true);
+            CreatePlayer(ref _whitePlayer, whitePlayerInfo, PieceColor.White);
+            CreatePlayer(ref _blackPlayer, blackPlayerInfo, PieceColor.Black);
 
             ResetSelectionMode();
 
@@ -485,7 +480,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RefreshBoardHistory();
         }
 
-        private void CreateGuiHumanChessPlayer(ref IChessPlayer player, PieceColor color)
+        private GuiHumanChessPlayer CreateGuiHumanChessPlayer(PieceColor color)
+        {
+            var player = new GuiHumanChessPlayer(color);
+            player.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
+            player.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
+
+            return player;
+        }
+
+        private void CreatePlayer(ref IChessPlayer player, [CanBeNull] PlayerInfo playerInfo, PieceColor color)
         {
             var guiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (guiHumanChessPlayer != null)
@@ -494,11 +498,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 guiHumanChessPlayer.MoveRequestCancelled -= this.GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
-            guiHumanChessPlayer = new GuiHumanChessPlayer(color);
-            guiHumanChessPlayer.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
-            guiHumanChessPlayer.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
-
-            player = guiHumanChessPlayer;
+            player = playerInfo == null ? CreateGuiHumanChessPlayer(color) : playerInfo.PlayerFactory(color);
         }
 
         private IChessPlayer GetActivePlayer()

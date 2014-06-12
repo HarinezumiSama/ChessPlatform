@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows.Data;
 using ChessPlatform.ComputerPlayers.SmartEnough;
+using ChessPlatform.UI.Desktop.Controls;
 
 namespace ChessPlatform.UI.Desktop.ViewModels
 {
@@ -18,29 +19,31 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var playerTypesInternal =
                 new[]
                 {
-                    typeof(GuiHumanChessPlayer),
-                    typeof(SmartEnoughPlayer)
+                    ControlItem.Create((PlayerInfo)null, "Human Player"),
+                    ControlItem.Create(
+                        new PlayerInfo(color => new SmartEnoughPlayer(color, 4, true)),
+                        "Computer Player")
                 };
 
-            this.PlayerTypes = CollectionViewSource.GetDefaultView(playerTypesInternal);
-            this.PlayerTypes.CurrentChanged += PlayerTypes_CurrentChanged;
+            this.PlayerControlItems = CollectionViewSource.GetDefaultView(playerTypesInternal);
+            this.PlayerControlItems.CurrentChanged += this.PlayerTypes_CurrentChanged;
         }
 
         #endregion
 
         #region Public Properties
 
-        public ICollectionView PlayerTypes
+        public ICollectionView PlayerControlItems
         {
             get;
             private set;
         }
 
-        public Type SelectedPlayerType
+        public ControlItem<PlayerInfo> SelectedPlayerControlItem
         {
             get
             {
-                return this.PlayerTypes.CurrentItem as Type;
+                return (ControlItem<PlayerInfo>)this.PlayerControlItems.CurrentItem;
             }
         }
 
@@ -50,7 +53,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void PlayerTypes_CurrentChanged(object sender, EventArgs eventArgs)
         {
-            RaisePropertyChanged(() => this.SelectedPlayerType);
+            RaisePropertyChanged(() => this.SelectedPlayerControlItem);
         }
 
         #endregion
