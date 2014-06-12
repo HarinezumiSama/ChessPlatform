@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ChessPlatform.ComputerPlayers.Properties;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -14,10 +12,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     public sealed class SmartEnoughPlayer : ChessPlayerBase
     {
         #region Constants and Fields
-
-        private static readonly Lazy<OpeningBook> GlobalOpeningBook = Lazy.Create(
-            InitializeGlobalOpeningBook,
-            LazyThreadSafetyMode.ExecutionAndPublication);
 
         private readonly int _maxPlyDepth;
 
@@ -50,7 +44,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             _maxPlyDepth = maxPlyDepth;
-            _openingBook = useOpeningBook ? GlobalOpeningBook.Value : null;
+            _openingBook = useOpeningBook ? OpeningBook.Default : null;
         }
 
         #endregion
@@ -97,30 +91,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         #endregion
 
         #region Private Methods
-
-        private static OpeningBook InitializeGlobalOpeningBook()
-        {
-            OpeningBook openingBook;
-
-            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
-
-            Trace.TraceInformation("[{0}] Initializing the opening book...", currentMethodName);
-
-            var stopwatch = Stopwatch.StartNew();
-            using (var reader = new StringReader(Resources.OpeningBook))
-            {
-                openingBook = new OpeningBook(reader);
-            }
-
-            stopwatch.Stop();
-
-            Trace.TraceInformation(
-                "[{0}] The opening book has been initialized in {1}.",
-                currentMethodName,
-                stopwatch.Elapsed);
-
-            return openingBook;
-        }
 
         private PieceMove DoGetMoveInternal([NotNull] IGameBoard board, CancellationToken cancellationToken)
         {

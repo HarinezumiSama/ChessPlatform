@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using ChessPlatform.ComputerPlayers.Properties;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
@@ -12,6 +16,10 @@ namespace ChessPlatform.ComputerPlayers
         #region Constants and Fields
 
         private static readonly PieceMove[] NoMoves = new PieceMove[0];
+
+        private static readonly Lazy<OpeningBook> DefaultInstance = Lazy.Create(
+            InitializeDefaultOpeningBook,
+            LazyThreadSafetyMode.ExecutionAndPublication);
 
         private readonly Dictionary<PackedGameBoard, PieceMove[]> _openingMap;
 
@@ -65,7 +73,24 @@ namespace ChessPlatform.ComputerPlayers
 
         #endregion
 
+        #region Public Properties
+
+        public static OpeningBook Default
+        {
+            get
+            {
+                return DefaultInstance.Value;
+            }
+        }
+
+        #endregion
+
         #region Public Methods
+
+        public static void InitializeDefault()
+        {
+            DefaultInstance.Value.EnsureNotNull();
+        }
 
         public PieceMove[] FindPossibleMoves([NotNull] PackedGameBoard packedGameBoard)
         {
@@ -148,6 +173,30 @@ namespace ChessPlatform.ComputerPlayers
             }
 
             return openingLine;
+        }
+
+        private static OpeningBook InitializeDefaultOpeningBook()
+        {
+            OpeningBook openingBook;
+
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            Trace.TraceInformation("[{0}] Initializing the opening book...", currentMethodName);
+
+            var stopwatch = Stopwatch.StartNew();
+            using (var reader = new StringReader(Resources.OpeningBook))
+            {
+                openingBook = new OpeningBook(reader);
+            }
+
+            stopwatch.Stop();
+
+            Trace.TraceInformation(
+                "[{0}] The opening book has been initialized in {1}.",
+                currentMethodName,
+                stopwatch.Elapsed);
+
+            return openingBook;
         }
 
         #endregion

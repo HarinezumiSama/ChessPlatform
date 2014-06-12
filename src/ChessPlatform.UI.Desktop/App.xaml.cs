@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using System.Windows;
+using ChessPlatform.ComputerPlayers;
 
 namespace ChessPlatform.UI.Desktop
 {
@@ -28,7 +31,13 @@ namespace ChessPlatform.UI.Desktop
             base.OnStartup(e);
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+
+            InitializeDefaultOpeningBookInBackground();
         }
+
+        #endregion
+
+        #region Private Methods
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
@@ -46,6 +55,23 @@ namespace ChessPlatform.UI.Desktop
             window.ShowErrorDialog(text, "Unhandled exception");
 
             Process.GetCurrentProcess().Kill();
+        }
+
+        private static void InitializeDefaultOpeningBookInBackground()
+        {
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            var task = new Task(OpeningBook.InitializeDefault);
+
+            task.ContinueWith(
+                t =>
+                    Trace.TraceError(
+                        "[{0}] Error initializing the default opening book: {1}",
+                        currentMethodName,
+                        t.Exception),
+                TaskContinuationOptions.OnlyOnFaulted);
+
+            task.Start();
         }
 
         #endregion
