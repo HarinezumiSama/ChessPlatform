@@ -17,8 +17,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
 
-        ////private const int MaxInitialCapacity = 100000;
-
         private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             CreatePieceTypeToMaterialWeightMap();
 
@@ -657,13 +655,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
-                if (beta <= score)
+                if (score >= beta)
                 {
                     // Fail-hard beta-cutoff
+                    _transpositionTable.SaveScore(board, plyDistance, beta);
                     return beta;
                 }
 
-                if (alpha < score)
+                if (score > alpha)
                 {
                     alpha = score;
                 }
@@ -680,7 +679,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var orderedMoves = OrderMoves(board, 0);
 
             const int RootAlpha = checked(-MateScoreAbs - 1);
-            const int RootBeta = checked(MateScoreAbs + 1);
 
             PieceMove bestMove = null;
             var bestMoveLocalScore = Int32.MinValue;
@@ -696,7 +694,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var currentBoard = MakeMoveOptimized(board, move);
                 var localScore = -EvaluatePositionScore(currentBoard, 1);
 
-                var score = -ComputeAlphaBeta(currentBoard, 1, -RootBeta, -alpha);
+                var score = -ComputeAlphaBeta(currentBoard, 1, RootAlpha, -alpha);
 
                 stopwatch.Stop();
 
