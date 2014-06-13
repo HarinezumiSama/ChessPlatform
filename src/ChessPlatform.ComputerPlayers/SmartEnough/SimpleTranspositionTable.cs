@@ -11,7 +11,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<Tuple<PackedGameBoard, int>, int> _scoreMap;
+        private readonly Dictionary<InternalKey, int> _scoreMap;
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
-            _scoreMap = new Dictionary<Tuple<PackedGameBoard, int>, int>(maximumItemCount);
+            _scoreMap = new Dictionary<InternalKey, int>(maximumItemCount);
         }
 
         #endregion
@@ -130,10 +130,72 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private static Tuple<PackedGameBoard, int> GetKey([NotNull] IGameBoard board, int plyDepth)
+        private static InternalKey GetKey([NotNull] IGameBoard board, int plyDepth)
         {
             var packedGameBoard = board.Pack();
-            return Tuple.Create(packedGameBoard, plyDepth);
+            return new InternalKey(packedGameBoard, plyDepth);
+        }
+
+        #endregion
+
+        #region InternalKey Class
+
+        private sealed class InternalKey : IEquatable<InternalKey>
+        {
+            #region Constants and Fields
+
+            private readonly PackedGameBoard _packedGameBoard;
+            private readonly int _plyDepth;
+            private readonly int _hashCode;
+
+            #endregion
+
+            #region Constructors
+
+            internal InternalKey(PackedGameBoard packedGameBoard, int plyDepth)
+            {
+                _packedGameBoard = packedGameBoard.EnsureNotNull();
+                _plyDepth = plyDepth;
+
+                _hashCode = _packedGameBoard.CombineHashCodes(_plyDepth);
+            }
+
+            #endregion
+
+            #region Public Methods
+
+            public override bool Equals(object obj)
+            {
+                return Equals(obj as InternalKey);
+            }
+
+            public override int GetHashCode()
+            {
+                return _hashCode;
+            }
+
+            #endregion
+
+            #region IEquatable<InternalKey> Members
+
+            public bool Equals(InternalKey other)
+            {
+                if (ReferenceEquals(this, other))
+                {
+                    return true;
+                }
+
+                if (ReferenceEquals(other, null))
+                {
+                    return false;
+                }
+
+                return _hashCode == other._hashCode
+                    && _plyDepth == other._plyDepth
+                    && PackedGameBoard.Equals(_packedGameBoard, other._packedGameBoard);
+            }
+
+            #endregion
         }
 
         #endregion
