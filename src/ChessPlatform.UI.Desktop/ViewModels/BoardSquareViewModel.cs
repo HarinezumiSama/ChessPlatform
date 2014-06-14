@@ -16,7 +16,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private Piece _piece;
         private Brush _foreground;
         private string _text;
-        private bool _isLastMoveTarget;
+        private Brush _borderBrush;
 
         #endregion
 
@@ -37,6 +37,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             this.Position = position;
 
             SubscribeToChangeOf(() => this.Piece, this.OnPieceChanged);
+
             _parentViewModel.SubscribeToChangeOf(() => _parentViewModel.SelectionMode, this.OnSelectionModeChanged);
 
             _parentViewModel.SubscribeToChangeOf(
@@ -50,6 +51,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _background = UIHelper.GetSquareBrush(position, SquareMode.Default);
 
             UpdatePiece(true);
+            UpdateBorderBrush(true);
         }
 
         #endregion
@@ -72,7 +74,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             private set
             {
-                if (ReferenceEquals(_background, value))
+                if (Equals(_background, value))
                 {
                     return;
                 }
@@ -92,7 +94,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             private set
             {
-                if (ReferenceEquals(value, _foreground))
+                if (Equals(value, _foreground))
                 {
                     return;
                 }
@@ -136,23 +138,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        public bool IsLastMoveTarget
+        public Brush BorderBrush
         {
             [DebuggerStepThrough]
             get
             {
-                return _isLastMoveTarget;
+                return _borderBrush;
             }
 
-            set
+            private set
             {
-                if (value == _isLastMoveTarget)
+                if (Equals(_borderBrush, value))
                 {
                     return;
                 }
 
-                _isLastMoveTarget = value;
-                RaisePropertyChanged(() => this.IsLastMoveTarget);
+                _borderBrush = value;
+                RaisePropertyChanged(() => this.BorderBrush);
             }
         }
 
@@ -225,7 +227,44 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             SetPieceInternal(piece, forceRaiseEvent);
         }
 
-        private void OnPieceChanged(object sender, EventArgs eventArgs)
+        private void UpdateBorderBrush(bool forceRaiseEvent)
+        {
+            var currentGameBoard = _parentViewModel.CurrentGameBoard;
+
+            var lastMove = currentGameBoard.Morph(obj => obj.PreviousMove);
+            var isLastMoveSquare = lastMove != null
+                && (lastMove.From == this.Position || lastMove.To == this.Position);
+
+            var isUnderCheck = currentGameBoard != null && currentGameBoard.State.IsAnyCheck()
+                && this.Piece == PieceType.King.ToPiece(currentGameBoard.ActiveColor);
+
+            //// TODO [vmcl] Move the choice of a color to UIHelper
+
+            Brush borderBrush;
+            if (isUnderCheck)
+            {
+                borderBrush = Brushes.Red;
+            }
+            else if (isLastMoveSquare)
+            {
+                borderBrush = Brushes.RoyalBlue;
+            }
+            else
+            {
+                var squareMode = GetSquareMode();
+                borderBrush = UIHelper.GetSquareBrush(this.Position, squareMode);
+            }
+
+            if (!forceRaiseEvent && Equals(borderBrush, this.BorderBrush))
+            {
+                return;
+            }
+
+            this.BorderBrush = borderBrush;
+            RaisePropertyChanged(() => this.BorderBrush);
+        }
+
+        private void OnPieceChanged(object sender, EventArgs e)
         {
             var pieceInfo = _piece.GetPieceInfo();
             var ch = UIHelper.PieceToCharMap[pieceInfo.PieceType];
@@ -242,6 +281,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
             UpdatePiece(false);
+            UpdateBorderBrush(false);
         }
 
         private void OnCurrentTargetPositionChanged(object sender, EventArgs e)

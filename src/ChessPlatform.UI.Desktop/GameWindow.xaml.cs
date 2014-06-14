@@ -122,13 +122,20 @@ namespace ChessPlatform.UI.Desktop
 
             foreach (var position in ChessHelper.AllPositions)
             {
+                var row = reversedView
+                    ? ChessConstants.RankRange.Lower + position.Rank
+                    : ChessConstants.RankRange.Upper - position.Rank;
+
+                var column = reversedView
+                    ? ChessConstants.FileRange.Upper - position.File
+                    : ChessConstants.FileRange.Lower + position.File;
+
                 var textBlock = new TextBlock
                 {
                     Margin = new Thickness(),
                     Tag = position,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    DataContext = this.ViewModel.SquareViewModels[position]
+                    VerticalAlignment = VerticalAlignment.Stretch
                 };
 
                 textBlock.SetBinding(
@@ -143,33 +150,28 @@ namespace ChessPlatform.UI.Desktop
                     TextBlock.TextProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Text)));
 
-                textBlock.SetBinding(
-                    TextBlock.TextDecorationsProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.IsLastMoveTarget))
-                    {
-                        Converter = new BooleanToValueConverter<TextDecorationCollection>
-                        {
-                            TrueValue = TextDecorations.Underline,
-                            FalseValue = new TextDecorationCollection()
-                        }
-                    });
-
                 textBlock.MouseEnter += this.TextBlockSquare_MouseEnter;
                 textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
                 textBlock.MouseLeftButtonUp += this.TextBlockSquare_MouseLeftButtonUp;
 
-                var row = reversedView
-                    ? ChessConstants.RankRange.Lower + position.Rank
-                    : ChessConstants.RankRange.Upper - position.Rank;
+                var border = new Border
+                {
+                    Child = textBlock,
+                    Margin = new Thickness(),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    DataContext = this.ViewModel.SquareViewModels[position],
+                    BorderThickness = new Thickness(1)
+                };
 
-                var column = reversedView
-                    ? ChessConstants.FileRange.Upper - position.File
-                    : ChessConstants.FileRange.Lower + position.File;
+                border.SetValue(Grid.RowProperty, row);
+                border.SetValue(Grid.ColumnProperty, column);
 
-                textBlock.SetValue(Grid.RowProperty, row);
-                textBlock.SetValue(Grid.ColumnProperty, column);
+                border.SetBinding(
+                    Border.BorderBrushProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.BorderBrush)));
 
-                this.BoardGrid.Children.Add(textBlock);
+                this.BoardGrid.Children.Add(border);
             }
 
             Enumerable

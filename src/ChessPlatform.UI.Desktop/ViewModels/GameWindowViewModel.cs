@@ -374,12 +374,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaisePropertyChanged(() => this.MoveHistory);
 
             var currentGameBoard = boardHistory.Last();
-
-            this.SquareViewModels.Values.DoForEach(
-                item =>
-                    item.IsLastMoveTarget =
-                        currentGameBoard.PreviousMove != null && item.Position == currentGameBoard.PreviousMove.To);
-
             this.CurrentGameBoard = currentGameBoard;
 
             RaisePropertyChanged(() => this.IsComputerPlayerActive);

@@ -30,7 +30,7 @@ namespace ChessPlatform.UI.Desktop
                     { PieceType.Pawn, '\x265F' }
                 });
 
-        public static readonly ReadOnlyDictionary<SquareMode, SquareColors> SquareColorMap =
+        private static readonly ReadOnlyDictionary<SquareMode, SquareColors> SquareColorMap =
             new ReadOnlyDictionary<SquareMode, SquareColors>(
                 new Dictionary<SquareMode, SquareColors>
                 {
