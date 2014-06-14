@@ -32,7 +32,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private readonly IGameBoard _rootBoard;
         private readonly int _maxPlyDepth;
-        private readonly PieceMove _previousIterationBestMove;
+        private readonly BestMoveInfo _previousIterationBestMoveInfo;
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
@@ -48,7 +48,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] IGameBoard rootBoard,
             int maxPlyDepth,
             [NotNull] BoardCache boardCache,
-            [CanBeNull] PieceMove previousIterationBestMove,
+            [CanBeNull] BestMoveInfo previousIterationBestMoveInfo,
             CancellationToken cancellationToken)
         {
             #region Argument Check
@@ -74,7 +74,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _rootBoard = rootBoard;
             _maxPlyDepth = maxPlyDepth;
             _boardCache = boardCache;
-            _previousIterationBestMove = previousIterationBestMove;
+            _previousIterationBestMoveInfo = previousIterationBestMoveInfo;
             _cancellationToken = cancellationToken;
 
             _transpositionTable = new SimpleTranspositionTable(1000000);
@@ -84,7 +84,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public PieceMove GetBestMove()
+        public BestMoveInfo GetBestMove()
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -93,11 +93,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, TT {{hits {3}/{4}, size {5}/{6}}}"
-                    + @", B-Cache {{hits {7}/{8}, size {9}/{10}}}, for ""{11}"".",
+                @"[{0}] Result: {1}, {2} spent, PV: {{ {3} }}, TT {{hits {4}/{5}, size {6}/{7}}}"
+                    + @", B-Cache {{hits {8}/{9}, size {10}/{11}}}, for ""{12}"".",
                 currentMethodName,
                 result,
                 stopwatch.Elapsed,
+                result.PrincipalVariationMoves.Select(item => item.ToString()).Join(", "),
                 _transpositionTable.HitCount,
                 _transpositionTable.TotalRequestCount,
                 _transpositionTable.ItemCount,
@@ -421,6 +422,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             const int NormingFactor = 14;
 
             var result = 0;
+            // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var attackerPosition in attackerPositions)
             {
                 var distance = NormingFactor
@@ -443,19 +445,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var validMoves = board.ValidMoves.ToArray();
 
-            if (_previousIterationBestMove != null && plyDistance == 0)
+            if (_previousIterationBestMoveInfo != null
+                && plyDistance < _previousIterationBestMoveInfo.PrincipalVariationMoves.Count)
             {
-                if (!board.ValidMoves.ContainsKey(_previousIterationBestMove))
+                var principalVariationMove = _previousIterationBestMoveInfo.PrincipalVariationMoves[plyDistance];
+                if (board.ValidMoves.ContainsKey(principalVariationMove))
                 {
-                    throw new InvalidOperationException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Invalid PV move ({0}).",
-                            _previousIterationBestMove));
+                    result.Add(principalVariationMove);
+                    validMoves = validMoves.Where(pair => pair.Key != principalVariationMove).ToArray();
                 }
-
-                result.Add(_previousIterationBestMove);
-                validMoves = validMoves.Where(pair => pair.Key != _previousIterationBestMove).ToArray();
             }
 
             var capturingMoves = validMoves
@@ -616,7 +614,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return alpha;
         }
 
-        private int ComputeAlphaBeta([NotNull] IGameBoard board, int plyDistance, int alpha, int beta)
+        private AlphaBetaScore ComputeAlphaBeta(
+            [NotNull] IGameBoard board,
+            int plyDistance,
+            int alpha,
+            int beta)
         {
             #region Argument Check
 
@@ -633,18 +635,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _cancellationToken.ThrowIfCancellationRequested();
 
             var cachedScore = _transpositionTable.GetScore(board, plyDistance);
-            if (cachedScore.HasValue)
+            if (cachedScore != null)
             {
-                return cachedScore.Value;
+                return cachedScore;
             }
 
             var plyDepth = _maxPlyDepth - plyDistance;
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
-                var result = Quiesce(board, alpha, beta, plyDistance);
-                _transpositionTable.SaveScore(board, plyDistance, result);
-                return result;
+                var quiesceScore = Quiesce(board, alpha, beta, plyDistance);
+                var alphaBetaScore = new AlphaBetaScore(quiesceScore);
+                _transpositionTable.SaveScore(board, plyDistance, alphaBetaScore);
+                return alphaBetaScore;
             }
+
+            var bestAlphaBetaScore = new AlphaBetaScore(alpha);
 
             var orderedMoves = OrderMoves(board, plyDistance);
             foreach (var move in orderedMoves)
@@ -652,35 +657,42 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 var currentBoard = MakeMoveOptimized(board, move);
+                var alphaBetaScore = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
-                var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
-
-                if (score >= beta)
+                if (alphaBetaScore.Score >= beta)
                 {
                     // Fail-hard beta-cutoff
-                    _transpositionTable.SaveScore(board, plyDistance, beta);
-                    return beta;
+                    var betaScore = new AlphaBetaScore(beta);
+                    _transpositionTable.SaveScore(board, plyDistance, betaScore);
+                    return betaScore;
                 }
 
-                if (score > alpha)
+                if (alphaBetaScore.Score > alpha)
                 {
-                    alpha = score;
+                    alpha = alphaBetaScore.Score;
+                    bestAlphaBetaScore = move + alphaBetaScore;
                 }
             }
 
-            _transpositionTable.SaveScore(board, plyDistance, alpha);
-            return alpha;
+            _transpositionTable.SaveScore(board, plyDistance, bestAlphaBetaScore);
+
+            return bestAlphaBetaScore;
         }
 
-        private PieceMove ComputeAlphaBetaRoot(IGameBoard board)
+        private BestMoveInfo ComputeAlphaBetaRoot(IGameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
             var orderedMoves = OrderMoves(board, 0);
+            if (orderedMoves.Length == 0)
+            {
+                throw new InvalidOperationException(@"No moves to evaluate.");
+            }
 
             const int RootAlpha = checked(-MateScoreAbs - 1);
 
             PieceMove bestMove = null;
+            AlphaBetaScore bestAlphaBetaScore = null;
             var bestMoveLocalScore = Int32.MinValue;
             var alpha = RootAlpha;
             var stopwatch = new Stopwatch();
@@ -690,30 +702,28 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 stopwatch.Restart();
-
                 var currentBoard = MakeMoveOptimized(board, move);
                 var localScore = -EvaluatePositionScore(currentBoard, 1);
-
-                var score = -ComputeAlphaBeta(currentBoard, 1, RootAlpha, -alpha);
-
+                var alphaBetaScore = -ComputeAlphaBeta(currentBoard, 1, RootAlpha, -alpha);
                 stopwatch.Stop();
 
                 Trace.TraceInformation(
                     "[{0}] Move {1}: {2} (local {3}). Time spent: {4}",
                     currentMethodName,
                     move,
-                    score,
+                    alphaBetaScore.Score,
                     localScore,
                     stopwatch.Elapsed);
 
-                if (score <= alpha)
+                if (alphaBetaScore.Score <= alpha)
                 {
                     continue;
                 }
 
-                alpha = score;
+                alpha = alphaBetaScore.Score;
                 bestMove = move;
                 bestMoveLocalScore = localScore;
+                bestAlphaBetaScore = move + alphaBetaScore;
             }
 
             Trace.TraceInformation(
@@ -723,7 +733,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 alpha,
                 bestMoveLocalScore);
 
-            return bestMove;
+            var principalVariationMoves = bestAlphaBetaScore.EnsureNotNull().Moves.AsEnumerable().ToArray();
+            return new BestMoveInfo(principalVariationMoves);
         }
 
         private PieceMove FindMateMove()
@@ -758,14 +769,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .First();
         }
 
-        private PieceMove GetBestMoveInternal()
+        private BestMoveInfo GetBestMoveInternal()
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
             var mateMove = FindMateMove();
             if (mateMove != null)
             {
-                return mateMove;
+                return new BestMoveInfo(mateMove.AsArray());
             }
 
             var result = ComputeAlphaBetaRoot(_rootBoard);

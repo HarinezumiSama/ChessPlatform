@@ -11,7 +11,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<InternalKey, int> _scoreMap;
+        private readonly Dictionary<InternalKey, AlphaBetaScore> _scoreMap;
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
-            _scoreMap = new Dictionary<InternalKey, int>(maximumItemCount);
+            _scoreMap = new Dictionary<InternalKey, AlphaBetaScore>(maximumItemCount);
         }
 
         #endregion
@@ -73,7 +73,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public int? GetScore([NotNull] IGameBoard board, int plyDistance)
+        public AlphaBetaScore GetScore([NotNull] IGameBoard board, int plyDistance)
         {
             #region Argument Check
 
@@ -88,7 +88,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var key = GetKey(board, plyDistance);
 
-            int result;
+            AlphaBetaScore result;
             if (!_scoreMap.TryGetValue(key, out result))
             {
                 return null;
@@ -98,7 +98,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        public void SaveScore([NotNull] IGameBoard board, int plyDistance, int score)
+        public void SaveScore([NotNull] IGameBoard board, int plyDistance, AlphaBetaScore score)
         {
             #region Argument Check
 

@@ -127,7 +127,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var boardCache = new BoardCache(100000);
 
-            PieceMove bestMove = null;
+            BestMoveInfo bestMoveInfo = null;
 
             for (var plyDepth = SmartEnoughPlayerMoveChooser.MinimumMaxPlyDepth;
                 plyDepth <= _maxPlyDepth;
@@ -139,13 +139,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     board,
                     plyDepth,
                     boardCache,
-                    bestMove,
+                    bestMoveInfo,
                     cancellationToken);
 
-                bestMove = moveChooser.GetBestMove();
+                bestMoveInfo = moveChooser.GetBestMove();
             }
 
-            return bestMove.EnsureNotNull();
+            return bestMoveInfo.EnsureNotNull().BestMove;
         }
 
         #endregion
