@@ -17,18 +17,23 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
-        public static readonly ReadOnlyDictionary<PieceType, char> PieceToCharMap =
-            new ReadOnlyDictionary<PieceType, char>(
-                new Dictionary<PieceType, char>
+        public static readonly string KingSymbol = "\x265A";
+
+        public static readonly ReadOnlyDictionary<PieceType, string> PieceToSymbolMap =
+            new ReadOnlyDictionary<PieceType, string>(
+                new Dictionary<PieceType, string>
                 {
-                    { PieceType.None, '\x2001' },
-                    { PieceType.King, '\x265A' },
-                    { PieceType.Queen, '\x265B' },
-                    { PieceType.Rook, '\x265C' },
-                    { PieceType.Bishop, '\x265D' },
-                    { PieceType.Knight, '\x265E' },
-                    { PieceType.Pawn, '\x265F' }
+                    { PieceType.None, "\x2001" },
+                    { PieceType.King, KingSymbol },
+                    { PieceType.Queen, "\x265B" },
+                    { PieceType.Rook, "\x265C" },
+                    { PieceType.Bishop, "\x265D" },
+                    { PieceType.Knight, "\x265E" },
+                    { PieceType.Pawn, "\x265F" }
                 });
+
+        public static readonly Brush WhitePieceBrush = Brushes.DarkKhaki;
+        public static readonly Brush BlackPieceBrush = Brushes.Black;
 
         private static readonly ReadOnlyDictionary<SquareMode, SquareColors> SquareColorMap =
             new ReadOnlyDictionary<SquareMode, SquareColors>(
@@ -52,6 +57,16 @@ namespace ChessPlatform.UI.Desktop
         {
             var color = GetSquareColor(position, squareMode);
             return new SolidColorBrush(color);
+        }
+
+        public static Brush GetPieceBrush(PieceColor color)
+        {
+            return color == PieceColor.White ? WhitePieceBrush : BlackPieceBrush;
+        }
+
+        public static Brush GetPieceBrush(PieceColor? color)
+        {
+            return color.HasValue ? GetPieceBrush(color.Value) : Brushes.Transparent;
         }
 
         public static MessageBoxResult ShowMessageDialog(

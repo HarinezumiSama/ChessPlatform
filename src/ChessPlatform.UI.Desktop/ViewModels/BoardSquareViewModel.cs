@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Media;
 
@@ -267,10 +266,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void OnPieceChanged(object sender, EventArgs e)
         {
             var pieceInfo = _piece.GetPieceInfo();
-            var ch = UIHelper.PieceToCharMap[pieceInfo.PieceType];
 
-            this.Foreground = pieceInfo.Color == PieceColor.White ? Brushes.DarkKhaki : Brushes.Black;
-            this.Text = ch.ToString(CultureInfo.InvariantCulture);
+            this.Foreground = UIHelper.GetPieceBrush(pieceInfo.Color);
+            this.Text = UIHelper.PieceToSymbolMap[pieceInfo.PieceType];
         }
 
         private void OnSelectionModeChanged(object sender, EventArgs e)

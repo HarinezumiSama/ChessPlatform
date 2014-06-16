@@ -309,7 +309,7 @@ namespace ChessPlatform.UI.Desktop
                     VerticalAlignment = VerticalAlignment.Stretch,
                     Foreground = new SolidColorBrush(Colors.Maroon),
                     Background = index % 2 == 0 ? Brushes.DeepSkyBlue : Brushes.LightBlue,
-                    Text = UIHelper.PieceToCharMap[promotion].ToString(CultureInfo.InvariantCulture)
+                    Text = UIHelper.PieceToSymbolMap[promotion]
                 };
 
                 var textBlockBorder = new Border

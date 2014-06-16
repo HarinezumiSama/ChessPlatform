@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -42,9 +43,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _selectionMode = GameWindowSelectionMode.Default;
             this.ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
 
-            this.SquareViewModels = ChessHelper.AllPositions
+            this.SquareViewModels = ChessHelper
+                .AllPositions
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
                 .AsReadOnly();
+
+            SubscribeToChangeOf(() => this.IsReversedView, this.OnIsReversedViewChanged);
 
             InitializeNewGame(ChessConstants.DefaultInitialFen, null, null);
         }
@@ -53,6 +57,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Public Properties
 
+        [NotNull]
         public ReadOnlyDictionary<Position, BoardSquareViewModel> SquareViewModels
         {
             get;
@@ -79,6 +84,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        [CanBeNull]
         public GameBoard CurrentGameBoard
         {
             [DebuggerStepThrough]
@@ -119,6 +125,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        [NotNull]
         public string MoveHistory
         {
             get
@@ -171,10 +178,45 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public Brush UpperPlayerBrush
+        {
+            get
+            {
+                return this.IsReversedView ? UIHelper.WhitePieceBrush : UIHelper.BlackPieceBrush;
+            }
+        }
+
+        public Brush LowerPlayerBrush
+        {
+            get
+            {
+                return this.IsReversedView ? UIHelper.BlackPieceBrush : UIHelper.WhitePieceBrush;
+            }
+        }
+
+        public string UpperPlayerTitle
+        {
+            get
+            {
+                var player = this.IsReversedView ? _whitePlayer : _blackPlayer;
+                return GetPlayerTitle(player);
+            }
+        }
+
+        public string LowerPlayerTitle
+        {
+            get
+            {
+                var player = this.IsReversedView ? _blackPlayer : _whitePlayer;
+                return GetPlayerTitle(player);
+            }
+        }
+
         #endregion
 
         #region Internal Properties
 
+        [NotNull]
         internal ReadOnlySet<Position> ValidMoveTargetPositions
         {
             get;
@@ -234,6 +276,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _gameManager.PlayerThinkingStarted += this.GameManager_PlayerThinkingStarted;
 
             RefreshBoardHistory();
+            OnNewGameStarted();
         }
 
         public void Play()
@@ -296,7 +339,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #endregion
 
-        #region Private Methods
+        #region Private Methods: Regular
+
+        private static string GetPlayerTitle(IChessPlayer player)
+        {
+            var isHumanPlayer = player is GuiHumanChessPlayer;
+            return isHumanPlayer ? "Human Player" : "Computer";
+        }
 
         private void ResetSelectionModeInternal(GameWindowSelectionMode? selectionMode)
         {
@@ -317,6 +366,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 : GameWindowSelectionMode.Default;
         }
 
+        [CanBeNull]
         private IChessPlayer GetActivePlayer(GameManager gameManager)
         {
             if (gameManager == null)
@@ -335,13 +385,20 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void SetModeInternal(Position currentSourcePosition, GameWindowSelectionMode selectionMode)
         {
-            var validMoves = this.CurrentGameBoard.GetValidMovesBySource(currentSourcePosition);
+            _validMoveTargetPositionsInternal.Clear();
+
+            var currentGameBoard = this.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                return;
+            }
+
+            var validMoves = currentGameBoard.GetValidMovesBySource(currentSourcePosition);
             if (validMoves.Length == 0)
             {
                 return;
             }
 
-            _validMoveTargetPositionsInternal.Clear();
             validMoves.DoForEach(move => _validMoveTargetPositionsInternal.Add(move.To));
 
             this.CurrentSourcePosition = currentSourcePosition;
@@ -474,6 +531,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RefreshBoardHistory();
         }
 
+        [NotNull]
         private GuiHumanChessPlayer CreateGuiHumanChessPlayer(PieceColor color)
         {
             var player = new GuiHumanChessPlayer(color);
@@ -495,9 +553,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             player = playerInfo == null ? CreateGuiHumanChessPlayer(color) : playerInfo.PlayerFactory(color);
         }
 
+        [CanBeNull]
         private IChessPlayer GetActivePlayer()
         {
             return GetActivePlayer(_gameManager);
+        }
+
+        private void OnNewGameStarted()
+        {
+            RaisePropertyChanged(() => this.UpperPlayerTitle);
+            RaisePropertyChanged(() => this.LowerPlayerTitle);
         }
 
         private void OnHumanChessPlayerMoveRequested()
@@ -514,6 +579,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             RaisePropertyChanged(() => this.IsComputerPlayerActive);
         }
+
+        #endregion
+
+        #region Private Methods: Event Handlers
 
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
@@ -549,6 +618,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
+        }
+
+        private void OnIsReversedViewChanged(object sender, EventArgs e)
+        {
+            RaisePropertyChanged(() => this.UpperPlayerBrush);
+            RaisePropertyChanged(() => this.LowerPlayerBrush);
+            RaisePropertyChanged(() => this.UpperPlayerTitle);
+            RaisePropertyChanged(() => this.LowerPlayerTitle);
         }
 
         #endregion
