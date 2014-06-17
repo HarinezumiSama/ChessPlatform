@@ -77,7 +77,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="60" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
@@ -93,25 +93,35 @@
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
-                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Left"
-                                VerticalAlignment="Center" TextAlignment="Left" />
+                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Left" FontSize="12" />
 
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding UpperPlayerTitle}"
-                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Left"
-                                VerticalAlignment="Center" TextAlignment="Left" FontSize="5" />
+                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Right" FontSize="5" />
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                Text="{Binding UpperPlayerPieceAdvantage}"
+                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                Text="{Binding LowerPlayerPieceAdvantage}"
+                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
-                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Left"
-                                VerticalAlignment="Center" TextAlignment="Left" />
+                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Left" FontSize="12" />
 
                         <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LowerPlayerTitle}"
-                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Left"
-                                VerticalAlignment="Center" TextAlignment="Left" FontSize="5" />
+                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Right" FontSize="5" />
                     </Grid>
                 </Border>
 
@@ -120,7 +130,8 @@
                             VerticalAlignment="Stretch" ShowGridLines="{StaticResource DebugShowGridLines}" />
                 </Border>
 
-                <Border BorderBrush="Black" BorderThickness="2" Grid.Row="0" Grid.Column="2" Margin="0">
+                <Border Name="BoardGridBorder" BorderBrush="Black" BorderThickness="2" Grid.Row="0" Grid.Column="2"
+                        Margin="0">
                     <Grid ShowGridLines="{StaticResource DebugShowGridLines}">
                         <Grid Name="BoardGrid" Margin="0" Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Stretch" ShowGridLines="{StaticResource DebugShowGridLines}" />

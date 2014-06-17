@@ -49,6 +49,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 .AsReadOnly();
 
             SubscribeToChangeOf(() => this.IsReversedView, this.OnIsReversedViewChanged);
+            SubscribeToChangeOf(() => this.CurrentGameBoard, this.OnCurrentGameBoardChanged);
 
             InitializeNewGame(ChessConstants.DefaultInitialFen, null, null);
         }
@@ -212,6 +213,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public string UpperPlayerPieceAdvantage
+        {
+            get
+            {
+                return this.IsReversedView
+                    ? GetPlayerPieceAdvantage(PieceColor.White)
+                    : GetPlayerPieceAdvantage(PieceColor.Black);
+            }
+        }
+
+        public string LowerPlayerPieceAdvantage
+        {
+            get
+            {
+                return this.IsReversedView
+                    ? GetPlayerPieceAdvantage(PieceColor.Black)
+                    : GetPlayerPieceAdvantage(PieceColor.White);
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -345,6 +366,43 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             var isHumanPlayer = player is GuiHumanChessPlayer;
             return isHumanPlayer ? "Human Player" : "Computer";
+        }
+
+        private static Dictionary<PieceType, int> GetPieceCounts([NotNull] IGameBoard board, PieceColor color)
+        {
+            return ChessConstants
+                .PieceTypesExceptNone
+                .ToDictionary(Factotum.Identity, item => board.GetPiecePositions(item.ToPiece(color)).Length);
+        }
+
+        private string GetPlayerPieceAdvantage(PieceColor color)
+        {
+            var currentGameBoard = this.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                return string.Empty;
+            }
+
+            var counts = GetPieceCounts(currentGameBoard, color);
+            var opponentCounts = GetPieceCounts(currentGameBoard, color.Invert());
+
+            const string Separator = " ";
+
+            var result = ChessConstants
+                .PieceTypesExceptNone
+                .Select(
+                    item =>
+                        new
+                        {
+                            Item = item,
+                            Advantage = counts.GetValueOrDefault(item) - opponentCounts.GetValueOrDefault(item)
+                        })
+                .Where(obj => obj.Advantage > 0)
+                .OrderByDescending(obj => obj.Item)
+                .Select(obj => Enumerable.Repeat(UIHelper.PieceToSymbolMap[obj.Item], obj.Advantage).Join(Separator))
+                .Join(Separator);
+
+            return result;
         }
 
         private void ResetSelectionModeInternal(GameWindowSelectionMode? selectionMode)
@@ -559,10 +617,21 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             return GetActivePlayer(_gameManager);
         }
 
-        private void OnNewGameStarted()
+        private void AffectPlayerInfo()
         {
+            RaisePropertyChanged(() => this.UpperPlayerBrush);
+            RaisePropertyChanged(() => this.LowerPlayerBrush);
+
             RaisePropertyChanged(() => this.UpperPlayerTitle);
             RaisePropertyChanged(() => this.LowerPlayerTitle);
+
+            RaisePropertyChanged(() => this.UpperPlayerPieceAdvantage);
+            RaisePropertyChanged(() => this.LowerPlayerPieceAdvantage);
+        }
+
+        private void OnNewGameStarted()
+        {
+            AffectPlayerInfo();
         }
 
         private void OnHumanChessPlayerMoveRequested()
@@ -622,10 +691,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnIsReversedViewChanged(object sender, EventArgs e)
         {
-            RaisePropertyChanged(() => this.UpperPlayerBrush);
-            RaisePropertyChanged(() => this.LowerPlayerBrush);
-            RaisePropertyChanged(() => this.UpperPlayerTitle);
-            RaisePropertyChanged(() => this.LowerPlayerTitle);
+            AffectPlayerInfo();
+        }
+
+        private void OnCurrentGameBoardChanged(object sender, EventArgs e)
+        {
+            AffectPlayerInfo();
         }
 
         #endregion

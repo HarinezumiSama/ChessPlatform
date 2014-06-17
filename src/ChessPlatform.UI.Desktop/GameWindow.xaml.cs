@@ -269,7 +269,7 @@ namespace ChessPlatform.UI.Desktop
                 HeightProperty,
                 new Binding
                 {
-                    Source = this.BoardViewbox,
+                    Source = this.BoardGridBorder,
                     Path = new PropertyPath(ActualHeightProperty.Name),
                     Mode = BindingMode.OneWay,
                     Converter = new RatioDoubleConverter(0.2d)
@@ -281,7 +281,7 @@ namespace ChessPlatform.UI.Desktop
                 StaysOpen = false,
                 AllowsTransparency = true,
                 Placement = PlacementMode.Center,
-                PlacementTarget = this.BoardViewbox,
+                PlacementTarget = this.BoardGridBorder,
                 HorizontalOffset = 0,
                 VerticalOffset = 0,
                 PopupAnimation = PopupAnimation.None,
@@ -343,13 +343,19 @@ namespace ChessPlatform.UI.Desktop
 
         private void MakeMove(PieceMove move)
         {
-            var isPawnPromotion = this.ViewModel.CurrentGameBoard.IsPawnPromotionMove(move);
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                return;
+            }
+
+            var isPawnPromotion = currentGameBoard.IsPawnPromotionMove(move);
             if (isPawnPromotion)
             {
                 move = move.MakePromotion(ChessHelper.DefaultPromotion);
             }
 
-            if (!this.ViewModel.CurrentGameBoard.IsValidMove(move))
+            if (!currentGameBoard.IsValidMove(move))
             {
                 this.ViewModel.ResetSelectionMode();
                 return;
@@ -409,9 +415,14 @@ namespace ChessPlatform.UI.Desktop
 
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
-            var popupControl = this.BoardViewbox;
+            var popupControl = this.BoardGridBorder;
 
             var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                return;
+            }
+
             switch (currentGameBoard.State)
             {
                 case GameState.Check:
@@ -561,7 +572,13 @@ namespace ChessPlatform.UI.Desktop
 
         private void CopyFenToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var fen = this.ViewModel.CurrentGameBoard.GetFen();
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                return;
+            }
+
+            var fen = currentGameBoard.GetFen();
             Clipboard.SetText(fen);
 
             this.MainGrid.ShowInfoPopup(
@@ -572,6 +589,13 @@ namespace ChessPlatform.UI.Desktop
 
         private void CopyFenToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
+            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            if (currentGameBoard == null)
+            {
+                e.CanExecute = false;
+                return;
+            }
+
             e.CanExecute = _canExecuteCopyFenToClipboard;
         }
 

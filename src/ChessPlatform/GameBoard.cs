@@ -593,6 +593,7 @@ namespace ChessPlatform
 
         public PackedGameBoard Pack()
         {
+            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
             if (_packedGameBoard == null)
             {
                 _packedGameBoard = new PackedGameBoard(this);
