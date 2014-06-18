@@ -269,7 +269,7 @@ namespace ChessPlatform.UI.Desktop
                 HeightProperty,
                 new Binding
                 {
-                    Source = this.BoardGridBorder,
+                    Source = this.BoardViewbox,
                     Path = new PropertyPath(ActualHeightProperty.Name),
                     Mode = BindingMode.OneWay,
                     Converter = new RatioDoubleConverter(0.2d)
