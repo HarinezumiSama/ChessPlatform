@@ -36,6 +36,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
+        private long _nodeCount;
 
         #endregion
 
@@ -78,6 +79,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _cancellationToken = cancellationToken;
 
             _transpositionTable = new SimpleTranspositionTable(1000000);
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public long NodeCount
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _nodeCount;
+            }
         }
 
         #endregion
@@ -413,25 +427,40 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return cheapestAttackerMove;
         }
 
+        private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
+        {
+            var result = Math.Abs(attackerPosition.Rank - kingPosition.Rank)
+                - Math.Abs(attackerPosition.File - kingPosition.File);
+
+            return result;
+        }
+
+        private static int GetKingTropismScore(
+            [NotNull] IGameBoard board,
+            Position attackerPosition,
+            Position kingPosition)
+        {
+            const int KingTropismNormingFactor = 14;
+
+            var proximity = KingTropismNormingFactor - GetKingTropismDistance(attackerPosition, kingPosition);
+            var attackerPieceType = board[attackerPosition].GetPieceType();
+            var score = proximity * PieceTypeToKingTropismWeightMap[attackerPieceType] / KingTropismNormingFactor;
+
+            return score;
+        }
+
         private static int EvaluateKingTropism([NotNull] IGameBoard board, PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
             var kingPosition = board.GetPiecePositions(king).Single();
             var attackerPositions = board.GetPiecePositions(kingColor.Invert());
 
-            const int NormingFactor = 14;
-
             var result = 0;
+
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var attackerPosition in attackerPositions)
             {
-                var distance = NormingFactor
-                    - (Math.Abs(attackerPosition.Rank - kingPosition.Rank)
-                        + Math.Abs(attackerPosition.File - kingPosition.File));
-
-                var attackerPieceType = board[attackerPosition].GetPieceType();
-                var score = distance * PieceTypeToKingTropismWeightMap[attackerPieceType] / NormingFactor;
-
+                var score = GetKingTropismScore(board, attackerPosition, kingPosition);
                 result -= score;
             }
 
@@ -456,6 +485,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
             }
 
+            var opponentKingPosition =
+                board.GetPiecePositions(PieceType.King.ToPiece(board.ActiveColor.Invert())).Single();
+
             var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)
                 .Select(pair => pair.Key)
@@ -472,7 +504,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var nonCapturingMoves = validMoves
                 .Where(pair => !pair.Value.IsCapture)
                 .Select(pair => pair.Key)
-                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .OrderBy(move => GetKingTropismDistance(move.To, opponentKingPosition))
+                //.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
+                .ThenByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
                 .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
                 .ThenBy(move => move.PromotionResult)
                 .ThenBy(move => move.From.SquareIndex)
@@ -540,6 +574,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private IGameBoard MakeMoveOptimized([NotNull] IGameBoard board, [NotNull] PieceMove move)
         {
             var result = _boardCache.MakeMove(board, move);
+            _nodeCount++;
             return result;
         }
 

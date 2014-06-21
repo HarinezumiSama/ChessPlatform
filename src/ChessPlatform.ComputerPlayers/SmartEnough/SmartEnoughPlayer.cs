@@ -75,30 +75,39 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 board.GetFen());
 
             var stopwatch = Stopwatch.StartNew();
-            var result = DoGetMoveInternal(board, cancellationToken);
+            var bestMove = DoGetMoveInternal(board, cancellationToken).EnsureNotNull();
             stopwatch.Stop();
 
+            var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+
+            var nps = elapsedSeconds.IsZero()
+                ? "?"
+                : Convert.ToInt64(bestMove.Item2 / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
+
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, for ""{3}"".",
+                @"[{0}] Result: {1}, {2} spent, {3} NPS, for ""{4}"".",
                 currentMethodName,
-                result,
+                bestMove.Item1,
                 stopwatch.Elapsed,
+                nps,
                 board.GetFen());
 
-            return result.EnsureNotNull();
+            return bestMove.Item1;
         }
 
         #endregion
 
         #region Private Methods
 
-        private PieceMove DoGetMoveInternal([NotNull] IGameBoard board, CancellationToken cancellationToken)
+        private Tuple<PieceMove, long> DoGetMoveInternal(
+            [NotNull] IGameBoard board,
+            CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             if (board.ValidMoves.Count == 1)
             {
-                return board.ValidMoves.Keys.Single();
+                return Tuple.Create(board.ValidMoves.Keys.Single(), 0L);
             }
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
@@ -121,13 +130,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         openingMove,
                         furtherOpeningMoves.Select(move => move.ToString()).Join(", "));
 
-                    return openingMove;
+                    return Tuple.Create(openingMove, 0L);
                 }
             }
 
             var boardCache = new BoardCache(100000);
 
             BestMoveInfo bestMoveInfo = null;
+            var totalNodeCount = 0L;
 
             for (var plyDepth = SmartEnoughPlayerMoveChooser.MinimumMaxPlyDepth;
                 plyDepth <= _maxPlyDepth;
@@ -143,9 +153,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     cancellationToken);
 
                 bestMoveInfo = moveChooser.GetBestMove();
+
+                totalNodeCount += moveChooser.NodeCount;
             }
 
-            return bestMoveInfo.EnsureNotNull().BestMove;
+            var bestMove = bestMoveInfo.EnsureNotNull().BestMove;
+            return Tuple.Create(bestMove, totalNodeCount);
         }
 
         #endregion
