@@ -35,8 +35,9 @@ namespace ChessPlatform.Tests
             stopwatch.Stop();
 
             Console.WriteLine(
-                @"[{0}] GetMove took {1} (move {2}, max ply depth {3}).",
+                @"[{0} @ {1}] GetMove took {2} (move {3}, max ply depth {4}).",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
+                DateTimeOffset.Now.ToFixedString(),
                 stopwatch.Elapsed,
                 move,
                 player.MaxPlyDepth);
