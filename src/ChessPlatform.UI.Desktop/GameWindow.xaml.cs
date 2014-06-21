@@ -133,6 +133,7 @@ namespace ChessPlatform.UI.Desktop
                 var textBlock = new TextBlock
                 {
                     Margin = new Thickness(),
+                    Padding = new Thickness(),
                     Tag = position,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch
@@ -158,6 +159,7 @@ namespace ChessPlatform.UI.Desktop
                 {
                     Child = textBlock,
                     Margin = new Thickness(),
+                    Padding = new Thickness(),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
                     DataContext = this.ViewModel.SquareViewModels[position],
@@ -169,6 +171,10 @@ namespace ChessPlatform.UI.Desktop
 
                 border.SetBinding(
                     Border.BorderBrushProperty,
+                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.BorderBrush)));
+
+                border.SetBinding(
+                    Border.BackgroundProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.BorderBrush)));
 
                 this.BoardGrid.Children.Add(border);
