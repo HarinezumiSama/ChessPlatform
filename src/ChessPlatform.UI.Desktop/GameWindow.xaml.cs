@@ -130,34 +130,39 @@ namespace ChessPlatform.UI.Desktop
                     ? ChessConstants.FileRange.Upper - position.File
                     : ChessConstants.FileRange.Lower + position.File;
 
-                var textBlock = new TextBlock
+                var label = new Label
                 {
                     Margin = new Thickness(),
                     Padding = new Thickness(),
                     Tag = position,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
-                    VerticalAlignment = VerticalAlignment.Stretch
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                    HorizontalContentAlignment = HorizontalAlignment.Center,
+                    VerticalContentAlignment = VerticalAlignment.Center,
+                    FontSize = 12,
+                    Width = 16,
+                    Height = 16
                 };
 
-                textBlock.SetBinding(
-                    TextBlock.BackgroundProperty,
+                label.SetBinding(
+                    BackgroundProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Background)));
 
-                textBlock.SetBinding(
-                    TextBlock.ForegroundProperty,
+                label.SetBinding(
+                    ForegroundProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Foreground)));
 
-                textBlock.SetBinding(
-                    TextBlock.TextProperty,
+                label.SetBinding(
+                    ContentProperty,
                     new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Text)));
 
-                textBlock.MouseEnter += this.TextBlockSquare_MouseEnter;
-                textBlock.MouseLeave += this.TextBlockSquare_MouseLeave;
-                textBlock.MouseLeftButtonUp += this.TextBlockSquare_MouseLeftButtonUp;
+                label.MouseEnter += this.BoardSquare_MouseEnter;
+                label.MouseLeave += this.BoardSquare_MouseLeave;
+                label.MouseLeftButtonUp += this.BoardSquare_MouseLeftButtonUp;
 
                 var border = new Border
                 {
-                    Child = textBlock,
+                    Child = label,
                     Margin = new Thickness(),
                     Padding = new Thickness(),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -192,6 +197,7 @@ namespace ChessPlatform.UI.Desktop
                     LayoutTransform = new ScaleTransform(0.25d, 0.25d),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
                     Text = (rank + 1).ToString(CultureInfo.InvariantCulture),
                     Foreground = Brushes.CadetBlue
                 };
@@ -219,6 +225,7 @@ namespace ChessPlatform.UI.Desktop
                     LayoutTransform = new ScaleTransform(0.25d, 0.25d),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
                     Text = ((char)('A' + file)).ToString(CultureInfo.InvariantCulture),
                     Foreground = Brushes.CadetBlue
                 };
@@ -313,6 +320,7 @@ namespace ChessPlatform.UI.Desktop
                     Tag = promotion,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
+                    TextAlignment = TextAlignment.Center,
                     Foreground = new SolidColorBrush(Colors.Maroon),
                     Background = index % 2 == 0 ? Brushes.DeepSkyBlue : Brushes.LightBlue,
                     Text = UIHelper.PieceToSymbolMap[promotion]
@@ -490,7 +498,7 @@ namespace ChessPlatform.UI.Desktop
             InitializeControls(this.ViewModel.IsReversedView);
         }
 
-        private void TextBlockSquare_MouseEnter(object sender, MouseEventArgs args)
+        private void BoardSquare_MouseEnter(object sender, MouseEventArgs args)
         {
             var position = GetSquarePosition(args.OriginalSource);
             if (!position.HasValue)
@@ -512,7 +520,7 @@ namespace ChessPlatform.UI.Desktop
             this.ViewModel.CurrentTargetPosition = position.Value;
         }
 
-        private void TextBlockSquare_MouseLeave(object sender, MouseEventArgs args)
+        private void BoardSquare_MouseLeave(object sender, MouseEventArgs args)
         {
             switch (this.ViewModel.SelectionMode)
             {
@@ -525,9 +533,9 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void TextBlockSquare_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void BoardSquare_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var position = GetSquarePosition(e.OriginalSource);
+            var position = GetSquarePosition(e.Source);
             if (!position.HasValue)
             {
                 return;
