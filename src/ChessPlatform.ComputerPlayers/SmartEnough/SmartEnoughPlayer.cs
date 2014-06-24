@@ -79,16 +79,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
+            var nodeCount = bestMove.Item2;
 
             var nps = elapsedSeconds.IsZero()
                 ? "?"
-                : Convert.ToInt64(bestMove.Item2 / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
+                : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
 
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, {3} NPS, for ""{4}"".",
+                @"[{0}] Result: {1}, {2} spent, {3} nodes ({4} NPS), for ""{5}"".",
                 currentMethodName,
                 bestMove.Item1,
                 stopwatch.Elapsed,
+                nodeCount,
                 nps,
                 board.GetFen());
 

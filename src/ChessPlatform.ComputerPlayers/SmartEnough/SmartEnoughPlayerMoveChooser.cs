@@ -36,7 +36,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
-        private long _nodeCount;
 
         #endregion
 
@@ -90,7 +89,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [DebuggerStepThrough]
             get
             {
-                return _nodeCount;
+                return _boardCache.TotalRequestCount;
             }
         }
 
@@ -530,7 +529,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return 0;
             }
 
-            var nullMoveBoard = _boardCache.MakeNullMove(board);
+            var nullMoveBoard = MakeNullMoveOptimized(board);
 
             var mobility = EvaluateBoardMobility(board);
             var opponentMobility = EvaluateBoardMobility(nullMoveBoard);
@@ -574,7 +573,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private IGameBoard MakeMoveOptimized([NotNull] IGameBoard board, [NotNull] PieceMove move)
         {
             var result = _boardCache.MakeMove(board, move);
-            _nodeCount++;
+            return result;
+        }
+
+        private IGameBoard MakeNullMoveOptimized([NotNull] IGameBoard board)
+        {
+            var result = _boardCache.MakeNullMove(board);
             return result;
         }
 
