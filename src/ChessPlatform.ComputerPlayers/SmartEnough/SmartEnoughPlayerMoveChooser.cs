@@ -398,17 +398,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return activeScore - inactiveScore;
         }
 
-        // ReSharper disable once UnusedParameter.Local
+        // ReSharper disable once UnusedMember.Local
         private static int EvaluateBoardMobility([NotNull] IGameBoard board)
         {
-            return 0;
+            var result = board
+                .ValidMoves
+                .Keys
+                .Sum(move => PieceTypeToMobilityWeightMap[board[move.From].GetPieceType()]);
 
-            ////var result = board
-            ////    .ValidMoves
-            ////    .Keys
-            ////    .Sum(move => PieceTypeToMobilityWeightMap[board[move.From].GetPieceType()]);
-
-            ////return result;
+            return result;
         }
 
         private static PieceMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
@@ -522,20 +520,24 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result.ToArray();
         }
 
+        // ReSharper disable once MemberCanBeMadeStatic.Local
+        // ReSharper disable once UnusedParameter.Local
         private int EvaluateMobility([NotNull] IGameBoard board)
         {
-            if (!board.CanMakeNullMove)
-            {
-                return 0;
-            }
+            return 0;
 
-            var nullMoveBoard = MakeNullMoveOptimized(board);
+            ////if (!board.CanMakeNullMove)
+            ////{
+            ////    return 0;
+            ////}
 
-            var mobility = EvaluateBoardMobility(board);
-            var opponentMobility = EvaluateBoardMobility(nullMoveBoard);
+            ////var nullMoveBoard = _boardCache.MakeNullMove(board);
 
-            var result = mobility - opponentMobility;
-            return result;
+            ////var mobility = EvaluateBoardMobility(board);
+            ////var opponentMobility = EvaluateBoardMobility(nullMoveBoard);
+
+            ////var result = mobility - opponentMobility;
+            ////return result;
         }
 
         private int EvaluatePositionScore([NotNull] IGameBoard board, int plyDistance)
@@ -570,18 +572,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private IGameBoard MakeMoveOptimized([NotNull] IGameBoard board, [NotNull] PieceMove move)
-        {
-            var result = _boardCache.MakeMove(board, move);
-            return result;
-        }
-
-        private IGameBoard MakeNullMoveOptimized([NotNull] IGameBoard board)
-        {
-            var result = _boardCache.MakeNullMove(board);
-            return result;
-        }
-
         private int ComputeStaticExchangeEvaluationScore(
             [NotNull] IGameBoard board,
             Position position,
@@ -595,7 +585,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return 0;
             }
 
-            var currentBoard = MakeMoveOptimized(board, actualMove);
+            var currentBoard = _boardCache.MakeMove(board, actualMove);
             var weight = PieceTypeToMaterialWeightMap[currentBoard.LastCapturedPiece.GetPieceType()];
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
@@ -635,7 +625,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     continue;
                 }
 
-                var currentBoard = MakeMoveOptimized(board, captureMove);
+                var currentBoard = _boardCache.MakeMove(board, captureMove);
                 var score = -Quiesce(currentBoard, -beta, -alpha, plyDistance);
 
                 if (beta <= score)
@@ -695,7 +685,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                var currentBoard = MakeMoveOptimized(board, move);
+                var currentBoard = _boardCache.MakeMove(board, move);
                 var alphaBetaScore = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (alphaBetaScore.Score >= beta)
@@ -741,7 +731,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 stopwatch.Restart();
-                var currentBoard = MakeMoveOptimized(board, move);
+                var currentBoard = _boardCache.MakeMove(board, move);
                 var localScore = -EvaluatePositionScore(currentBoard, 1);
                 var alphaBetaScore = -ComputeAlphaBeta(currentBoard, 1, RootAlpha, -alpha);
                 stopwatch.Stop();
@@ -790,7 +780,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     {
                         _cancellationToken.ThrowIfCancellationRequested();
 
-                        var currentBoard = MakeMoveOptimized(_rootBoard, move);
+                        var currentBoard = _boardCache.MakeMove(_rootBoard, move);
                         return currentBoard.State == GameState.Checkmate;
                     })
                 .ToArray();
