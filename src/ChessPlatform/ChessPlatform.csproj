@@ -35,9 +35,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum, Version=0.3.0.82, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
+    <Reference Include="Omnifactotum, Version=0.3.0.83, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Omnifactotum.0.3.0.82\lib\net40-Client\Omnifactotum.dll</HintPath>
+      <HintPath>..\packages\Omnifactotum.0.3.0.83\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -69,10 +69,9 @@
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushInfo.cs" />
-    <Compile Include="Internal\PositionDeterminant.cs" />
-    <Compile Include="Internal\PositionDictionary.cs" />
+    <Compile Include="Utilities\PositionDeterminant.cs" />
+    <Compile Include="Utilities\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />
-    <Compile Include="Internal\DictionaryValueHolder.cs" />
     <Compile Include="Internal\FenCharAttribute.cs" />
     <Compile Include="GameBoard.cs" />
     <Compile Include="CastlingInfo.cs" />

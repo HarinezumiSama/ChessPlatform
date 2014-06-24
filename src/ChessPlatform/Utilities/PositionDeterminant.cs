@@ -2,9 +2,9 @@ using System;
 using System.Linq;
 using Omnifactotum;
 
-namespace ChessPlatform.Internal
+namespace ChessPlatform.Utilities
 {
-    internal sealed class PositionDeterminant : FixedSizeDictionaryDeterminant<Position>
+    public sealed class PositionDeterminant : FixedSizeDictionaryDeterminant<Position>
     {
         #region Public Properties
 

@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using ChessPlatform.Utilities;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -17,18 +19,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
 
-        private static readonly Dictionary<PieceType, int> PieceTypeToMaterialWeightMap =
-            CreatePieceTypeToMaterialWeightMap();
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
+            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
 
         // ReSharper disable once UnusedMember.Local
-        private static readonly Dictionary<PieceType, int> PieceTypeToMobilityWeightMap =
-            CreatePieceTypeToMobilityWeightMap();
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
+            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMobilityWeightMap());
 
-        private static readonly Dictionary<Piece, Dictionary<Position, int>> PieceToPositionWeightMap =
-            CreatePieceToPositionWeightMap();
+        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>> PieceToPositionWeightMap =
+            new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(CreatePieceToPositionWeightMap());
 
-        private static readonly Dictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
-            new Dictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
+            new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
 
         private readonly IGameBoard _rootBoard;
         private readonly int _maxPlyDepth;
@@ -156,7 +158,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             };
         }
 
-        private static Dictionary<Position, int> ToPositionWeightMap(PieceColor color, int[,] weights)
+        private static PositionDictionary<int> ToPositionWeightMap(PieceColor color, int[,] weights)
         {
             #region Argument Check
 
@@ -172,7 +174,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            var result = new Dictionary<Position, int>();
+            var result = new PositionDictionary<int>();
 
             var startRank = color == PieceColor.White
                 ? ChessConstants.RankRange.Upper
@@ -193,7 +195,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static Dictionary<Piece, Dictionary<Position, int>> CreatePieceToPositionWeightMap()
+        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightMap()
         {
             var weightGetters =
                 new Dictionary<PieceType, Func<int[,]>>

@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Internal
+namespace ChessPlatform.Utilities
 {
-    internal sealed class PositionDictionary<TValue> : FixedSizeDictionary<Position, TValue, PositionDeterminant>
+    public sealed class PositionDictionary<TValue> : FixedSizeDictionary<Position, TValue, PositionDeterminant>
     {
         #region Constructors
 
@@ -14,13 +15,13 @@ namespace ChessPlatform.Internal
             // Nothing to do
         }
 
-        public PositionDictionary(IEnumerable<KeyValuePair<Position, TValue>> dictionary)
-            : base((IDictionary<Position, TValue>)dictionary)
+        public PositionDictionary([NotNull] IDictionary<Position, TValue> dictionary)
+            : base(dictionary)
         {
             // Nothing to do
         }
 
-        public PositionDictionary(PositionDictionary<TValue> dictionary)
+        public PositionDictionary([NotNull] PositionDictionary<TValue> dictionary)
             : base(dictionary)
         {
             // Nothing to do
