@@ -810,7 +810,8 @@ namespace ChessPlatform
                 .GetPinnedPieceInfos(activeKingPosition)
                 .ToDictionary(item => item.Position, item => item.AllowedMoves);
 
-            validMoves = new Dictionary<PieceMove, PieceMoveInfo>();
+            const int ValidMoveCapacity = 128;
+            validMoves = new Dictionary<PieceMove, PieceMoveInfo>(ValidMoveCapacity);
             var addMoveData = new AddMoveData(validMoves, _pieceData, _enPassantCaptureInfo);
 
             var activePieceExceptKingPositions = Lazy.Create(
