@@ -22,6 +22,7 @@ namespace ChessPlatform.Internal
         private static readonly PieceAttackInfo[] PawnAttackMoves = InitializePawnAttackMoves();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
+
         private readonly EnumFixedSizeDictionary<Piece, Bitboard> _bitboards;
         private readonly EnumFixedSizeDictionary<PieceColor, Bitboard> _entireColorBitboards;
         private readonly Piece[] _pieces;
@@ -100,6 +101,18 @@ namespace ChessPlatform.Internal
             return piece.GetPieceInfo();
         }
 
+        public Bitboard GetPieceBitboard(Piece piece)
+        {
+            var bitboard = _bitboards[piece];
+            return bitboard;
+        }
+
+        public Bitboard GetPieceBitboard(PieceColor color)
+        {
+            var bitboard = _entireColorBitboards[color];
+            return bitboard;
+        }
+
         public Position[] GetPiecePositions(Piece piece)
         {
             var bitboard = _bitboards[piece];
@@ -108,8 +121,8 @@ namespace ChessPlatform.Internal
 
         public Position[] GetPiecePositions(PieceColor color)
         {
-            var result = _entireColorBitboards[color].GetPositions();
-            return result;
+            var bitboard = _entireColorBitboards[color];
+            return bitboard.GetPositions();
         }
 
         public int GetPieceCount(Piece piece)

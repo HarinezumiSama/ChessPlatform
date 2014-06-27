@@ -54,6 +54,9 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<PieceType> PieceTypesExceptNone =
             PieceTypes.Where(item => item != PieceType.None).ToHashSet().AsReadOnly();
 
+        public static readonly ReadOnlySet<PieceType> PieceTypesExceptNoneAndKing =
+            PieceTypes.Where(item => item != PieceType.None && item != PieceType.King).ToHashSet().AsReadOnly();
+
         public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
             PieceColors
                 .ToDictionary(
