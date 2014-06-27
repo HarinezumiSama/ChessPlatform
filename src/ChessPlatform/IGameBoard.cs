@@ -45,6 +45,7 @@ namespace ChessPlatform
             get;
         }
 
+        [CanBeNull]
         IGameBoard PreviousBoard
         {
             get;

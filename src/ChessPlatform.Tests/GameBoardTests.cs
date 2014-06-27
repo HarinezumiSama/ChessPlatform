@@ -419,6 +419,28 @@ namespace ChessPlatform.Tests
             Assert.That(doubleNullMoveGameBoard.GetFen(), Is.EqualTo(gameBoard.GetFen()));
         }
 
+        [Test]
+        public void TestThreefoldRepetition()
+        {
+            var initialBoard = new GameBoard(PerformInternalBoardValidation);
+
+            var boardBeforeRepetition = initialBoard.MakeMultipleMoves(
+                (board, message) => Assert.That(board.GetAutoDrawType(), Is.EqualTo(AutoDrawType.None), message),
+                "g1-f3",
+                "g8-f6",
+                "f3-g1",
+                "f6-g8",
+                "g1-f3",
+                "g8-f6",
+                "f3-g1");
+
+            var threefoldBoard = boardBeforeRepetition.MakeMove("f6-g8");
+            Assert.That(threefoldBoard.GetAutoDrawType(), Is.EqualTo(AutoDrawType.ThreefoldRepetition));
+
+            var threefoldContinuedBoard = threefoldBoard.MakeMove("e2-e4");
+            Assert.That(threefoldContinuedBoard.GetAutoDrawType(), Is.EqualTo(AutoDrawType.ThreefoldRepetition));
+        }
+
         #endregion
 
         #region Private Methods

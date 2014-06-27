@@ -263,7 +263,7 @@ namespace ChessPlatform.Tests
 
                 return string.Format(
                     CultureInfo.InvariantCulture,
-                    "{{ Depth = {0}, NodeCount = {1}, NPS = {2}, CheckCount = {3}, CheckmateCount = {4} }}",
+                    "{{Depth = {0}, NodeCount = {1}, NPS = {2}, CheckCount = {3}, CheckmateCount = {4}}}",
                     this.Depth,
                     this.NodeCount,
                     this.NodesPerSecond.ToStringSafelyInvariant(NotSpecified),

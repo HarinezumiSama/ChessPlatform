@@ -13,6 +13,8 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
+        private const int ThreefoldCount = 3;
+
         private readonly PieceData _pieceData;
 
         private readonly PieceColor _activeColor;
@@ -27,6 +29,9 @@ namespace ChessPlatform
         private readonly string _resultString;
         private readonly bool _validateAfterMove;
         private readonly GameBoard _previousBoard;
+        private readonly ReadOnlyDictionary<PackedGameBoard, int> _repetitions;
+        private readonly bool _isThreefoldRepetition;
+
         private PackedGameBoard _packedGameBoard;
 
         #endregion
@@ -60,7 +65,13 @@ namespace ChessPlatform
                 out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
-            FinishInitialization(true, out _validMoves, out _state, out _resultString);
+            FinishInitialization(
+                true,
+                out _validMoves,
+                out _state,
+                out _resultString,
+                out _repetitions,
+                out _isThreefoldRepetition);
         }
 
         /// <summary>
@@ -102,7 +113,13 @@ namespace ChessPlatform
                 out _halfMoveCountBy50MoveRule,
                 out _fullMoveIndex);
 
-            FinishInitialization(true, out _validMoves, out _state, out _resultString);
+            FinishInitialization(
+                true,
+                out _validMoves,
+                out _state,
+                out _resultString,
+                out _repetitions,
+                out _isThreefoldRepetition);
         }
 
         /// <summary>
@@ -153,7 +170,13 @@ namespace ChessPlatform
                     : 0;
             }
 
-            FinishInitialization(false, out _validMoves, out _state, out _resultString);
+            FinishInitialization(
+                false,
+                out _validMoves,
+                out _state,
+                out _resultString,
+                out _repetitions,
+                out _isThreefoldRepetition);
         }
 
         #endregion
@@ -169,6 +192,7 @@ namespace ChessPlatform
             }
         }
 
+        [CanBeNull]
         public GameBoard PreviousBoard
         {
             [DebuggerStepThrough]
@@ -563,22 +587,7 @@ namespace ChessPlatform
                 return AutoDrawType.InsufficientMaterial;
             }
 
-            var fens = new List<PackedGameBoard>();
-
-            var currentBoard = this;
-            while (currentBoard != null)
-            {
-                var fen = currentBoard.Pack();
-                fens.Add(fen);
-
-                currentBoard = currentBoard._previousBoard;
-            }
-
-            var fenMap = fens
-                .GroupBy(Factotum.Identity)
-                .ToDictionary(grouping => grouping.Key, grouping => grouping.Count());
-
-            if (fenMap.Values.Any(item => item >= 3))
+            if (_isThreefoldRepetition)
             {
                 return AutoDrawType.ThreefoldRepetition;
             }
@@ -949,9 +958,35 @@ namespace ChessPlatform
             bool forceValidation,
             out ReadOnlyDictionary<PieceMove, PieceMoveInfo> validMoves,
             out GameState state,
-            out string resultString)
+            out string resultString,
+            out ReadOnlyDictionary<PackedGameBoard, int> repetitions,
+            out bool isThreefoldRepetition)
         {
             Validate(forceValidation);
+
+            if (_previousBoard != null && _previousBoard._isThreefoldRepetition)
+            {
+                isThreefoldRepetition = true;
+                repetitions = null;
+            }
+            else
+            {
+                if (_previousBoard != null && _previousBoard._repetitions == null)
+                {
+                    throw new InvalidOperationException("Internal logic error: repetition map is not assigned.");
+                }
+
+                var repetitionMap = _previousBoard == null
+                    ? new Dictionary<PackedGameBoard, int>()
+                    : new Dictionary<PackedGameBoard, int>(_previousBoard._repetitions);
+
+                var packedGameBoard = this.Pack();
+                var thisRepetitionCount = repetitionMap.GetValueOrDefault(packedGameBoard) + 1;
+                repetitionMap[packedGameBoard] = thisRepetitionCount;
+                repetitions = repetitionMap.AsReadOnly();
+
+                isThreefoldRepetition = thisRepetitionCount >= ThreefoldCount;
+            }
 
             Dictionary<PieceMove, PieceMoveInfo> validMoveMap;
             InitializeValidMovesAndState(out validMoveMap, out state);

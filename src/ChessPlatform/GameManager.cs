@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Omnifactotum;
 using Omnifactotum.Annotations;
+using ThreadState = System.Threading.ThreadState;
 
 namespace ChessPlatform
 {
@@ -269,6 +270,11 @@ namespace ChessPlatform
 
                 _shouldStop = true;
                 _isDisposed = true;
+
+                if (_thread.ThreadState == ThreadState.Unstarted)
+                {
+                    return;
+                }
             }
 
             var joined = _thread.Join(ThreadStopTimeout);
