@@ -82,10 +82,10 @@ namespace ChessPlatform
         PieceInfo GetPieceInfo(Position position);
 
         [NotNull]
-        Position[] GetPiecePositions(Piece piece);
+        Position[] GetPositions(Piece piece);
 
         [NotNull]
-        Position[] GetPiecePositions(PieceColor color);
+        Position[] GetPositions(PieceColor color);
 
         bool IsValidMove([NotNull] PieceMove move);
 

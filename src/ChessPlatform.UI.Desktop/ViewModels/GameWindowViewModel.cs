@@ -372,7 +372,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             return ChessConstants
                 .PieceTypesExceptNone
-                .ToDictionary(Factotum.Identity, item => board.GetPiecePositions(item.ToPiece(color)).Length);
+                .ToDictionary(Factotum.Identity, item => board.GetPositions(item.ToPiece(color)).Length);
         }
 
         private string GetPlayerPieceAdvantage(PieceColor color)

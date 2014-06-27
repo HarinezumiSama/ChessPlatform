@@ -237,6 +237,22 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
+        public int GetCount()
+        {
+            var result = 0;
+
+            var currentValue = _value;
+
+            int index;
+            while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
+            {
+                result++;
+                currentValue &= ~(1L << index);
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region IEquatable<Bitboard> Members

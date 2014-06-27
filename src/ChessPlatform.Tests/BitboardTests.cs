@@ -48,13 +48,13 @@ namespace ChessPlatform.Tests
         [TestCase(1L << 49, 49)]
         [TestCase((1L << 49) | (1L << 23), 49, 23)]
         [TestCase((1L << 1) | (1L << 59), 1, 59)]
-        public void TestFindAllBitsSet(long value, params int[] expectedIndexesResult)
+        public void TestGetPositionsAndGetCount(long value, params int[] expectedIndexesResult)
         {
             var expectedResult = expectedIndexesResult.Select(Position.FromSquareIndex).ToArray();
 
             var bitboard = new Bitboard(value);
-            var actualResult = bitboard.GetPositions();
-            Assert.That(actualResult, Is.EquivalentTo(expectedResult));
+            Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));
+            Assert.That(bitboard.GetCount(), Is.EqualTo(expectedResult.Length));
         }
 
         #endregion

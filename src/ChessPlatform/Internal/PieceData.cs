@@ -101,25 +101,25 @@ namespace ChessPlatform.Internal
             return piece.GetPieceInfo();
         }
 
-        public Bitboard GetPieceBitboard(Piece piece)
+        public Bitboard GetBitboard(Piece piece)
         {
             var bitboard = _bitboards[piece];
             return bitboard;
         }
 
-        public Bitboard GetPieceBitboard(PieceColor color)
+        public Bitboard GetBitboard(PieceColor color)
         {
             var bitboard = _entireColorBitboards[color];
             return bitboard;
         }
 
-        public Position[] GetPiecePositions(Piece piece)
+        public Position[] GetPositions(Piece piece)
         {
             var bitboard = _bitboards[piece];
             return bitboard.GetPositions();
         }
 
-        public Position[] GetPiecePositions(PieceColor color)
+        public Position[] GetPositions(PieceColor color)
         {
             var bitboard = _entireColorBitboards[color];
             return bitboard.GetPositions();
@@ -127,7 +127,8 @@ namespace ChessPlatform.Internal
 
         public int GetPieceCount(Piece piece)
         {
-            return GetPiecePositions(piece).Length;
+            var bitboard = _bitboards[piece];
+            return bitboard.GetCount();
         }
 
         public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] PieceMove move)
@@ -305,7 +306,7 @@ namespace ChessPlatform.Internal
         {
             var king = PieceType.King.ToPiece(kingColor);
             var oppositeColor = kingColor.Invert();
-            var kingPositions = GetPiecePositions(king);
+            var kingPositions = GetPositions(king);
             return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
             //return kingPositions.Length > 0 && IsUnderAttack(kingPositions[0], oppositeColor);
         }

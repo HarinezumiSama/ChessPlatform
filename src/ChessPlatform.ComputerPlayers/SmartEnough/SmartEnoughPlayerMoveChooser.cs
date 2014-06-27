@@ -366,7 +366,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             foreach (var pieceType in ChessConstants.PieceTypesExceptNone)
             {
                 var piece = pieceType.ToPiece(color);
-                var piecePositions = board.GetPiecePositions(piece);
+                var piecePositions = board.GetPositions(piece);
                 if (piecePositions.Length == 0)
                 {
                     continue;
@@ -451,8 +451,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static int EvaluateKingTropism([NotNull] IGameBoard board, PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = board.GetPiecePositions(king).Single();
-            var attackerPositions = board.GetPiecePositions(kingColor.Invert());
+            var kingPosition = board.GetPositions(king).Single();
+            var attackerPositions = board.GetPositions(kingColor.Invert());
 
             var result = 0;
 
@@ -485,7 +485,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var opponentKingPosition =
-                board.GetPiecePositions(PieceType.King.ToPiece(board.ActiveColor.Invert())).Single();
+                board.GetPositions(PieceType.King.ToPiece(board.ActiveColor.Invert())).Single();
 
             var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)

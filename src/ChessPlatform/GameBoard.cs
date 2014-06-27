@@ -474,14 +474,14 @@ namespace ChessPlatform
             return _pieceData.GetPieceInfo(position);
         }
 
-        public Position[] GetPiecePositions(Piece piece)
+        public Position[] GetPositions(Piece piece)
         {
-            return _pieceData.GetPiecePositions(piece);
+            return _pieceData.GetPositions(piece);
         }
 
-        public Position[] GetPiecePositions(PieceColor color)
+        public Position[] GetPositions(PieceColor color)
         {
-            return _pieceData.GetPiecePositions(color);
+            return _pieceData.GetPositions(color);
         }
 
         public bool IsValidMove(PieceMove move)
@@ -643,10 +643,11 @@ namespace ChessPlatform
 
         private static Position[] GetActivePieceExceptKingPositions(PieceData pieceData, PieceColor activeColor)
         {
-            return ChessConstants
-                .PieceTypesExceptNoneAndKing
-                .SelectMany(item => pieceData.GetPiecePositions(item.ToPiece(activeColor)))
-                .ToArray();
+            var entireColorBitboard = pieceData.GetBitboard(activeColor);
+            var kingBitboard = pieceData.GetBitboard(PieceType.King.ToPiece(activeColor));
+
+            var bitboard = entireColorBitboard & ~kingBitboard;
+            return bitboard.GetPositions();
         }
 
         private static void AddMove(
@@ -739,7 +740,7 @@ namespace ChessPlatform
 
             foreach (var king in ChessConstants.BothKings)
             {
-                var count = _pieceData.GetPiecePositions(king).Length;
+                var count = _pieceData.GetPositions(king).Length;
                 if (count != 1)
                 {
                     throw new ChessPlatformException(
@@ -761,8 +762,7 @@ namespace ChessPlatform
                 var color = pieceColor;
 
                 var pieceToCountMap = ChessConstants
-                    .PieceTypes
-                    .Where(item => item != PieceType.None)
+                    .PieceTypesExceptNone
                     .ToDictionary(
                         Factotum.Identity,
                         item => _pieceData.GetPieceCount(item.ToPiece(color)));
@@ -799,7 +799,7 @@ namespace ChessPlatform
             out GameState state)
         {
             var activeKing = PieceType.King.ToPiece(_activeColor);
-            var activeKingPosition = _pieceData.GetPiecePositions(activeKing).Single();
+            var activeKingPosition = _pieceData.GetPositions(activeKing).Single();
             var oppositeColor = _activeColor.Invert();
 
             var checkAttackPositions = _pieceData.GetAttackingPositions(activeKingPosition, oppositeColor);
@@ -938,7 +938,7 @@ namespace ChessPlatform
                 //// TODO [vmcl] Fast to implement approach (likely non-optimal)
 
                 var activeColorPawn = PieceType.Pawn.ToPiece(activeColor);
-                var activePawnPositions = pieceData.GetPiecePositions(activeColorPawn);
+                var activePawnPositions = pieceData.GetPositions(activeColorPawn);
                 var capturePosition = enPassantCaptureInfo.CapturePosition;
                 foreach (var activePawnPosition in activePawnPositions)
                 {
