@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
@@ -6,17 +7,24 @@ namespace ChessPlatform
 {
     public struct PieceInfo
     {
+        #region Constants and Fields
+
+        private readonly Piece _piece;
+        private readonly PieceType _pieceType;
+        private readonly PieceColor? _color;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="PieceInfo"/> class.
         /// </summary>
         public PieceInfo(Piece piece)
-            : this()
         {
-            this.Piece = piece;
-            this.PieceType = piece.GetPieceType();
-            this.Color = piece.GetColor();
+            _piece = piece;
+            _pieceType = piece.GetPieceType();
+            _color = piece.GetColor();
         }
 
         #endregion
@@ -25,20 +33,29 @@ namespace ChessPlatform
 
         public Piece Piece
         {
-            get;
-            private set;
+            [DebuggerStepThrough]
+            get
+            {
+                return _piece;
+            }
         }
 
         public PieceType PieceType
         {
-            get;
-            private set;
+            [DebuggerStepThrough]
+            get
+            {
+                return _pieceType;
+            }
         }
 
         public PieceColor? Color
         {
-            get;
-            private set;
+            [DebuggerStepThrough]
+            get
+            {
+                return _color;
+            }
         }
 
         #endregion

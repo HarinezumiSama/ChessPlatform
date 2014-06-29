@@ -509,12 +509,6 @@ namespace ChessPlatform
 
             #endregion
 
-            var pieceMoveInfo = _validMoves.GetValueOrDefault(move);
-            if (pieceMoveInfo != null)
-            {
-                return pieceMoveInfo.IsPawnPromotion;
-            }
-
             var result = _pieceData.IsPawnPromotion(move.From, move.To);
             return result;
         }
@@ -529,12 +523,6 @@ namespace ChessPlatform
             }
 
             #endregion
-
-            var pieceMoveInfo = _validMoves.GetValueOrDefault(move);
-            if (pieceMoveInfo != null)
-            {
-                return pieceMoveInfo.IsCapture;
-            }
 
             if (_pieceData.IsEnPassantCapture(move.From, move.To, _enPassantCaptureInfo))
             {
@@ -811,7 +799,7 @@ namespace ChessPlatform
                 .GetPinnedPieceInfos(activeKingPosition)
                 .ToDictionary(item => item.Position, item => item.AllowedMoves);
 
-            const int ValidMoveCapacity = 128;
+            const int ValidMoveCapacity = 64;
             validMoves = new Dictionary<PieceMove, PieceMoveInfo>(ValidMoveCapacity);
             var addMoveData = new AddMoveData(validMoves, _pieceData, _enPassantCaptureInfo);
 

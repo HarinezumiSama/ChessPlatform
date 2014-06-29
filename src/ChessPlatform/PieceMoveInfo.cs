@@ -4,8 +4,14 @@ using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {
-    public sealed class PieceMoveInfo
+    public struct PieceMoveInfo
     {
+        #region Constants and Fields
+
+        private readonly PieceMoveFlags _flags;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -14,9 +20,7 @@ namespace ChessPlatform
         /// </summary>
         internal PieceMoveInfo(PieceMoveFlags flags)
         {
-            this.IsPawnPromotion = (flags & PieceMoveFlags.IsPawnPromotion) != 0;
-            this.IsCapture = (flags & (PieceMoveFlags.IsCapture | PieceMoveFlags.IsEnPassantCapture)) != 0;
-            this.IsEnPassantCapture = (flags & PieceMoveFlags.IsEnPassantCapture) != 0;
+            _flags = flags;
         }
 
         #endregion
@@ -25,20 +29,26 @@ namespace ChessPlatform
 
         public bool IsPawnPromotion
         {
-            get;
-            private set;
+            get
+            {
+                return (_flags & PieceMoveFlags.IsPawnPromotion) != 0;
+            }
         }
 
         public bool IsCapture
         {
-            get;
-            private set;
+            get
+            {
+                return (_flags & (PieceMoveFlags.IsCapture | PieceMoveFlags.IsEnPassantCapture)) != 0;
+            }
         }
 
         public bool IsEnPassantCapture
         {
-            get;
-            private set;
+            get
+            {
+                return (_flags & PieceMoveFlags.IsEnPassantCapture) != 0;
+            }
         }
 
         #endregion

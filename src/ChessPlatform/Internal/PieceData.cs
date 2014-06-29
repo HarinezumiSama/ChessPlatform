@@ -186,7 +186,10 @@ namespace ChessPlatform.Internal
             var pieceInfo = GetPieceInfo(from);
 
             var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
-                && to.Rank == ChessHelper.ColorToPawnPromotionRankMap[pieceInfo.Color.Value];
+                && to.Rank
+                    == (pieceInfo.Color.Value == PieceColor.White
+                        ? ChessConstants.WhitePawnPromotionRank
+                        : ChessConstants.BlackPawnPromotionRank);
 
             return result;
         }
