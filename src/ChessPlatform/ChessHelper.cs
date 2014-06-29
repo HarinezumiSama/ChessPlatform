@@ -265,20 +265,6 @@ namespace ChessPlatform
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
         }
 
-        internal static Bitboard GetBitboard(IEnumerable<Position> positions)
-        {
-            #region Argument Check
-
-            if (positions == null)
-            {
-                throw new ArgumentNullException("positions");
-            }
-
-            #endregion
-
-            return positions.Aggregate(Bitboard.Zero, (accumulator, position) => accumulator | position.Bitboard);
-        }
-
         internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
         {
             #region Argument Check

@@ -32,7 +32,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            _bitboard = ChessHelper.GetBitboard(positions);
+            _bitboard = new Bitboard(positions);
             _isDirectAttack = isDirectAttack;
         }
 

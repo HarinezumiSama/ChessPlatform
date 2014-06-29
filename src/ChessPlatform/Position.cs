@@ -115,6 +115,15 @@ namespace ChessPlatform
             }
         }
 
+        public Bitboard Bitboard
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return Bitboard.FromSquareIndex(this.SquareIndex);
+            }
+        }
+
         #endregion
 
         #region Internal Properties
@@ -125,15 +134,6 @@ namespace ChessPlatform
             get
             {
                 return _x88Value;
-            }
-        }
-
-        internal Bitboard Bitboard
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return Bitboard.FromSquareIndex(this.SquareIndex);
             }
         }
 

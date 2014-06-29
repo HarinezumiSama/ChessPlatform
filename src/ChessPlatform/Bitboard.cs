@@ -118,7 +118,7 @@ namespace ChessPlatform
 
             #endregion
 
-            this = ChessHelper.GetBitboard(positions);
+            _value = positions.Aggregate(0L, (accumulator, position) => accumulator | position.Bitboard._value);
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -8,6 +9,32 @@ namespace ChessPlatform.Tests
     public sealed class BitboardTests
     {
         #region Tests
+
+        [Test]
+        [TestCase(0L)]
+        [TestCase(1L)]
+        [TestCase(0x1234567890ABCDEFL)]
+        public void TestConstructionFromValue(long value)
+        {
+            var bitboard = new Bitboard(value);
+            Assert.That(bitboard.Value, Is.EqualTo(value));
+        }
+
+        [Test]
+        [TestCase(0L)]
+        [TestCase(1L, "a1")]
+        [TestCase(1L << 1, "b1")]
+        [TestCase(1L << 49, "b7")]
+        [TestCase((1L << 49) | (1L << 23), "b7", "h3")]
+        [TestCase((1L << 1) | (1L << 59), "b1", "d8")]
+        public void TestConstructionFromPositions(long expectedValue, params string[] positionNotations)
+        {
+            Assert.That(positionNotations, Is.Not.Null);
+            var positions = positionNotations.Select(Position.FromAlgebraic).ToArray();
+
+            var bitboard = new Bitboard(positions);
+            Assert.That(bitboard.Value, Is.EqualTo(expectedValue));
+        }
 
         [Test]
         public void TestFindFirstBitSetWhenNoBitsAreSet()
@@ -50,6 +77,7 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 1) | (1L << 59), 1, 59)]
         public void TestGetPositionsAndGetCount(long value, params int[] expectedIndexesResult)
         {
+            Assert.That(expectedIndexesResult, Is.Not.Null);
             var expectedResult = expectedIndexesResult.Select(Position.FromSquareIndex).ToArray();
 
             var bitboard = new Bitboard(value);
