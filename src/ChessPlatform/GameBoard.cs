@@ -566,7 +566,8 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            return _pieceData.GetAttackingPositions(targetPosition, attackingColor);
+            var bitboard = _pieceData.GetAttackingPositions(targetPosition, attackingColor);
+            return bitboard.GetPositions();
         }
 
         public PieceMove[] GetValidMovesBySource(Position sourcePosition)
@@ -802,9 +803,9 @@ namespace ChessPlatform
             var activeKingPosition = _pieceData.GetPositions(activeKing).Single();
             var oppositeColor = _activeColor.Invert();
 
-            var checkAttackPositions = _pieceData.GetAttackingPositions(activeKingPosition, oppositeColor);
-            var isInCheck = checkAttackPositions.Length != 0;
-            var isInDoubleCheck = checkAttackPositions.Length > 1;
+            var checkAttackPositionsBitboard = _pieceData.GetAttackingPositions(activeKingPosition, oppositeColor);
+            var isInCheck = checkAttackPositionsBitboard.IsAny();
+            var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
 
             var pinnedPieceMap = _pieceData
                 .GetPinnedPieceInfos(activeKingPosition)
@@ -845,7 +846,7 @@ namespace ChessPlatform
                         addMoveData,
                         activeKing,
                         activeKingPosition,
-                        checkAttackPositions,
+                        checkAttackPositionsBitboard,
                         pinnedPieceMap,
                         activePieceExceptKingPositions);
                 }
@@ -915,20 +916,19 @@ namespace ChessPlatform
             AddMoveData addMoveData,
             Piece activeKing,
             Position activeKingPosition,
-            IEnumerable<Position> checkAttackPositions,
+            Bitboard checkAttackPositionsBitboard,
             IDictionary<Position, Bitboard> pinnedPieceMap,
             Lazy<Position[]> activePieceExceptKingPositions)
         {
-            var checkAttackPosition = checkAttackPositions.Single();
+            var checkAttackPosition = checkAttackPositionsBitboard.GetFirstPosition();
             var checkingPieceInfo = pieceData.GetPieceInfo(checkAttackPosition);
+            var activeKingBitboard = pieceData.GetBitboard(activeKing);
 
-            var capturingSourcePositions = pieceData
-                .GetAttackingPositions(checkAttackPosition, activeColor)
-                .Where(
-                    position =>
-                        pieceData[position] != activeKing
-                            && IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
-                .ToArray();
+            var capturingSourcePositions =
+                (pieceData.GetAttackingPositions(checkAttackPosition, activeColor) & ~activeKingBitboard)
+                    .GetPositions()
+                    .Where(position => IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
+                    .ToArray();
 
             capturingSourcePositions.DoForEach(
                 sourcePosition => AddMove(addMoveData, sourcePosition, checkAttackPosition, true, null));
@@ -965,7 +965,7 @@ namespace ChessPlatform
             var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
             var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
 
-            if (positionBridge.IsZero())
+            if (positionBridge.IsNone())
             {
                 return;
             }
@@ -979,7 +979,7 @@ namespace ChessPlatform
                             sourcePosition)
                         .Where(
                             targetPosition =>
-                                !(targetPosition.Bitboard & positionBridge).IsZero()
+                                (targetPosition.Bitboard & positionBridge).IsAny()
                                     && IsValidMoveByPinning(
                                         pinnedPieceMap,
                                         sourcePosition,

@@ -202,18 +202,15 @@ namespace ChessPlatform.Internal
             return ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move);
         }
 
-        public Position[] GetAttackingPositions(Position targetPosition, PieceColor attackingColor)
+        public Bitboard GetAttackingPositions(Position targetPosition, PieceColor attackingColor)
         {
-            List<Position> result;
-            GetAttackingPositionsInternal(targetPosition, attackingColor, false, out result);
-            return result.EnsureNotNull().ToArray();
+            return GetAttackingPositionsInternal(targetPosition, attackingColor, false);
         }
 
         public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
         {
-            List<Position> attackingPositions;
-            var result = GetAttackingPositionsInternal(targetPosition, attackingColor, true, out attackingPositions);
-            return result;
+            var bitboard = GetAttackingPositionsInternal(targetPosition, attackingColor, true);
+            return bitboard.IsAny();
         }
 
         public bool IsAnyUnderAttack(
@@ -265,7 +262,7 @@ namespace ChessPlatform.Internal
                 var bitboard = _bitboards[attackingPiece];
 
                 var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
-                if (attackBitboard.IsZero())
+                if (attackBitboard.IsNone())
                 {
                     continue;
                 }
@@ -278,7 +275,7 @@ namespace ChessPlatform.Internal
                     var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
                     var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
 
-                    if (!(attackingColorBitboard & positionBridge).IsZero())
+                    if ((attackingColorBitboard & positionBridge).IsAny())
                     {
                         continue;
                     }
@@ -817,7 +814,7 @@ namespace ChessPlatform.Internal
                 {
                     var innerBitboard = allBitboards[innerIndex];
                     var intersectionBitboard = outerBitboard & innerBitboard;
-                    if (intersectionBitboard.IsZero())
+                    if (intersectionBitboard.IsNone())
                     {
                         continue;
                     }
@@ -974,7 +971,7 @@ namespace ChessPlatform.Internal
         private Bitboard GetEntireColorBitboardNonCached(PieceColor color)
         {
             return ChessConstants.ColorToPiecesMap[color].Aggregate(
-                Bitboard.Zero,
+                Bitboard.None,
                 (a, piece) => a | _bitboards[piece]);
         }
 
@@ -1029,7 +1026,7 @@ namespace ChessPlatform.Internal
 
             var colorAndPositionIndex = GetColorAndPositionIndex(pieceColor, sourcePosition);
             var pawnPush = PawnPushes[colorAndPositionIndex];
-            if (!(_bitboards[Piece.None] & Bitboard.FromSquareIndex(pawnPush)).IsZero())
+            if ((_bitboards[Piece.None] & Bitboard.FromSquareIndex(pawnPush)).IsAny())
             {
                 resultList.Add(Position.FromSquareIndex(pawnPush));
             }
@@ -1062,13 +1059,12 @@ namespace ChessPlatform.Internal
             return resultList.ToArray();
         }
 
-        private bool GetAttackingPositionsInternal(
+        private Bitboard GetAttackingPositionsInternal(
             Position targetPosition,
             PieceColor attackingColor,
-            bool findFirstAttackOnly,
-            out List<Position> attackingPositions)
+            bool findFirstAttackOnly)
         {
-            attackingPositions = findFirstAttackOnly ? null : new List<Position>();
+            var result = new Bitboard();
 
             var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
             var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
@@ -1082,20 +1078,19 @@ namespace ChessPlatform.Internal
                 var pieceAttackInfo = pair.Value;
 
                 var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
-                if (attackBitboard == 0)
+                if (attackBitboard.IsNone())
                 {
                     continue;
                 }
 
                 if (pieceAttackInfo.IsDirectAttack)
                 {
+                    result |= attackBitboard;
                     if (findFirstAttackOnly)
                     {
-                        return true;
+                        return result;
                     }
 
-                    var positions = attackBitboard.GetPositions();
-                    attackingPositions.AddRange(positions);
                     continue;
                 }
 
@@ -1110,16 +1105,15 @@ namespace ChessPlatform.Internal
                         continue;
                     }
 
+                    result |= potentialPosition.Bitboard;
                     if (findFirstAttackOnly)
                     {
-                        return true;
+                        return result;
                     }
-
-                    attackingPositions.Add(potentialPosition);
                 }
             }
 
-            return !findFirstAttackOnly && attackingPositions.Count != 0;
+            return result;
         }
 
         #endregion

@@ -12,9 +12,11 @@ namespace ChessPlatform
 
         public const int NoBitSetIndex = -1;
 
-        public static readonly Bitboard Zero = new Bitboard(0L);
+        private const long NoneValue = 0L;
 
-        public static readonly Bitboard Everything = new Bitboard(~0L);
+        public static readonly Bitboard None = new Bitboard(NoneValue);
+
+        public static readonly Bitboard Everything = new Bitboard(~NoneValue);
 
         #region Index64
 
@@ -206,9 +208,14 @@ namespace ChessPlatform
                 _value == 0 ? "<none>" : GetPositions().Select(item => item.ToString()).Join(", "));
         }
 
-        public bool IsZero()
+        public bool IsNone()
         {
-            return _value == 0;
+            return _value == NoneValue;
+        }
+
+        public bool IsAny()
+        {
+            return _value != NoneValue;
         }
 
         public int FindFirstBitSet()
@@ -218,7 +225,7 @@ namespace ChessPlatform
 
         public bool IsExactlyOneBitSet()
         {
-            return IsExactlyOneBitSetInternal(_value);
+            return _value != 0 && ((_value & -_value) == _value);
         }
 
         public Position[] GetPositions()
@@ -235,6 +242,12 @@ namespace ChessPlatform
             }
 
             return resultList.ToArray();
+        }
+
+        public Position GetFirstPosition()
+        {
+            var squareIndex = FindFirstBitSet();
+            return Position.FromSquareIndex(squareIndex);
         }
 
         public int GetCount()
@@ -274,16 +287,12 @@ namespace ChessPlatform
             }
 
             const long Debruijn64 = 0x03F79D71B4CB0A89L;
+            const int MagicShift = 58;
 
             var firstBitOnly = value & -value;
 
-            var result = Index64[((ulong)(firstBitOnly * Debruijn64)) >> 58];
+            var result = Index64[((ulong)(firstBitOnly * Debruijn64)) >> MagicShift];
             return result;
-        }
-
-        private static bool IsExactlyOneBitSetInternal(long value)
-        {
-            return value != 0 && ((value & -value) == value);
         }
 
         #endregion
