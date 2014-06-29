@@ -50,9 +50,9 @@ namespace ChessPlatform
                     pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceColor, byte> ColorToPawnPromotionRankMap =
-            new ReadOnlyDictionary<PieceColor, byte>(
-                new Dictionary<PieceColor, byte>
+        public static readonly ReadOnlyDictionary<PieceColor, int> ColorToPawnPromotionRankMap =
+            new ReadOnlyDictionary<PieceColor, int>(
+                new EnumFixedSizeDictionary<PieceColor, int>
                 {
                     { PieceColor.White, ChessConstants.WhitePawnPromotionRank },
                     { PieceColor.Black, ChessConstants.BlackPawnPromotionRank }
