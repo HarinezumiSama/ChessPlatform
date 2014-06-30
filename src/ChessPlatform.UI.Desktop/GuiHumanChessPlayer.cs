@@ -39,6 +39,18 @@ namespace ChessPlatform.UI.Desktop
 
         #endregion
 
+        #region Public Properties
+
+        public override string Name
+        {
+            get
+            {
+                return "Human Player";
+            }
+        }
+
+        #endregion
+
         #region Public Methods
 
         public override string ToString()

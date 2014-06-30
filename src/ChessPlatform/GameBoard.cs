@@ -19,6 +19,7 @@ namespace ChessPlatform
 
         private readonly PieceColor _activeColor;
         private readonly GameState _state;
+        private readonly AutoDrawType _autoDrawType;
         private readonly CastlingOptions _castlingOptions;
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
         private readonly ReadOnlyDictionary<PieceMove, PieceMoveInfo> _validMoves;
@@ -30,7 +31,6 @@ namespace ChessPlatform
         private readonly bool _validateAfterMove;
         private readonly GameBoard _previousBoard;
         private readonly ReadOnlyDictionary<PackedGameBoard, int> _repetitions;
-        private readonly bool _isThreefoldRepetition;
 
         private PackedGameBoard _packedGameBoard;
 
@@ -69,9 +69,9 @@ namespace ChessPlatform
                 true,
                 out _validMoves,
                 out _state,
+                out _autoDrawType,
                 out _resultString,
-                out _repetitions,
-                out _isThreefoldRepetition);
+                out _repetitions);
         }
 
         /// <summary>
@@ -117,9 +117,9 @@ namespace ChessPlatform
                 true,
                 out _validMoves,
                 out _state,
+                out _autoDrawType,
                 out _resultString,
-                out _repetitions,
-                out _isThreefoldRepetition);
+                out _repetitions);
         }
 
         /// <summary>
@@ -174,9 +174,9 @@ namespace ChessPlatform
                 false,
                 out _validMoves,
                 out _state,
+                out _autoDrawType,
                 out _resultString,
-                out _repetitions,
-                out _isThreefoldRepetition);
+                out _repetitions);
         }
 
         #endregion
@@ -570,23 +570,7 @@ namespace ChessPlatform
 
         public AutoDrawType GetAutoDrawType()
         {
-            var isInsufficientMaterialState = _pieceData.IsInsufficientMaterialState();
-            if (isInsufficientMaterialState)
-            {
-                return AutoDrawType.InsufficientMaterial;
-            }
-
-            if (_isThreefoldRepetition)
-            {
-                return AutoDrawType.ThreefoldRepetition;
-            }
-
-            if (this.FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
-            {
-                return AutoDrawType.FiftyMoveRule;
-            }
-
-            return AutoDrawType.None;
+            return _autoDrawType;
         }
 
         public PackedGameBoard Pack()
@@ -988,7 +972,7 @@ namespace ChessPlatform
                 case GameState.Default:
                 case GameState.Check:
                 case GameState.DoubleCheck:
-                    resultString = ResultStrings.Other;
+                    resultString = _autoDrawType == AutoDrawType.None ? ResultStrings.Other : ResultStrings.Draw;
                     break;
 
                 case GameState.Checkmate:
@@ -1008,15 +992,15 @@ namespace ChessPlatform
             bool forceValidation,
             out ReadOnlyDictionary<PieceMove, PieceMoveInfo> validMoves,
             out GameState state,
+            out AutoDrawType autoDrawType,
             out string resultString,
-            out ReadOnlyDictionary<PackedGameBoard, int> repetitions,
-            out bool isThreefoldRepetition)
+            out ReadOnlyDictionary<PackedGameBoard, int> repetitions)
         {
             Validate(forceValidation);
 
-            if (_previousBoard != null && _previousBoard._isThreefoldRepetition)
+            if (_previousBoard != null && _previousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
             {
-                isThreefoldRepetition = true;
+                autoDrawType = AutoDrawType.ThreefoldRepetition;
                 repetitions = null;
             }
             else
@@ -1035,12 +1019,25 @@ namespace ChessPlatform
                 repetitionMap[packedGameBoard] = thisRepetitionCount;
                 repetitions = repetitionMap.AsReadOnly();
 
-                isThreefoldRepetition = thisRepetitionCount >= ThreefoldCount;
+                var isThreefoldRepetition = thisRepetitionCount >= ThreefoldCount;
+                autoDrawType = isThreefoldRepetition ? AutoDrawType.ThreefoldRepetition : AutoDrawType.None;
             }
 
             Dictionary<PieceMove, PieceMoveInfo> validMoveMap;
             InitializeValidMovesAndState(out validMoveMap, out state);
             validMoves = validMoveMap.AsReadOnly();
+
+            if (autoDrawType == AutoDrawType.None && !state.IsGameFinished())
+            {
+                if (this.FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
+                {
+                    autoDrawType = AutoDrawType.FiftyMoveRule;
+                }
+                else if (_pieceData.IsInsufficientMaterialState())
+                {
+                    autoDrawType = AutoDrawType.InsufficientMaterial;
+                }
+            }
 
             InitializeResultString(out resultString);
         }

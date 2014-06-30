@@ -15,6 +15,11 @@ namespace ChessPlatform
             get;
         }
 
+        string Name
+        {
+            get;
+        }
+
         #endregion
 
         #region Methods

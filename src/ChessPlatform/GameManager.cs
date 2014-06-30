@@ -91,6 +91,24 @@ namespace ChessPlatform
 
         #region Public Properties
 
+        public IChessPlayer White
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _white;
+            }
+        }
+
+        public IChessPlayer Black
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _black;
+            }
+        }
+
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public PieceColor ActiveColor
         {
@@ -158,7 +176,8 @@ namespace ChessPlatform
                             _state.GetName()));
                 }
 
-                _state = GameManagerState.Running;
+                AffectStates(GameManagerState.Running);
+                RaiseGameBoardChangedAsync();
             }
         }
 
@@ -230,10 +249,7 @@ namespace ChessPlatform
                     _gameBoards.Pop();
                 }
 
-                _state = originalState;
-
-                AffectStates();
-
+                AffectStates(originalState);
                 RaiseGameBoardChangedAsync();
             }
 
@@ -404,8 +420,7 @@ namespace ChessPlatform
                                 var newGameBoard = activeBoard.MakeMove(move).EnsureNotNull();
                                 _gameBoards.Push(newGameBoard);
 
-                                AffectStates();
-
+                                AffectStates(null);
                                 RaiseGameBoardChangedAsync();
                             }
                         },
@@ -421,7 +436,7 @@ namespace ChessPlatform
             }
         }
 
-        private void AffectStates()
+        private void AffectStates(GameManagerState? desiredState)
         {
             var gameBoard = GetActiveBoard();
 
@@ -433,12 +448,12 @@ namespace ChessPlatform
                         ? GameResult.BlackWon
                         : GameResult.WhiteWon;
                     _state = GameManagerState.GameFinished;
-                    break;
+                    return;
 
                 case GameState.Stalemate:
                     _result = GameResult.Draw;
                     _state = GameManagerState.GameFinished;
-                    break;
+                    return;
 
                 default:
                     _result = null;
@@ -448,9 +463,15 @@ namespace ChessPlatform
                     {
                         _result = GameResult.Draw;
                         _state = GameManagerState.GameFinished;
+                        return;
                     }
 
                     break;
+            }
+
+            if (desiredState.HasValue)
+            {
+                _state = desiredState.Value;
             }
         }
 

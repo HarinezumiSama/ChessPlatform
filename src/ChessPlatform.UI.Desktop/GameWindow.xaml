@@ -152,11 +152,13 @@
             </Grid>
         </Viewbox>
 
-        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding MoveHistory, Mode=OneWay}" Margin="5,0,5,0"
-                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left"
-                TextWrapping="WrapWithOverflow" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto" FontSize="12" FontFamily="Courier New"
-                Background="{x:Static SystemColors.ControlDarkBrush}"
-                Foreground="{x:Static SystemColors.HighlightTextBrush}" />
+        <ScrollViewer Grid.Row="2" Grid.Column="1" VerticalScrollBarVisibility="Auto"
+                HorizontalScrollBarVisibility="Auto">
+            <TextBlock Text="{Binding MoveHistory, Mode=OneWay}" Margin="5,0,5,0"
+                    HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left"
+                    TextWrapping="WrapWithOverflow" FontSize="12" FontFamily="Courier New"
+                    Background="{x:Static SystemColors.ControlDarkBrush}"
+                    Foreground="{x:Static SystemColors.HighlightTextBrush}" />
+        </ScrollViewer>
     </Grid>
 </Window>

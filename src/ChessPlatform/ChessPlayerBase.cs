@@ -29,6 +29,14 @@ namespace ChessPlatform
             private set;
         }
 
+        public virtual string Name
+        {
+            get
+            {
+                return GetType().FullName;
+            }
+        }
+
         public Task<PieceMove> GetMove(IGameBoard board, CancellationToken cancellationToken)
         {
             #region Argument Check

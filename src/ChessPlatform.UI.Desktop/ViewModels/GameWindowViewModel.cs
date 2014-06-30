@@ -497,9 +497,41 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         [NotNull]
         private string GetMoveHistory()
         {
+            const string EventName = "Chess Platform Game";
+
             var resultBuilder = new StringBuilder();
 
             var boardHistory = _boardHistory;
+            var gameManager = _gameManager;
+
+            var currentBoard = boardHistory.Last();
+
+            resultBuilder
+                .AppendFormat(CultureInfo.InvariantCulture, @"[Event ""{0}""]", EventName)
+                .AppendLine();
+
+            ////resultBuilder
+            ////    .AppendFormat(CultureInfo.InvariantCulture, @"[Site ""{0}""]", Environment.MachineName)
+            ////    .AppendLine();
+
+            resultBuilder
+                .AppendFormat(CultureInfo.InvariantCulture, @"[Date ""{0:yyyy.MM.dd}""]", DateTime.Now)
+                .AppendLine();
+
+            resultBuilder
+                .AppendFormat(CultureInfo.InvariantCulture, @"[Result ""{0}""]", currentBoard.ResultString)
+                .AppendLine();
+
+            if (gameManager != null)
+            {
+                resultBuilder
+                    .AppendFormat(CultureInfo.InvariantCulture, @"[White ""{0}""]", gameManager.White.Name)
+                    .AppendLine();
+
+                resultBuilder
+                    .AppendFormat(CultureInfo.InvariantCulture, @"[Black ""{0}""]", gameManager.Black.Name)
+                    .AppendLine();
+            }
 
             var initialBoard = boardHistory[0];
 
@@ -508,8 +540,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (!isDefaultInitialPosition)
             {
                 resultBuilder.AppendLine(@"[SetUp ""1""]");
-                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"[FEN ""{0}""]", initialFen);
-                resultBuilder.AppendLine();
+
+                resultBuilder
+                    .AppendFormat(CultureInfo.InvariantCulture, @"[FEN ""{0}""]", initialFen)
+                    .AppendLine();
             }
 
             var previousBoard = initialBoard;
@@ -567,8 +601,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 previousBoard = board;
             }
 
-            var currentBoard = boardHistory.Last();
-            if (currentBoard.State.IsOneOf(GameState.Checkmate, GameState.Stalemate))
+            if (currentBoard.State.IsGameFinished() || currentBoard.GetAutoDrawType() != AutoDrawType.None)
             {
                 resultBuilder.AppendLine();
                 resultBuilder.Append(currentBoard.ResultString);
