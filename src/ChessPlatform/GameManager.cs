@@ -177,7 +177,6 @@ namespace ChessPlatform
                 }
 
                 AffectStates(GameManagerState.Running);
-                RaiseGameBoardChangedAsync();
             }
         }
 
@@ -250,7 +249,6 @@ namespace ChessPlatform
                 }
 
                 AffectStates(originalState);
-                RaiseGameBoardChangedAsync();
             }
 
             return true;
@@ -421,7 +419,6 @@ namespace ChessPlatform
                                 _gameBoards.Push(newGameBoard);
 
                                 AffectStates(null);
-                                RaiseGameBoardChangedAsync();
                             }
                         },
                         TaskContinuationOptions.OnlyOnRanToCompletion);
@@ -436,7 +433,7 @@ namespace ChessPlatform
             }
         }
 
-        private void AffectStates(GameManagerState? desiredState)
+        private void AffectStatesInternal(GameManagerState? desiredState)
         {
             var gameBoard = GetActiveBoard();
 
@@ -473,6 +470,12 @@ namespace ChessPlatform
             {
                 _state = desiredState.Value;
             }
+        }
+
+        private void AffectStates(GameManagerState? desiredState)
+        {
+            AffectStatesInternal(desiredState);
+            RaiseGameBoardChangedAsync();
         }
 
         private void RaiseGameBoardChangedAsync()
