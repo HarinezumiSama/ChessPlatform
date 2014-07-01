@@ -66,11 +66,11 @@ namespace ChessPlatform.UI.Desktop
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
+        protected override PieceMove DoGetMove(GetMoveRequest request)
         {
             while (true)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                request.CancellationToken.ThrowIfCancellationRequested();
 
                 lock (_syncLock)
                 {

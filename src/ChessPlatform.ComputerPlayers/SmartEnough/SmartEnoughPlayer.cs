@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -64,9 +63,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
+        protected override PieceMove DoGetMove(GetMoveRequest request)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            var board = request.Board;
 
             Trace.TraceInformation(
                 "[{0}] Max ply depth: {1}. Analyzing \"{2}\"...",
@@ -75,7 +76,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 board.GetFen());
 
             var stopwatch = Stopwatch.StartNew();
-            var bestMove = DoGetMoveInternal(board, cancellationToken).EnsureNotNull();
+            var bestMove = DoGetMoveInternal(request).EnsureNotNull();
             stopwatch.Stop();
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
@@ -101,10 +102,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private Tuple<PieceMove, long> DoGetMoveInternal(
-            [NotNull] IGameBoard board,
-            CancellationToken cancellationToken)
+        private Tuple<PieceMove, long> DoGetMoveInternal([NotNull] GetMoveRequest request)
         {
+            var board = request.Board;
+            var cancellationToken = request.CancellationToken;
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (board.ValidMoves.Count == 1)

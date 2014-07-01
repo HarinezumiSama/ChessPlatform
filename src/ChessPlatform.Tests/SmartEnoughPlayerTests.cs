@@ -29,7 +29,7 @@ namespace ChessPlatform.Tests
             var player = new SmartEnoughPlayer(PieceColor.Black, maxPlyDepth, false);
 
             var stopwatch = Stopwatch.StartNew();
-            var task = player.GetMove(gameBoard, CancellationToken.None);
+            var task = player.GetMove(new GetMoveRequest(gameBoard, CancellationToken.None));
             task.Start();
             var move = task.Result;
             stopwatch.Stop();

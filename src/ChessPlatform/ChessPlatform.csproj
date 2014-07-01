@@ -62,6 +62,7 @@
     <Compile Include="GameManagerState.cs" />
     <Compile Include="GamePhase.cs" />
     <Compile Include="GameResult.cs" />
+    <Compile Include="GetMoveRequest.cs" />
     <Compile Include="IChessPlayer.cs" />
     <Compile Include="IGameBoard.cs" />
     <Compile Include="Internal\AttackInfo.cs" />

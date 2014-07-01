@@ -18,9 +18,9 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(IGameBoard board, CancellationToken cancellationToken)
+        protected override PieceMove DoGetMove(GetMoveRequest request)
         {
-            var result = board
+            var result = request.Board
                 .ValidMoves
                 .Keys
                 .OrderBy(move => move.From.SquareIndex)

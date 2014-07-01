@@ -37,35 +37,35 @@ namespace ChessPlatform
             }
         }
 
-        public Task<PieceMove> GetMove(IGameBoard board, CancellationToken cancellationToken)
+        public Task<PieceMove> GetMove(GetMoveRequest request)
         {
             #region Argument Check
 
-            if (board == null)
+            if (request == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException("request");
             }
 
-            if (board.ActiveColor != this.Color)
+            if (request.Board.ActiveColor != this.Color)
             {
                 throw new ArgumentException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         @"The board's active color '{0}' is inconsistent with the player's color '{1}'.",
-                        board.ActiveColor,
+                        request.Board.ActiveColor,
                         this.Color),
-                    "board");
+                    "request");
             }
 
-            if (board.ValidMoves.Count == 0)
+            if (request.Board.ValidMoves.Count == 0)
             {
-                throw new ArgumentException("There are no valid moves.", "board");
+                throw new ArgumentException("There are no valid moves.", "request");
             }
 
             #endregion
 
-            var result = new Task<PieceMove>(() => DoGetMove(board, cancellationToken), cancellationToken);
-            OnGetMoveTaskCreated(result, cancellationToken);
+            var result = new Task<PieceMove>(() => DoGetMove(request), request.CancellationToken);
+            OnGetMoveTaskCreated(result, request.CancellationToken);
             return result;
         }
 
@@ -74,7 +74,7 @@ namespace ChessPlatform
         #region Protected Methods
 
         [NotNull]
-        protected abstract PieceMove DoGetMove([NotNull] IGameBoard board, CancellationToken cancellationToken);
+        protected abstract PieceMove DoGetMove([NotNull] GetMoveRequest request);
 
         protected virtual void OnGetMoveTaskCreated(
             [NotNull] Task<PieceMove> getMoveTask,

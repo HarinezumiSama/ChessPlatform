@@ -390,7 +390,7 @@ namespace ChessPlatform
                     var isCancelled = state.IsCancelled;
 
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
-                    var task = activePlayer.GetMove(originalActiveBoard, state.CancellationToken);
+                    var task = activePlayer.GetMove(new GetMoveRequest(originalActiveBoard, state.CancellationToken));
 
                     task.ContinueWith(
                         t =>
