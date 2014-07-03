@@ -186,7 +186,7 @@ namespace ChessPlatform
             {
                 EnsureNotDisposed();
 
-                throw new NotImplementedException();
+                _state = GameManagerState.Paused;
             }
         }
 
@@ -387,10 +387,9 @@ namespace ChessPlatform
                     var state = new GetMoveState(_state, originalActiveBoard);
                     _getMoveStateContainer.Value = state;
 
-                    var isCancelled = state.IsCancelled;
-
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
-                    var task = activePlayer.GetMove(new GetMoveRequest(originalActiveBoard, state.CancellationToken));
+                    var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken);
+                    var task = activePlayer.GetMove(request);
 
                     task.ContinueWith(
                         t =>
@@ -400,25 +399,23 @@ namespace ChessPlatform
                                 var moveState = _getMoveStateContainer.Value;
                                 _getMoveStateContainer.Value = null;
 
-                                if (isCancelled.Value)
+                                if (moveState == null || moveState.IsCancelled.Value)
+                                {
+                                    return;
+                                }
+
+                                var activeBoard = GetActiveBoard();
+
+                                if (moveState.State != _state || moveState.ActiveBoard != activeBoard)
                                 {
                                     return;
                                 }
 
                                 var move = t.Result.EnsureNotNull();
-
-                                var activeBoard = GetActiveBoard();
-
-                                if (moveState == null || moveState.State != _state
-                                    || moveState.ActiveBoard != activeBoard)
-                                {
-                                    return;
-                                }
-
                                 var newGameBoard = activeBoard.MakeMove(move).EnsureNotNull();
                                 _gameBoards.Push(newGameBoard);
 
-                                AffectStates(null);
+                                AffectStates(GameManagerState.Paused);
                             }
                         },
                         TaskContinuationOptions.OnlyOnRanToCompletion);

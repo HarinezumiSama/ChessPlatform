@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -17,6 +18,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Constants and Fields
 
         private readonly TaskScheduler _taskScheduler;
+        private readonly Dispatcher _dispatcher;
         private readonly HashSet<Position> _validMoveTargetPositionsInternal;
         private GameBoard _currentGameBoard;
         private GameWindowSelectionMode _selectionMode;
@@ -37,6 +39,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public GameWindowViewModel()
         {
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            _dispatcher = Dispatcher.CurrentDispatcher;
 
             _validMoveTargetPositionsInternal = new HashSet<Position>();
 
@@ -619,7 +622,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnGameBoardChanged()
         {
-            RefreshBoardHistory();
+            _dispatcher.Invoke(new Action(this.RefreshBoardHistory), DispatcherPriority.Render);
+
+            var gameManager = _gameManager;
+            if (gameManager != null)
+            {
+                _dispatcher.Invoke(new Action(gameManager.Play), DispatcherPriority.ContextIdle);
+            }
         }
 
         [NotNull]
