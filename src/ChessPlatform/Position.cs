@@ -251,6 +251,20 @@ namespace ChessPlatform
                 .ToArray();
         }
 
+        public static Position[] GenerateRanks(params int[] ranks)
+        {
+            #region Argument Check
+
+            if (ranks == null)
+            {
+                throw new ArgumentNullException("ranks");
+            }
+
+            #endregion
+
+            return ranks.SelectMany(GenerateRank).ToArray();
+        }
+
         public override string ToString()
         {
             //// TODO [vmcl] Use global cache

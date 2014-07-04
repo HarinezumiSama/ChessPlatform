@@ -80,6 +80,11 @@ namespace ChessPlatform.Internal
 
         #region Public Methods
 
+        public override string ToString()
+        {
+            return this.GetFenSnippet();
+        }
+
         public void EnsureConsistency()
         {
             if (!DebugConstants.EnsurePieceDataConsistency)

@@ -727,7 +727,7 @@ namespace ChessPlatform
 
             if (_pieceData.IsInCheck(_activeColor.Invert()))
             {
-                throw new ChessPlatformException("Inactive king is under check.");
+                throw new ChessPlatformException("Inactive king is in check.");
             }
 
             foreach (var pieceColor in ChessConstants.PieceColors)
@@ -764,7 +764,15 @@ namespace ChessPlatform
                 }
             }
 
-            //// TODO [vmcl] (*) No pawns at invalid ranks, (*) etc.
+            var allPawnsBitboard = _pieceData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.White))
+                | _pieceData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.Black));
+
+            if ((allPawnsBitboard & ChessHelper.InvalidPawnPositionsBitboard).IsAny())
+            {
+                throw new ChessPlatformException("One or more pawn are located at the invalid rank.");
+            }
+
+            //// TODO [vmcl] (*) Other verifications
         }
 
         private void InitializeValidMovesAndState(

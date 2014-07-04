@@ -167,6 +167,9 @@ namespace ChessPlatform
         internal static readonly ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
+        internal static readonly Bitboard InvalidPawnPositionsBitboard =
+            new Bitboard(Position.GenerateRanks(ChessConstants.RankRange.Lower, ChessConstants.RankRange.Upper));
+
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
         private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =

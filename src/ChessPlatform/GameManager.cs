@@ -167,6 +167,11 @@ namespace ChessPlatform
             {
                 EnsureNotDisposed();
 
+                if (_state == GameManagerState.Running)
+                {
+                    return;
+                }
+
                 if (_state != GameManagerState.Paused)
                 {
                     throw new InvalidOperationException(
