@@ -13,7 +13,7 @@ namespace ChessPlatform.Tests
         public static GameBoard MakeMultipleMoves(
             [NotNull] this GameBoard gameBoard,
             [CanBeNull] Action<GameBoard, string> makeAssertion,
-            [NotNull] params PieceMove[] moves)
+            [NotNull] params GameMove[] moves)
         {
             Assert.That(gameBoard, Is.Not.Null);
             Assert.That(moves, Is.Not.Null);
@@ -45,7 +45,7 @@ namespace ChessPlatform.Tests
 
         public static GameBoard MakeMultipleMoves(
             [NotNull] this GameBoard gameBoard,
-            [NotNull] params PieceMove[] moves)
+            [NotNull] params GameMove[] moves)
         {
             return MakeMultipleMoves(gameBoard, null, moves);
         }

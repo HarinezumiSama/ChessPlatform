@@ -70,7 +70,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public IGameBoard MakeMove([NotNull] IGameBoard board, [NotNull] PieceMove move)
+        public IGameBoard MakeMove([NotNull] IGameBoard board, [NotNull] GameMove move)
         {
             var result = MakeMoveInternal(board, move);
             return result;
@@ -86,7 +86,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private IGameBoard MakeMoveInternal([NotNull] IGameBoard board, [CanBeNull] PieceMove move)
+        private IGameBoard MakeMoveInternal([NotNull] IGameBoard board, [CanBeNull] GameMove move)
         {
             var key = new BoardCacheKey(board, move);
 

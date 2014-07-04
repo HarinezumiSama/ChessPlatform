@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
@@ -14,7 +15,7 @@ namespace ChessPlatform.UI.Desktop
 
         private readonly object _syncLock = new object();
         private bool _isAwaitingMove;
-        private PieceMove _move;
+        private GameMove _move;
 
         #endregion
 
@@ -66,7 +67,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(GetMoveRequest request)
+        protected override GameMove DoGetMove(GetMoveRequest request)
         {
             while (true)
             {
@@ -92,7 +93,7 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        protected override void OnGetMoveTaskCreated(Task<PieceMove> getMoveTask, CancellationToken cancellationToken)
+        protected override void OnGetMoveTaskCreated(Task<GameMove> getMoveTask, CancellationToken cancellationToken)
         {
             base.OnGetMoveTaskCreated(getMoveTask, cancellationToken);
 
@@ -109,7 +110,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Internal Methods
 
-        internal void ApplyMove([NotNull] PieceMove move)
+        internal void ApplyMove([NotNull] GameMove move)
         {
             #region Argument Check
 

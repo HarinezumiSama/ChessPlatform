@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using ChessPlatform.GamePlay;
 using ChessPlatform.UI.Desktop.Converters;
 using ChessPlatform.UI.Desktop.ViewModels;
 using Omnifactotum;
@@ -350,12 +351,12 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        private void MakeMoveInternal(PieceMove move)
+        private void MakeMoveInternal(GameMove move)
         {
             this.ViewModel.MakeMove(move);
         }
 
-        private void MakeMove(PieceMove move)
+        private void MakeMove(GameMove move)
         {
             var currentGameBoard = this.ViewModel.CurrentGameBoard;
             if (currentGameBoard == null)
@@ -384,7 +385,7 @@ namespace ChessPlatform.UI.Desktop
             MakeMoveInternal(move);
         }
 
-        private void QueryPawnPromotion(PieceMove move)
+        private void QueryPawnPromotion(GameMove move)
         {
             this.PromotionContainerGrid.Width = this.BoardGrid.ActualWidth;
             this.PromotionContainerGrid.Height = this.BoardGrid.ActualHeight;
@@ -560,7 +561,7 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            var move = new PieceMove(movingPiecePosition.Value, position.Value);
+            var move = new GameMove(movingPiecePosition.Value, position.Value);
             MakeMove(move);
         }
 

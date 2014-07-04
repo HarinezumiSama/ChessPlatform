@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace ChessPlatform
 {
-    public sealed class PieceMove : IEquatable<PieceMove>
+    public sealed class GameMove : IEquatable<GameMove>
     {
         #region Constants and Fields
 
@@ -48,9 +48,9 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="PieceMove"/> class.
+        ///     Initializes a new instance of the <see cref="GameMove"/> class.
         /// </summary>
-        public PieceMove(Position from, Position to, PieceType promotionResult)
+        public GameMove(Position from, Position to, PieceType promotionResult)
         {
             #region Argument Check
 
@@ -76,9 +76,9 @@ namespace ChessPlatform
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="PieceMove"/> class.
+        ///     Initializes a new instance of the <see cref="GameMove"/> class.
         /// </summary>
-        public PieceMove(Position from, Position to)
+        public GameMove(Position from, Position to)
             : this(from, to, PieceType.None)
         {
             // Nothing to do
@@ -110,18 +110,18 @@ namespace ChessPlatform
 
         #region Operators
 
-        public static bool operator ==(PieceMove left, PieceMove right)
+        public static bool operator ==(GameMove left, GameMove right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(PieceMove left, PieceMove right)
+        public static bool operator !=(GameMove left, GameMove right)
         {
             return !(left == right);
         }
 
         [DebuggerNonUserCode]
-        public static implicit operator PieceMove(string stringNotation)
+        public static implicit operator GameMove(string stringNotation)
         {
             return FromStringNotation(stringNotation);
         }
@@ -130,7 +130,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        public static bool Equals(PieceMove left, PieceMove right)
+        public static bool Equals(GameMove left, GameMove right)
         {
             if (ReferenceEquals(left, right))
             {
@@ -146,7 +146,7 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
-        public static PieceMove FromStringNotation(string stringNotation)
+        public static GameMove FromStringNotation(string stringNotation)
         {
             #region Argument Check
 
@@ -173,7 +173,7 @@ namespace ChessPlatform
                     ? char.ToUpperInvariant(promotionGroup.Value.Single()).ToPieceType()
                     : PieceType.None;
 
-                return new PieceMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), pieceType);
+                return new GameMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), pieceType);
             }
 
             throw new ArgumentException(
@@ -186,7 +186,7 @@ namespace ChessPlatform
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as PieceMove);
+            return Equals(obj as GameMove);
         }
 
         public override int GetHashCode()
@@ -212,7 +212,7 @@ namespace ChessPlatform
             return result;
         }
 
-        public PieceMove MakePromotion(PieceType promotionResult)
+        public GameMove MakePromotion(PieceType promotionResult)
         {
             #region Argument Check
 
@@ -228,19 +228,19 @@ namespace ChessPlatform
 
             #endregion
 
-            return new PieceMove(this.From, this.To, promotionResult);
+            return new GameMove(this.From, this.To, promotionResult);
         }
 
-        public PieceMove[] MakeAllPromotions()
+        public GameMove[] MakeAllPromotions()
         {
-            return ChessConstants.ValidPromotions.Select(item => new PieceMove(this.From, this.To, item)).ToArray();
+            return ChessConstants.ValidPromotions.Select(item => new GameMove(this.From, this.To, item)).ToArray();
         }
 
         #endregion
 
-        #region IEquatable<PieceMove> Members
+        #region IEquatable<GameMove> Members
 
-        public bool Equals(PieceMove other)
+        public bool Equals(GameMove other)
         {
             return Equals(this, other);
         }

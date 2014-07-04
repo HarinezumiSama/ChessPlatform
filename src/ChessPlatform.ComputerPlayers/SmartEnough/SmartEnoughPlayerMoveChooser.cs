@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using ChessPlatform.GamePlay;
 using ChessPlatform.Utilities;
 using Omnifactotum;
 using Omnifactotum.Annotations;
@@ -411,7 +412,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static PieceMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
+        private static GameMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
         {
             //// TODO [vmcl] Consider en passant capture
 
@@ -467,9 +468,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private PieceMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
+        private GameMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
         {
-            var result = new List<PieceMove>(board.ValidMoves.Count);
+            var result = new List<GameMove>(board.ValidMoves.Count);
 
             var validMoves = board.ValidMoves.ToArray();
 
@@ -577,7 +578,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private int ComputeStaticExchangeEvaluationScore(
             [NotNull] IGameBoard board,
             Position position,
-            [CanBeNull] PieceMove move)
+            [CanBeNull] GameMove move)
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
@@ -722,7 +723,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             const int RootAlpha = checked(-MateScoreAbs - 1);
 
-            PieceMove bestMove = null;
+            GameMove bestMove = null;
             AlphaBetaScore bestAlphaBetaScore = null;
             var bestMoveLocalScore = Int32.MinValue;
             var alpha = RootAlpha;
@@ -768,7 +769,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return new BestMoveInfo(principalVariationMoves);
         }
 
-        private PieceMove FindMateMove()
+        private GameMove FindMateMove()
         {
             _cancellationToken.ThrowIfCancellationRequested();
 

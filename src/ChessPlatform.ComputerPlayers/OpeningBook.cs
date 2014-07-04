@@ -15,13 +15,13 @@ namespace ChessPlatform.ComputerPlayers
     {
         #region Constants and Fields
 
-        private static readonly PieceMove[] NoMoves = new PieceMove[0];
+        private static readonly GameMove[] NoMoves = new GameMove[0];
 
         private static readonly Lazy<OpeningBook> DefaultInstance = Lazy.Create(
             InitializeDefaultOpeningBook,
             LazyThreadSafetyMode.ExecutionAndPublication);
 
-        private readonly Dictionary<PackedGameBoard, PieceMove[]> _openingMap;
+        private readonly Dictionary<PackedGameBoard, GameMove[]> _openingMap;
 
         #endregion
 
@@ -57,7 +57,7 @@ namespace ChessPlatform.ComputerPlayers
                 .Select(s => ParseLine(s, initialBoard))
                 .ToArray();
 
-            var openingMap = new Dictionary<PackedGameBoard, HashSet<PieceMove>>();
+            var openingMap = new Dictionary<PackedGameBoard, HashSet<GameMove>>();
             foreach (var openingLine in openingLines)
             {
                 foreach (var tuple in openingLine)
@@ -92,7 +92,7 @@ namespace ChessPlatform.ComputerPlayers
             DefaultInstance.Value.EnsureNotNull();
         }
 
-        public PieceMove[] FindPossibleMoves([NotNull] PackedGameBoard packedGameBoard)
+        public GameMove[] FindPossibleMoves([NotNull] PackedGameBoard packedGameBoard)
         {
             #region Argument Check
 
@@ -107,7 +107,7 @@ namespace ChessPlatform.ComputerPlayers
             return moves == null ? NoMoves : moves.Copy();
         }
 
-        public PieceMove[] FindPossibleMoves([NotNull] IGameBoard board)
+        public GameMove[] FindPossibleMoves([NotNull] IGameBoard board)
         {
             #region Argument Check
 
@@ -126,7 +126,7 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Private Methods
 
-        private static List<Tuple<PackedGameBoard, PieceMove>> ParseLine(
+        private static List<Tuple<PackedGameBoard, GameMove>> ParseLine(
             [NotNull] string line,
             [NotNull] GameBoard initialBoard)
         {
@@ -145,10 +145,10 @@ namespace ChessPlatform.ComputerPlayers
             }
 
             const int OpeningLineCapacity = 20;
-            var openingLine = new List<Tuple<PackedGameBoard, PieceMove>>(OpeningLineCapacity);
+            var openingLine = new List<Tuple<PackedGameBoard, GameMove>>(OpeningLineCapacity);
 
             var currentBoard = initialBoard;
-            PieceMove lastMove = null;
+            GameMove lastMove = null;
             for (int startIndex = 0, index = 0; startIndex < lineLength; startIndex += MoveLength, index++)
             {
                 if (lastMove != null)
@@ -157,7 +157,7 @@ namespace ChessPlatform.ComputerPlayers
                 }
 
                 var stringNotation = line.Substring(startIndex, MoveLength);
-                lastMove = PieceMove.FromStringNotation(stringNotation);
+                lastMove = GameMove.FromStringNotation(stringNotation);
 
                 if (!currentBoard.IsValidMove(lastMove))
                 {

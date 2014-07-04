@@ -10,10 +10,10 @@ namespace ChessPlatform.Internal
         #region Constructors
 
         internal MakeMoveData(
-            [NotNull] PieceMove move,
+            [NotNull] GameMove move,
             Piece movedPiece,
             Piece capturedPiece,
-            [CanBeNull] PieceMove castlingRookMove,
+            [CanBeNull] GameMove castlingRookMove,
             [CanBeNull] Position? enPassantCapturedPiecePosition)
         {
             #region Argument Check
@@ -54,7 +54,7 @@ namespace ChessPlatform.Internal
 
         #region Public Properties
 
-        public PieceMove Move
+        public GameMove Move
         {
             get;
             private set;
@@ -72,7 +72,7 @@ namespace ChessPlatform.Internal
             private set;
         }
 
-        public PieceMove CastlingRookMove
+        public GameMove CastlingRookMove
         {
             get;
             private set;

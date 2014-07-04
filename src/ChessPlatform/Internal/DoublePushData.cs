@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ChessPlatform.Internal
 {
-    internal struct DoublePushInfo
+    internal struct DoublePushData
     {
         #region Constants and Fields
 
@@ -15,7 +15,7 @@ namespace ChessPlatform.Internal
 
         #region Constructors
 
-        internal DoublePushInfo(Position destinationPosition, Bitboard emptyPositions)
+        internal DoublePushData(Position destinationPosition, Bitboard emptyPositions)
         {
             #region Argument Check
 

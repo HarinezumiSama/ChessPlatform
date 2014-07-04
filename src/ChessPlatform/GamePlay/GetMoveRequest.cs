@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform
+namespace ChessPlatform.GamePlay
 {
     public sealed class GetMoveRequest
     {

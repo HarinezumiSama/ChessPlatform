@@ -8,7 +8,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
 {
-    internal sealed class PieceData
+    internal sealed class GameBoardData
     {
         #region Constants and Fields
 
@@ -18,7 +18,7 @@ namespace ChessPlatform.Internal
             new[] { PieceType.None, PieceType.King }.ToHashSet().AsReadOnly();
 
         private static readonly int[] PawnPushes = InitializePawnPushes();
-        private static readonly DoublePushInfo[] PawnDoublePushes = InitializePawnDoublePushes();
+        private static readonly DoublePushData[] PawnDoublePushes = InitializePawnDoublePushes();
         private static readonly PieceAttackInfo[] PawnAttackMoves = InitializePawnAttackMoves();
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
@@ -31,7 +31,7 @@ namespace ChessPlatform.Internal
 
         #region Constructors
 
-        internal PieceData()
+        internal GameBoardData()
         {
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
@@ -48,7 +48,7 @@ namespace ChessPlatform.Internal
                     this.GetEntireColorBitboardNonCached));
         }
 
-        private PieceData(PieceData other)
+        private GameBoardData(GameBoardData other)
         {
             #region Argument Check
 
@@ -95,9 +95,9 @@ namespace ChessPlatform.Internal
             EnsureConsistencyInternal();
         }
 
-        public PieceData Copy()
+        public GameBoardData Copy()
         {
-            return new PieceData(this);
+            return new GameBoardData(this);
         }
 
         public PieceInfo GetPieceInfo(Position position)
@@ -136,7 +136,7 @@ namespace ChessPlatform.Internal
             return bitboard.GetCount();
         }
 
-        public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] PieceMove move)
+        public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] GameMove move)
         {
             #region Argument Check
 
@@ -199,7 +199,7 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        public CastlingInfo CheckCastlingMove([NotNull] PieceMove move)
+        public CastlingInfo CheckCastlingMove([NotNull] GameMove move)
         {
             var pieceInfo = GetPieceInfo(move.From);
             if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Color.HasValue)
@@ -383,7 +383,7 @@ namespace ChessPlatform.Internal
             return resultList.ToArray();
         }
 
-        public PieceMove GetEnPassantMove(Position sourcePosition)
+        public GameMove GetEnPassantMove(Position sourcePosition)
         {
             var pieceInfo = GetPieceInfo(sourcePosition);
             if (pieceInfo.PieceType != PieceType.Pawn || !pieceInfo.Color.HasValue)
@@ -401,7 +401,7 @@ namespace ChessPlatform.Internal
             var intermediatePosition = new Position(false, sourcePosition.File, enPassantInfo.CaptureTargetRank);
             var isEnPassant = CheckSquares(Piece.None, intermediatePosition, destinationPosition);
 
-            return isEnPassant ? new PieceMove(sourcePosition, destinationPosition) : null;
+            return isEnPassant ? new GameMove(sourcePosition, destinationPosition) : null;
         }
 
         #endregion
@@ -527,7 +527,7 @@ namespace ChessPlatform.Internal
         }
 
         internal MakeMoveData MakeMove(
-            [NotNull] PieceMove move,
+            [NotNull] GameMove move,
             PieceColor movingColor,
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             ref CastlingOptions castlingOptions)
@@ -547,7 +547,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            PieceMove castlingRookMove = null;
+            GameMove castlingRookMove = null;
             Position? enPassantCapturedPiecePosition = null;
 
             var movingColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[movingColor];
@@ -731,10 +731,10 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        private static DoublePushInfo[] InitializePawnDoublePushes()
+        private static DoublePushData[] InitializePawnDoublePushes()
         {
-            var result = new DoublePushInfo[ColorAndPositionArrayLength];
-            result.Initialize(i => new DoublePushInfo(new Position(), Bitboard.Everything));
+            var result = new DoublePushData[ColorAndPositionArrayLength];
+            result.Initialize(i => new DoublePushData(new Position(), Bitboard.Everything));
 
             foreach (var pieceColor in ChessConstants.PieceColors)
             {
@@ -754,7 +754,7 @@ namespace ChessPlatform.Internal
 
                     var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
 
-                    result[index] = new DoublePushInfo(
+                    result[index] = new DoublePushData(
                         destinationPosition,
                         destinationPosition.Bitboard | intermediatePosition.Bitboard);
                 }
@@ -854,7 +854,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        private MovePieceData MovePieceInternal(PieceMove move)
+        private MovePieceData MovePieceInternal(GameMove move)
         {
             #region Argument Check
 

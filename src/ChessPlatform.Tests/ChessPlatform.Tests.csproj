@@ -63,7 +63,7 @@
     <Compile Include="GameBoardTestHelper.cs" />
     <Compile Include="GameBoardTests.cs" />
     <Compile Include="BitboardTests.cs" />
-    <Compile Include="PieceMoveTests.cs" />
+    <Compile Include="GameMoveTests.cs" />
     <Compile Include="PositionTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SmartEnoughPlayerTests.cs" />

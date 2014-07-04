@@ -9,14 +9,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         #region Constants and Fields
 
         private readonly PackedGameBoard _packedGameBoard;
-        private readonly PieceMove _move;
+        private readonly GameMove _move;
         private readonly int _hashCode;
 
         #endregion
 
         #region Constructors
 
-        internal BoardCacheKey([NotNull] IGameBoard board, [CanBeNull] PieceMove move)
+        internal BoardCacheKey([NotNull] IGameBoard board, [CanBeNull] GameMove move)
         {
             #region Argument Check
 

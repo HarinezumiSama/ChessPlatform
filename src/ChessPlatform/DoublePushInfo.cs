@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform
 {
-    public sealed class EnPassantInfo
+    public sealed class DoublePushInfo
     {
         #region Constants and Fields
 
@@ -13,7 +13,7 @@ namespace ChessPlatform
 
         #region Constructors
 
-        internal EnPassantInfo(PieceColor color)
+        internal DoublePushInfo(PieceColor color)
         {
             #region Argument Check
 

@@ -59,7 +59,7 @@ namespace ChessPlatform.Tests
                 "Target piece position.");
         }
 
-        protected static void AssertValidMoves(GameBoard gameBoard, params PieceMove[] expectedValidMoves)
+        protected static void AssertValidMoves(GameBoard gameBoard, params GameMove[] expectedValidMoves)
         {
             Assert.That(gameBoard, Is.Not.Null);
             Assert.That(expectedValidMoves, Is.Not.Null);
@@ -103,7 +103,7 @@ namespace ChessPlatform.Tests
             }
         }
 
-        protected static void AssertValidMoves(GameBoard gameBoard, IEnumerable<PieceMove> expectedValidMoves)
+        protected static void AssertValidMoves(GameBoard gameBoard, IEnumerable<GameMove> expectedValidMoves)
         {
             Assert.That(expectedValidMoves, Is.Not.Null);
 

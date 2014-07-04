@@ -13,8 +13,8 @@ namespace ChessPlatform
         /// </summary>
         internal CastlingInfo(
             CastlingOptions option,
-            PieceMove kingMove,
-            PieceMove rookMove,
+            GameMove kingMove,
+            GameMove rookMove,
             params Position[] emptySquares)
         {
             #region Argument Check
@@ -63,13 +63,13 @@ namespace ChessPlatform
             private set;
         }
 
-        public PieceMove KingMove
+        public GameMove KingMove
         {
             get;
             private set;
         }
 
-        public PieceMove RookMove
+        public GameMove RookMove
         {
             get;
             private set;

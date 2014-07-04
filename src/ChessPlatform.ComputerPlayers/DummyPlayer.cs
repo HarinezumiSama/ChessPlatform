@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using ChessPlatform.GamePlay;
 
 namespace ChessPlatform.ComputerPlayers
 {
@@ -18,7 +19,7 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(GetMoveRequest request)
+        protected override GameMove DoGetMove(GetMoveRequest request)
         {
             var result = request.Board
                 .ValidMoves

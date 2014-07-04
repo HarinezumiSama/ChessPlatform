@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform
+namespace ChessPlatform.GamePlay
 {
     public abstract class ChessPlayerBase : IChessPlayer
     {
@@ -37,7 +37,7 @@ namespace ChessPlatform
             }
         }
 
-        public Task<PieceMove> GetMove(GetMoveRequest request)
+        public Task<GameMove> CreateGetMoveTask(GetMoveRequest request)
         {
             #region Argument Check
 
@@ -64,7 +64,7 @@ namespace ChessPlatform
 
             #endregion
 
-            var result = new Task<PieceMove>(() => DoGetMove(request), request.CancellationToken);
+            var result = new Task<GameMove>(() => DoGetMove(request), request.CancellationToken);
             OnGetMoveTaskCreated(result, request.CancellationToken);
             return result;
         }
@@ -74,10 +74,10 @@ namespace ChessPlatform
         #region Protected Methods
 
         [NotNull]
-        protected abstract PieceMove DoGetMove([NotNull] GetMoveRequest request);
+        protected abstract GameMove DoGetMove([NotNull] GetMoveRequest request);
 
         protected virtual void OnGetMoveTaskCreated(
-            [NotNull] Task<PieceMove> getMoveTask,
+            [NotNull] Task<GameMove> getMoveTask,
             CancellationToken cancellationToken)
         {
             // Nothing to do; for overriding only

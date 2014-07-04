@@ -81,8 +81,8 @@ namespace ChessPlatform
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
 
-        public static readonly ReadOnlyDictionary<PieceColor, EnPassantInfo> ColorToEnPassantInfoMap =
-            PieceColors.ToDictionary(Factotum.Identity, item => new EnPassantInfo(item)).AsReadOnly();
+        public static readonly ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToEnPassantInfoMap =
+            PieceColors.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
 
         public static readonly ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =
             PieceColors
@@ -150,27 +150,27 @@ namespace ChessPlatform
                 {
                     new CastlingInfo(
                         CastlingOptions.WhiteKingSide,
-                        new PieceMove(WhiteKingInitialPosition, "g1"),
-                        new PieceMove("h1", "f1"),
+                        new GameMove(WhiteKingInitialPosition, "g1"),
+                        new GameMove("h1", "f1"),
                         "f1",
                         "g1"),
                     new CastlingInfo(
                         CastlingOptions.WhiteQueenSide,
-                        new PieceMove(WhiteKingInitialPosition, "c1"),
-                        new PieceMove("a1", "d1"),
+                        new GameMove(WhiteKingInitialPosition, "c1"),
+                        new GameMove("a1", "d1"),
                         "b1",
                         "c1",
                         "d1"),
                     new CastlingInfo(
                         CastlingOptions.BlackKingSide,
-                        new PieceMove(BlackKingInitialPosition, "g8"),
-                        new PieceMove("h8", "f8"),
+                        new GameMove(BlackKingInitialPosition, "g8"),
+                        new GameMove("h8", "f8"),
                         "f8",
                         "g8"),
                     new CastlingInfo(
                         CastlingOptions.BlackQueenSide,
-                        new PieceMove(BlackKingInitialPosition, "c8"),
-                        new PieceMove("a8", "d8"),
+                        new GameMove(BlackKingInitialPosition, "c8"),
+                        new GameMove("a8", "d8"),
                         "b8",
                         "c8",
                         "d8")

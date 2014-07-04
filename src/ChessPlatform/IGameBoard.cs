@@ -30,7 +30,7 @@ namespace ChessPlatform
         }
 
         [NotNull]
-        ReadOnlyDictionary<PieceMove, PieceMoveInfo> ValidMoves
+        ReadOnlyDictionary<GameMove, GameMoveInfo> ValidMoves
         {
             get;
         }
@@ -52,7 +52,7 @@ namespace ChessPlatform
         }
 
         [CanBeNull]
-        PieceMove PreviousMove
+        GameMove PreviousMove
         {
             get;
         }
@@ -87,22 +87,22 @@ namespace ChessPlatform
         [NotNull]
         Position[] GetPositions(PieceColor color);
 
-        bool IsValidMove([NotNull] PieceMove move);
+        bool IsValidMove([NotNull] GameMove move);
 
-        bool IsPawnPromotionMove([NotNull] PieceMove move);
+        bool IsPawnPromotionMove([NotNull] GameMove move);
 
-        bool IsCapturingMove([NotNull] PieceMove move);
+        bool IsCapturingMove([NotNull] GameMove move);
 
         [CanBeNull]
-        CastlingInfo CheckCastlingMove([NotNull] PieceMove move);
+        CastlingInfo CheckCastlingMove([NotNull] GameMove move);
 
         Position[] GetAttacks(Position targetPosition, PieceColor attackingColor);
 
         [NotNull]
-        PieceMove[] GetValidMovesBySource(Position sourcePosition);
+        GameMove[] GetValidMovesBySource(Position sourcePosition);
 
         [NotNull]
-        PieceMove[] GetValidMovesByDestination(Position destinationPosition);
+        GameMove[] GetValidMovesByDestination(Position destinationPosition);
 
         AutoDrawType GetAutoDrawType();
 
@@ -110,7 +110,7 @@ namespace ChessPlatform
         PackedGameBoard Pack();
 
         [NotNull]
-        IGameBoard MakeMove([NotNull] PieceMove move);
+        IGameBoard MakeMove([NotNull] GameMove move);
 
         [NotNull]
         IGameBoard MakeNullMove();

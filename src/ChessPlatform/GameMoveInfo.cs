@@ -4,7 +4,7 @@ using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {
-    public struct PieceMoveInfo
+    public struct GameMoveInfo
     {
         #region Constants and Fields
 
@@ -15,10 +15,10 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="PieceMoveInfo"/> class
+        ///     Initializes a new instance of the <see cref="GameMoveInfo"/> class
         ///     using the specified flags.
         /// </summary>
-        internal PieceMoveInfo(PieceMoveFlags flags)
+        internal GameMoveInfo(PieceMoveFlags flags)
         {
             _flags = flags;
         }

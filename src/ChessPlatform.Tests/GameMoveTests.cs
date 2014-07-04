@@ -7,7 +7,7 @@ using NUnit.Framework;
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class PieceMoveTests
+    public sealed class GameMoveTests
     {
         #region Constants and Fields
 
@@ -34,14 +34,14 @@ namespace ChessPlatform.Tests
 
                     var to = Position.FromSquareIndex(toIndex);
 
-                    var outerMove = new PieceMove(from, to);
+                    var outerMove = new GameMove(from, to);
                     Assert.That(outerMove.From, Is.EqualTo(from));
                     Assert.That(outerMove.To, Is.EqualTo(to));
                     Assert.That(outerMove.PromotionResult, Is.EqualTo(PieceType.None));
 
                     foreach (var promotion in ValidPromotionArguments)
                     {
-                        var innerMove = new PieceMove(from, to, promotion);
+                        var innerMove = new GameMove(from, to, promotion);
                         Assert.That(innerMove.From, Is.EqualTo(from));
                         Assert.That(innerMove.To, Is.EqualTo(to));
                         Assert.That(innerMove.PromotionResult, Is.EqualTo(promotion));
@@ -60,7 +60,7 @@ namespace ChessPlatform.Tests
         {
             foreach (var useExplicitMethod in new[] { false, true })
             {
-                var move = useExplicitMethod ? PieceMove.FromStringNotation(input) : input;
+                var move = useExplicitMethod ? GameMove.FromStringNotation(input) : input;
 
                 Assert.That(move, Is.Not.Null);
                 Assert.That(move.From, Is.EqualTo(expectedFrom));
@@ -72,24 +72,24 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestFromStringNotationNegativeCases()
         {
-            Assert.That(() => PieceMove.FromStringNotation(null), Throws.TypeOf<ArgumentNullException>());
-            Assert.That(() => PieceMove.FromStringNotation("a2a1=q"), Throws.TypeOf<ArgumentException>());
-            Assert.That(() => PieceMove.FromStringNotation("a2-a1Q"), Throws.TypeOf<ArgumentException>());
+            Assert.That(() => GameMove.FromStringNotation(null), Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => GameMove.FromStringNotation("a2a1=q"), Throws.TypeOf<ArgumentException>());
+            Assert.That(() => GameMove.FromStringNotation("a2-a1Q"), Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         public void TestOperatorFromStringNegativeCases()
         {
-            Assert.That(() => (PieceMove)(string)null, Throws.TypeOf<ArgumentNullException>());
-            Assert.That(() => (PieceMove)"a2a1=q", Throws.TypeOf<ArgumentException>());
-            Assert.That(() => (PieceMove)"a2-a1Q", Throws.TypeOf<ArgumentException>());
+            Assert.That(() => (GameMove)(string)null, Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => (GameMove)"a2a1=q", Throws.TypeOf<ArgumentException>());
+            Assert.That(() => (GameMove)"a2-a1Q", Throws.TypeOf<ArgumentException>());
         }
 
         [Test]
         [TestCaseSource(typeof(EqualityCases))]
-        public void TestEquality(string firstMoveStringNotation, PieceMove second, bool expectedEquals)
+        public void TestEquality(string firstMoveStringNotation, GameMove second, bool expectedEquals)
         {
-            var first = PieceMove.FromStringNotation(firstMoveStringNotation);
+            var first = GameMove.FromStringNotation(firstMoveStringNotation);
 
             Assert.That(first, Is.Not.Null);
             Assert.That(second, Is.Not.Null);
@@ -97,7 +97,7 @@ namespace ChessPlatform.Tests
             Assert.That(first.Equals(second), Is.EqualTo(expectedEquals));
             Assert.That(second.Equals(first), Is.EqualTo(expectedEquals));
             Assert.That(Equals(first, second), Is.EqualTo(expectedEquals));
-            Assert.That(EqualityComparer<PieceMove>.Default.Equals(first, second), Is.EqualTo(expectedEquals));
+            Assert.That(EqualityComparer<GameMove>.Default.Equals(first, second), Is.EqualTo(expectedEquals));
             Assert.That(first == second, Is.EqualTo(expectedEquals));
             Assert.That(first != second, Is.EqualTo(!expectedEquals));
 
@@ -182,10 +182,10 @@ namespace ChessPlatform.Tests
 
             public IEnumerator<TestCaseData> GetEnumerator()
             {
-                yield return new TestCaseData("a1-g7", new PieceMove("a1", "g7"), true);
-                yield return new TestCaseData("a2-a1", new PieceMove("a2", "a1", PieceType.Queen), false);
-                yield return new TestCaseData("c2xb1=B", new PieceMove("c2", "b1", PieceType.Bishop), true);
-                yield return new TestCaseData("c2xb1=B", new PieceMove("c2", "b1", PieceType.Rook), false);
+                yield return new TestCaseData("a1-g7", new GameMove("a1", "g7"), true);
+                yield return new TestCaseData("a2-a1", new GameMove("a2", "a1", PieceType.Queen), false);
+                yield return new TestCaseData("c2xb1=B", new GameMove("c2", "b1", PieceType.Bishop), true);
+                yield return new TestCaseData("c2xb1=B", new GameMove("c2", "b1", PieceType.Rook), false);
             }
 
             #endregion

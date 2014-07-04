@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -11,6 +12,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     public sealed class SmartEnoughPlayer : ChessPlayerBase
     {
         #region Constants and Fields
+
+        private static readonly string PlayerName = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0}:{1}",
+            typeof(SmartEnoughPlayer).Assembly.GetName().Name,
+            typeof(SmartEnoughPlayer).GetQualifiedName());
 
         private readonly int _maxPlyDepth;
 
@@ -50,6 +57,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Properties
 
+        public override string Name
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return PlayerName;
+            }
+        }
+
         public int MaxPlyDepth
         {
             [DebuggerStepThrough]
@@ -63,7 +79,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Protected Methods
 
-        protected override PieceMove DoGetMove(GetMoveRequest request)
+        protected override GameMove DoGetMove(GetMoveRequest request)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -102,7 +118,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private Tuple<PieceMove, long> DoGetMoveInternal([NotNull] GetMoveRequest request)
+        private Tuple<GameMove, long> DoGetMoveInternal([NotNull] GetMoveRequest request)
         {
             var board = request.Board;
             var cancellationToken = request.CancellationToken;

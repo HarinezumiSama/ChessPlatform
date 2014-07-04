@@ -96,7 +96,7 @@ namespace ChessPlatform.Tests
 
             #region For Finding Bugs in Move Generator
 
-            var extraMoves = new PieceMove[]
+            var extraMoves = new GameMove[]
             {
             };
 

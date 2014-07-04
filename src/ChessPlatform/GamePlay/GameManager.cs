@@ -10,7 +10,7 @@ using Omnifactotum;
 using Omnifactotum.Annotations;
 using ThreadState = System.Threading.ThreadState;
 
-namespace ChessPlatform
+namespace ChessPlatform.GamePlay
 {
     public sealed class GameManager : IDisposable
     {
@@ -394,7 +394,7 @@ namespace ChessPlatform
 
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
                     var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken);
-                    var task = activePlayer.GetMove(request);
+                    var task = activePlayer.CreateGetMoveTask(request);
 
                     task.ContinueWith(
                         t =>

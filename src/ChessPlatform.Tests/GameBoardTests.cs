@@ -274,10 +274,10 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            var kingMoves = new PieceMove[] { "h1-g1", "h1-g2", "h1-h2" };
+            var kingMoves = new GameMove[] { "h1-g1", "h1-g2", "h1-h2" };
             var expectedValidMoves = kingMoves
-                .Concat(new PieceMove("b7", "b8").MakeAllPromotions())
-                .Concat(new PieceMove("b7", "a8").MakeAllPromotions());
+                .Concat(new GameMove("b7", "b8").MakeAllPromotions())
+                .Concat(new GameMove("b7", "a8").MakeAllPromotions());
 
             AssertValidMoves(gameBoard, expectedValidMoves);
         }
@@ -313,7 +313,7 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Check);
 
-            AssertValidMoves(gameBoard, new PieceMove("b7", "a8").MakeAllPromotions());
+            AssertValidMoves(gameBoard, new GameMove("b7", "a8").MakeAllPromotions());
         }
 
         [Test]

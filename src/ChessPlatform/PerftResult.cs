@@ -21,7 +21,7 @@ namespace ChessPlatform
             int depth,
             TimeSpan elapsed,
             ulong nodeCount,
-            IDictionary<PieceMove, ulong> dividedMoves,
+            IDictionary<GameMove, ulong> dividedMoves,
             ulong? checkCount,
             ulong? checkmateCount)
         {
@@ -90,7 +90,7 @@ namespace ChessPlatform
             private set;
         }
 
-        public ReadOnlyDictionary<PieceMove, ulong> DividedMoves
+        public ReadOnlyDictionary<GameMove, ulong> DividedMoves
         {
             get;
             private set;

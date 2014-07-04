@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform
+namespace ChessPlatform.GamePlay
 {
     public interface IChessPlayer
     {
@@ -23,7 +23,7 @@ namespace ChessPlatform
 
         #region Methods
 
-        Task<PieceMove> GetMove([NotNull] GetMoveRequest request);
+        Task<GameMove> CreateGetMoveTask([NotNull] GetMoveRequest request);
 
         #endregion
     }

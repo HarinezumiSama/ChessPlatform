@@ -56,19 +56,18 @@
     </Compile>
     <Compile Include="Annotations\RevisionIdAttribute.cs" />
     <Compile Include="AutoDrawType.cs" />
-    <Compile Include="ChessPlayerBase.cs" />
-    <Compile Include="GameBoardChangedEventArgs.cs" />
-    <Compile Include="GameManager.cs" />
-    <Compile Include="GameManagerState.cs" />
-    <Compile Include="GamePhase.cs" />
-    <Compile Include="GameResult.cs" />
-    <Compile Include="GetMoveRequest.cs" />
-    <Compile Include="IChessPlayer.cs" />
+    <Compile Include="GamePlay\ChessPlayerBase.cs" />
+    <Compile Include="GamePlay\GameManager.cs" />
+    <Compile Include="GamePlay\GameManagerState.cs" />
+    <Compile Include="GamePlay\GamePhase.cs" />
+    <Compile Include="GamePlay\GameResult.cs" />
+    <Compile Include="GamePlay\GetMoveRequest.cs" />
+    <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="IGameBoard.cs" />
     <Compile Include="Internal\AttackInfo.cs" />
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
-    <Compile Include="Internal\DoublePushInfo.cs" />
+    <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
     <Compile Include="Utilities\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />
@@ -82,7 +81,7 @@
     <Compile Include="ChessPlatformException.cs" />
     <Compile Include="EnPassantCaptureInfo.cs" />
     <Compile Include="EnPassantCaptureInfoExtensions.cs" />
-    <Compile Include="EnPassantInfo.cs" />
+    <Compile Include="DoublePushInfo.cs" />
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="Internal\MovePieceData.cs" />
@@ -92,14 +91,14 @@
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />
     <Compile Include="Internal\PieceAttackInfo.cs" />
-    <Compile Include="Internal\PieceData.cs" />
-    <Compile Include="Internal\PieceDataExtensions.cs" />
+    <Compile Include="Internal\GameBoardData.cs" />
+    <Compile Include="Internal\GameBoardDataExtensions.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="PieceColorExtensions.cs" />
     <Compile Include="PieceInfo.cs" />
-    <Compile Include="PieceMove.cs" />
+    <Compile Include="GameMove.cs" />
     <Compile Include="PieceColor.cs" />
-    <Compile Include="PieceMoveInfo.cs" />
+    <Compile Include="GameMoveInfo.cs" />
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />
@@ -114,6 +113,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <CompileDependsOn>UpdateGlobalVersion;$(CompileDependsOn)</CompileDependsOn>

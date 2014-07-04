@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using ChessPlatform.ComputerPlayers.SmartEnough;
+using ChessPlatform.GamePlay;
 using NUnit.Framework;
 
 namespace ChessPlatform.Tests
@@ -29,13 +30,13 @@ namespace ChessPlatform.Tests
             var player = new SmartEnoughPlayer(PieceColor.Black, maxPlyDepth, false);
 
             var stopwatch = Stopwatch.StartNew();
-            var task = player.GetMove(new GetMoveRequest(gameBoard, CancellationToken.None));
+            var task = player.CreateGetMoveTask(new GetMoveRequest(gameBoard, CancellationToken.None));
             task.Start();
             var move = task.Result;
             stopwatch.Stop();
 
             Console.WriteLine(
-                @"[{0} @ {1}] GetMove took {2} (move {3}, max ply depth {4}).",
+                @"[{0} @ {1}] Time {2}, move {3}, max ply depth {4}.",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 DateTimeOffset.Now.ToFixedString(),
                 stopwatch.Elapsed,

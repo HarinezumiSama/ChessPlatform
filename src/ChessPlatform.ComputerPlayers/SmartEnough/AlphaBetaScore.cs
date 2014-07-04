@@ -12,7 +12,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly List<PieceMove> _movesInternal;
+        private readonly List<GameMove> _movesInternal;
 
         #endregion
 
@@ -20,12 +20,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public AlphaBetaScore(int score)
         {
-            _movesInternal = new List<PieceMove>();
+            _movesInternal = new List<GameMove>();
             this.Score = score;
             this.Moves = _movesInternal.AsReadOnly();
         }
 
-        private AlphaBetaScore(int score, [NotNull] PieceMove move, [NotNull] ICollection<PieceMove> successiveMoves)
+        private AlphaBetaScore(int score, [NotNull] GameMove move, [NotNull] ICollection<GameMove> successiveMoves)
             : this(score)
         {
             #region Argument Check
@@ -51,7 +51,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _movesInternal.AddRange(successiveMoves);
         }
 
-        private AlphaBetaScore(int score, ICollection<PieceMove> moves)
+        private AlphaBetaScore(int score, ICollection<GameMove> moves)
             : this(score)
         {
             #region Argument Check
@@ -77,7 +77,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         [NotNull]
-        public ReadOnlyCollection<PieceMove> Moves
+        public ReadOnlyCollection<GameMove> Moves
         {
             get;
             private set;
@@ -103,7 +103,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         [NotNull]
-        public static AlphaBetaScore operator +(PieceMove move, AlphaBetaScore alphaBetaScore)
+        public static AlphaBetaScore operator +(GameMove move, AlphaBetaScore alphaBetaScore)
         {
             #region Argument Check
 

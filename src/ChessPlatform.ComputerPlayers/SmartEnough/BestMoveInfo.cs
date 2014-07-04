@@ -10,7 +10,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constructors
 
-        internal BestMoveInfo(ICollection<PieceMove> principalVariationMoves)
+        internal BestMoveInfo(ICollection<GameMove> principalVariationMoves)
         {
             #region Argument Check
 
@@ -41,13 +41,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Properties
 
-        public PieceMove BestMove
+        public GameMove BestMove
         {
             get;
             private set;
         }
 
-        public ReadOnlyCollection<PieceMove> PrincipalVariationMoves
+        public ReadOnlyCollection<GameMove> PrincipalVariationMoves
         {
             get;
             private set;

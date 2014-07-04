@@ -5,17 +5,17 @@ using Omnifactotum;
 
 namespace ChessPlatform.Internal
 {
-    internal static class PieceDataExtensions
+    internal static class GameBoardDataExtensions
     {
         #region Public Methods
 
-        public static void GetFenSnippet(this PieceData pieceData, StringBuilder resultBuilder)
+        public static void GetFenSnippet(this GameBoardData gameBoardData, StringBuilder resultBuilder)
         {
             #region Argument Check
 
-            if (pieceData == null)
+            if (gameBoardData == null)
             {
-                throw new ArgumentNullException("pieceData");
+                throw new ArgumentNullException("gameBoardData");
             }
 
             if (resultBuilder == null)
@@ -46,7 +46,7 @@ namespace ChessPlatform.Internal
                 for (var file = 0; file < ChessConstants.FileCount; file++)
                 {
                     var position = new Position(false, (byte)file, (byte)rank);
-                    var piece = pieceData[position];
+                    var piece = gameBoardData[position];
                     if (piece == Piece.None)
                     {
                         emptySquareCount.Value++;
@@ -62,10 +62,10 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public static string GetFenSnippet(this PieceData pieceData)
+        public static string GetFenSnippet(this GameBoardData gameBoardData)
         {
             var resultBuilder = new StringBuilder();
-            GetFenSnippet(pieceData, resultBuilder);
+            GetFenSnippet(gameBoardData, resultBuilder);
             return resultBuilder.ToString();
         }
 

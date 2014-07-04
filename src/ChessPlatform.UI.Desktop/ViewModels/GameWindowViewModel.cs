@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -315,7 +316,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _gameManager.Play();
         }
 
-        public void MakeMove(PieceMove move)
+        public void MakeMove(GameMove move)
         {
             #region Argument Check
 
