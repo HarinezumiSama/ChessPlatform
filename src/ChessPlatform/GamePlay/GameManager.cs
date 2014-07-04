@@ -167,18 +167,9 @@ namespace ChessPlatform.GamePlay
             {
                 EnsureNotDisposed();
 
-                if (_state == GameManagerState.Running)
-                {
-                    return;
-                }
-
                 if (_state != GameManagerState.Paused)
                 {
-                    throw new InvalidOperationException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The game is not paused (current state: {0}).",
-                            _state.GetName()));
+                    return;
                 }
 
                 AffectStates(GameManagerState.Running);
@@ -428,6 +419,18 @@ namespace ChessPlatform.GamePlay
                     task.ContinueWith(
                         t => _getMoveStateContainer.Value = null,
                         TaskContinuationOptions.OnlyOnCanceled);
+
+                    task.ContinueWith(
+                        t =>
+                        {
+                            lock (_syncLock)
+                            {
+                                _state = GameManagerState.UnhandledExceptionOccurred;
+                            }
+                        },
+                        TaskContinuationOptions.OnlyOnFaulted);
+
+                    //// TODO [vmcl] Improve error handling (UnhandledExceptionOccurred)
 
                     RaisePlayerThinkingStartedAsync();
                     task.Start();

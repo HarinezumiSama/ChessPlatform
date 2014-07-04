@@ -27,7 +27,7 @@ namespace ChessPlatform.Tests
         {
             var gameBoard = new GameBoard("r1bqkbnr/pppp1ppp/4p3/n7/4P3/3B1N2/PPPP1PPP/RNBQK2R b KQkq - 3 4");
 
-            var player = new SmartEnoughPlayer(PieceColor.Black, maxPlyDepth, false);
+            var player = new SmartEnoughPlayer(PieceColor.Black, maxPlyDepth, false, null);
 
             var stopwatch = Stopwatch.StartNew();
             var task = player.CreateGetMoveTask(new GetMoveRequest(gameBoard, CancellationToken.None));

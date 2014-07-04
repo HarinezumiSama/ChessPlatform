@@ -16,7 +16,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        public const int MinimumMaxPlyDepth = 2;
+        public const int MaxPlyDepthLowerLimit = 2;
 
         private const int MateScoreAbs = Int32.MaxValue / 2;
 
@@ -61,7 +61,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException("rootBoard");
             }
 
-            if (maxPlyDepth < MinimumMaxPlyDepth)
+            if (maxPlyDepth < MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     "maxPlyDepth",
@@ -69,7 +69,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
-                        MinimumMaxPlyDepth));
+                        MaxPlyDepthLowerLimit));
             }
 
             #endregion
