@@ -238,6 +238,16 @@ namespace ChessPlatform
             return FindFirstBitSetInternal(_value);
         }
 
+        public bool IsExactlyOneBitSet()
+        {
+            return _value != NoneValue && IsolateFirstBitSet(_value) == _value;
+        }
+
+        public Bitboard IsolateFirstBitSet()
+        {
+            return new Bitboard(IsolateFirstBitSet(_value));
+        }
+
         public Bitboard Shift(ShiftDirection direction)
         {
             switch (direction)
@@ -269,11 +279,6 @@ namespace ChessPlatform
                 default:
                     return None;
             }
-        }
-
-        public bool IsExactlyOneBitSet()
-        {
-            return _value != NoneValue && IsolateFirstBitSet(_value) == _value;
         }
 
         public Position[] GetPositions()

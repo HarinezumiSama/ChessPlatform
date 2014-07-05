@@ -94,6 +94,19 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        [TestCase(0L, 0L)]
+        [TestCase(1L << 1, 1L << 1)]
+        [TestCase(1L << 49, 1L << 49)]
+        [TestCase((1L << 49) | (1L << 23), (1L << 23))]
+        [TestCase((1L << 1) | (1L << 59), 1L << 1)]
+        public void TestIsolateFirstBitSet(long value, long expectedResult)
+        {
+            var bitboard = new Bitboard(value);
+            var result = bitboard.IsolateFirstBitSet().Value;
+            Assert.That(result, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
         [TestCase("a1", ShiftDirection.North, "a2")]
         [TestCase("a1", ShiftDirection.NorthEast, "b2")]
         [TestCase("a1", ShiftDirection.East, "b1")]
