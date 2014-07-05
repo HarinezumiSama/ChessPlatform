@@ -767,7 +767,7 @@ namespace ChessPlatform
             var allPawnsBitboard = _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.White))
                 | _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.Black));
 
-            if ((allPawnsBitboard & ChessHelper.InvalidPawnPositionsBitboard).IsAny())
+            if ((allPawnsBitboard & ChessHelper.InvalidPawnPositionsBitboard).IsAny)
             {
                 throw new ChessPlatformException("One or more pawn are located at the invalid rank.");
             }
@@ -784,7 +784,7 @@ namespace ChessPlatform
             var oppositeColor = _activeColor.Invert();
 
             var checkAttackPositionsBitboard = _gameBoardData.GetAttackingPositions(activeKingPosition, oppositeColor);
-            var isInCheck = checkAttackPositionsBitboard.IsAny();
+            var isInCheck = checkAttackPositionsBitboard.IsAny;
             var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
 
             var pinnedPieceMap = _gameBoardData
@@ -945,7 +945,7 @@ namespace ChessPlatform
             var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
             var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
 
-            if (positionBridge.IsNone())
+            if (positionBridge.IsNone)
             {
                 return;
             }
@@ -959,7 +959,7 @@ namespace ChessPlatform
                             sourcePosition)
                         .Where(
                             targetPosition =>
-                                (targetPosition.Bitboard & positionBridge).IsAny()
+                                (targetPosition.Bitboard & positionBridge).IsAny
                                     && IsValidMoveByPinning(
                                         pinnedPieceMap,
                                         sourcePosition,

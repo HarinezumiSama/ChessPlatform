@@ -19,7 +19,7 @@ namespace ChessPlatform.Internal
         {
             #region Argument Check
 
-            if ((destinationPosition.Bitboard & emptyPositions) == 0)
+            if ((destinationPosition.Bitboard & emptyPositions).IsNone)
             {
                 throw new ArgumentException("Empty positions should contain destination position.");
             }

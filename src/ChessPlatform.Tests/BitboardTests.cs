@@ -11,6 +11,14 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
+        public void TestBitboardConstants()
+        {
+            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
+            Assert.That(Bitboard.None.Value, Is.EqualTo(0L));
+            Assert.That(Bitboard.Everything.Value, Is.EqualTo(~0L));
+        }
+
+        [Test]
         [TestCase(0L)]
         [TestCase(1L)]
         [TestCase(0x1234567890ABCDEFL)]
@@ -83,6 +91,65 @@ namespace ChessPlatform.Tests
             var bitboard = new Bitboard(value);
             Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));
             Assert.That(bitboard.GetCount(), Is.EqualTo(expectedResult.Length));
+        }
+
+        [Test]
+        [TestCase("a1", ShiftDirection.North, "a2")]
+        [TestCase("a1", ShiftDirection.NorthEast, "b2")]
+        [TestCase("a1", ShiftDirection.East, "b1")]
+        [TestCase("a1", ShiftDirection.SouthEast, null)]
+        [TestCase("a1", ShiftDirection.South, null)]
+        [TestCase("a1", ShiftDirection.SouthWest, null)]
+        [TestCase("a1", ShiftDirection.West, null)]
+        [TestCase("a1", ShiftDirection.NorthWest, null)]
+        [TestCase("a8", ShiftDirection.North, null)]
+        [TestCase("a8", ShiftDirection.NorthEast, null)]
+        [TestCase("a8", ShiftDirection.East, "b8")]
+        [TestCase("a8", ShiftDirection.SouthEast, "b7")]
+        [TestCase("a8", ShiftDirection.South, "a7")]
+        [TestCase("a8", ShiftDirection.SouthWest, null)]
+        [TestCase("a8", ShiftDirection.West, null)]
+        [TestCase("a8", ShiftDirection.NorthWest, null)]
+        [TestCase("h8", ShiftDirection.North, null)]
+        [TestCase("h8", ShiftDirection.NorthEast, null)]
+        [TestCase("h8", ShiftDirection.East, null)]
+        [TestCase("h8", ShiftDirection.SouthEast, null)]
+        [TestCase("h8", ShiftDirection.South, "h7")]
+        [TestCase("h8", ShiftDirection.SouthWest, "g7")]
+        [TestCase("h8", ShiftDirection.West, "g8")]
+        [TestCase("h8", ShiftDirection.NorthWest, null)]
+        [TestCase("h1", ShiftDirection.North, "h2")]
+        [TestCase("h1", ShiftDirection.NorthEast, null)]
+        [TestCase("h1", ShiftDirection.East, null)]
+        [TestCase("h1", ShiftDirection.SouthEast, null)]
+        [TestCase("h1", ShiftDirection.South, null)]
+        [TestCase("h1", ShiftDirection.SouthWest, null)]
+        [TestCase("h1", ShiftDirection.West, "g1")]
+        [TestCase("h1", ShiftDirection.NorthWest, "g2")]
+        [TestCase("e2", ShiftDirection.North, "e3")]
+        [TestCase("e2", ShiftDirection.NorthEast, "f3")]
+        [TestCase("e2", ShiftDirection.East, "f2")]
+        [TestCase("e2", ShiftDirection.SouthEast, "f1")]
+        [TestCase("e2", ShiftDirection.South, "e1")]
+        [TestCase("e2", ShiftDirection.SouthWest, "d1")]
+        [TestCase("e2", ShiftDirection.West, "d2")]
+        [TestCase("e2", ShiftDirection.NorthWest, "d3")]
+        public void TestShift(
+            string positionNotation,
+            ShiftDirection direction,
+            string expectedResultPositionNotation)
+        {
+            var bitboard = Position.FromAlgebraic(positionNotation).Bitboard;
+            var resultBitboard = bitboard.Shift(direction);
+
+            if (expectedResultPositionNotation == null)
+            {
+                Assert.That(resultBitboard.IsNone, Is.True);
+                return;
+            }
+
+            var expectedResultBitboard = Position.FromAlgebraic(expectedResultPositionNotation).Bitboard;
+            Assert.That(resultBitboard.Value, Is.EqualTo(expectedResultBitboard.Value));
         }
 
         #endregion

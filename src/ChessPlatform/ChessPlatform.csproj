@@ -56,6 +56,7 @@
     </Compile>
     <Compile Include="Annotations\RevisionIdAttribute.cs" />
     <Compile Include="AutoDrawType.cs" />
+    <Compile Include="Bitboards.cs" />
     <Compile Include="GamePlay\ChessPlayerBase.cs" />
     <Compile Include="GamePlay\GameManager.cs" />
     <Compile Include="GamePlay\GameManagerState.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
+    <Compile Include="ShiftDirection.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
     <Compile Include="Utilities\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />

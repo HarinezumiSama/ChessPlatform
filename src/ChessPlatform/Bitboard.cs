@@ -12,7 +12,7 @@ namespace ChessPlatform
 
         public const int NoBitSetIndex = -1;
 
-        private const long NoneValue = 0L;
+        private const ulong NoneValue = 0UL;
 
         public static readonly Bitboard None = new Bitboard(NoneValue);
 
@@ -90,7 +90,7 @@ namespace ChessPlatform
 
         #endregion
 
-        private readonly long _value;
+        private readonly ulong _value;
 
         #endregion
 
@@ -102,7 +102,7 @@ namespace ChessPlatform
         /// </summary>
         public Bitboard(long value)
         {
-            _value = value;
+            _value = (ulong)value;
         }
 
         /// <summary>
@@ -120,7 +120,16 @@ namespace ChessPlatform
 
             #endregion
 
-            _value = positions.Aggregate(0L, (accumulator, position) => accumulator | position.Bitboard._value);
+            _value = positions.Aggregate(NoneValue, (accumulator, position) => accumulator | position.Bitboard._value);
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Bitboard"/> structure
+        ///     using the specified value.
+        /// </summary>
+        private Bitboard(ulong value)
+        {
+            _value = value;
         }
 
         #endregion
@@ -132,7 +141,23 @@ namespace ChessPlatform
             [DebuggerStepThrough]
             get
             {
-                return _value;
+                return (long)_value;
+            }
+        }
+
+        public bool IsNone
+        {
+            get
+            {
+                return _value == NoneValue;
+            }
+        }
+
+        public bool IsAny
+        {
+            get
+            {
+                return _value != NoneValue;
             }
         }
 
@@ -150,7 +175,7 @@ namespace ChessPlatform
             return !(left == right);
         }
 
-        public static implicit operator Bitboard(long value)
+        public static explicit operator Bitboard(long value)
         {
             return new Bitboard(value);
         }
@@ -205,17 +230,7 @@ namespace ChessPlatform
                 CultureInfo.InvariantCulture,
                 "{{ {0:X16} : {1} }}",
                 _value,
-                _value == 0 ? "<none>" : GetPositions().Select(item => item.ToString()).Join(", "));
-        }
-
-        public bool IsNone()
-        {
-            return _value == NoneValue;
-        }
-
-        public bool IsAny()
-        {
-            return _value != NoneValue;
+                _value == NoneValue ? "<none>" : GetPositions().Select(item => item.ToString()).Join(", "));
         }
 
         public int FindFirstBitSet()
@@ -223,9 +238,42 @@ namespace ChessPlatform
             return FindFirstBitSetInternal(_value);
         }
 
+        public Bitboard Shift(ShiftDirection direction)
+        {
+            switch (direction)
+            {
+                case ShiftDirection.North:
+                    return new Bitboard((_value & ~Bitboards.Rank8._value) << 8);
+
+                case ShiftDirection.NorthEast:
+                    return new Bitboard((_value & ~Bitboards.Rank8WithFileH._value) << 9);
+
+                case ShiftDirection.East:
+                    return new Bitboard((_value & ~Bitboards.FileH._value) << 1);
+
+                case ShiftDirection.SouthEast:
+                    return new Bitboard((_value & ~Bitboards.Rank1WithFileH._value) >> 7);
+
+                case ShiftDirection.South:
+                    return new Bitboard((_value & ~Bitboards.Rank1._value) >> 8);
+
+                case ShiftDirection.SouthWest:
+                    return new Bitboard((_value & ~Bitboards.Rank1WithFileA._value) >> 9);
+
+                case ShiftDirection.West:
+                    return new Bitboard((_value & ~Bitboards.FileA._value) >> 1);
+
+                case ShiftDirection.NorthWest:
+                    return new Bitboard((_value & ~Bitboards.Rank8WithFileA._value) << 7);
+
+                default:
+                    return None;
+            }
+        }
+
         public bool IsExactlyOneBitSet()
         {
-            return _value != 0 && ((_value & -_value) == _value);
+            return _value != NoneValue && IsolateFirstBitSet(_value) == _value;
         }
 
         public Position[] GetPositions()
@@ -238,7 +286,7 @@ namespace ChessPlatform
             while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
             {
                 resultList.Add(Position.FromSquareIndex(index));
-                currentValue &= ~(1L << index);
+                currentValue &= ~(1UL << index);
             }
 
             return resultList.ToArray();
@@ -260,7 +308,7 @@ namespace ChessPlatform
             while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
             {
                 result++;
-                currentValue &= ~(1L << index);
+                currentValue &= ~(1UL << index);
             }
 
             return result;
@@ -279,9 +327,14 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static int FindFirstBitSetInternal(long value)
+        private static ulong IsolateFirstBitSet(ulong value)
         {
-            if (value == 0)
+            return value & (ulong)(-(long)value);
+        }
+
+        private static int FindFirstBitSetInternal(ulong value)
+        {
+            if (value == NoneValue)
             {
                 return NoBitSetIndex;
             }
@@ -289,9 +342,9 @@ namespace ChessPlatform
             const long Debruijn64 = 0x03F79D71B4CB0A89L;
             const int MagicShift = 58;
 
-            var firstBitOnly = value & -value;
+            var isolatedBit = IsolateFirstBitSet(value);
 
-            var result = Index64[((ulong)(firstBitOnly * Debruijn64)) >> MagicShift];
+            var result = Index64[isolatedBit * Debruijn64 >> MagicShift];
             return result;
         }
 
