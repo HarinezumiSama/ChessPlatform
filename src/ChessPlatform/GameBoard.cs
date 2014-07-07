@@ -14,6 +14,7 @@ namespace ChessPlatform
         #region Constants and Fields
 
         private const int ThreefoldCount = 3;
+        private const int ValidMoveCapacity = 64;
 
         private readonly GameBoardData _gameBoardData;
 
@@ -766,69 +767,10 @@ namespace ChessPlatform
             //// TODO [vmcl] (*) Other verifications
         }
 
-        private void InitializeValidMovesAndState(
-            out Dictionary<GameMove, GameMoveInfo> validMoves,
-            out GameState state)
+        private void PopulatePawnMoves(
+            IDictionary<GameMove, GameMoveInfo> validMoves,
+            IDictionary<Position, Bitboard> pinnedPieceMap)
         {
-            var activeKing = PieceType.King.ToPiece(_activeColor);
-            var activeKingPosition = _gameBoardData.GetPositions(activeKing).Single();
-            var oppositeColor = _activeColor.Invert();
-
-            var checkAttackPositionsBitboard = _gameBoardData.GetAttackingPositions(activeKingPosition, oppositeColor);
-            var isInCheck = checkAttackPositionsBitboard.IsAny;
-            var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
-
-            var pinnedPieceMap = _gameBoardData
-                .GetPinnedPieceInfos(activeKingPosition)
-                .ToDictionary(item => item.Position, item => item.AllowedMoves);
-
-            const int ValidMoveCapacity = 64;
-            validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
-            var addMoveData = new AddMoveData(validMoves, _gameBoardData, _enPassantCaptureInfo);
-
-            var activePiecesExceptKingBitboard = _gameBoardData.GetBitboard(_activeColor)
-                & ~_gameBoardData.GetBitboard(PieceType.King.ToPiece(_activeColor));
-
-            var noActiveKingPieceData = _gameBoardData.Copy();
-            noActiveKingPieceData.SetPiece(activeKingPosition, Piece.None);
-
-            var activeKingMoves = GetActiveKingMoves(
-                _gameBoardData,
-                noActiveKingPieceData,
-                activeKingPosition,
-                _castlingOptions,
-                oppositeColor,
-                isInCheck);
-
-            foreach (var activeKingMove in activeKingMoves)
-            {
-                validMoves.Add(activeKingMove.Move, new GameMoveInfo(activeKingMove.Flags));
-            }
-
-            if (isInCheck)
-            {
-                if (!isInDoubleCheck)
-                {
-                    InitializeValidMovesAndStateWhenInSingleCheck(
-                        _gameBoardData,
-                        _activeColor,
-                        _enPassantCaptureInfo,
-                        _castlingOptions,
-                        addMoveData,
-                        activeKing,
-                        activeKingPosition,
-                        checkAttackPositionsBitboard,
-                        pinnedPieceMap,
-                        activePiecesExceptKingBitboard);
-                }
-
-                state = validMoves.Count == 0
-                    ? GameState.Checkmate
-                    : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
-
-                return;
-            }
-
             var potentialPawnMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
 
             _gameBoardData.GetPawnMoves(
@@ -874,6 +816,71 @@ namespace ChessPlatform
 
                 validMoves.Add(pair.Key, pair.Value);
             }
+        }
+
+        private void InitializeValidMovesAndState(
+            out Dictionary<GameMove, GameMoveInfo> validMoves,
+            out GameState state)
+        {
+            var activeKing = PieceType.King.ToPiece(_activeColor);
+            var activeKingPosition = _gameBoardData.GetPositions(activeKing).Single();
+            var oppositeColor = _activeColor.Invert();
+
+            var checkAttackPositionsBitboard = _gameBoardData.GetAttackingPositions(activeKingPosition, oppositeColor);
+            var isInCheck = checkAttackPositionsBitboard.IsAny;
+            var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
+
+            var pinnedPieceMap = _gameBoardData
+                .GetPinnedPieceInfos(activeKingPosition)
+                .ToDictionary(item => item.Position, item => item.AllowedMoves);
+
+            validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
+            var addMoveData = new AddMoveData(validMoves, _gameBoardData, _enPassantCaptureInfo);
+
+            var activePiecesExceptKingBitboard = _gameBoardData.GetBitboard(_activeColor)
+                & ~_gameBoardData.GetBitboard(activeKing);
+
+            var noActiveKingPieceData = _gameBoardData.Copy();
+            noActiveKingPieceData.SetPiece(activeKingPosition, Piece.None);
+
+            var activeKingMoves = GetActiveKingMoves(
+                _gameBoardData,
+                noActiveKingPieceData,
+                activeKingPosition,
+                _castlingOptions,
+                oppositeColor,
+                isInCheck);
+
+            foreach (var activeKingMove in activeKingMoves)
+            {
+                validMoves.Add(activeKingMove.Move, new GameMoveInfo(activeKingMove.Flags));
+            }
+
+            if (isInCheck)
+            {
+                if (!isInDoubleCheck)
+                {
+                    InitializeValidMovesAndStateWhenInSingleCheck(
+                        _gameBoardData,
+                        _activeColor,
+                        _enPassantCaptureInfo,
+                        _castlingOptions,
+                        addMoveData,
+                        activeKing,
+                        activeKingPosition,
+                        checkAttackPositionsBitboard,
+                        pinnedPieceMap,
+                        activePiecesExceptKingBitboard);
+                }
+
+                state = validMoves.Count == 0
+                    ? GameState.Checkmate
+                    : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
+
+                return;
+            }
+
+            PopulatePawnMoves(validMoves, pinnedPieceMap);
 
             var activePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingBitboard
                 & ~_gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(_activeColor));
