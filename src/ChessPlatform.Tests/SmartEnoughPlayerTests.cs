@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -52,7 +53,6 @@ namespace ChessPlatform.Tests
         private static void ExecuteTestForFenAndDepth(string fen, int maxPlyDepth)
         {
             var gameBoard = new GameBoard(fen);
-
             var player = new SmartEnoughPlayer(gameBoard.ActiveColor, maxPlyDepth, false, null);
 
             var stopwatch = Stopwatch.StartNew();

@@ -42,7 +42,7 @@ namespace ChessPlatform
             this.EnPassantMoveCapturePositionIndex =
                 board.EnPassantCaptureInfo == null
                     ? -1
-                    : board.EnPassantCaptureInfo.CapturePosition.Bitboard.FindFirstBitSet();
+                    : board.EnPassantCaptureInfo.CapturePosition.Bitboard.FindFirstBitSetIndex();
 
             this.HashCode = _pieces.ComputeCollectionHashCode()
                 .CombineHashCodes(ActiveColor)

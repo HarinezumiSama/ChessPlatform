@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -214,6 +215,13 @@ namespace ChessPlatform
             return new Bitboard(1L << squareIndex);
         }
 
+        public static int PopFirstBitSet(ref Bitboard bitboard)
+        {
+            var value = bitboard._value;
+            bitboard = new Bitboard(unchecked(value & (value - 1)));
+            return FindFirstBitSetIndexInternal(value);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Bitboard && Equals((Bitboard)obj);
@@ -226,16 +234,16 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{ {0:X16} : {1} }}",
-                _value,
-                _value == NoneValue ? "<none>" : GetPositions().Select(item => item.ToString()).Join(", "));
+            var squares = _value == NoneValue
+                ? "<none>"
+                : GetPositions().Select(item => item.ToString()).OrderBy(Factotum.Identity).Join(", ");
+
+            return string.Format(CultureInfo.InvariantCulture, "{{ {0:X16} : {1} }}", _value, squares);
         }
 
-        public int FindFirstBitSet()
+        public int FindFirstBitSetIndex()
         {
-            return FindFirstBitSetInternal(_value);
+            return FindFirstBitSetIndexInternal(_value);
         }
 
         public bool IsExactlyOneBitSet()
@@ -288,7 +296,7 @@ namespace ChessPlatform
             var currentValue = _value;
 
             int index;
-            while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
+            while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
             {
                 resultList.Add(Position.FromSquareIndex(index));
                 currentValue &= ~(1UL << index);
@@ -299,7 +307,7 @@ namespace ChessPlatform
 
         public Position GetFirstPosition()
         {
-            var squareIndex = FindFirstBitSet();
+            var squareIndex = FindFirstBitSetIndex();
             return Position.FromSquareIndex(squareIndex);
         }
 
@@ -310,7 +318,7 @@ namespace ChessPlatform
             var currentValue = _value;
 
             int index;
-            while ((index = FindFirstBitSetInternal(currentValue)) >= 0)
+            while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
             {
                 result++;
                 currentValue &= ~(1UL << index);
@@ -334,10 +342,10 @@ namespace ChessPlatform
 
         private static ulong IsolateFirstBitSet(ulong value)
         {
-            return value & (ulong)(-(long)value);
+            return unchecked(value & (ulong)(-(long)value));
         }
 
-        private static int FindFirstBitSetInternal(ulong value)
+        private static int FindFirstBitSetIndexInternal(ulong value)
         {
             if (value == NoneValue)
             {

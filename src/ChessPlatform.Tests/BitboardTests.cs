@@ -50,7 +50,7 @@ namespace ChessPlatform.Tests
             Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
 
             var bitboard = new Bitboard(0L);
-            var actualResult = bitboard.FindFirstBitSet();
+            var actualResult = bitboard.FindFirstBitSetIndex();
             Assert.That(actualResult, Is.EqualTo(Bitboard.NoBitSetIndex));
         }
 
@@ -61,7 +61,7 @@ namespace ChessPlatform.Tests
             {
                 var value = 1L << index;
                 var bitboard = new Bitboard(value);
-                var actualResult = bitboard.FindFirstBitSet();
+                var actualResult = bitboard.FindFirstBitSetIndex();
                 Assert.That(actualResult, Is.EqualTo(index), "Failed for the bit {0}", index);
             }
         }
@@ -72,7 +72,7 @@ namespace ChessPlatform.Tests
         public void TestFindFirstBitSetWhenMultipleBitsAreSet(long value, int expectedResult)
         {
             var bitboard = new Bitboard(value);
-            var actualResult = bitboard.FindFirstBitSet();
+            var actualResult = bitboard.FindFirstBitSetIndex();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 

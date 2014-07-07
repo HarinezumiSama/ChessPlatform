@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using ChessPlatform.Internal;
 
@@ -8,7 +9,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        private readonly PieceMoveFlags _flags;
+        private readonly GameMoveFlags _flags;
 
         #endregion
 
@@ -18,7 +19,7 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="GameMoveInfo"/> class
         ///     using the specified flags.
         /// </summary>
-        internal GameMoveInfo(PieceMoveFlags flags)
+        internal GameMoveInfo(GameMoveFlags flags)
         {
             _flags = flags;
         }
@@ -31,7 +32,7 @@ namespace ChessPlatform
         {
             get
             {
-                return (_flags & PieceMoveFlags.IsPawnPromotion) != 0;
+                return (_flags & GameMoveFlags.IsPawnPromotion) != 0;
             }
         }
 
@@ -39,7 +40,7 @@ namespace ChessPlatform
         {
             get
             {
-                return (_flags & (PieceMoveFlags.IsCapture | PieceMoveFlags.IsEnPassantCapture)) != 0;
+                return (_flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
             }
         }
 
@@ -47,8 +48,17 @@ namespace ChessPlatform
         {
             get
             {
-                return (_flags & PieceMoveFlags.IsEnPassantCapture) != 0;
+                return (_flags & GameMoveFlags.IsEnPassantCapture) != 0;
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{{{0}}}", this.ToPropertyString());
         }
 
         #endregion

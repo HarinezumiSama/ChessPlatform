@@ -23,13 +23,6 @@ namespace ChessPlatform
 
         public static Piece ToPiece(this PieceType pieceType, PieceColor color)
         {
-            #region Argument Check
-
-            pieceType.EnsureDefined();
-            color.EnsureDefined();
-
-            #endregion
-
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
             var result = pieceType == PieceType.None
                 ? Piece.None
