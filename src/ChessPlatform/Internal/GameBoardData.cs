@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
@@ -14,8 +13,14 @@ namespace ChessPlatform.Internal
 
         private const int ColorAndPositionArrayLength = ChessConstants.SquareCount * 2;
 
-        private static readonly ReadOnlySet<PieceType> ForcedDrawPieceTypes =
-            new[] { PieceType.None, PieceType.King }.ToHashSet().AsReadOnly();
+        private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
+        private static readonly int ColorArrayLength = ChessConstants.PieceColors.Max(item => (int)item) + 1;
+
+        private static readonly Piece[] ForcedDrawAbsentPieces =
+            ChessConstants
+                .PieceTypesExceptNoneAndKing
+                .SelectMany(item => ChessConstants.PieceColors.Select(color => item.ToPiece(color)))
+                .ToArray();
 
         private static readonly int[] PawnPushes = InitializePawnPushes();
         private static readonly DoublePushData[] PawnDoublePushes = InitializePawnDoublePushes();
@@ -23,8 +28,8 @@ namespace ChessPlatform.Internal
 
         private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
 
-        private readonly EnumFixedSizeDictionary<Piece, Bitboard> _bitboards;
-        private readonly EnumFixedSizeDictionary<PieceColor, Bitboard> _entireColorBitboards;
+        private readonly Bitboard[] _bitboards;
+        private readonly Bitboard[] _entireColorBitboards;
         private readonly Piece[] _pieces;
 
         #endregion
@@ -37,15 +42,10 @@ namespace ChessPlatform.Internal
 
             _pieces = new Piece[ChessConstants.X88Length];
 
-            _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(
-                ChessConstants.Pieces.ToDictionary(
-                    Factotum.Identity,
-                    item => item == Piece.None ? Bitboard.Everything : Bitboard.None));
+            _bitboards = new Bitboard[PieceArrayLength];
+            _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboard.Everything;
 
-            _entireColorBitboards = new EnumFixedSizeDictionary<PieceColor, Bitboard>(
-                ChessConstants.PieceColors.ToDictionary(
-                    Factotum.Identity,
-                    this.GetEntireColorBitboardNonCached));
+            _entireColorBitboards = new Bitboard[ColorArrayLength];
         }
 
         private GameBoardData(GameBoardData other)
@@ -60,8 +60,8 @@ namespace ChessPlatform.Internal
             #endregion
 
             _pieces = other._pieces.Copy();
-            _bitboards = new EnumFixedSizeDictionary<Piece, Bitboard>(other._bitboards);
-            _entireColorBitboards = new EnumFixedSizeDictionary<PieceColor, Bitboard>(other._entireColorBitboards);
+            _bitboards = other._bitboards.Copy();
+            _entireColorBitboards = other._entireColorBitboards.Copy();
         }
 
         #endregion
@@ -108,31 +108,33 @@ namespace ChessPlatform.Internal
 
         public Bitboard GetBitboard(Piece piece)
         {
-            var bitboard = _bitboards[piece];
+            var index = GetPieceArrayIndexInternal(piece);
+
+            var bitboard = _bitboards[index];
             return bitboard;
         }
 
         public Bitboard GetBitboard(PieceColor color)
         {
-            var bitboard = _entireColorBitboards[color];
+            var bitboard = _entireColorBitboards[GetColorArrayIndexInternal(color)];
             return bitboard;
         }
 
         public Position[] GetPositions(Piece piece)
         {
-            var bitboard = _bitboards[piece];
+            var bitboard = GetBitboard(piece);
             return bitboard.GetPositions();
         }
 
         public Position[] GetPositions(PieceColor color)
         {
-            var bitboard = _entireColorBitboards[color];
+            var bitboard = GetBitboard(color);
             return bitboard.GetPositions();
         }
 
         public int GetPieceCount(Piece piece)
         {
-            var bitboard = _bitboards[piece];
+            var bitboard = GetBitboard(piece);
             return bitboard.GetCount();
         }
 
@@ -251,8 +253,8 @@ namespace ChessPlatform.Internal
             var targetColor = targetPieceInfo.Color.Value;
             var attackingColor = targetColor.Invert();
 
-            var targetColorBitboard = _entireColorBitboards[targetColor];
-            var attackingColorBitboard = _entireColorBitboards[attackingColor];
+            var targetColorBitboard = GetBitboard(targetColor);
+            var attackingColorBitboard = GetBitboard(attackingColor);
 
             var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
             var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
@@ -267,7 +269,7 @@ namespace ChessPlatform.Internal
                 }
 
                 var attackingPiece = pair.Key.ToPiece(attackingColor);
-                var bitboard = _bitboards[attackingPiece];
+                var bitboard = GetBitboard(attackingPiece);
 
                 var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
                 if (attackBitboard.IsNone)
@@ -318,8 +320,17 @@ namespace ChessPlatform.Internal
 
         public bool IsInsufficientMaterialState()
         {
-            var result = _pieces.All(piece => ForcedDrawPieceTypes.Contains(piece.GetPieceType()));
-            return result;
+            // ReSharper disable once LoopCanBeConvertedToQuery - By design; for optimization
+            // ReSharper disable once ForCanBeConvertedToForeach - By design; for optimization
+            for (var index = 0; index < ForcedDrawAbsentPieces.Length; index++)
+            {
+                if (GetBitboard(ForcedDrawAbsentPieces[index]).IsAny)
+                {
+                    return false;
+                }
+            }
+            
+            return true;
         }
 
         public Position[] GetPotentialMovePositions(
@@ -426,14 +437,14 @@ namespace ChessPlatform.Internal
             var rank3 = color == PieceColor.White ? Bitboards.Rank3 : Bitboards.Rank6;
             var rank8 = color == PieceColor.White ? Bitboards.Rank8 : Bitboards.Rank1;
 
-            var pawns = _bitboards[pawn];
+            var pawns = GetBitboard(pawn);
             if (pawns.IsNone)
             {
                 return;
             }
 
-            var empty = _bitboards[Piece.None];
-            var enemies = _entireColorBitboards[color.Invert()];
+            var empty = GetBitboard(Piece.None);
+            var enemies = GetBitboard(color.Invert());
 
             var pushes = pawns.Shift(forwardOffset) & empty;
             if (pushes.IsAny)
@@ -468,20 +479,20 @@ namespace ChessPlatform.Internal
             var oldPiece = _pieces[x88Value];
             _pieces[x88Value] = piece;
 
-            _bitboards[oldPiece] &= ~bitboardBit;
+            _bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
 
             var oldPieceColor = oldPiece.GetColor();
             if (oldPieceColor.HasValue)
             {
-                _entireColorBitboards[oldPieceColor.Value] &= ~bitboardBit;
+                _entireColorBitboards[GetColorArrayIndexInternal(oldPieceColor.Value)] &= ~bitboardBit;
             }
 
-            _bitboards[piece] |= bitboardBit;
+            _bitboards[GetPieceArrayIndexInternal(piece)] |= bitboardBit;
 
             var pieceColor = piece.GetColor();
             if (pieceColor.HasValue)
             {
-                _entireColorBitboards[pieceColor.Value] |= bitboardBit;
+                _entireColorBitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
             }
 
             return oldPiece;
@@ -758,9 +769,19 @@ namespace ChessPlatform.Internal
 
         #region Private Methods
 
-        private static int GetColorAndPositionIndex(PieceColor color, Position position)
+        private static int GetColorAndPositionIndexInternal(PieceColor color, Position position)
         {
             return ((int)color) * ChessConstants.SquareCount + position.SquareIndex;
+        }
+
+        private static int GetPieceArrayIndexInternal(Piece piece)
+        {
+            return (int)piece;
+        }
+
+        private static int GetColorArrayIndexInternal(PieceColor color)
+        {
+            return (int)color;
         }
 
         private static void PopulatePawnMoves(
@@ -831,7 +852,7 @@ namespace ChessPlatform.Internal
                 foreach (var sourcePosition in ChessHelper.AllPawnPositions)
                 {
                     var destinationPosition = new Position((byte)(sourcePosition.X88Value + moveRay.Offset));
-                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+                    var index = GetColorAndPositionIndexInternal(pieceColor, sourcePosition);
                     result[index] = destinationPosition.SquareIndex;
                 }
             }
@@ -860,7 +881,7 @@ namespace ChessPlatform.Internal
                     var destinationPosition = new Position((byte)(sourcePosition.X88Value + moveRay.Offset));
                     var intermediatePosition = new Position((byte)(sourcePosition.X88Value + intermediateRay.Offset));
 
-                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+                    var index = GetColorAndPositionIndexInternal(pieceColor, sourcePosition);
 
                     result[index] = new DoublePushData(
                         destinationPosition,
@@ -883,7 +904,7 @@ namespace ChessPlatform.Internal
                 foreach (var sourcePosition in ChessHelper.AllPawnPositions)
                 {
                     var attackPositions = ChessHelper.GetOnboardPositions(sourcePosition, attackOffsets);
-                    var index = GetColorAndPositionIndex(pieceColor, sourcePosition);
+                    var index = GetColorAndPositionIndexInternal(pieceColor, sourcePosition);
                     result[index] = new PieceAttackInfo(attackPositions, true);
                 }
             }
@@ -909,7 +930,7 @@ namespace ChessPlatform.Internal
 
                 foreach (var currentPiece in ChessConstants.Pieces)
                 {
-                    var isSet = (_bitboards[currentPiece] & bitboardBit).IsAny;
+                    var isSet = (GetBitboard(currentPiece) & bitboardBit).IsAny;
                     if ((piece == currentPiece) != isSet)
                     {
                         throw new ChessPlatformException(
@@ -922,7 +943,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var allBitboards = _bitboards.Values.ToArray();
+            var allBitboards = ChessConstants.Pieces.Select(this.GetBitboard).ToArray();
             for (var outerIndex = 0; outerIndex < allBitboards.Length; outerIndex++)
             {
                 var outerBitboard = allBitboards[outerIndex];
@@ -948,7 +969,7 @@ namespace ChessPlatform.Internal
 
             foreach (var color in ChessConstants.PieceColors)
             {
-                var actual = _entireColorBitboards[color];
+                var actual = GetBitboard(color);
                 var expected = GetEntireColorBitboardNonCached(color);
                 if (actual != expected)
                 {
@@ -1088,7 +1109,7 @@ namespace ChessPlatform.Internal
         {
             return ChessConstants.ColorToPiecesMap[color].Aggregate(
                 Bitboard.None,
-                (a, piece) => a | _bitboards[piece]);
+                (a, piece) => a | GetBitboard(piece));
         }
 
         private void GetPotentialCastlingMove(
@@ -1140,9 +1161,9 @@ namespace ChessPlatform.Internal
         {
             var resultList = new List<Position>(4);
 
-            var colorAndPositionIndex = GetColorAndPositionIndex(pieceColor, sourcePosition);
+            var colorAndPositionIndex = GetColorAndPositionIndexInternal(pieceColor, sourcePosition);
             var pawnPush = PawnPushes[colorAndPositionIndex];
-            if ((_bitboards[Piece.None] & Bitboard.FromSquareIndex(pawnPush)).IsAny)
+            if ((GetBitboard(Piece.None) & Bitboard.FromSquareIndex(pawnPush)).IsAny)
             {
                 resultList.Add(Position.FromSquareIndex(pawnPush));
             }
@@ -1150,7 +1171,7 @@ namespace ChessPlatform.Internal
             if (IsDoublePushPotentiallyAllowed(sourcePosition, pieceColor))
             {
                 var pawnPushInfo = PawnDoublePushes[colorAndPositionIndex];
-                if ((_bitboards[Piece.None] & pawnPushInfo.EmptyPositions) == pawnPushInfo.EmptyPositions)
+                if ((GetBitboard(Piece.None) & pawnPushInfo.EmptyPositions) == pawnPushInfo.EmptyPositions)
                 {
                     resultList.Add(pawnPushInfo.DestinationPosition);
                 }
@@ -1185,12 +1206,12 @@ namespace ChessPlatform.Internal
             var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
             var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
 
-            var emptySquareBitboard = _bitboards[Piece.None];
+            var emptySquareBitboard = GetBitboard(Piece.None);
 
             foreach (var pair in attackInfo.Attacks)
             {
                 var attackingPiece = pair.Key.ToPiece(attackingColor);
-                var bitboard = _bitboards[attackingPiece];
+                var bitboard = GetBitboard(attackingPiece);
                 var pieceAttackInfo = pair.Value;
 
                 var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
