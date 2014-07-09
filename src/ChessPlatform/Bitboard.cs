@@ -356,9 +356,7 @@ namespace ChessPlatform
             const int MagicShift = 58;
 
             var isolatedBit = IsolateFirstBitSet(value);
-
-            var result = Index64[isolatedBit * Debruijn64 >> MagicShift];
-            return result;
+            return Index64[unchecked(isolatedBit * Debruijn64) >> MagicShift];
         }
 
         #endregion

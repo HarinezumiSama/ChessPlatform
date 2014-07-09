@@ -34,15 +34,6 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         internal Position(int x88Value)
         {
-            #region Argument Check
-
-            if (!IsValidX88Value(x88Value))
-            {
-                throw new ArgumentException("Out of the board 0x88 value.", "x88Value");
-            }
-
-            #endregion
-
             _x88Value = x88Value;
         }
 
@@ -267,7 +258,6 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            //// TODO [vmcl] Use global cache
             return string.Format(CultureInfo.InvariantCulture, "{0}{1}", (char)('a' + this.File), this.Rank + 1);
         }
 

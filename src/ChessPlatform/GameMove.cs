@@ -52,22 +52,6 @@ namespace ChessPlatform
         /// </summary>
         public GameMove(Position from, Position to, PieceType promotionResult)
         {
-            #region Argument Check
-
-            if (from == to)
-            {
-                throw new ArgumentException("The source and destination positions cannot be the same.");
-            }
-
-            if (promotionResult != PieceType.None && !ChessConstants.ValidPromotions.Contains(promotionResult))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid promotion '{0}'.", promotionResult),
-                    "promotionResult");
-            }
-
-            #endregion
-
             this.From = from;
             this.To = to;
             this.PromotionResult = promotionResult;
