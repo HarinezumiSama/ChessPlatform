@@ -69,6 +69,7 @@
     <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
+    <Compile Include="Internal\GameMoveData.cs" />
     <Compile Include="ShiftDirection.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
     <Compile Include="Utilities\PositionDictionary.cs" />
@@ -123,7 +124,7 @@
   <PropertyGroup>
     <MSBuildCommunityTasksPath>$(SolutionDir)\.build</MSBuildCommunityTasksPath>
   </PropertyGroup>
-  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.targets"/>
+  <Import Project="$(MSBuildCommunityTasksPath)\MSBuild.Community.Tasks.targets" />
   <Target Name="UpdateGlobalVersion">
     <PropertyGroup>
       <BaseVersionFile>$(ProjectDir)\..\Solution Items\Version\BaseVersion.txt</BaseVersionFile>
@@ -142,7 +143,7 @@
       <Output TaskParameter="Lines" PropertyName="RevisionRaw" />
     </ReadLinesFromFile>
     <RegexReplace Input="$(RevisionRaw)" Expression="\+" Replacement="" Count="1">
-      <Output PropertyName="Revision" TaskParameter="Output"/>
+      <Output PropertyName="Revision" TaskParameter="Output" />
     </RegexReplace>
     <Message Importance="high" Text="* Revision number: '$(Revision)' (raw '$(RevisionRaw)')." />
     <PropertyGroup>

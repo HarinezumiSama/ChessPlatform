@@ -771,7 +771,7 @@ namespace ChessPlatform
             IDictionary<GameMove, GameMoveInfo> validMoves,
             IDictionary<Position, Bitboard> pinnedPieceMap)
         {
-            var potentialPawnMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
+            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
 
             _gameBoardData.GetPawnMoves(
                 potentialPawnMoves,
@@ -780,7 +780,7 @@ namespace ChessPlatform
 
             foreach (var pair in potentialPawnMoves)
             {
-                var potentialPawnMove = pair.Key;
+                var potentialPawnMove = pair.Move;
 
                 var sourcePosition = potentialPawnMove.From;
                 var destinationPosition = potentialPawnMove.To;
@@ -814,7 +814,7 @@ namespace ChessPlatform
                     }
                 }
 
-                validMoves.Add(pair.Key, pair.Value);
+                validMoves.Add(pair.Move, pair.MoveInfo);
             }
         }
 

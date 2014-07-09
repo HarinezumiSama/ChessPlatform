@@ -417,7 +417,7 @@ namespace ChessPlatform.Internal
 
         // Redesign is in progress
         public void GetPawnMoves(
-            IDictionary<GameMove, GameMoveInfo> resultMoves,
+            List<GameMoveData> resultMoves,
             PieceColor color,
             Bitboard enPassantCaptureTarget)
         {
@@ -785,7 +785,7 @@ namespace ChessPlatform.Internal
         }
 
         private static void PopulatePawnMoves(
-            IDictionary<GameMove, GameMoveInfo> resultMoves,
+            ICollection<GameMoveData> resultMoves,
             Bitboard destinationsBitboard,
             int moveOffset,
             GameMoveFlags moveFlags)
@@ -801,17 +801,17 @@ namespace ChessPlatform.Internal
                 var moveInfo = new GameMoveInfo(moveFlags);
                 if (moveInfo.IsPawnPromotion)
                 {
-                    move.MakeAllPromotions().DoForEach(item => resultMoves.Add(item, moveInfo));
+                    move.MakeAllPromotions().DoForEach(item => resultMoves.Add(new GameMoveData(item, moveInfo)));
                 }
                 else
                 {
-                    resultMoves.Add(move, moveInfo);
+                    resultMoves.Add(new GameMoveData(move, moveInfo));
                 }
             }
         }
 
         private static void PopulatePawnCaptures(
-            IDictionary<GameMove, GameMoveInfo> resultMoves,
+            ICollection<GameMoveData> resultMoves,
             Bitboard pawns,
             Bitboard enemies,
             ShiftDirection captureDirection,
