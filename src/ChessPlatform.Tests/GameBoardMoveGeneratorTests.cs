@@ -124,11 +124,12 @@ namespace ChessPlatform.Tests
             }
 
             Console.WriteLine(
-                @"[{0}] ({1}) {2} {{ {3} }} : {4}{5}",
+                @"[{0}] ({1}) {2} {{ {3} }} ({4}) : {5}{6}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 ChessHelper.GetPlatformVersion(true),
                 perftPosition.GetName(),
                 fen,
+                actualResult.Flags,
                 actualResult,
                 extraInfo);
 
