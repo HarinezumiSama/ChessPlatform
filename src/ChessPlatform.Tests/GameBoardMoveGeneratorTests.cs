@@ -123,13 +123,16 @@ namespace ChessPlatform.Tests
                     divideResult);
             }
 
-            Trace.TraceInformation(
-                "[{0}] {1} {{ {2} }} : {3}{4}",
+            Console.WriteLine(
+                @"[{0}] ({1}) {2} {{ {3} }} : {4}{5}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
+                ChessHelper.GetPlatformVersion(true),
                 perftPosition.GetName(),
                 fen,
                 actualResult,
                 extraInfo);
+
+            Console.WriteLine();
 
             AssertPerftResult(actualResult, expectedResult);
         }

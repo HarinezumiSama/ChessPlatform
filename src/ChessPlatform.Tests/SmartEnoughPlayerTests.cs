@@ -62,12 +62,15 @@ namespace ChessPlatform.Tests
             stopwatch.Stop();
 
             Console.WriteLine(
-                @"[{0} @ {1}] Time {2}, move {3}, max ply depth {4}.",
+                @"[{0} @ {1}] ({2}) Time {3}, move {4}, max ply depth {5}.",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
                 DateTimeOffset.Now.ToFixedString(),
+                ChessHelper.GetPlatformVersion(true),
                 stopwatch.Elapsed,
                 move,
                 player.MaxPlyDepth);
+
+            Console.WriteLine();
 
             Assert.That(move, Is.Not.Null);
         }

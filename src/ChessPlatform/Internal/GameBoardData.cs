@@ -1358,8 +1358,6 @@ namespace ChessPlatform.Internal
         {
             var result = new Bitboard();
 
-            // NEW VERSION:
-
             var targetBitboard = targetPosition.Bitboard;
             var targetSquareIndex = targetPosition.SquareIndex;
 
@@ -1439,58 +1437,6 @@ namespace ChessPlatform.Internal
                 DiagonallySlidingAttacks,
                 emptySquareBitboard,
                 findFirstAttackOnly);
-
-            ////if (result.IsAny && findFirstAttackOnly)
-            ////{
-            ////    return result;
-            ////}
-
-            ////// OLD VERSION:
-
-            ////var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
-            ////var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
-
-            ////foreach (var pair in attackInfo.Attacks)
-            ////{
-            ////    var attackingPiece = pair.Key.ToPiece(attackingColor);
-            ////    var bitboard = GetBitboard(attackingPiece);
-            ////    var pieceAttackInfo = pair.Value;
-
-            ////    var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
-            ////    if (attackBitboard.IsNone)
-            ////    {
-            ////        continue;
-            ////    }
-
-            ////    if (pieceAttackInfo.IsDirectAttack)
-            ////    {
-            ////        result |= attackBitboard;
-            ////        if (findFirstAttackOnly)
-            ////        {
-            ////            return result;
-            ////        }
-
-            ////        continue;
-            ////    }
-
-            ////    var potentialPositions = attackBitboard.GetPositions();
-
-            ////    foreach (var potentialPosition in potentialPositions)
-            ////    {
-            ////        var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
-            ////        var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
-            ////        if ((emptySquareBitboard & positionBridge) != positionBridge)
-            ////        {
-            ////            continue;
-            ////        }
-
-            ////        result |= potentialPosition.Bitboard;
-            ////        if (findFirstAttackOnly)
-            ////        {
-            ////            return result;
-            ////        }
-            ////    }
-            ////}
 
             return result;
         }
