@@ -26,6 +26,9 @@ namespace ChessPlatform.Tests
         {
             var bitboard = new Bitboard(value);
             Assert.That(bitboard.Value, Is.EqualTo(value));
+            Assert.That(bitboard.InternalValue, Is.EqualTo((ulong)value));
+            Assert.That(bitboard.IsNone, Is.EqualTo(value == 0));
+            Assert.That(bitboard.IsAny, Is.EqualTo(value != 0));
         }
 
         [Test]

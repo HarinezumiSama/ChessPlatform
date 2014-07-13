@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
@@ -16,17 +17,18 @@ namespace ChessPlatform.Internal
         private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
         private static readonly int ColorArrayLength = ChessConstants.PieceColors.Max(item => (int)item) + 1;
 
-        private static readonly Piece[] ForcedDrawAbsentPieces =
-            ChessConstants
-                .PieceTypesExceptNoneAndKing
-                .SelectMany(item => ChessConstants.PieceColors.Select(color => item.ToPiece(color)))
-                .ToArray();
-
         private static readonly int[] PawnPushes = InitializePawnPushes();
         private static readonly DoublePushData[] PawnDoublePushes = InitializePawnDoublePushes();
         private static readonly PieceAttackInfo[] PawnAttackMoves = InitializePawnAttackMoves();
 
-        private readonly Stack<MakeMoveData> _undoMoveDatas = new Stack<MakeMoveData>();
+        private static readonly Bitboard[] StraightSlidingAttacks = InitializeStraightSlidingAttacks();
+        private static readonly Bitboard[] DiagonallySlidingAttacks = InitializeDiagonallySlidingAttacks();
+        private static readonly Bitboard[] KnightAttacksOrMoves = InitializeKnightAttacks();
+        private static readonly Bitboard[] KingAttacksOrMoves = InitializeKingAttacksOrMoves();
+
+        private static readonly Bitboard[] Connections = InitializeConnections();
+
+        private readonly Stack<MakeMoveData> _undoMoveDatas;
 
         private readonly Bitboard[] _bitboards;
         private readonly Bitboard[] _entireColorBitboards;
@@ -40,6 +42,7 @@ namespace ChessPlatform.Internal
         {
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
+            _undoMoveDatas = new Stack<MakeMoveData>();
             _pieces = new Piece[ChessConstants.X88Length];
 
             _bitboards = new Bitboard[PieceArrayLength];
@@ -59,6 +62,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
+            _undoMoveDatas = new Stack<MakeMoveData>();
             _pieces = other._pieces.Copy();
             _bitboards = other._bitboards.Copy();
             _entireColorBitboards = other._entireColorBitboards.Copy();
@@ -212,14 +216,14 @@ namespace ChessPlatform.Internal
             return ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move);
         }
 
-        public Bitboard GetAttackingPositions(Position targetPosition, PieceColor attackingColor)
+        public Bitboard GetAttackers(Position targetPosition, PieceColor attackingColor)
         {
-            return GetAttackingPositionsInternal(targetPosition, attackingColor, false);
+            return GetAttackersInternal(targetPosition, attackingColor, false);
         }
 
         public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
         {
-            var bitboard = GetAttackingPositionsInternal(targetPosition, attackingColor, true);
+            var bitboard = GetAttackersInternal(targetPosition, attackingColor, true);
             return bitboard.IsAny;
         }
 
@@ -320,17 +324,7 @@ namespace ChessPlatform.Internal
 
         public bool IsInsufficientMaterialState()
         {
-            // ReSharper disable once LoopCanBeConvertedToQuery - By design; for optimization
-            // ReSharper disable once ForCanBeConvertedToForeach - By design; for optimization
-            for (var index = 0; index < ForcedDrawAbsentPieces.Length; index++)
-            {
-                if (GetBitboard(ForcedDrawAbsentPieces[index]).IsAny)
-                {
-                    return false;
-                }
-            }
-            
-            return true;
+            return IsKingLeftOnly(PieceColor.White) && IsKingLeftOnly(PieceColor.Black);
         }
 
         public Position[] GetPotentialMovePositions(
@@ -784,6 +778,41 @@ namespace ChessPlatform.Internal
             return (int)color;
         }
 
+        private static void PopulateSlidingAttackers(
+            ref Bitboard result,
+            int targetSquareIndex,
+            Bitboard opponentSlidingPieces,
+            Bitboard[] slidingAttacks,
+            Bitboard emptySquareBitboard,
+            bool findFirstAttackOnly)
+        {
+            if (!opponentSlidingPieces.IsAny)
+            {
+                return;
+            }
+
+            var slidingAttack = slidingAttacks[targetSquareIndex];
+            var attackingSlidingPieces = slidingAttack & opponentSlidingPieces;
+
+            var currentValue = attackingSlidingPieces.InternalValue;
+            while (currentValue != Bitboard.NoneValue)
+            {
+                var attackerBitboard = Bitboard.PopFirstBitSetInternal(ref currentValue);
+                var attackerSquareIndex = Bitboard.FindFirstBitSetIndexInternal(attackerBitboard);
+                var connection = GetConnection(targetSquareIndex, attackerSquareIndex);
+                if ((emptySquareBitboard & connection) != connection)
+                {
+                    continue;
+                }
+
+                result |= new Bitboard(attackerBitboard);
+                if (findFirstAttackOnly)
+                {
+                    return;
+                }
+            }
+        }
+
         private static void PopulatePawnMoves(
             ICollection<GameMoveData> resultMoves,
             Bitboard destinationsBitboard,
@@ -792,7 +821,7 @@ namespace ChessPlatform.Internal
         {
             while (destinationsBitboard.IsAny)
             {
-                var targetSquareIndex = Bitboard.PopFirstBitSet(ref destinationsBitboard);
+                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
                 var move = new GameMove(
                     Position.FromSquareIndex(targetSquareIndex - moveOffset),
@@ -910,6 +939,132 @@ namespace ChessPlatform.Internal
             }
 
             return result;
+        }
+
+        private static Bitboard[] InitializeStraightSlidingAttacks()
+        {
+            var result = new Bitboard[ChessConstants.SquareCount];
+
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var position = Position.FromSquareIndex(squareIndex);
+                var attackBitboard = new Bitboard(
+                    Position.GenerateRank(position.Rank).Concat(Position.GenerateFile(position.File)));
+                result[squareIndex] = attackBitboard;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[] InitializeDiagonallySlidingAttacks()
+        {
+            var result = new Bitboard[ChessConstants.SquareCount];
+
+            var directions = new[]
+            {
+                ShiftDirection.NorthEast,
+                ShiftDirection.SouthEast,
+                ShiftDirection.SouthWest,
+                ShiftDirection.NorthWest
+            };
+
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var bitboard = Bitboard.FromSquareIndex(squareIndex);
+
+                var attackBitboard = Bitboard.None;
+                foreach (var direction in directions)
+                {
+                    var current = bitboard;
+                    while ((current = current.Shift(direction)).IsAny)
+                    {
+                        attackBitboard |= current;
+                    }
+                }
+
+                result[squareIndex] = attackBitboard;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[] InitializeKnightAttacks()
+        {
+            var result = new Bitboard[ChessConstants.SquareCount];
+
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var position = Position.FromSquareIndex(squareIndex);
+                var knightMovePositions = ChessHelper.GetKnightMovePositions(position);
+                var bitboard = new Bitboard(knightMovePositions);
+                result[squareIndex] = bitboard;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[] InitializeKingAttacksOrMoves()
+        {
+            var result = new Bitboard[ChessConstants.SquareCount * ChessConstants.SquareCount];
+
+            var directions = EnumFactotum.GetAllValues<ShiftDirection>();
+
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var sourceBitboard = Bitboard.FromSquareIndex(squareIndex);
+
+                var movesBitboard = directions
+                    .Select(sourceBitboard.Shift)
+                    .Aggregate(Bitboard.None, (current, bitboard) => current | bitboard);
+
+                result[squareIndex] = movesBitboard;
+            }
+
+            return result;
+        }
+
+        private static Bitboard[] InitializeConnections()
+        {
+            var result = new Bitboard[ChessConstants.SquareCount * ChessConstants.SquareCount];
+            result.Initialize(i => Bitboard.Everything);
+
+            var directions = EnumFactotum.GetAllValues<ShiftDirection>();
+
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var source = Bitboard.FromSquareIndex(squareIndex);
+
+                foreach (var direction in directions)
+                {
+                    var current = source;
+                    var connection = Bitboard.None;
+                    while ((current = current.Shift(direction)).IsAny)
+                    {
+                        var anotherSquareIndex = current.FindFirstBitSetIndex();
+                        var index = GetConnectionIndex(squareIndex, anotherSquareIndex);
+                        var reverseIndex = GetConnectionIndex(anotherSquareIndex, squareIndex);
+                        result[index] = result[reverseIndex] = connection;
+
+                        connection |= current;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private static int GetConnectionIndex(int squareIndex1, int squareIndex2)
+        {
+            Debug.Assert(squareIndex1 >= 0);
+            Debug.Assert(squareIndex2 >= 0);
+
+            return squareIndex1 + squareIndex2 * ChessConstants.SquareCount;
+        }
+
+        private static Bitboard GetConnection(int squareIndex1, int squareIndex2)
+        {
+            var index = GetConnectionIndex(squareIndex1, squareIndex2);
+            return Connections[index];
         }
 
         private static bool IsDoublePushPotentiallyAllowed(Position pawnPosition, PieceColor pawnColor)
@@ -1196,61 +1351,156 @@ namespace ChessPlatform.Internal
             return resultList.ToArray();
         }
 
-        private Bitboard GetAttackingPositionsInternal(
+        private Bitboard GetAttackersInternal(
             Position targetPosition,
             PieceColor attackingColor,
             bool findFirstAttackOnly)
         {
             var result = new Bitboard();
 
-            var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
-            var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
+            // NEW VERSION:
 
-            var emptySquareBitboard = GetBitboard(Piece.None);
+            var targetBitboard = targetPosition.Bitboard;
+            var targetSquareIndex = targetPosition.SquareIndex;
 
-            foreach (var pair in attackInfo.Attacks)
+            var opponentPawns = GetBitboard(PieceType.Pawn.ToPiece(attackingColor));
+            if (opponentPawns.IsAny)
             {
-                var attackingPiece = pair.Key.ToPiece(attackingColor);
-                var bitboard = GetBitboard(attackingPiece);
-                var pieceAttackInfo = pair.Value;
-
-                var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
-                if (attackBitboard.IsNone)
+                ShiftDirection left;
+                ShiftDirection right;
+                if (attackingColor == PieceColor.White)
                 {
-                    continue;
+                    left = ShiftDirection.SouthEast;
+                    right = ShiftDirection.SouthWest;
+                }
+                else
+                {
+                    left = ShiftDirection.NorthWest;
+                    right = ShiftDirection.NorthEast;
                 }
 
-                if (pieceAttackInfo.IsDirectAttack)
+                var attackingPawns = (targetBitboard.Shift(left) | targetBitboard.Shift(right)) & opponentPawns;
+                result |= attackingPawns;
+                if (result.IsAny && findFirstAttackOnly)
                 {
-                    result |= attackBitboard;
-                    if (findFirstAttackOnly)
-                    {
-                        return result;
-                    }
-
-                    continue;
-                }
-
-                var potentialPositions = attackBitboard.GetPositions();
-
-                foreach (var potentialPosition in potentialPositions)
-                {
-                    var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
-                    var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
-                    if ((emptySquareBitboard & positionBridge) != positionBridge)
-                    {
-                        continue;
-                    }
-
-                    result |= potentialPosition.Bitboard;
-                    if (findFirstAttackOnly)
-                    {
-                        return result;
-                    }
+                    return result;
                 }
             }
 
+            var opponentKnights = GetBitboard(PieceType.Knight.ToPiece(attackingColor));
+            if (opponentKnights.IsAny)
+            {
+                var knightAttacks = KnightAttacksOrMoves[targetSquareIndex];
+                var attackingKnights = knightAttacks & opponentKnights;
+                result |= attackingKnights;
+                if (result.IsAny && findFirstAttackOnly)
+                {
+                    return result;
+                }
+            }
+
+            var opponentKings = GetBitboard(PieceType.King.ToPiece(attackingColor));
+            if (opponentKings.IsAny)
+            {
+                var kingAttacks = KingAttacksOrMoves[targetSquareIndex];
+                var attackingKings = kingAttacks & opponentKings;
+                result |= attackingKings;
+                if (result.IsAny && findFirstAttackOnly)
+                {
+                    return result;
+                }
+            }
+
+            var emptySquareBitboard = GetBitboard(Piece.None);
+
+            var opponentQueens = GetBitboard(PieceType.Queen.ToPiece(attackingColor));
+
+            var opponentRooks = GetBitboard(PieceType.Rook.ToPiece(attackingColor));
+            var opponentSlidingStraightPieces = opponentQueens | opponentRooks;
+            PopulateSlidingAttackers(
+                ref result,
+                targetSquareIndex,
+                opponentSlidingStraightPieces,
+                StraightSlidingAttacks,
+                emptySquareBitboard,
+                findFirstAttackOnly);
+
+            if (result.IsAny && findFirstAttackOnly)
+            {
+                return result;
+            }
+
+            var opponentBishops = GetBitboard(PieceType.Bishop.ToPiece(attackingColor));
+            var opponentSlidingDiagonallyPieces = opponentQueens | opponentBishops;
+            PopulateSlidingAttackers(
+                ref result,
+                targetSquareIndex,
+                opponentSlidingDiagonallyPieces,
+                DiagonallySlidingAttacks,
+                emptySquareBitboard,
+                findFirstAttackOnly);
+
+            ////if (result.IsAny && findFirstAttackOnly)
+            ////{
+            ////    return result;
+            ////}
+
+            ////// OLD VERSION:
+
+            ////var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
+            ////var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
+
+            ////foreach (var pair in attackInfo.Attacks)
+            ////{
+            ////    var attackingPiece = pair.Key.ToPiece(attackingColor);
+            ////    var bitboard = GetBitboard(attackingPiece);
+            ////    var pieceAttackInfo = pair.Value;
+
+            ////    var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
+            ////    if (attackBitboard.IsNone)
+            ////    {
+            ////        continue;
+            ////    }
+
+            ////    if (pieceAttackInfo.IsDirectAttack)
+            ////    {
+            ////        result |= attackBitboard;
+            ////        if (findFirstAttackOnly)
+            ////        {
+            ////            return result;
+            ////        }
+
+            ////        continue;
+            ////    }
+
+            ////    var potentialPositions = attackBitboard.GetPositions();
+
+            ////    foreach (var potentialPosition in potentialPositions)
+            ////    {
+            ////        var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
+            ////        var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
+            ////        if ((emptySquareBitboard & positionBridge) != positionBridge)
+            ////        {
+            ////            continue;
+            ////        }
+
+            ////        result |= potentialPosition.Bitboard;
+            ////        if (findFirstAttackOnly)
+            ////        {
+            ////            return result;
+            ////        }
+            ////    }
+            ////}
+
             return result;
+        }
+
+        private bool IsKingLeftOnly(PieceColor color)
+        {
+            var entire = GetBitboard(color);
+            var king = GetBitboard(PieceType.King.ToPiece(color));
+            var otherPieces = entire & ~king;
+            return otherPieces.IsNone;
         }
 
         #endregion

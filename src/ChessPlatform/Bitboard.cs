@@ -13,7 +13,7 @@ namespace ChessPlatform
 
         public const int NoBitSetIndex = -1;
 
-        private const ulong NoneValue = 0UL;
+        internal const ulong NoneValue = 0UL;
 
         public static readonly Bitboard None = new Bitboard(NoneValue);
 
@@ -128,7 +128,7 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="Bitboard"/> structure
         ///     using the specified value.
         /// </summary>
-        private Bitboard(ulong value)
+        internal Bitboard(ulong value)
         {
             _value = value;
         }
@@ -159,6 +159,19 @@ namespace ChessPlatform
             get
             {
                 return _value != NoneValue;
+            }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal ulong InternalValue
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _value;
             }
         }
 
@@ -212,14 +225,21 @@ namespace ChessPlatform
 
         public static Bitboard FromSquareIndex(int squareIndex)
         {
-            return new Bitboard(1L << squareIndex);
+            return new Bitboard(FromSquareIndexInternal(squareIndex));
         }
 
-        public static int PopFirstBitSet(ref Bitboard bitboard)
+        public static int PopFirstBitSetIndex(ref Bitboard bitboard)
         {
             var value = bitboard._value;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
             return FindFirstBitSetIndexInternal(value);
+        }
+
+        internal static Bitboard PopFirstBitSet(ref Bitboard bitboard)
+        {
+            var value = bitboard._value;
+            bitboard = new Bitboard(unchecked(value & (value - 1)));
+            return new Bitboard(IsolateFirstBitSetInternal(value));
         }
 
         public override bool Equals(object obj)
@@ -248,45 +268,17 @@ namespace ChessPlatform
 
         public bool IsExactlyOneBitSet()
         {
-            return _value != NoneValue && IsolateFirstBitSet(_value) == _value;
+            return _value != NoneValue && IsolateFirstBitSetInternal(_value) == _value;
         }
 
         public Bitboard IsolateFirstBitSet()
         {
-            return new Bitboard(IsolateFirstBitSet(_value));
+            return new Bitboard(IsolateFirstBitSetInternal(_value));
         }
 
         public Bitboard Shift(ShiftDirection direction)
         {
-            switch (direction)
-            {
-                case ShiftDirection.North:
-                    return new Bitboard((_value & ~Bitboards.Rank8._value) << 8);
-
-                case ShiftDirection.NorthEast:
-                    return new Bitboard((_value & ~Bitboards.Rank8WithFileH._value) << 9);
-
-                case ShiftDirection.East:
-                    return new Bitboard((_value & ~Bitboards.FileH._value) << 1);
-
-                case ShiftDirection.SouthEast:
-                    return new Bitboard((_value & ~Bitboards.Rank1WithFileH._value) >> 7);
-
-                case ShiftDirection.South:
-                    return new Bitboard((_value & ~Bitboards.Rank1._value) >> 8);
-
-                case ShiftDirection.SouthWest:
-                    return new Bitboard((_value & ~Bitboards.Rank1WithFileA._value) >> 9);
-
-                case ShiftDirection.West:
-                    return new Bitboard((_value & ~Bitboards.FileA._value) >> 1);
-
-                case ShiftDirection.NorthWest:
-                    return new Bitboard((_value & ~Bitboards.Rank8WithFileA._value) << 7);
-
-                default:
-                    return None;
-            }
+            return new Bitboard(ShiftInternal(_value, direction));
         }
 
         public Position[] GetPositions()
@@ -316,12 +308,9 @@ namespace ChessPlatform
             var result = 0;
 
             var currentValue = _value;
-
-            int index;
-            while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
+            while ((PopFirstBitSetIndexInternal(ref currentValue)) >= 0)
             {
                 result++;
-                currentValue &= ~(1UL << index);
             }
 
             return result;
@@ -338,14 +327,82 @@ namespace ChessPlatform
 
         #endregion
 
-        #region Private Methods
+        #region Internal Methods
 
-        private static ulong IsolateFirstBitSet(ulong value)
+        internal static ulong FromSquareIndexInternal(int squareIndex)
+        {
+            return 1UL << squareIndex;
+        }
+
+        //// TODO [vmcl] Use for FW 4.5+
+        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static ulong ShiftInternal(ulong value, ShiftDirection direction)
+        {
+            // Using if-s instead of a single switch for optimization
+
+            if (direction == ShiftDirection.North)
+            {
+                return (value & ~Bitboards.Rank8Value) << 8;
+            }
+
+            if (direction == ShiftDirection.NorthEast)
+            {
+                return (value & ~Bitboards.Rank8WithFileHValue) << 9;
+            }
+
+            if (direction == ShiftDirection.East)
+            {
+                return (value & ~Bitboards.FileHValue) << 1;
+            }
+
+            if (direction == ShiftDirection.SouthEast)
+            {
+                return (value & ~Bitboards.Rank1WithFileHValue) >> 7;
+            }
+
+            if (direction == ShiftDirection.South)
+            {
+                return (value & ~Bitboards.Rank1Value) >> 8;
+            }
+
+            if (direction == ShiftDirection.SouthWest)
+            {
+                return (value & ~Bitboards.Rank1WithFileAValue) >> 9;
+            }
+
+            if (direction == ShiftDirection.West)
+            {
+                return (value & ~Bitboards.FileAValue) >> 1;
+            }
+
+            if (direction == ShiftDirection.NorthWest)
+            {
+                return (value & ~Bitboards.Rank8WithFileAValue) << 7;
+            }
+
+            return NoneValue;
+        }
+
+        internal static int PopFirstBitSetIndexInternal(ref ulong bitboard)
+        {
+            var value = bitboard;
+            bitboard = unchecked(value & (value - 1));
+            return FindFirstBitSetIndexInternal(value);
+        }
+
+        internal static ulong IsolateFirstBitSetInternal(ulong value)
         {
             return unchecked(value & (ulong)(-(long)value));
         }
 
-        private static int FindFirstBitSetIndexInternal(ulong value)
+        internal static ulong PopFirstBitSetInternal(ref ulong bitboard)
+        {
+            var value = bitboard;
+            bitboard = unchecked(value & (value - 1));
+            return IsolateFirstBitSetInternal(value);
+        }
+
+        internal static int FindFirstBitSetIndexInternal(ulong value)
         {
             if (value == NoneValue)
             {
@@ -355,7 +412,7 @@ namespace ChessPlatform
             const long Debruijn64 = 0x03F79D71B4CB0A89L;
             const int MagicShift = 58;
 
-            var isolatedBit = IsolateFirstBitSet(value);
+            var isolatedBit = IsolateFirstBitSetInternal(value);
             return Index64[unchecked(isolatedBit * Debruijn64) >> MagicShift];
         }
 

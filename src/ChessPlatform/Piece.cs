@@ -8,46 +8,40 @@ namespace ChessPlatform
     {
         None = PieceType.None,
 
-        WhiteColor = 0x00,
-        BlackColor = 0x08,
-
         [FenChar('P')]
-        WhitePawn = PieceType.Pawn | WhiteColor,
+        WhitePawn = PieceType.Pawn | PieceConstants.WhiteColor,
 
         [FenChar('N')]
-        WhiteKnight = PieceType.Knight | WhiteColor,
+        WhiteKnight = PieceType.Knight | PieceConstants.WhiteColor,
 
         [FenChar('K')]
-        WhiteKing = PieceType.King | WhiteColor,
+        WhiteKing = PieceType.King | PieceConstants.WhiteColor,
 
         [FenChar('B')]
-        WhiteBishop = PieceType.Bishop | WhiteColor,
+        WhiteBishop = PieceType.Bishop | PieceConstants.WhiteColor,
 
         [FenChar('R')]
-        WhiteRook = PieceType.Rook | WhiteColor,
+        WhiteRook = PieceType.Rook | PieceConstants.WhiteColor,
 
         [FenChar('Q')]
-        WhiteQueen = PieceType.Queen | WhiteColor,
+        WhiteQueen = PieceType.Queen | PieceConstants.WhiteColor,
 
         [FenChar('p')]
-        BlackPawn = PieceType.Pawn | BlackColor,
+        BlackPawn = PieceType.Pawn | PieceConstants.BlackColor,
 
         [FenChar('n')]
-        BlackKnight = PieceType.Knight | BlackColor,
+        BlackKnight = PieceType.Knight | PieceConstants.BlackColor,
 
         [FenChar('k')]
-        BlackKing = PieceType.King | BlackColor,
+        BlackKing = PieceType.King | PieceConstants.BlackColor,
 
         [FenChar('b')]
-        BlackBishop = PieceType.Bishop | BlackColor,
+        BlackBishop = PieceType.Bishop | PieceConstants.BlackColor,
 
         [FenChar('r')]
-        BlackRook = PieceType.Rook | BlackColor,
+        BlackRook = PieceType.Rook | PieceConstants.BlackColor,
 
         [FenChar('q')]
-        BlackQueen = PieceType.Queen | BlackColor,
-
-        TypeMask = 0x07,
-        ColorMask = BlackColor
+        BlackQueen = PieceType.Queen | PieceConstants.BlackColor
     }
 }

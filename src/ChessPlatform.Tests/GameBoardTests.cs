@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -28,11 +29,26 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestConstructionByStalemateFen()
         {
-            const string StalemateFen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
+            const string Fen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
 
-            var gameBoard = new GameBoard(StalemateFen, PerformInternalBoardValidation);
+            var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
             AssertBaseProperties(gameBoard, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
             AssertNoValidMoves(gameBoard);
+        }
+
+        [Test]
+        [TestCase(PieceColor.White)]
+        [TestCase(PieceColor.Black)]
+        public void TestTwoKingsTooCloseToEachOther(PieceColor activeColor)
+        {
+            var fen = string.Format(
+                CultureInfo.InvariantCulture,
+                "k7/K7/8/8/8/8/8/8 {0} - - 0 1",
+                activeColor.GetFenSnippet());
+
+            Assert.That(
+                () => new GameBoard(fen, PerformInternalBoardValidation),
+                Throws.TypeOf<ChessPlatformException>());
         }
 
         [Test]

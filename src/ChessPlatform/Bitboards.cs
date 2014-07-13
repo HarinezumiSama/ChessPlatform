@@ -23,6 +23,18 @@ namespace ChessPlatform
         public static readonly Bitboard Rank8WithFileA = Rank8 | FileA;
         public static readonly Bitboard Rank8WithFileH = Rank8 | FileH;
 
+        internal static readonly ulong Rank1Value = Rank1.InternalValue;
+        internal static readonly ulong Rank8Value = Rank8.InternalValue;
+
+        internal static readonly ulong Rank1WithFileAValue = Rank1WithFileA.InternalValue;
+        internal static readonly ulong Rank1WithFileHValue = Rank1WithFileH.InternalValue;
+
+        internal static readonly ulong Rank8WithFileAValue = Rank8WithFileA.InternalValue;
+        internal static readonly ulong Rank8WithFileHValue = Rank8WithFileH.InternalValue;
+
+        internal static readonly ulong FileAValue = FileA.InternalValue;
+        internal static readonly ulong FileHValue = FileH.InternalValue;
+
         #endregion
     }
 }

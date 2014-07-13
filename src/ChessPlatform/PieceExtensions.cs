@@ -16,15 +16,13 @@ namespace ChessPlatform
                 return null;
             }
 
-            // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
-            var result = (piece & Piece.ColorMask) == Piece.BlackColor ? PieceColor.Black : PieceColor.White;
+            var result = (PieceColor)(((int)piece & PieceConstants.ColorMask) >> PieceConstants.BlackColorShift);
             return result;
         }
 
         public static PieceType GetPieceType(this Piece piece)
         {
-            // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags - [vmcl] By design
-            var result = (PieceType)(piece & Piece.TypeMask);
+            var result = (PieceType)((int)piece & PieceConstants.TypeMask);
             return result;
         }
 

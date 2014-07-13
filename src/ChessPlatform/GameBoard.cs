@@ -555,7 +555,7 @@ namespace ChessPlatform
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
         {
-            var bitboard = _gameBoardData.GetAttackingPositions(targetPosition, attackingColor);
+            var bitboard = _gameBoardData.GetAttackers(targetPosition, attackingColor);
             return bitboard.GetPositions();
         }
 
@@ -826,7 +826,7 @@ namespace ChessPlatform
             var activeKingPosition = _gameBoardData.GetPositions(activeKing).Single();
             var oppositeColor = _activeColor.Invert();
 
-            var checkAttackPositionsBitboard = _gameBoardData.GetAttackingPositions(activeKingPosition, oppositeColor);
+            var checkAttackPositionsBitboard = _gameBoardData.GetAttackers(activeKingPosition, oppositeColor);
             var isInCheck = checkAttackPositionsBitboard.IsAny;
             var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
 
@@ -953,7 +953,7 @@ namespace ChessPlatform
             var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
 
             var capturingSourcePositions =
-                (gameBoardData.GetAttackingPositions(checkAttackPosition, activeColor) & ~activeKingBitboard)
+                (gameBoardData.GetAttackers(checkAttackPosition, activeColor) & ~activeKingBitboard)
                     .GetPositions()
                     .Where(position => IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
                     .ToArray();
