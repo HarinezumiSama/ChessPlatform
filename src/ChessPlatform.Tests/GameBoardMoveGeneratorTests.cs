@@ -463,6 +463,8 @@ namespace ChessPlatform.Tests
 
                 #region Position4 and MirroredPosition4
 
+                yield return new TestPerftCaseData(PerftPosition.Position4, new ExpectedPerftResult(5, 15833292UL));
+
                 var mirroredPositions = new[] { PerftPosition.Position4, PerftPosition.MirroredPosition4 };
                 foreach (var position in mirroredPositions)
                 {
