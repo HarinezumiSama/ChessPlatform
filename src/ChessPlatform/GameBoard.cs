@@ -854,7 +854,8 @@ namespace ChessPlatform
             gameBoardData.GetPawnMoves(
                 potentialPawnMoves,
                 addMoveData.ActiveColor,
-                enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard);
+                enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
+                Bitboard.Everything);
 
             foreach (var pair in potentialPawnMoves)
             {

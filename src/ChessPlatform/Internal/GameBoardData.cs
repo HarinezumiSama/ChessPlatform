@@ -409,11 +409,11 @@ namespace ChessPlatform.Internal
             return isEnPassant ? new GameMove(sourcePosition, destinationPosition) : null;
         }
 
-        // Redesign is in progress
         public void GetPawnMoves(
             List<GameMoveData> resultMoves,
             PieceColor color,
-            Bitboard enPassantCaptureTarget)
+            Bitboard enPassantCaptureTarget,
+            Bitboard target)
         {
             #region Argument Check
 
@@ -425,40 +425,44 @@ namespace ChessPlatform.Internal
             #endregion
 
             var pawn = PieceType.Pawn.ToPiece(color);
-            var forwardOffset = color == PieceColor.White ? ShiftDirection.North : ShiftDirection.South;
-            var leftCaptureOffset = color == PieceColor.White ? ShiftDirection.NorthWest : ShiftDirection.SouthEast;
-            var rightCaptureOffset = color == PieceColor.White ? ShiftDirection.NorthEast : ShiftDirection.SouthWest;
-            var rank3 = color == PieceColor.White ? Bitboards.Rank3 : Bitboards.Rank6;
-            var rank8 = color == PieceColor.White ? Bitboards.Rank8 : Bitboards.Rank1;
-
             var pawns = GetBitboard(pawn);
             if (pawns.IsNone)
             {
                 return;
             }
 
-            var empty = GetBitboard(Piece.None);
-            var enemies = GetBitboard(color.Invert());
+            var forwardDirection = color == PieceColor.White ? ShiftDirection.North : ShiftDirection.South;
+            var rank8 = color == PieceColor.White ? Bitboards.Rank8 : Bitboards.Rank1;
 
-            var pushes = pawns.Shift(forwardOffset) & empty;
+            var emptySquares = GetBitboard(Piece.None);
+            var emptyTargetSquares = emptySquares & target;
+            var enemies = GetBitboard(color.Invert());
+            var enemyTargets = enemies & target;
+
+            var pushes = pawns.Shift(forwardDirection) & emptyTargetSquares;
             if (pushes.IsAny)
             {
+
                 var nonPromotionPushes = pushes & ~rank8;
-                PopulatePawnMoves(resultMoves, nonPromotionPushes, (int)forwardOffset, GameMoveFlags.None);
+                PopulatePawnMoves(resultMoves, nonPromotionPushes, (int)forwardDirection, GameMoveFlags.None);
 
                 var promotionPushes = pushes & rank8;
-                PopulatePawnMoves(resultMoves, promotionPushes, (int)forwardOffset, GameMoveFlags.IsPawnPromotion);
+                PopulatePawnMoves(resultMoves, promotionPushes, (int)forwardDirection, GameMoveFlags.IsPawnPromotion);
 
-                var doublePushes = (pushes & rank3).Shift(forwardOffset) & empty;
+                var rank3 = color == PieceColor.White ? Bitboards.Rank3 : Bitboards.Rank6;
+                var doublePushes = (pushes & rank3).Shift(forwardDirection) & emptyTargetSquares;
                 PopulatePawnMoves(
                     resultMoves,
                     doublePushes,
-                    (int)forwardOffset + (int)forwardOffset,
+                    (int)forwardDirection + (int)forwardDirection,
                     GameMoveFlags.None);
             }
 
-            PopulatePawnCaptures(resultMoves, pawns, enemies, leftCaptureOffset, rank8, enPassantCaptureTarget);
-            PopulatePawnCaptures(resultMoves, pawns, enemies, rightCaptureOffset, rank8, enPassantCaptureTarget);
+            var leftCaptureOffset = color == PieceColor.White ? ShiftDirection.NorthWest : ShiftDirection.SouthEast;
+            PopulatePawnCaptures(resultMoves, pawns, enemyTargets, leftCaptureOffset, rank8, enPassantCaptureTarget);
+
+            var rightCaptureOffset = color == PieceColor.White ? ShiftDirection.NorthEast : ShiftDirection.SouthWest;
+            PopulatePawnCaptures(resultMoves, pawns, enemyTargets, rightCaptureOffset, rank8, enPassantCaptureTarget);
         }
 
         #endregion
@@ -819,6 +823,8 @@ namespace ChessPlatform.Internal
             int moveOffset,
             GameMoveFlags moveFlags)
         {
+            var isPawnPromotion = (moveFlags & GameMoveFlags.IsPawnPromotion) != 0;
+
             while (destinationsBitboard.IsAny)
             {
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
@@ -828,9 +834,13 @@ namespace ChessPlatform.Internal
                     Position.FromSquareIndex(targetSquareIndex));
 
                 var moveInfo = new GameMoveInfo(moveFlags);
-                if (moveInfo.IsPawnPromotion)
+                if (isPawnPromotion)
                 {
-                    move.MakeAllPromotions().DoForEach(item => resultMoves.Add(new GameMoveData(item, moveInfo)));
+                    var promotions = move.MakeAllPromotions();
+                    foreach (var promotion in promotions)
+                    {
+                        resultMoves.Add(new GameMoveData(promotion, moveInfo));
+                    }
                 }
                 else
                 {
