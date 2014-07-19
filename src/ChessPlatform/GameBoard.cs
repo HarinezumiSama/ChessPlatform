@@ -694,6 +694,208 @@ namespace ChessPlatform
             return result;
         }
 
+        private static void InitializeValidMovesAndStateWhenNotInCheck(AddMoveData addMoveData)
+        {
+            PopulatePawnMoves(addMoveData);
+
+            var gameBoardData = addMoveData.GameBoardData;
+            var activeColor = addMoveData.ActiveColor;
+            var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
+
+            var activePiecesExceptKingAndPawnsBitboard = addMoveData.ActivePiecesExceptKingBitboard
+                & ~gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(activeColor));
+
+            var sourcePositions = activePiecesExceptKingAndPawnsBitboard.GetPositions();
+            foreach (var sourcePosition in sourcePositions)
+            {
+                var potentialMovePositions = gameBoardData.GetPotentialMovePositions(
+                    addMoveData.CastlingOptions,
+                    enPassantCaptureInfo,
+                    sourcePosition);
+
+                var filteredDestinationPositions = potentialMovePositions
+                    .Where(position => IsValidMoveByPinning(addMoveData.PinnedPieceMap, sourcePosition, position))
+                    .ToArray();
+
+                foreach (var destinationPosition in filteredDestinationPositions)
+                {
+                    var isEnPassantCapture = gameBoardData.IsEnPassantCapture(
+                        sourcePosition,
+                        destinationPosition,
+                        enPassantCaptureInfo);
+                    if (isEnPassantCapture)
+                    {
+                        var temporaryCastlingOptions = addMoveData.CastlingOptions;
+
+                        var move = new GameMove(sourcePosition, destinationPosition);
+
+                        gameBoardData.MakeMove(
+                            move,
+                            activeColor,
+                            enPassantCaptureInfo,
+                            ref temporaryCastlingOptions);
+
+                        var isInvalidMove = gameBoardData.IsInCheck(activeColor);
+                        gameBoardData.UndoMove();
+
+                        if (isInvalidMove)
+                        {
+                            continue;
+                        }
+                    }
+
+                    AddMove(
+                        addMoveData,
+                        sourcePosition,
+                        destinationPosition,
+                        isEnPassantCapture || gameBoardData[destinationPosition] != Piece.None,
+                        null);
+                }
+            }
+        }
+
+        private static void InitializeValidMovesAndStateWhenInSingleCheck(
+            AddMoveData addMoveData,
+            Piece activeKing,
+            Position activeKingPosition,
+            Bitboard checkAttackPositionsBitboard)
+        {
+            var gameBoardData = addMoveData.GameBoardData;
+            var pinnedPieceMap = addMoveData.PinnedPieceMap;
+
+            var checkAttackPosition = checkAttackPositionsBitboard.GetFirstPosition();
+            var checkingPieceInfo = gameBoardData.GetPieceInfo(checkAttackPosition);
+            var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
+
+            var capturingBitboard = gameBoardData.GetAttackers(checkAttackPosition, addMoveData.ActiveColor)
+                & ~activeKingBitboard;
+
+            var capturingSourcePositions =
+                capturingBitboard
+                    .GetPositions()
+                    .Where(position => IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
+                    .ToArray();
+
+            foreach (var capturingSourcePosition in capturingSourcePositions)
+            {
+                AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true, null);
+            }
+
+            var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
+            if (enPassantCaptureInfo != null
+                && enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
+            {
+                //// TODO [vmcl] Fast to implement approach (likely non-optimal)
+
+                var activeColorPawn = PieceType.Pawn.ToPiece(addMoveData.ActiveColor);
+                var activePawnPositions = gameBoardData.GetPositions(activeColorPawn);
+                var capturePosition = enPassantCaptureInfo.CapturePosition;
+                foreach (var activePawnPosition in activePawnPositions)
+                {
+                    var canCapture = gameBoardData
+                        .GetPotentialMovePositions(
+                            CastlingOptions.None,
+                            enPassantCaptureInfo,
+                            activePawnPosition)
+                        .Contains(capturePosition);
+
+                    if (canCapture && IsValidMoveByPinning(pinnedPieceMap, activePawnPosition, capturePosition))
+                    {
+                        AddMove(addMoveData, activePawnPosition, capturePosition, true, null);
+                    }
+                }
+            }
+
+            if (!checkingPieceInfo.PieceType.IsSliding())
+            {
+                return;
+            }
+
+            var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
+            var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
+
+            if (positionBridge.IsNone)
+            {
+                return;
+            }
+
+            var moves = addMoveData.ActivePiecesExceptKingBitboard
+                .GetPositions()
+                .SelectMany(
+                    sourcePosition => gameBoardData
+                        .GetPotentialMovePositions(
+                            addMoveData.CastlingOptions,
+                            enPassantCaptureInfo,
+                            sourcePosition)
+                        .Where(
+                            targetPosition =>
+                                (targetPosition.Bitboard & positionBridge).IsAny
+                                    && IsValidMoveByPinning(
+                                        pinnedPieceMap,
+                                        sourcePosition,
+                                        targetPosition))
+                        .Select(targetPosition => new GameMove(sourcePosition, targetPosition)))
+                .ToArray();
+
+            foreach (var move in moves)
+            {
+                AddMove(addMoveData, move.From, move.To, false, null);
+            }
+        }
+
+        private static void PopulatePawnMoves(AddMoveData addMoveData)
+        {
+            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
+
+            var gameBoardData = addMoveData.GameBoardData;
+            var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
+            var pinnedPieceMap = addMoveData.PinnedPieceMap;
+
+            gameBoardData.GetPawnMoves(
+                potentialPawnMoves,
+                addMoveData.ActiveColor,
+                enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard);
+
+            foreach (var pair in potentialPawnMoves)
+            {
+                var potentialPawnMove = pair.Move;
+
+                var sourcePosition = potentialPawnMove.From;
+                var destinationPosition = potentialPawnMove.To;
+                if (!IsValidMoveByPinning(pinnedPieceMap, sourcePosition, destinationPosition))
+                {
+                    continue;
+                }
+
+                var isEnPassantCapture = gameBoardData.IsEnPassantCapture(
+                    sourcePosition,
+                    destinationPosition,
+                    enPassantCaptureInfo);
+                if (isEnPassantCapture)
+                {
+                    var temporaryCastlingOptions = addMoveData.CastlingOptions;
+
+                    var move = new GameMove(sourcePosition, destinationPosition);
+
+                    gameBoardData.MakeMove(
+                        move,
+                        addMoveData.ActiveColor,
+                        enPassantCaptureInfo,
+                        ref temporaryCastlingOptions);
+
+                    var isInvalidMove = gameBoardData.IsInCheck(addMoveData.ActiveColor);
+                    gameBoardData.UndoMove();
+
+                    if (isInvalidMove)
+                    {
+                        continue;
+                    }
+                }
+
+                addMoveData.ValidMovesReference.Add(pair.Move, pair.MoveInfo);
+            }
+        }
+
         private void Validate(bool forceValidation)
         {
             if (!forceValidation && !_validateAfterMove)
@@ -767,57 +969,6 @@ namespace ChessPlatform
             //// TODO [vmcl] (*) Other verifications
         }
 
-        private void PopulatePawnMoves(
-            IDictionary<GameMove, GameMoveInfo> validMoves,
-            IDictionary<Position, Bitboard> pinnedPieceMap)
-        {
-            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
-
-            _gameBoardData.GetPawnMoves(
-                potentialPawnMoves,
-                _activeColor,
-                _enPassantCaptureInfo == null ? Bitboard.None : _enPassantCaptureInfo.CapturePosition.Bitboard);
-
-            foreach (var pair in potentialPawnMoves)
-            {
-                var potentialPawnMove = pair.Move;
-
-                var sourcePosition = potentialPawnMove.From;
-                var destinationPosition = potentialPawnMove.To;
-                if (!IsValidMoveByPinning(pinnedPieceMap, sourcePosition, destinationPosition))
-                {
-                    continue;
-                }
-
-                var isEnPassantCapture = _gameBoardData.IsEnPassantCapture(
-                    sourcePosition,
-                    destinationPosition,
-                    _enPassantCaptureInfo);
-                if (isEnPassantCapture)
-                {
-                    var temporaryCastlingOptions = _castlingOptions;
-
-                    var move = new GameMove(sourcePosition, destinationPosition);
-
-                    _gameBoardData.MakeMove(
-                        move,
-                        _activeColor,
-                        _enPassantCaptureInfo,
-                        ref temporaryCastlingOptions);
-
-                    var isInvalidMove = _gameBoardData.IsInCheck(_activeColor);
-                    _gameBoardData.UndoMove();
-
-                    if (isInvalidMove)
-                    {
-                        continue;
-                    }
-                }
-
-                validMoves.Add(pair.Move, pair.MoveInfo);
-            }
-        }
-
         private void InitializeValidMovesAndState(
             out Dictionary<GameMove, GameMoveInfo> validMoves,
             out GameState state)
@@ -834,11 +985,19 @@ namespace ChessPlatform
                 .GetPinnedPieceInfos(activeKingPosition)
                 .ToDictionary(item => item.Position, item => item.AllowedMoves);
 
-            validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
-            var addMoveData = new AddMoveData(validMoves, _gameBoardData, _enPassantCaptureInfo);
-
             var activePiecesExceptKingBitboard = _gameBoardData.GetBitboard(_activeColor)
                 & ~_gameBoardData.GetBitboard(activeKing);
+
+            validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
+
+            var addMoveData = new AddMoveData(
+                _gameBoardData,
+                validMoves,
+                _enPassantCaptureInfo,
+                _activeColor,
+                _castlingOptions,
+                pinnedPieceMap,
+                activePiecesExceptKingBitboard);
 
             var noActiveKingPieceData = _gameBoardData.Copy();
             noActiveKingPieceData.SetPiece(activeKingPosition, Piece.None);
@@ -856,170 +1015,26 @@ namespace ChessPlatform
                 validMoves.Add(activeKingMove.Move, new GameMoveInfo(activeKingMove.Flags));
             }
 
-            if (isInCheck)
+            if (!isInCheck)
             {
-                if (!isInDoubleCheck)
-                {
-                    InitializeValidMovesAndStateWhenInSingleCheck(
-                        _gameBoardData,
-                        _activeColor,
-                        _enPassantCaptureInfo,
-                        _castlingOptions,
-                        addMoveData,
-                        activeKing,
-                        activeKingPosition,
-                        checkAttackPositionsBitboard,
-                        pinnedPieceMap,
-                        activePiecesExceptKingBitboard);
-                }
+                InitializeValidMovesAndStateWhenNotInCheck(addMoveData);
 
-                state = validMoves.Count == 0
-                    ? GameState.Checkmate
-                    : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
-
+                state = validMoves.Count == 0 ? GameState.Stalemate : GameState.Default;
                 return;
             }
 
-            PopulatePawnMoves(validMoves, pinnedPieceMap);
-
-            var activePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingBitboard
-                & ~_gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(_activeColor));
-
-            var sourcePositions = activePiecesExceptKingAndPawnsBitboard.GetPositions();
-            foreach (var sourcePosition in sourcePositions)
+            if (!isInDoubleCheck)
             {
-                var potentialMovePositions = _gameBoardData.GetPotentialMovePositions(
-                    _castlingOptions,
-                    _enPassantCaptureInfo,
-                    sourcePosition);
-
-                var filteredDestinationPositions = potentialMovePositions
-                    .Where(position => IsValidMoveByPinning(pinnedPieceMap, sourcePosition, position))
-                    .ToArray();
-
-                foreach (var destinationPosition in filteredDestinationPositions)
-                {
-                    var isEnPassantCapture = _gameBoardData.IsEnPassantCapture(
-                        sourcePosition,
-                        destinationPosition,
-                        _enPassantCaptureInfo);
-                    if (isEnPassantCapture)
-                    {
-                        var temporaryCastlingOptions = _castlingOptions;
-
-                        var move = new GameMove(sourcePosition, destinationPosition);
-
-                        _gameBoardData.MakeMove(
-                            move,
-                            _activeColor,
-                            _enPassantCaptureInfo,
-                            ref temporaryCastlingOptions);
-
-                        var isInvalidMove = _gameBoardData.IsInCheck(_activeColor);
-                        _gameBoardData.UndoMove();
-
-                        if (isInvalidMove)
-                        {
-                            continue;
-                        }
-                    }
-
-                    AddMove(
-                        addMoveData,
-                        sourcePosition,
-                        destinationPosition,
-                        isEnPassantCapture || _gameBoardData[destinationPosition] != Piece.None,
-                        null);
-                }
+                InitializeValidMovesAndStateWhenInSingleCheck(
+                    addMoveData,
+                    activeKing,
+                    activeKingPosition,
+                    checkAttackPositionsBitboard);
             }
 
-            state = validMoves.Count == 0 ? GameState.Stalemate : GameState.Default;
-        }
-
-        private static void InitializeValidMovesAndStateWhenInSingleCheck(
-            GameBoardData gameBoardData,
-            PieceColor activeColor,
-            EnPassantCaptureInfo enPassantCaptureInfo,
-            CastlingOptions castlingOptions,
-            AddMoveData addMoveData,
-            Piece activeKing,
-            Position activeKingPosition,
-            Bitboard checkAttackPositionsBitboard,
-            IDictionary<Position, Bitboard> pinnedPieceMap,
-            Bitboard activePiecesExceptKingBitboard)
-        {
-            var checkAttackPosition = checkAttackPositionsBitboard.GetFirstPosition();
-            var checkingPieceInfo = gameBoardData.GetPieceInfo(checkAttackPosition);
-            var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
-
-            var capturingSourcePositions =
-                (gameBoardData.GetAttackers(checkAttackPosition, activeColor) & ~activeKingBitboard)
-                    .GetPositions()
-                    .Where(position => IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
-                    .ToArray();
-
-            capturingSourcePositions.DoForEach(
-                sourcePosition => AddMove(addMoveData, sourcePosition, checkAttackPosition, true, null));
-
-            if (enPassantCaptureInfo != null
-                && enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
-            {
-                //// TODO [vmcl] Fast to implement approach (likely non-optimal)
-
-                var activeColorPawn = PieceType.Pawn.ToPiece(activeColor);
-                var activePawnPositions = gameBoardData.GetPositions(activeColorPawn);
-                var capturePosition = enPassantCaptureInfo.CapturePosition;
-                foreach (var activePawnPosition in activePawnPositions)
-                {
-                    var canCapture = gameBoardData
-                        .GetPotentialMovePositions(
-                            CastlingOptions.None,
-                            enPassantCaptureInfo,
-                            activePawnPosition)
-                        .Contains(capturePosition);
-
-                    if (canCapture && IsValidMoveByPinning(pinnedPieceMap, activePawnPosition, capturePosition))
-                    {
-                        AddMove(addMoveData, activePawnPosition, capturePosition, true, null);
-                    }
-                }
-            }
-
-            if (!checkingPieceInfo.PieceType.IsSliding())
-            {
-                return;
-            }
-
-            var bridgeKey = new PositionBridgeKey(checkAttackPosition, activeKingPosition);
-            var positionBridge = ChessHelper.PositionBridgeMap[bridgeKey];
-
-            if (positionBridge.IsNone)
-            {
-                return;
-            }
-
-            var moves = activePiecesExceptKingBitboard
-                .GetPositions()
-                .SelectMany(
-                    sourcePosition => gameBoardData
-                        .GetPotentialMovePositions(
-                            castlingOptions,
-                            enPassantCaptureInfo,
-                            sourcePosition)
-                        .Where(
-                            targetPosition =>
-                                (targetPosition.Bitboard & positionBridge).IsAny
-                                    && IsValidMoveByPinning(
-                                        pinnedPieceMap,
-                                        sourcePosition,
-                                        targetPosition))
-                        .Select(targetPosition => new GameMove(sourcePosition, targetPosition)))
-                .ToArray();
-
-            foreach (var move in moves)
-            {
-                AddMove(addMoveData, move.From, move.To, false, null);
-            }
+            state = validMoves.Count == 0
+                ? GameState.Checkmate
+                : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);
         }
 
         private void InitializeResultString(out string resultString)
@@ -1387,25 +1402,26 @@ namespace ChessPlatform
             #region Constructors
 
             public AddMoveData(
-                [NotNull] IDictionary<GameMove, GameMoveInfo> validMovesReference,
                 [NotNull] GameBoardData gameBoardData,
-                [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo)
+                [NotNull] IDictionary<GameMove, GameMoveInfo> validMovesReference,
+                [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
+                PieceColor activeColor,
+                CastlingOptions castlingOptions,
+                [NotNull] Dictionary<Position, Bitboard> pinnedPieceMap,
+                Bitboard activePiecesExceptKingBitboard)
             {
-                this.ValidMovesReference = validMovesReference.EnsureNotNull();
                 this.GameBoardData = gameBoardData.EnsureNotNull();
+                this.ValidMovesReference = validMovesReference.EnsureNotNull();
                 this.EnPassantCaptureInfo = enPassantCaptureInfo;
+                this.ActiveColor = activeColor;
+                this.CastlingOptions = castlingOptions;
+                this.PinnedPieceMap = pinnedPieceMap.EnsureNotNull();
+                this.ActivePiecesExceptKingBitboard = activePiecesExceptKingBitboard;
             }
 
             #endregion
 
             #region Public Properties
-
-            [NotNull]
-            public IDictionary<GameMove, GameMoveInfo> ValidMovesReference
-            {
-                get;
-                private set;
-            }
 
             [NotNull]
             public GameBoardData GameBoardData
@@ -1414,8 +1430,40 @@ namespace ChessPlatform
                 private set;
             }
 
+            [NotNull]
+            public IDictionary<GameMove, GameMoveInfo> ValidMovesReference
+            {
+                get;
+                private set;
+            }
+
             [CanBeNull]
             public EnPassantCaptureInfo EnPassantCaptureInfo
+            {
+                get;
+                private set;
+            }
+
+            public PieceColor ActiveColor
+            {
+                get;
+                private set;
+            }
+
+            public CastlingOptions CastlingOptions
+            {
+                get;
+                private set;
+            }
+
+            [NotNull]
+            public Dictionary<Position, Bitboard> PinnedPieceMap
+            {
+                get;
+                private set;
+            }
+
+            public Bitboard ActivePiecesExceptKingBitboard
             {
                 get;
                 private set;
