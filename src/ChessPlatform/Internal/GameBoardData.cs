@@ -409,7 +409,7 @@ namespace ChessPlatform.Internal
             return isEnPassant ? new GameMove(sourcePosition, destinationPosition) : null;
         }
 
-        public void GetPawnMoves(
+        public void GeneratePawnMoves(
             List<GameMoveData> resultMoves,
             PieceColor color,
             Bitboard enPassantCaptureTarget,

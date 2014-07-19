@@ -851,7 +851,7 @@ namespace ChessPlatform
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
             var pinnedPieceMap = addMoveData.PinnedPieceMap;
 
-            gameBoardData.GetPawnMoves(
+            gameBoardData.GeneratePawnMoves(
                 potentialPawnMoves,
                 addMoveData.ActiveColor,
                 enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
