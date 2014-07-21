@@ -782,8 +782,7 @@ namespace ChessPlatform.Internal
             return (int)color;
         }
 
-        private static void PopulateSlidingAttackers(
-            ref Bitboard result,
+        private static Bitboard GetSlidingAttackers(
             int targetSquareIndex,
             Bitboard opponentSlidingPieces,
             Bitboard[] slidingAttacks,
@@ -792,8 +791,10 @@ namespace ChessPlatform.Internal
         {
             if (!opponentSlidingPieces.IsAny)
             {
-                return;
+                return Bitboard.None;
             }
+
+            var result = Bitboard.None;
 
             var slidingAttack = slidingAttacks[targetSquareIndex];
             var attackingSlidingPieces = slidingAttack & opponentSlidingPieces;
@@ -812,9 +813,11 @@ namespace ChessPlatform.Internal
                 result |= new Bitboard(attackerBitboard);
                 if (findFirstAttackOnly)
                 {
-                    return;
+                    return result;
                 }
             }
+
+            return result;
         }
 
         private static void PopulatePawnMoves(
@@ -1425,14 +1428,15 @@ namespace ChessPlatform.Internal
 
             var opponentRooks = GetBitboard(PieceType.Rook.ToPiece(attackingColor));
             var opponentSlidingStraightPieces = opponentQueens | opponentRooks;
-            PopulateSlidingAttackers(
-                ref result,
-                targetSquareIndex,
-                opponentSlidingStraightPieces,
-                StraightSlidingAttacks,
-                emptySquareBitboard,
-                findFirstAttackOnly);
+            var slidingStraightAttackers =
+                GetSlidingAttackers(
+                    targetSquareIndex,
+                    opponentSlidingStraightPieces,
+                    StraightSlidingAttacks,
+                    emptySquareBitboard,
+                    findFirstAttackOnly);
 
+            result |= slidingStraightAttackers;
             if (result.IsAny && findFirstAttackOnly)
             {
                 return result;
@@ -1440,13 +1444,15 @@ namespace ChessPlatform.Internal
 
             var opponentBishops = GetBitboard(PieceType.Bishop.ToPiece(attackingColor));
             var opponentSlidingDiagonallyPieces = opponentQueens | opponentBishops;
-            PopulateSlidingAttackers(
-                ref result,
-                targetSquareIndex,
-                opponentSlidingDiagonallyPieces,
-                DiagonallySlidingAttacks,
-                emptySquareBitboard,
-                findFirstAttackOnly);
+            var slidingDiagonallyAttackers =
+                GetSlidingAttackers(
+                    targetSquareIndex,
+                    opponentSlidingDiagonallyPieces,
+                    DiagonallySlidingAttacks,
+                    emptySquareBitboard,
+                    findFirstAttackOnly);
+
+            result |= slidingDiagonallyAttackers;
 
             return result;
         }
