@@ -703,14 +703,11 @@ namespace ChessPlatform
 
         private static void InitializeValidMovesAndStateWhenNotInCheck(AddMoveData addMoveData)
         {
-            PopulatePawnMoves(addMoveData);
+            GeneratePawnMoves(addMoveData, GeneratedMoveTypes.All, Bitboard.Everything);
 
             var gameBoardData = addMoveData.GameBoardData;
-            var activeColor = addMoveData.ActiveColor;
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
-
-            var activePiecesExceptKingAndPawnsBitboard = addMoveData.ActivePiecesExceptKingBitboard
-                & ~gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(activeColor));
+            var activePiecesExceptKingAndPawnsBitboard = addMoveData.ActivePiecesExceptKingAndPawnsBitboard;
 
             var sourcePositions = activePiecesExceptKingAndPawnsBitboard.GetPositions();
             foreach (var sourcePosition in sourcePositions)
@@ -764,28 +761,12 @@ namespace ChessPlatform
             }
 
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
-            if (enPassantCaptureInfo != null
-                && enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
+            if (enPassantCaptureInfo != null && enPassantCaptureInfo.TargetPiecePosition == checkAttackPosition)
             {
-                //// TODO [vmcl] Fast to implement approach (likely non-optimal)
-
-                var activeColorPawn = PieceType.Pawn.ToPiece(addMoveData.ActiveColor);
-                var activePawnPositions = gameBoardData.GetPositions(activeColorPawn);
-                var capturePosition = enPassantCaptureInfo.CapturePosition;
-                foreach (var activePawnPosition in activePawnPositions)
-                {
-                    var canCapture = gameBoardData
-                        .GetPotentialMovePositions(
-                            CastlingOptions.None,
-                            enPassantCaptureInfo,
-                            activePawnPosition)
-                        .Contains(capturePosition);
-
-                    if (canCapture && IsValidMoveByPinning(pinnedPieceMap, activePawnPosition, capturePosition))
-                    {
-                        AddMove(addMoveData, activePawnPosition, capturePosition, true);
-                    }
-                }
+                GeneratePawnMoves(
+                    addMoveData,
+                    GeneratedMoveTypes.Capture,
+                    enPassantCaptureInfo.CapturePosition.Bitboard);
             }
 
             if (!checkingPieceInfo.PieceType.IsSliding())
@@ -801,7 +782,9 @@ namespace ChessPlatform
                 return;
             }
 
-            var moves = addMoveData.ActivePiecesExceptKingBitboard
+            GeneratePawnMoves(addMoveData, GeneratedMoveTypes.Quiet, positionBridge);
+
+            var moves = addMoveData.ActivePiecesExceptKingAndPawnsBitboard
                 .GetPositions()
                 .SelectMany(
                     sourcePosition => gameBoardData
@@ -825,7 +808,10 @@ namespace ChessPlatform
             }
         }
 
-        private static void PopulatePawnMoves(AddMoveData addMoveData)
+        private static void GeneratePawnMoves(
+            AddMoveData addMoveData,
+            GeneratedMoveTypes generatedMoveTypes,
+            Bitboard target)
         {
             var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
 
@@ -836,8 +822,9 @@ namespace ChessPlatform
             gameBoardData.GeneratePawnMoves(
                 potentialPawnMoves,
                 addMoveData.ActiveColor,
+                generatedMoveTypes,
                 enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
-                Bitboard.Everything);
+                target);
 
             foreach (var pair in potentialPawnMoves)
             {
@@ -968,8 +955,9 @@ namespace ChessPlatform
                 .GetPinnedPieceInfos(activeKingPosition)
                 .ToDictionary(item => item.Position, item => item.AllowedMoves);
 
-            var activePiecesExceptKingBitboard = _gameBoardData.GetBitboard(_activeColor)
-                & ~_gameBoardData.GetBitboard(activeKing);
+            var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.GetBitboard(_activeColor)
+                & ~_gameBoardData.GetBitboard(activeKing)
+                & ~_gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(_activeColor));
 
             validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
 
@@ -980,7 +968,7 @@ namespace ChessPlatform
                 _activeColor,
                 _castlingOptions,
                 pinnedPieceMap,
-                activePiecesExceptKingBitboard);
+                activePiecesExceptKingAndPawnsBitboard);
 
             GenerateKingMoves(addMoveData, activeKingPosition, isInCheck);
 
@@ -1377,7 +1365,7 @@ namespace ChessPlatform
                 PieceColor activeColor,
                 CastlingOptions castlingOptions,
                 [NotNull] Dictionary<Position, Bitboard> pinnedPieceMap,
-                Bitboard activePiecesExceptKingBitboard)
+                Bitboard activePiecesExceptKingAndPawnsBitboard)
             {
                 this.GameBoardData = gameBoardData.EnsureNotNull();
                 this.ValidMoves = validMovesReference.EnsureNotNull();
@@ -1386,7 +1374,7 @@ namespace ChessPlatform
                 this.OppositeColor = activeColor.Invert();
                 this.CastlingOptions = castlingOptions;
                 this.PinnedPieceMap = pinnedPieceMap.EnsureNotNull();
-                this.ActivePiecesExceptKingBitboard = activePiecesExceptKingBitboard;
+                this.ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
             }
 
             #endregion
@@ -1439,7 +1427,7 @@ namespace ChessPlatform
                 private set;
             }
 
-            public Bitboard ActivePiecesExceptKingBitboard
+            public Bitboard ActivePiecesExceptKingAndPawnsBitboard
             {
                 get;
                 private set;

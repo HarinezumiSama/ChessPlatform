@@ -74,6 +74,8 @@
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
+    <Compile Include="Internal\GeneratedMoveTypes.cs" />
+    <Compile Include="Internal\GeneratedMoveTypesExtensions.cs" />
     <Compile Include="PieceConstants.cs" />
     <Compile Include="ShiftDirection.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
