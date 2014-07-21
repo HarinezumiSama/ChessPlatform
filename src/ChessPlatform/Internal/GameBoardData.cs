@@ -388,27 +388,6 @@ namespace ChessPlatform.Internal
             return resultList.ToArray();
         }
 
-        public GameMove GetEnPassantMove(Position sourcePosition)
-        {
-            var pieceInfo = GetPieceInfo(sourcePosition);
-            if (pieceInfo.PieceType != PieceType.Pawn || !pieceInfo.Color.HasValue)
-            {
-                return null;
-            }
-
-            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
-            if (sourcePosition.Rank != enPassantInfo.StartRank)
-            {
-                return null;
-            }
-
-            var destinationPosition = new Position(false, sourcePosition.File, enPassantInfo.EndRank);
-            var intermediatePosition = new Position(false, sourcePosition.File, enPassantInfo.CaptureTargetRank);
-            var isEnPassant = CheckSquares(Piece.None, intermediatePosition, destinationPosition);
-
-            return isEnPassant ? new GameMove(sourcePosition, destinationPosition) : null;
-        }
-
         public void GeneratePawnMoves(
             List<GameMoveData> resultMoves,
             PieceColor color,
@@ -442,7 +421,6 @@ namespace ChessPlatform.Internal
             var pushes = pawns.Shift(forwardDirection) & emptyTargetSquares;
             if (pushes.IsAny)
             {
-
                 var nonPromotionPushes = pushes & ~rank8;
                 PopulatePawnMoves(resultMoves, nonPromotionPushes, (int)forwardDirection, GameMoveFlags.None);
 

@@ -619,17 +619,11 @@ namespace ChessPlatform
             AddMoveData addMoveData,
             Position sourcePosition,
             Position targetPosition,
-            bool isCapture,
-            Func<GameMove, bool> checkMove)
+            bool isCapture)
         {
             var isPawnPromotion = addMoveData.GameBoardData.IsPawnPromotion(sourcePosition, targetPosition);
             var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
             var basicMove = new GameMove(sourcePosition, targetPosition, promotionResult);
-
-            if (checkMove != null && !checkMove(basicMove))
-            {
-                return;
-            }
 
             var moveFlags = GameMoveFlags.None;
             if (isPawnPromotion)
@@ -721,37 +715,11 @@ namespace ChessPlatform
 
                 foreach (var destinationPosition in filteredDestinationPositions)
                 {
-                    var isEnPassantCapture = gameBoardData.IsEnPassantCapture(
-                        sourcePosition,
-                        destinationPosition,
-                        enPassantCaptureInfo);
-                    if (isEnPassantCapture)
-                    {
-                        var temporaryCastlingOptions = addMoveData.CastlingOptions;
-
-                        var move = new GameMove(sourcePosition, destinationPosition);
-
-                        gameBoardData.MakeMove(
-                            move,
-                            activeColor,
-                            enPassantCaptureInfo,
-                            ref temporaryCastlingOptions);
-
-                        var isInvalidMove = gameBoardData.IsInCheck(activeColor);
-                        gameBoardData.UndoMove();
-
-                        if (isInvalidMove)
-                        {
-                            continue;
-                        }
-                    }
-
                     AddMove(
                         addMoveData,
                         sourcePosition,
                         destinationPosition,
-                        isEnPassantCapture || gameBoardData[destinationPosition] != Piece.None,
-                        null);
+                        gameBoardData[destinationPosition] != Piece.None);
                 }
             }
         }
@@ -780,7 +748,7 @@ namespace ChessPlatform
 
             foreach (var capturingSourcePosition in capturingSourcePositions)
             {
-                AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true, null);
+                AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true);
             }
 
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
@@ -803,7 +771,7 @@ namespace ChessPlatform
 
                     if (canCapture && IsValidMoveByPinning(pinnedPieceMap, activePawnPosition, capturePosition))
                     {
-                        AddMove(addMoveData, activePawnPosition, capturePosition, true, null);
+                        AddMove(addMoveData, activePawnPosition, capturePosition, true);
                     }
                 }
             }
@@ -841,7 +809,7 @@ namespace ChessPlatform
 
             foreach (var move in moves)
             {
-                AddMove(addMoveData, move.From, move.To, false, null);
+                AddMove(addMoveData, move.From, move.To, false);
             }
         }
 
