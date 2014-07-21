@@ -10,16 +10,16 @@ namespace ChessPlatform
         None = 0,
 
         [FenChar('K')]
-        WhiteKingSide = 0x01,
+        WhiteKingSide = 1 << CastlingType.WhiteKingSide,
 
         [FenChar('Q')]
-        WhiteQueenSide = 0x02,
+        WhiteQueenSide = 1 << CastlingType.WhiteQueenSide,
 
         [FenChar('k')]
-        BlackKingSide = 0x04,
+        BlackKingSide = 1 << CastlingType.BlackKingSide,
 
         [FenChar('q')]
-        BlackQueenSide = 0x08,
+        BlackQueenSide = 1 << CastlingType.BlackQueenSide,
 
         WhiteMask = WhiteKingSide | WhiteQueenSide,
         BlackMask = BlackKingSide | BlackQueenSide,

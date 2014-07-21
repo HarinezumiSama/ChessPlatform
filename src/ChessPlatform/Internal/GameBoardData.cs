@@ -25,6 +25,7 @@ namespace ChessPlatform.Internal
         private static readonly Bitboard[] DiagonallySlidingAttacks = InitializeDiagonallySlidingAttacks();
         private static readonly Bitboard[] KnightAttacksOrMoves = InitializeKnightAttacks();
         private static readonly Bitboard[] KingAttacksOrMoves = InitializeKingAttacksOrMoves();
+        private static readonly InternalCastlingInfo[] KingCastlingInfos = InitializeKingCastlingInfos();
 
         private static readonly Bitboard[] Connections = InitializeConnections();
 
@@ -351,6 +352,7 @@ namespace ChessPlatform.Internal
 
             if (pieceInfo.PieceType == PieceType.King)
             {
+                ////throw new InvalidOperationException("MUST NOT go into this branch anymore.");
                 var result = GetKingPotentialMovePositions(castlingOptions, sourcePosition, pieceColor);
                 return result;
             }
@@ -389,7 +391,7 @@ namespace ChessPlatform.Internal
         }
 
         public void GeneratePawnMoves(
-            List<GameMoveData> resultMoves,
+            [NotNull] List<GameMoveData> resultMoves,
             PieceColor color,
             Bitboard enPassantCaptureTarget,
             Bitboard target)
@@ -403,8 +405,8 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var pawn = PieceType.Pawn.ToPiece(color);
-            var pawns = GetBitboard(pawn);
+            var pawnPiece = PieceType.Pawn.ToPiece(color);
+            var pawns = GetBitboard(pawnPiece);
             if (pawns.IsNone)
             {
                 return;
@@ -441,6 +443,67 @@ namespace ChessPlatform.Internal
 
             var rightCaptureOffset = color == PieceColor.White ? ShiftDirection.NorthEast : ShiftDirection.SouthWest;
             PopulatePawnCaptures(resultMoves, pawns, enemyTargets, rightCaptureOffset, rank8, enPassantCaptureTarget);
+        }
+
+        public void GenerateKingMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            PieceColor color,
+            CastlingOptions allowedCastlingOptions,
+            Bitboard target)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException("resultMoves");
+            }
+
+            #endregion
+
+            var kingPiece = PieceType.King.ToPiece(color);
+            var king = GetBitboard(kingPiece);
+            if (king.IsNone)
+            {
+                return;
+            }
+
+            if (!king.IsExactlyOneBitSet())
+            {
+                throw new ChessPlatformException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "There are multiple {0} pieces ({1}) on the board.",
+                        kingPiece.GetDescription(),
+                        king.GetCount()));
+            }
+
+            var kingSquareIndex = king.FindFirstBitSetIndex();
+            var sourcePosition = Position.FromSquareIndex(kingSquareIndex);
+            var directTargets = KingAttacksOrMoves[kingSquareIndex] & target;
+
+            var emptySquares = GetBitboard(Piece.None);
+            var nonCaptures = directTargets & emptySquares;
+            PopulateKingMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
+
+            var enemies = GetBitboard(color.Invert());
+            var captures = directTargets & enemies;
+            PopulateKingMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
+
+            var nonEmptySquares = ~emptySquares;
+
+            PopulateKingCastlingMoves(
+                resultMoves,
+                sourcePosition,
+                allowedCastlingOptions,
+                nonEmptySquares,
+                CastlingSide.KingSide.ToCastlingType(color));
+
+            PopulateKingCastlingMoves(
+                resultMoves,
+                sourcePosition,
+                allowedCastlingOptions,
+                nonEmptySquares,
+                CastlingSide.QueenSide.ToCastlingType(color));
         }
 
         #endregion
@@ -639,7 +702,7 @@ namespace ChessPlatform.Internal
                             CultureInfo.InvariantCulture,
                             "The castling {{{0}}} ({1}) is not allowed.",
                             move,
-                            castlingInfo.Option.GetName()));
+                            castlingInfo.CastlingType.GetName()));
                 }
 
                 castlingRookMove = castlingInfo.RookMove;
@@ -760,6 +823,11 @@ namespace ChessPlatform.Internal
             return (int)color;
         }
 
+        private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
+        {
+            return (int)castlingType;
+        }
+
         private static Bitboard GetSlidingAttackers(
             int targetSquareIndex,
             Bitboard opponentSlidingPieces,
@@ -858,6 +926,45 @@ namespace ChessPlatform.Internal
                 promotionCaptures,
                 (int)captureDirection,
                 GameMoveFlags.IsCapture | GameMoveFlags.IsPawnPromotion);
+        }
+
+        private static void PopulateKingMoves(
+            ICollection<GameMoveData> resultMoves,
+            Position sourcePosition,
+            Bitboard destinationsBitboard,
+            GameMoveFlags moveFlags)
+        {
+            var moveInfo = new GameMoveInfo(moveFlags);
+            while (destinationsBitboard.IsAny)
+            {
+                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
+
+                var move = new GameMove(sourcePosition, Position.FromSquareIndex(targetSquareIndex));
+                resultMoves.Add(new GameMoveData(move, moveInfo));
+            }
+        }
+
+        private static void PopulateKingCastlingMoves(
+            ICollection<GameMoveData> resultMoves,
+            Position sourcePosition,
+            CastlingOptions allowedCastlingOptions,
+            Bitboard nonEmptySquares,
+            CastlingType castlingType)
+        {
+            var option = castlingType.ToOption();
+            if ((allowedCastlingOptions & option) == 0)
+            {
+                return;
+            }
+
+            var info = KingCastlingInfos[GetCastlingTypeArrayIndexInternal(castlingType)];
+            if (info.KingMove.From != sourcePosition || (nonEmptySquares & info.EmptySquares).IsAny)
+            {
+                return;
+            }
+
+            var moveData = new GameMoveData(info.KingMove, new GameMoveInfo(GameMoveFlags.IsKingCastling));
+            resultMoves.Add(moveData);
         }
 
         private static int[] InitializePawnPushes()
@@ -1009,6 +1116,24 @@ namespace ChessPlatform.Internal
                     .Aggregate(Bitboard.None, (current, bitboard) => current | bitboard);
 
                 result[squareIndex] = movesBitboard;
+            }
+
+            return result;
+        }
+
+        private static InternalCastlingInfo[] InitializeKingCastlingInfos()
+        {
+            var castlingTypes = EnumFactotum.GetAllValues<CastlingType>();
+
+            var result = new InternalCastlingInfo[(int)castlingTypes.Max() + 1];
+            foreach (var castlingType in castlingTypes)
+            {
+                var info = ChessHelper.CastlingTypeToInfoMap[castlingType];
+
+                var index = GetCastlingTypeArrayIndexInternal(castlingType);
+                result[index] = new InternalCastlingInfo(
+                    info.KingMove,
+                    new Bitboard(info.EmptySquares.Concat(info.PassedPosition.AsArray())));
             }
 
             return result;
@@ -1246,11 +1371,6 @@ namespace ChessPlatform.Internal
             return positions.All(position => this[position] == expectedPiece);
         }
 
-        private bool CheckSquares(Piece expectedPiece, params Position[] positions)
-        {
-            return CheckSquares(expectedPiece, (IEnumerable<Position>)positions);
-        }
-
         private Bitboard GetEntireColorBitboardNonCached(PieceColor color)
         {
             return ChessConstants.ColorToPiecesMap[color].Aggregate(
@@ -1441,6 +1561,52 @@ namespace ChessPlatform.Internal
             var king = GetBitboard(PieceType.King.ToPiece(color));
             var otherPieces = entire & ~king;
             return otherPieces.IsNone;
+        }
+
+        #endregion
+
+        #region InternalCastlingInfo Structure
+
+        internal struct InternalCastlingInfo
+        {
+            #region Constants and Fields
+
+            private readonly GameMove _kingMove;
+            private readonly Bitboard _emptySquares;
+
+            #endregion
+
+            #region Constructors
+
+            public InternalCastlingInfo(GameMove kingMove, Bitboard emptySquares)
+            {
+                _kingMove = kingMove.EnsureNotNull();
+                _emptySquares = emptySquares;
+            }
+
+            #endregion
+
+            #region Public Properties
+
+            public GameMove KingMove
+            {
+                [DebuggerStepThrough]
+                get
+                {
+                    return _kingMove;
+                }
+            }
+
+            public Bitboard EmptySquares
+            {
+                [DebuggerStepThrough]
+                get
+                {
+                    return _emptySquares;
+                }
+            }
+
+            #endregion
         }
 
         #endregion

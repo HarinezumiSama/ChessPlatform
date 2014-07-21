@@ -663,30 +663,41 @@ namespace ChessPlatform
         {
             var gameBoardData = addMoveData.GameBoardData;
 
+            var potentialMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+
+            gameBoardData.GenerateKingMoves(
+                potentialMoveDatas,
+                addMoveData.ActiveColor,
+                isInCheck ? CastlingOptions.None : addMoveData.CastlingOptions,
+                Bitboard.Everything);
+
+            if (potentialMoveDatas.Count == 0)
+            {
+                return;
+            }
+
             var noActiveKingGameBoardData = gameBoardData.Copy();
             noActiveKingGameBoardData.SetPiece(activeKingPosition, Piece.None);
 
             var oppositeColor = addMoveData.OppositeColor;
 
-            var moves = gameBoardData
-                .GetPotentialMovePositions(
-                    isInCheck ? CastlingOptions.None : addMoveData.CastlingOptions,
-                    null,
-                    activeKingPosition)
-                .Where(position => !noActiveKingGameBoardData.IsUnderAttack(position, oppositeColor))
-                .Select(position => new GameMove(activeKingPosition, position))
-                .Where(
-                    move =>
-                        isInCheck
-                            || gameBoardData
-                                .CheckCastlingMove(move)
-                                .Morph(info => !gameBoardData.IsUnderAttack(info.PassedPosition, oppositeColor), true))
-                .ToArray();
-
-            foreach (var move in moves)
+            foreach (var potentialMoveData in potentialMoveDatas)
             {
-                var moveFlags = gameBoardData[move.To] == Piece.None ? GameMoveFlags.None : GameMoveFlags.IsCapture;
-                addMoveData.ValidMoves.Add(move, new GameMoveInfo(moveFlags));
+                if (noActiveKingGameBoardData.IsUnderAttack(potentialMoveData.Move.To, oppositeColor))
+                {
+                    continue;
+                }
+
+                if (!isInCheck && potentialMoveData.MoveInfo.IsKingCastling)
+                {
+                    var castlingInfo = gameBoardData.CheckCastlingMove(potentialMoveData.Move);
+                    if (gameBoardData.IsUnderAttack(castlingInfo.PassedPosition, oppositeColor))
+                    {
+                        continue;
+                    }
+                }
+
+                addMoveData.ValidMoves.Add(potentialMoveData.Move, potentialMoveData.MoveInfo);
             }
         }
 
@@ -740,15 +751,16 @@ namespace ChessPlatform
             var capturingBitboard = gameBoardData.GetAttackers(checkAttackPosition, addMoveData.ActiveColor)
                 & ~activeKingBitboard;
 
-            var capturingSourcePositions =
-                capturingBitboard
-                    .GetPositions()
-                    .Where(position => IsValidMoveByPinning(pinnedPieceMap, position, checkAttackPosition))
-                    .ToArray();
-
-            foreach (var capturingSourcePosition in capturingSourcePositions)
+            var currentCapturingBitboard = capturingBitboard;
+            while (currentCapturingBitboard.IsAny)
             {
-                AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true);
+                var squareIndex = Bitboard.PopFirstBitSetIndex(ref currentCapturingBitboard);
+                var capturingSourcePosition = Position.FromSquareIndex(squareIndex);
+
+                if (IsValidMoveByPinning(pinnedPieceMap, capturingSourcePosition, checkAttackPosition))
+                {
+                    AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true);
+                }
             }
 
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;

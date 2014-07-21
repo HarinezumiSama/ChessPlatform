@@ -18,8 +18,11 @@ namespace ChessPlatform
 
         public const double DefaultZeroTolerance = 1E-7d;
 
+        public static readonly ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
+            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
+
         public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
-            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.Option).AsReadOnly();
+            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();
 
         public static readonly ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();

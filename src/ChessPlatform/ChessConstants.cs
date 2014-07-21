@@ -149,26 +149,26 @@ namespace ChessPlatform
                 new[]
                 {
                     new CastlingInfo(
-                        CastlingOptions.WhiteKingSide,
+                        CastlingType.WhiteKingSide,
                         new GameMove(WhiteKingInitialPosition, "g1"),
                         new GameMove("h1", "f1"),
                         "f1",
                         "g1"),
                     new CastlingInfo(
-                        CastlingOptions.WhiteQueenSide,
+                        CastlingType.WhiteQueenSide,
                         new GameMove(WhiteKingInitialPosition, "c1"),
                         new GameMove("a1", "d1"),
                         "b1",
                         "c1",
                         "d1"),
                     new CastlingInfo(
-                        CastlingOptions.BlackKingSide,
+                        CastlingType.BlackKingSide,
                         new GameMove(BlackKingInitialPosition, "g8"),
                         new GameMove("h8", "f8"),
                         "f8",
                         "g8"),
                     new CastlingInfo(
-                        CastlingOptions.BlackQueenSide,
+                        CastlingType.BlackQueenSide,
                         new GameMove(BlackKingInitialPosition, "c8"),
                         new GameMove("a8", "d8"),
                         "b8",

@@ -12,17 +12,14 @@ namespace ChessPlatform
         ///     Initializes a new instance of the <see cref="CastlingInfo"/> class.
         /// </summary>
         internal CastlingInfo(
-            CastlingOptions option,
+            CastlingType castlingType,
             GameMove kingMove,
             GameMove rookMove,
             params Position[] emptySquares)
         {
             #region Argument Check
 
-            if (!option.IsAnySet(CastlingOptions.WhiteMask) && !option.IsAnySet(CastlingOptions.BlackMask))
-            {
-                throw new ArgumentException("Invalid castling option.", "option");
-            }
+            castlingType.EnsureDefined();
 
             if (kingMove == null)
             {
@@ -46,7 +43,8 @@ namespace ChessPlatform
 
             #endregion
 
-            this.Option = option;
+            this.CastlingType = castlingType;
+            this.Option = castlingType.ToOption();
             this.KingMove = kingMove;
             this.RookMove = rookMove;
             this.EmptySquares = emptySquares.AsReadOnly();
@@ -56,6 +54,12 @@ namespace ChessPlatform
         #endregion
 
         #region Public Properties
+
+        public CastlingType CastlingType
+        {
+            get;
+            private set;
+        }
 
         public CastlingOptions Option
         {

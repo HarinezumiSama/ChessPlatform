@@ -57,6 +57,10 @@
     <Compile Include="Annotations\RevisionIdAttribute.cs" />
     <Compile Include="AutoDrawType.cs" />
     <Compile Include="Bitboards.cs" />
+    <Compile Include="CastlingSideExtensions.cs" />
+    <Compile Include="CastlingType.cs" />
+    <Compile Include="CastlingSide.cs" />
+    <Compile Include="CastlingTypeExtensions.cs" />
     <Compile Include="GamePlay\ChessPlayerBase.cs" />
     <Compile Include="GamePlay\GameManager.cs" />
     <Compile Include="GamePlay\GameManagerState.cs" />

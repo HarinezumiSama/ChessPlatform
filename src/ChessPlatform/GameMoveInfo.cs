@@ -52,6 +52,14 @@ namespace ChessPlatform
             }
         }
 
+        public bool IsKingCastling
+        {
+            get
+            {
+                return (_flags & GameMoveFlags.IsKingCastling) != 0;
+            }
+        }
+
         #endregion
 
         #region Public Methods
