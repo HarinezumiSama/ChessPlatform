@@ -23,6 +23,9 @@ namespace ChessPlatform.Internal
 
         private static readonly Bitboard[] Connections = InitializeConnections();
 
+        private static readonly Bitboard[] DefaultPinLimitations =
+            Enumerable.Repeat(Bitboard.Everything, ChessConstants.SquareCount).ToArray();
+
         private readonly Stack<MakeMoveData> _undoMoveDatas;
 
         private readonly Bitboard[] _bitboards;
@@ -239,73 +242,34 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        public PinnedPieceInfo[] GetPinnedPieceInfos(Position targetPosition)
+        public Bitboard[] GetPinLimitations(int valuablePieceSquareIndex, PieceColor attackingColor)
         {
-            var targetPieceInfo = GetPieceInfo(targetPosition);
-            if (targetPieceInfo.Piece == Piece.None || !targetPieceInfo.Color.HasValue)
-            {
-                throw new ArgumentException("Empty square.", "targetPosition");
-            }
+            var result = DefaultPinLimitations.Copy();
 
-            var resultList = new List<PinnedPieceInfo>();
+            var enemyPieces = GetBitboard(attackingColor);
+            var ownPieces = GetBitboard(attackingColor.Invert());
 
-            var targetColor = targetPieceInfo.Color.Value;
-            var attackingColor = targetColor.Invert();
+            var queens = GetBitboard(PieceType.Queen.ToPiece(attackingColor));
+            var bishops = GetBitboard(PieceType.Bishop.ToPiece(attackingColor));
+            var rooks = GetBitboard(PieceType.Rook.ToPiece(attackingColor));
 
-            var targetColorBitboard = GetBitboard(targetColor);
-            var attackingColorBitboard = GetBitboard(attackingColor);
+            PopulatePinLimitations(
+                result,
+                enemyPieces,
+                valuablePieceSquareIndex,
+                ownPieces,
+                DiagonallySlidingAttacks,
+                queens | bishops);
 
-            var attackInfoKey = new AttackInfoKey(targetPosition, attackingColor);
-            var attackInfo = ChessHelper.TargetPositionToAttackInfoMap[attackInfoKey];
+            PopulatePinLimitations(
+                result,
+                enemyPieces,
+                valuablePieceSquareIndex,
+                ownPieces,
+                StraightSlidingAttacks,
+                queens | rooks);
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var pair in attackInfo.Attacks)
-            {
-                var pieceAttackInfo = pair.Value;
-                if (pieceAttackInfo.IsDirectAttack)
-                {
-                    continue;
-                }
-
-                var attackingPiece = pair.Key.ToPiece(attackingColor);
-                var bitboard = GetBitboard(attackingPiece);
-
-                var attackBitboard = bitboard & pieceAttackInfo.Bitboard;
-                if (attackBitboard.IsNone)
-                {
-                    continue;
-                }
-
-                var potentialPositions = attackBitboard.GetPositions();
-
-                // ReSharper disable once LoopCanBeConvertedToQuery
-                foreach (var potentialPosition in potentialPositions)
-                {
-                    var positionBridgeKey = new PositionBridgeKey(targetPosition, potentialPosition);
-                    var positionBridge = ChessHelper.PositionBridgeMap[positionBridgeKey];
-
-                    if ((attackingColorBitboard & positionBridge).IsAny)
-                    {
-                        continue;
-                    }
-
-                    var pinnedPieceBitboard = targetColorBitboard & positionBridge;
-                    if (!pinnedPieceBitboard.IsExactlyOneBitSet())
-                    {
-                        continue;
-                    }
-
-                    var index = pinnedPieceBitboard.FindFirstBitSetIndex();
-                    var pinnedPiecePosition = Position.FromSquareIndex(index);
-
-                    var allowedMoves = (positionBridge & ~pinnedPieceBitboard) | potentialPosition.Bitboard;
-                    var pinnedPieceInfo = new PinnedPieceInfo(pinnedPiecePosition, allowedMoves);
-
-                    resultList.Add(pinnedPieceInfo);
-                }
-            }
-
-            return resultList.ToArray();
+            return result;
         }
 
         public bool IsInCheck(PieceColor kingColor)
@@ -982,6 +946,35 @@ namespace ChessPlatform.Internal
 
             var moveData = new GameMoveData(info.KingMove, new GameMoveInfo(GameMoveFlags.IsKingCastling));
             resultMoves.Add(moveData);
+        }
+
+        private static void PopulatePinLimitations(
+            Bitboard[] pinLimitations,
+            Bitboard enemyPieces,
+            int squareIndex,
+            Bitboard ownPieces,
+            Bitboard[] slidingAttacks,
+            Bitboard slidingPieces)
+        {
+            var slidingAttack = slidingAttacks[squareIndex];
+            var potentialPinners = slidingPieces & slidingAttack;
+
+            var current = potentialPinners;
+            while (current.IsAny)
+            {
+                var attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref current);
+                var connection = GetConnection(squareIndex, attackerSquareIndex);
+
+                var pinned = ownPieces & connection;
+                var enemiesOnConnection = enemyPieces & connection;
+                if (enemiesOnConnection.IsAny || !pinned.IsExactlyOneBitSet())
+                {
+                    continue;
+                }
+
+                var pinnedSquareIndex = pinned.FindFirstBitSetIndex();
+                pinLimitations[pinnedSquareIndex] = connection | Bitboard.FromSquareIndex(attackerSquareIndex);
+            }
         }
 
         private static Bitboard[] InitializeStraightSlidingAttacks()

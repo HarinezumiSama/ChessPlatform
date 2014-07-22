@@ -606,13 +606,14 @@ namespace ChessPlatform
         #region Private Methods
 
         private static bool IsValidMoveByPinning(
-            IDictionary<Position, Bitboard> pinnedPieceMap,
+            Bitboard[] pinLimitations,
             Position sourcePosition,
             Position destinationPosition)
         {
-            Bitboard bitboard;
-            var found = pinnedPieceMap.TryGetValue(sourcePosition, out bitboard);
-            return !found || ((bitboard & destinationPosition.Bitboard) == destinationPosition.Bitboard);
+            var bitboard = pinLimitations[sourcePosition.SquareIndex];
+
+            var intersection = destinationPosition.Bitboard & bitboard;
+            return intersection.IsAny;
         }
 
         private static void AddMove(
@@ -717,12 +718,13 @@ namespace ChessPlatform
                     enPassantCaptureInfo,
                     sourcePosition);
 
-                var filteredDestinationPositions = potentialMovePositions
-                    .Where(position => IsValidMoveByPinning(addMoveData.PinnedPieceMap, sourcePosition, position))
-                    .ToArray();
-
-                foreach (var destinationPosition in filteredDestinationPositions)
+                foreach (var destinationPosition in potentialMovePositions)
                 {
+                    if (!IsValidMoveByPinning(addMoveData.PinLimitations, sourcePosition, destinationPosition))
+                    {
+                        continue;
+                    }
+
                     AddMove(
                         addMoveData,
                         sourcePosition,
@@ -739,7 +741,7 @@ namespace ChessPlatform
             Bitboard checkAttackPositionsBitboard)
         {
             var gameBoardData = addMoveData.GameBoardData;
-            var pinnedPieceMap = addMoveData.PinnedPieceMap;
+            var pinLimitations = addMoveData.PinLimitations;
 
             var checkAttackPosition = checkAttackPositionsBitboard.GetFirstPosition();
             var checkingPieceInfo = gameBoardData.GetPieceInfo(checkAttackPosition);
@@ -754,7 +756,7 @@ namespace ChessPlatform
                 var squareIndex = Bitboard.PopFirstBitSetIndex(ref currentCapturingBitboard);
                 var capturingSourcePosition = Position.FromSquareIndex(squareIndex);
 
-                if (IsValidMoveByPinning(pinnedPieceMap, capturingSourcePosition, checkAttackPosition))
+                if (IsValidMoveByPinning(pinLimitations, capturingSourcePosition, checkAttackPosition))
                 {
                     AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true);
                 }
@@ -796,7 +798,7 @@ namespace ChessPlatform
                             targetPosition =>
                                 (targetPosition.Bitboard & positionBridge).IsAny
                                     && IsValidMoveByPinning(
-                                        pinnedPieceMap,
+                                        pinLimitations,
                                         sourcePosition,
                                         targetPosition))
                         .Select(targetPosition => new GameMove(sourcePosition, targetPosition)))
@@ -817,7 +819,7 @@ namespace ChessPlatform
 
             var gameBoardData = addMoveData.GameBoardData;
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
-            var pinnedPieceMap = addMoveData.PinnedPieceMap;
+            var pinLimitations = addMoveData.PinLimitations;
 
             gameBoardData.GeneratePawnMoves(
                 potentialPawnMoves,
@@ -832,7 +834,7 @@ namespace ChessPlatform
 
                 var sourcePosition = potentialPawnMove.From;
                 var destinationPosition = potentialPawnMove.To;
-                if (!IsValidMoveByPinning(pinnedPieceMap, sourcePosition, destinationPosition))
+                if (!IsValidMoveByPinning(pinLimitations, sourcePosition, destinationPosition))
                 {
                     continue;
                 }
@@ -944,16 +946,14 @@ namespace ChessPlatform
             out GameState state)
         {
             var activeKing = PieceType.King.ToPiece(_activeColor);
-            var activeKingPosition = _gameBoardData.GetPositions(activeKing).Single();
+            var activeKingPosition = _gameBoardData.GetBitboard(activeKing).GetFirstPosition();
             var oppositeColor = _activeColor.Invert();
 
             var checkAttackPositionsBitboard = _gameBoardData.GetAttackers(activeKingPosition, oppositeColor);
             var isInCheck = checkAttackPositionsBitboard.IsAny;
             var isInDoubleCheck = isInCheck && !checkAttackPositionsBitboard.IsExactlyOneBitSet();
 
-            var pinnedPieceMap = _gameBoardData
-                .GetPinnedPieceInfos(activeKingPosition)
-                .ToDictionary(item => item.Position, item => item.AllowedMoves);
+            var pinLimitations = _gameBoardData.GetPinLimitations(activeKingPosition.SquareIndex, oppositeColor);
 
             var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.GetBitboard(_activeColor)
                 & ~_gameBoardData.GetBitboard(activeKing)
@@ -967,7 +967,7 @@ namespace ChessPlatform
                 _enPassantCaptureInfo,
                 _activeColor,
                 _castlingOptions,
-                pinnedPieceMap,
+                pinLimitations,
                 activePiecesExceptKingAndPawnsBitboard);
 
             GenerateKingMoves(addMoveData, activeKingPosition, isInCheck);
@@ -1364,7 +1364,7 @@ namespace ChessPlatform
                 [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
                 PieceColor activeColor,
                 CastlingOptions castlingOptions,
-                [NotNull] Dictionary<Position, Bitboard> pinnedPieceMap,
+                [NotNull] Bitboard[] pinLimitations,
                 Bitboard activePiecesExceptKingAndPawnsBitboard)
             {
                 this.GameBoardData = gameBoardData.EnsureNotNull();
@@ -1373,7 +1373,7 @@ namespace ChessPlatform
                 this.ActiveColor = activeColor;
                 this.OppositeColor = activeColor.Invert();
                 this.CastlingOptions = castlingOptions;
-                this.PinnedPieceMap = pinnedPieceMap.EnsureNotNull();
+                this.PinLimitations = pinLimitations.EnsureNotNull();
                 this.ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
             }
 
@@ -1421,7 +1421,7 @@ namespace ChessPlatform
             }
 
             [NotNull]
-            public Dictionary<Position, Bitboard> PinnedPieceMap
+            public Bitboard[] PinLimitations
             {
                 get;
                 private set;

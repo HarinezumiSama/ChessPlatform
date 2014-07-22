@@ -164,9 +164,6 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
-        internal static readonly ReadOnlyDictionary<AttackInfoKey, AttackInfo> TargetPositionToAttackInfoMap =
-            GenerateTargetPositionToAttackInfoMap();
-
         internal static readonly ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
@@ -331,98 +328,6 @@ namespace ChessPlatform
             }
 
             return resultList.ToArray();
-        }
-
-        private static Position[] GetMovePositionArraysByRays(
-            Position sourcePosition,
-            PieceType pieceType,
-            int maxDistance)
-        {
-            var rays = new List<RayInfo>(AllRays.Count);
-
-            if (pieceType.IsSlidingStraight())
-            {
-                rays.AddRange(StraightRays);
-            }
-
-            if (pieceType.IsSlidingDiagonally())
-            {
-                rays.AddRange(DiagonalRays);
-            }
-
-            if (rays.Count == 0)
-            {
-                throw new InvalidOperationException("The method is intended for sliding pieces.");
-            }
-
-            var result = GetMovePositionArraysByRays(sourcePosition, rays, maxDistance);
-            return result;
-        }
-
-        private static ReadOnlyDictionary<AttackInfoKey, AttackInfo> GenerateTargetPositionToAttackInfoMap()
-        {
-            var resultMap = AllPositions
-                .SelectMany(item => ChessConstants.PieceColors.Select(color => new AttackInfoKey(item, color)))
-                .ToDictionary(
-                    Factotum.Identity,
-                    item => new Dictionary<PieceType, PieceAttackInfo>());
-
-            Action<Position, PieceColor, PieceType, ICollection<Position>, bool> addAttack =
-                (targetPosition, attackingColor, pieceType, positions, isDirectAttack) =>
-                {
-                    if (positions.Count != 0)
-                    {
-                        var key = new AttackInfoKey(targetPosition, attackingColor);
-                        resultMap[key].Add(pieceType, new PieceAttackInfo(positions, isDirectAttack));
-                    }
-                };
-
-            Action<Position, PieceType, ICollection<Position>, bool> addAllColorsAttack =
-                (targetPosition, pieceType, positions, isDirectAttack) =>
-                    ChessConstants.PieceColors.DoForEach(
-                        attackingColor =>
-                            addAttack(targetPosition, attackingColor, pieceType, positions, isDirectAttack));
-
-            var slidingPieceTypes = new[] { PieceType.Bishop, PieceType.Rook, PieceType.Queen };
-
-            foreach (var currentPosition in AllPositions)
-            {
-                var kingPositions = GetMovePositionArraysByRays(
-                    currentPosition,
-                    KingAttackRays,
-                    MaxKingMoveOrAttackDistance);
-
-                addAllColorsAttack(currentPosition, PieceType.King, kingPositions, true);
-
-                var knightPositions = GetKnightMovePositionsNonCached(currentPosition);
-                addAllColorsAttack(currentPosition, PieceType.Knight, knightPositions, true);
-
-                foreach (var pieceType in slidingPieceTypes)
-                {
-                    var positions = GetMovePositionArraysByRays(
-                        currentPosition,
-                        pieceType,
-                        MaxSlidingPieceDistance);
-
-                    addAllColorsAttack(currentPosition, pieceType, positions, false);
-                }
-            }
-
-            foreach (var position in AllPositions)
-            {
-                foreach (var pieceColor in ChessConstants.PieceColors)
-                {
-                    var rays = PawnReverseAttackRayMap[pieceColor];
-                    var positions = GetMovePositionArraysByRays(position, rays, MaxPawnAttackOrMoveDistance)
-                        .Where(item => AllPawnPositions.Contains(item))
-                        .ToArray();
-
-                    addAttack(position, pieceColor, PieceType.Pawn, positions, true);
-                }
-            }
-
-            var result = resultMap.ToDictionary(pair => pair.Key, pair => new AttackInfo(pair.Value)).AsReadOnly();
-            return result;
         }
 
         private static ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()

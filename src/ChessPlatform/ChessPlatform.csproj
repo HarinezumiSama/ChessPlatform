@@ -69,8 +69,6 @@
     <Compile Include="GamePlay\GetMoveRequest.cs" />
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="IGameBoard.cs" />
-    <Compile Include="Internal\AttackInfo.cs" />
-    <Compile Include="Internal\AttackInfoKey.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
@@ -112,7 +110,6 @@
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />
-    <Compile Include="Internal\PinnedPieceInfo.cs" />
     <Compile Include="Position.cs" />
     <Compile Include="Internal\PositionBridgeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
