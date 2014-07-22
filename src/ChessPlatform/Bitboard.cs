@@ -235,7 +235,7 @@ namespace ChessPlatform
             return FindFirstBitSetIndexInternal(value);
         }
 
-        internal static Bitboard PopFirstBitSet(ref Bitboard bitboard)
+        public static Bitboard PopFirstBitSet(ref Bitboard bitboard)
         {
             var value = bitboard._value;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
