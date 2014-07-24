@@ -74,7 +74,7 @@ namespace ChessPlatform.Tests
                 var pieceMoveInfo = gameBoard.ValidMoves[actualValidMove];
 
                 Assert.That(
-                    pieceMoveInfo.IsCapture,
+                    pieceMoveInfo.IsAnyCapture,
                     Is.EqualTo(gameBoard.IsCapturingMove(actualValidMove)));
 
                 Assert.That(
