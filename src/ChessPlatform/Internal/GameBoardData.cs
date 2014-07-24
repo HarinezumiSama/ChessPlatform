@@ -192,15 +192,14 @@ namespace ChessPlatform.Internal
 
         public bool IsPawnPromotion(Position from, Position to)
         {
-            var pieceInfo = GetPieceInfo(from);
+            var fromBitboard = from.Bitboard;
+            var toBitboard = to.Bitboard;
 
-            var result = pieceInfo.PieceType == PieceType.Pawn && pieceInfo.Color.HasValue
-                && to.Rank
-                    == (pieceInfo.Color.Value == PieceColor.White
-                        ? ChessConstants.WhitePawnPromotionRank
-                        : ChessConstants.BlackPawnPromotionRank);
+            var whitePawns = GetBitboard(Piece.WhitePawn);
+            var blackPawns = GetBitboard(Piece.BlackPawn);
 
-            return result;
+            return ((fromBitboard & whitePawns).IsAny && (toBitboard & Bitboards.Rank8).IsAny)
+                || ((fromBitboard & blackPawns).IsAny && (toBitboard & Bitboards.Rank1).IsAny);
         }
 
         public CastlingInfo CheckCastlingMove([NotNull] GameMove move)
@@ -890,7 +889,11 @@ namespace ChessPlatform.Internal
             var captureTargets = pawns.Shift(captureDirection);
 
             var enPassantCapture = captureTargets & enPassantCaptureTarget;
-            PopulatePawnMoves(resultMoves, enPassantCapture, (int)captureDirection, GameMoveFlags.IsEnPassantCapture);
+            PopulatePawnMoves(
+                resultMoves,
+                enPassantCapture,
+                (int)captureDirection,
+                GameMoveFlags.IsEnPassantCapture);
 
             var captures = captureTargets & enemies;
             if (captures.IsNone)

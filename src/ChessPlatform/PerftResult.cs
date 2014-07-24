@@ -21,6 +21,8 @@ namespace ChessPlatform
             int depth,
             TimeSpan elapsed,
             ulong nodeCount,
+            ulong captureCount,
+            ulong enPassantCaptureCount,
             IDictionary<GameMove, ulong> dividedMoves,
             ulong? checkCount,
             ulong? checkmateCount)
@@ -54,6 +56,8 @@ namespace ChessPlatform
             this.Depth = depth;
             this.Elapsed = elapsed;
             this.NodeCount = nodeCount;
+            this.CaptureCount = captureCount;
+            this.EnPassantCaptureCount = enPassantCaptureCount;
             this.DividedMoves = dividedMoves.AsReadOnly();
             this.CheckCount = checkCount;
             this.CheckmateCount = checkmateCount;
@@ -85,6 +89,18 @@ namespace ChessPlatform
         }
 
         public ulong NodeCount
+        {
+            get;
+            private set;
+        }
+
+        public ulong CaptureCount
+        {
+            get;
+            private set;
+        }
+
+        public ulong EnPassantCaptureCount
         {
             get;
             private set;

@@ -4,7 +4,7 @@ using System.Linq;
 namespace ChessPlatform.Internal
 {
     [Flags]
-    public enum GameMoveFlags
+    internal enum GameMoveFlags
     {
         None = 0,
         IsPawnPromotion = 0x01,

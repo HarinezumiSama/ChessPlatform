@@ -387,6 +387,8 @@ namespace ChessPlatform
                 depth,
                 stopwatch.Elapsed,
                 perftData.NodeCount,
+                perftData.CaptureCount,
+                perftData.EnPassantCaptureCount,
                 perftData.DividedMoves,
                 includeExtraCountTypes ? perftData.CheckCount : (ulong?)null,
                 includeExtraCountTypes ? perftData.CheckmateCount : (ulong?)null);
@@ -620,22 +622,11 @@ namespace ChessPlatform
             AddMoveData addMoveData,
             Position sourcePosition,
             Position targetPosition,
-            bool isCapture)
+            GameMoveFlags moveFlags)
         {
-            var isPawnPromotion = addMoveData.GameBoardData.IsPawnPromotion(sourcePosition, targetPosition);
+            var isPawnPromotion = moveFlags.IsAnySet(GameMoveFlags.IsPawnPromotion);
             var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
             var basicMove = new GameMove(sourcePosition, targetPosition, promotionResult);
-
-            var moveFlags = GameMoveFlags.None;
-            if (isPawnPromotion)
-            {
-                moveFlags |= GameMoveFlags.IsPawnPromotion;
-            }
-
-            if (isCapture)
-            {
-                moveFlags |= GameMoveFlags.IsCapture;
-            }
 
             var isEnPassantCapture = addMoveData.GameBoardData.IsEnPassantCapture(
                 sourcePosition,
@@ -645,6 +636,7 @@ namespace ChessPlatform
             if (isEnPassantCapture)
             {
                 moveFlags |= GameMoveFlags.IsEnPassantCapture;
+                moveFlags &= ~GameMoveFlags.IsCapture;
             }
 
             var pieceMoveInfo = new GameMoveInfo(moveFlags);
@@ -725,11 +717,13 @@ namespace ChessPlatform
                         continue;
                     }
 
-                    AddMove(
-                        addMoveData,
-                        sourcePosition,
-                        destinationPosition,
-                        gameBoardData[destinationPosition] != Piece.None);
+                    var moveFlags = GameMoveFlags.None;
+                    if ((~gameBoardData.GetBitboard(Piece.None) & destinationPosition.Bitboard).IsAny)
+                    {
+                        moveFlags |= GameMoveFlags.IsCapture;
+                    }
+
+                    AddMove(addMoveData, sourcePosition, destinationPosition, moveFlags);
                 }
             }
         }
@@ -747,6 +741,7 @@ namespace ChessPlatform
             var checkingPieceInfo = gameBoardData.GetPieceInfo(checkAttackPosition);
             var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
 
+            //// TODO [vmcl] Generate attacker moves (this will eliminate some extra checks)
             var capturingBitboard = gameBoardData.GetAttackers(checkAttackPosition, addMoveData.ActiveColor)
                 & ~activeKingBitboard;
 
@@ -756,10 +751,27 @@ namespace ChessPlatform
                 var squareIndex = Bitboard.PopFirstBitSetIndex(ref currentCapturingBitboard);
                 var capturingSourcePosition = Position.FromSquareIndex(squareIndex);
 
-                if (IsValidMoveByPinning(pinLimitations, capturingSourcePosition, checkAttackPosition))
+                if (!IsValidMoveByPinning(pinLimitations, capturingSourcePosition, checkAttackPosition))
                 {
-                    AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, true);
+                    continue;
                 }
+
+                var moveFlags = GameMoveFlags.IsCapture;
+                if (gameBoardData.IsPawnPromotion(capturingSourcePosition, checkAttackPosition))
+                {
+                    moveFlags |= GameMoveFlags.IsPawnPromotion;
+                }
+
+                if (gameBoardData.IsEnPassantCapture(
+                    capturingSourcePosition,
+                    checkAttackPosition,
+                    addMoveData.EnPassantCaptureInfo))
+                {
+                    moveFlags |= GameMoveFlags.IsEnPassantCapture;
+                    moveFlags &= ~GameMoveFlags.IsCapture;
+                }
+
+                AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, moveFlags);
             }
 
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
@@ -806,7 +818,7 @@ namespace ChessPlatform
 
             foreach (var move in moves)
             {
-                AddMove(addMoveData, move.From, move.To, false);
+                AddMove(addMoveData, move.From, move.To, GameMoveFlags.None);
             }
         }
 
@@ -815,11 +827,11 @@ namespace ChessPlatform
             GeneratedMoveTypes generatedMoveTypes,
             Bitboard target)
         {
-            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
-
             var gameBoardData = addMoveData.GameBoardData;
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
             var pinLimitations = addMoveData.PinLimitations;
+
+            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
 
             gameBoardData.GeneratePawnMoves(
                 potentialPawnMoves,
@@ -828,9 +840,9 @@ namespace ChessPlatform
                 enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
                 target);
 
-            foreach (var pair in potentialPawnMoves)
+            foreach (var gameMoveData in potentialPawnMoves)
             {
-                var potentialPawnMove = pair.Move;
+                var potentialPawnMove = gameMoveData.Move;
 
                 var sourcePosition = potentialPawnMove.From;
                 var destinationPosition = potentialPawnMove.To;
@@ -864,7 +876,7 @@ namespace ChessPlatform
                     }
                 }
 
-                addMoveData.ValidMoves.Add(pair.Move, pair.MoveInfo);
+                addMoveData.ValidMoves.Add(gameMoveData.Move, gameMoveData.MoveInfo);
             }
         }
 
@@ -879,7 +891,7 @@ namespace ChessPlatform
 
             foreach (var king in ChessConstants.BothKings)
             {
-                var count = _gameBoardData.GetPositions(king).Length;
+                var count = _gameBoardData.GetBitboard(king).GetCount();
                 if (count != 1)
                 {
                     throw new ChessPlatformException(
@@ -939,6 +951,61 @@ namespace ChessPlatform
             }
 
             //// TODO [vmcl] (*) Other verifications
+        }
+
+        private void ValidateValidMoves()
+        {
+            if (!_validateAfterMove)
+            {
+                return;
+            }
+
+            foreach (var pair in this.ValidMoves)
+            {
+                var move = pair.Key;
+                var expectedIsPawnPromotion = _gameBoardData.IsPawnPromotion(move.From, move.To);
+                if (pair.Value.IsPawnPromotion != expectedIsPawnPromotion)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The move '{0}' is inconsistent with respect to its pawn promotion state.",
+                            move));
+                }
+
+                var expectedIsCapture = _gameBoardData[move.To] != Piece.None;
+                if (pair.Value.IsCapture != expectedIsCapture)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The move '{0}' is inconsistent with respect to its capture state.",
+                            move));
+                }
+
+                var expectedIsEnPassantCapture = _gameBoardData.IsEnPassantCapture(
+                    move.From,
+                    move.To,
+                    _enPassantCaptureInfo);
+                if (pair.Value.IsEnPassantCapture != expectedIsEnPassantCapture)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The move '{0}' is inconsistent with respect to its en passant capture state.",
+                            move));
+                }
+
+                var expectedIsKingCastling = _gameBoardData.CheckCastlingMove(move) != null;
+                if (pair.Value.IsKingCastling != expectedIsKingCastling)
+                {
+                    throw new ChessPlatformException(
+                        string.Format(
+                            CultureInfo.InvariantCulture,
+                            "The move '{0}' is inconsistent with respect to its king castling state.",
+                            move));
+                }
+            }
         }
 
         private void InitializeValidMovesAndState(
@@ -1069,6 +1136,8 @@ namespace ChessPlatform
             }
 
             InitializeResultString(out resultString);
+
+            ValidateValidMoves();
         }
 
         private void SetupDefault(
@@ -1228,11 +1297,41 @@ namespace ChessPlatform
                 return;
             }
 
-            var moves = gameBoard.ValidMoves.Keys;
-            if (depth == 1 && !includeExtraCountTypes && !includeDivideMap)
+            var validMoves = gameBoard.ValidMoves;
+            var moves = validMoves.Keys;
+
+            if (depth == 1)
             {
-                perftData.NodeCount += checked((ulong)moves.Count);
-                return;
+                ulong captureCount = 0;
+                ulong enPassantCaptureCount = 0;
+                foreach (var validMove in validMoves)
+                {
+                    if (validMove.Value.IsAnyCapture)
+                    {
+                        captureCount++;
+                    }
+
+                    if (validMove.Value.IsEnPassantCapture)
+                    {
+                        enPassantCaptureCount++;
+                    }
+                }
+
+                checked
+                {
+                    perftData.CaptureCount += captureCount;
+                    perftData.EnPassantCaptureCount += enPassantCaptureCount;
+                }
+
+                if (!includeExtraCountTypes && !includeDivideMap)
+                {
+                    checked
+                    {
+                        perftData.NodeCount += (ulong)moves.Count;
+                    }
+
+                    return;
+                }
             }
 
             if (canUseParallelism)
@@ -1266,8 +1365,8 @@ namespace ChessPlatform
 
                 if (includeDivideMap)
                 {
-                    perftData.DividedMoves[move] = perftData.DividedMoves.GetValueOrDefault(move)
-                        + checked(perftData.NodeCount - previousNodeCount);
+                    perftData.DividedMoves[move] = checked(perftData.DividedMoves.GetValueOrDefault(move)
+                        + perftData.NodeCount - previousNodeCount);
                 }
             }
         }
@@ -1290,6 +1389,18 @@ namespace ChessPlatform
             #region Public Properties
 
             public ulong NodeCount
+            {
+                get;
+                set;
+            }
+
+            public ulong CaptureCount
+            {
+                get;
+                set;
+            }
+
+            public ulong EnPassantCaptureCount
             {
                 get;
                 set;
@@ -1321,8 +1432,10 @@ namespace ChessPlatform
             {
                 return new PerftData
                 {
+                    CaptureCount = left.CaptureCount + right.CaptureCount,
                     CheckCount = left.CheckCount + right.CheckCount,
                     CheckmateCount = left.CheckmateCount + right.CheckmateCount,
+                    EnPassantCaptureCount = left.EnPassantCaptureCount + right.EnPassantCaptureCount,
                     NodeCount = left.NodeCount + right.NodeCount
                 };
             }
@@ -1342,8 +1455,10 @@ namespace ChessPlatform
 
                 #endregion
 
+                this.CaptureCount += other.CaptureCount;
                 this.CheckCount += other.CheckCount;
                 this.CheckmateCount += other.CheckmateCount;
+                this.EnPassantCaptureCount += other.EnPassantCaptureCount;
                 this.NodeCount += other.NodeCount;
             }
 

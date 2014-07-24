@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
 using NUnit.Framework;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Tests
 {
@@ -150,6 +153,22 @@ namespace ChessPlatform.Tests
             Assert.That(actualResult.Depth, Is.EqualTo(expectedResult.Depth), "Depth mismatch.");
             Assert.That(actualResult.NodeCount, Is.EqualTo(expectedResult.NodeCount), "Node count mismatch.");
 
+            if (expectedResult.CaptureCount.HasValue)
+            {
+                Assert.That(
+                    actualResult.CaptureCount,
+                    Is.EqualTo(expectedResult.CaptureCount),
+                    "Capture count mismatch.");
+            }
+
+            if (expectedResult.EnPassantCaptureCount.HasValue)
+            {
+                Assert.That(
+                    actualResult.EnPassantCaptureCount,
+                    Is.EqualTo(expectedResult.EnPassantCaptureCount),
+                    "En passant capture count mismatch.");
+            }
+
             if (expectedResult.CheckCount.HasValue)
             {
                 Assert.That(
@@ -164,14 +183,6 @@ namespace ChessPlatform.Tests
                     actualResult.CheckmateCount,
                     Is.EqualTo(expectedResult.CheckmateCount.Value),
                     "Checkmate count mismatch.");
-            }
-
-            if (expectedResult.NodesPerSecond.HasValue)
-            {
-                Assert.That(
-                    actualResult.NodesPerSecond,
-                    Is.GreaterThanOrEqualTo(expectedResult.NodesPerSecond.Value),
-                    "NPS is too low.");
             }
         }
 
@@ -239,6 +250,18 @@ namespace ChessPlatform.Tests
                 private set;
             }
 
+            public ulong? CaptureCount
+            {
+                get;
+                set;
+            }
+
+            public ulong? EnPassantCaptureCount
+            {
+                get;
+                set;
+            }
+
             public ulong? CheckCount
             {
                 get;
@@ -251,28 +274,50 @@ namespace ChessPlatform.Tests
                 set;
             }
 
-            public ulong? NodesPerSecond
-            {
-                get;
-                set;
-            }
-
             #endregion
 
             #region Public Methods
 
             public override string ToString()
             {
-                const string NotSpecified = "n/a";
+                var resultBuilder = new StringBuilder();
 
-                return string.Format(
+                resultBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
-                    "{{Depth = {0}, NodeCount = {1}, NPS = {2}, CheckCount = {3}, CheckmateCount = {4}}}",
+                    "{{ Depth = {0}, NodeCount = {1}",
                     this.Depth,
-                    this.NodeCount,
-                    this.NodesPerSecond.ToStringSafelyInvariant(NotSpecified),
-                    this.CheckCount.ToStringSafelyInvariant(NotSpecified),
-                    this.CheckmateCount.ToStringSafelyInvariant(NotSpecified));
+                    this.NodeCount);
+
+                WriteProperty(resultBuilder, obj => obj.CaptureCount);
+                WriteProperty(resultBuilder, obj => obj.EnPassantCaptureCount);
+                WriteProperty(resultBuilder, obj => obj.CheckCount);
+                WriteProperty(resultBuilder, obj => obj.CheckmateCount);
+
+                resultBuilder.Append(" }");
+
+                return resultBuilder.ToString();
+            }
+
+            #endregion
+
+            #region Private Methods
+
+            private void WriteProperty<T>(
+                [NotNull] StringBuilder stringBuilder,
+                [NotNull] Expression<Func<ExpectedPerftResult, T?>> expression)
+                where T : struct
+            {
+                var value = expression.Compile().Invoke(this);
+                if (!value.HasValue)
+                {
+                    return;
+                }
+
+                stringBuilder.AppendFormat(
+                    CultureInfo.InvariantCulture,
+                    ", {0} = {1}",
+                    Factotum.For<ExpectedPerftResult>.GetPropertyName(expression),
+                    value.Value);
             }
 
             #endregion
@@ -368,33 +413,72 @@ namespace ChessPlatform.Tests
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(0, 1UL) { CheckCount = 0, CheckmateCount = 0 });
+                    new ExpectedPerftResult(0, 1UL)
+                    {
+                        CaptureCount = 0,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 0,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(1, 20UL) { CheckCount = 0, CheckmateCount = 0 });
+                    new ExpectedPerftResult(1, 20UL)
+                    {
+                        CaptureCount = 0,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 0,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(2, 400UL) { CheckCount = 0, CheckmateCount = 0 });
+                    new ExpectedPerftResult(2, 400UL)
+                    {
+                        CaptureCount = 0,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 0,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(3, 8902UL) { CheckCount = 12, CheckmateCount = 0 });
+                    new ExpectedPerftResult(3, 8902UL)
+                    {
+                        CaptureCount = 34,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 12,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Initial,
-                    new ExpectedPerftResult(4, 197281UL) { CheckCount = 469, CheckmateCount = 8 });
+                    new ExpectedPerftResult(4, 197281UL)
+                    {
+                        CaptureCount = 1576,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 469,
+                        CheckmateCount = 8
+                    });
 
-                // Targeting ~100,000 NPS (or better) for the first optimization
-                yield return new TestPerftCaseData(
-                    PerftPosition.Initial,
-                    new ExpectedPerftResult(4, 197281UL) { NodesPerSecond = 100000 });
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Initial,
+                        new ExpectedPerftResult(5, 4865609UL)
+                        {
+                            CaptureCount = 82719,
+                            EnPassantCaptureCount = 258
+                        });
 
-                yield return new TestPerftCaseData(PerftPosition.Initial, new ExpectedPerftResult(5, 4865609UL));
-
-                yield return new TestPerftCaseData(PerftPosition.Initial, new ExpectedPerftResult(6, 119060324UL))
-                    .MakeExplicit(TooLongNow);
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Initial,
+                        new ExpectedPerftResult(6, 119060324UL)
+                        {
+                            CaptureCount = 2812008,
+                            EnPassantCaptureCount = 5248
+                        })
+                        .MakeExplicit(TooLongNow);
 
                 yield return new TestPerftCaseData(PerftPosition.Initial, new ExpectedPerftResult(7, 3195901860UL))
                     .MakeExplicit(TooLongNow);
@@ -428,70 +512,175 @@ namespace ChessPlatform.Tests
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Position2,
-                    new ExpectedPerftResult(1, 48UL) { CheckCount = 0, CheckmateCount = 0 });
+                    new ExpectedPerftResult(1, 48UL)
+                    {
+                        CaptureCount = 8,
+                        EnPassantCaptureCount = 0,
+                        CheckCount = 0,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Position2,
-                    new ExpectedPerftResult(2, 2039UL) { CheckCount = 3, CheckmateCount = 0 });
+                    new ExpectedPerftResult(2, 2039UL)
+                    {
+                        CaptureCount = 351,
+                        EnPassantCaptureCount = 1,
+                        CheckCount = 3,
+                        CheckmateCount = 0
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Position2,
-                    new ExpectedPerftResult(3, 97862UL) { CheckCount = 993, CheckmateCount = 1 });
+                    new ExpectedPerftResult(3, 97862UL)
+                    {
+                        CaptureCount = 17102,
+                        EnPassantCaptureCount = 45,
+                        CheckCount = 993,
+                        CheckmateCount = 1
+                    });
 
                 yield return new TestPerftCaseData(
                     PerftPosition.Position2,
-                    new ExpectedPerftResult(4, 4085603UL));
+                    new ExpectedPerftResult(4, 4085603UL)
+                    {
+                        CaptureCount = 757163,
+                        EnPassantCaptureCount = 1929
+                    });
 
-                yield return new TestPerftCaseData(PerftPosition.Position2, new ExpectedPerftResult(5, 193690690UL))
+                yield return new TestPerftCaseData(
+                    PerftPosition.Position2,
+                    new ExpectedPerftResult(5, 193690690UL)
+                    {
+                        CaptureCount = 35043416,
+                        EnPassantCaptureCount = 73365
+                    })
                     .MakeExplicit(TooLongNow);
 
                 #endregion
 
                 #region Position3
 
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(1, 14UL));
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(2, 191UL));
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(3, 2812UL));
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(4, 43238UL));
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(5, 674624UL));
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(6, 11030083UL));
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(1, 14UL) { CaptureCount = 1, EnPassantCaptureCount = 0 });
 
-                yield return new TestPerftCaseData(PerftPosition.Position3, new ExpectedPerftResult(7, 178633661UL))
-                    .MakeExplicit(TooLongNow);
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(2, 191UL) { CaptureCount = 14, EnPassantCaptureCount = 0 });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(3, 2812UL) { CaptureCount = 209, EnPassantCaptureCount = 2 });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(4, 43238UL) { CaptureCount = 3348, EnPassantCaptureCount = 123 });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(5, 674624UL) { CaptureCount = 52051, EnPassantCaptureCount = 1165 });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(6, 11030083UL)
+                        {
+                            CaptureCount = 940350,
+                            EnPassantCaptureCount = 33325
+                        });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position3,
+                        new ExpectedPerftResult(7, 178633661UL)
+                        {
+                            CaptureCount = 14519036,
+                            EnPassantCaptureCount = 294874
+                        })
+                        .MakeExplicit(TooLongNow);
 
                 #endregion
 
                 #region Position4 and MirroredPosition4
 
-                yield return new TestPerftCaseData(PerftPosition.Position4, new ExpectedPerftResult(5, 15833292UL));
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(5, 15833292UL)
+                        {
+                            CaptureCount = 2046173,
+                            EnPassantCaptureCount = 6512
+                        });
 
                 var mirroredPositions = new[] { PerftPosition.Position4, PerftPosition.MirroredPosition4 };
                 foreach (var position in mirroredPositions)
                 {
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(1, 6UL) { CheckCount = 0, CheckmateCount = 0 });
+                        new ExpectedPerftResult(1, 6UL)
+                        {
+                            CaptureCount = 0,
+                            EnPassantCaptureCount = 0,
+                            CheckCount = 0,
+                            CheckmateCount = 0
+                        });
 
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(2, 264UL) { CheckCount = 10, CheckmateCount = 0 });
+                        new ExpectedPerftResult(2, 264UL)
+                        {
+                            CaptureCount = 87,
+                            EnPassantCaptureCount = 0,
+                            CheckCount = 10,
+                            CheckmateCount = 0
+                        });
 
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(3, 9467UL) { CheckCount = 38, CheckmateCount = 22 });
+                        new ExpectedPerftResult(3, 9467UL)
+                        {
+                            CaptureCount = 1021,
+                            EnPassantCaptureCount = 4,
+                            CheckCount = 38,
+                            CheckmateCount = 22
+                        });
 
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(4, 422333UL) { CheckCount = 15492, CheckmateCount = 5 });
+                        new ExpectedPerftResult(4, 422333UL)
+                        {
+                            CaptureCount = 131393,
+                            EnPassantCaptureCount = 0,
+                            CheckCount = 15492,
+                            CheckmateCount = 5
+                        });
 
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(5, 15833292UL) { CheckCount = 200568, CheckmateCount = 50562 })
+                        new ExpectedPerftResult(5, 15833292UL)
+                        {
+                            CaptureCount = 2046173,
+                            EnPassantCaptureCount = 6512,
+                            CheckCount = 200568,
+                            CheckmateCount = 50562
+                        })
                         .MakeExplicit(TooLongNow);
 
                     yield return new TestPerftCaseData(
                         position,
-                        new ExpectedPerftResult(6, 706045033UL) { CheckCount = 26973664, CheckmateCount = 81076 })
+                        new ExpectedPerftResult(6, 706045033UL)
+                        {
+                            CaptureCount = 210369132,
+                            EnPassantCaptureCount = 212,
+                            CheckCount = 26973664,
+                            CheckmateCount = 81076
+                        })
                         .MakeExplicit(TooLongNow);
                 }
 

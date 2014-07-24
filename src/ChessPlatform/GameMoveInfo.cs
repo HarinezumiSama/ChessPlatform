@@ -36,11 +36,19 @@ namespace ChessPlatform
             }
         }
 
-        public bool IsCapture
+        public bool IsAnyCapture
         {
             get
             {
                 return (_flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
+            }
+        }
+
+        public bool IsCapture
+        {
+            get
+            {
+                return (_flags & GameMoveFlags.IsCapture) != 0;
             }
         }
 
