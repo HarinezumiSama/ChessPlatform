@@ -688,32 +688,38 @@ namespace ChessPlatform
             GeneratePawnMoves(addMoveData, GeneratedMoveTypes.All, Bitboard.Everything);
 
             var gameBoardData = addMoveData.GameBoardData;
-            var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
-            var activePiecesExceptKingAndPawnsBitboard = addMoveData.ActivePiecesExceptKingAndPawnsBitboard;
+            var moveDatas = new List<GameMoveData>(ValidMoveCapacity);
 
-            var sourcePositions = activePiecesExceptKingAndPawnsBitboard.GetPositions();
-            foreach (var sourcePosition in sourcePositions)
+            gameBoardData.GenerateKnightMoves(
+                moveDatas,
+                addMoveData.ActiveColor,
+                GeneratedMoveTypes.All,
+                Bitboard.Everything);
+
+            gameBoardData.GenerateQueenMoves(
+                moveDatas,
+                addMoveData.ActiveColor,
+                GeneratedMoveTypes.All);
+
+            gameBoardData.GenerateRookMoves(
+                moveDatas,
+                addMoveData.ActiveColor,
+                GeneratedMoveTypes.All);
+
+            gameBoardData.GenerateBishopMoves(
+                moveDatas,
+                addMoveData.ActiveColor,
+                GeneratedMoveTypes.All);
+
+            foreach (var moveData in moveDatas)
             {
-                var potentialMovePositions = gameBoardData.GetPotentialMovePositions(
-                    addMoveData.CastlingOptions,
-                    enPassantCaptureInfo,
-                    sourcePosition);
-
-                foreach (var destinationPosition in potentialMovePositions)
+                var move = moveData.Move;
+                if (!IsValidMoveByPinning(addMoveData.PinLimitations, move.From, move.To))
                 {
-                    if (!IsValidMoveByPinning(addMoveData.PinLimitations, sourcePosition, destinationPosition))
-                    {
-                        continue;
-                    }
-
-                    var moveFlags = GameMoveFlags.None;
-                    if ((~gameBoardData.GetBitboard(Piece.None) & destinationPosition.Bitboard).IsAny)
-                    {
-                        moveFlags |= GameMoveFlags.IsCapture;
-                    }
-
-                    AddMove(addMoveData, sourcePosition, destinationPosition, moveFlags);
+                    continue;
                 }
+
+                addMoveData.ValidMoves.Add(move, moveData.MoveInfo);
             }
         }
 

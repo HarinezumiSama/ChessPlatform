@@ -15,6 +15,25 @@ namespace ChessPlatform.Internal
         private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
         private static readonly int ColorArrayLength = ChessConstants.PieceColors.Max(item => (int)item) + 1;
 
+        private static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
+        private static readonly ShiftDirection[] QueenDirections = AllDirections;
+
+        private static readonly ShiftDirection[] RookDirections =
+        {
+            ShiftDirection.North,
+            ShiftDirection.South,
+            ShiftDirection.East,
+            ShiftDirection.West
+        };
+
+        private static readonly ShiftDirection[] BishopDirections =
+        {
+            ShiftDirection.NorthEast,
+            ShiftDirection.NorthWest,
+            ShiftDirection.SouthEast,
+            ShiftDirection.SouthWest
+        };
+
         private static readonly Bitboard[] StraightSlidingAttacks = InitializeStraightSlidingAttacks();
         private static readonly Bitboard[] DiagonallySlidingAttacks = InitializeDiagonallySlidingAttacks();
         private static readonly Bitboard[] KnightAttacksOrMoves = InitializeKnightAttacks();
@@ -345,7 +364,7 @@ namespace ChessPlatform.Internal
         }
 
         public void GeneratePawnMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData> resultMoves,
             PieceColor color,
             GeneratedMoveTypes moveTypes,
             Bitboard enPassantCaptureTarget,
@@ -431,7 +450,7 @@ namespace ChessPlatform.Internal
         }
 
         public void GenerateKingMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData> resultMoves,
             PieceColor color,
             CastlingOptions allowedCastlingOptions,
             Bitboard target)
@@ -492,7 +511,7 @@ namespace ChessPlatform.Internal
         }
 
         public void GenerateKnightMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData> resultMoves,
             PieceColor color,
             GeneratedMoveTypes moveTypes,
             Bitboard target)
@@ -514,7 +533,7 @@ namespace ChessPlatform.Internal
             {
                 internalTarget |= emptySquares;
             }
-            
+
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
             {
                 internalTarget |= enemies;
@@ -552,6 +571,57 @@ namespace ChessPlatform.Internal
                     PopulateSimpleMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
                 }
             }
+        }
+
+        public void GenerateQueenMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            PieceColor color,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException("resultMoves");
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Queen, QueenDirections);
+        }
+
+        public void GenerateRookMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            PieceColor color,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException("resultMoves");
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Rook, RookDirections);
+        }
+
+        public void GenerateBishopMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            PieceColor color,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException("resultMoves");
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Bishop, BishopDirections);
         }
 
         #endregion
@@ -1148,13 +1218,11 @@ namespace ChessPlatform.Internal
             var result = new Bitboard[ChessConstants.SquareCount * ChessConstants.SquareCount];
             result.Initialize(i => Bitboard.Everything);
 
-            var directions = EnumFactotum.GetAllValues<ShiftDirection>();
-
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
                 var source = Bitboard.FromSquareIndex(squareIndex);
 
-                foreach (var direction in directions)
+                foreach (var direction in AllDirections)
                 {
                     var current = source;
                     var connection = Bitboard.None;
@@ -1425,6 +1493,60 @@ namespace ChessPlatform.Internal
             var king = GetBitboard(PieceType.King.ToPiece(color));
             var otherPieces = entire & ~king;
             return otherPieces.IsNone;
+        }
+
+        private void GenerateSlidingPieceMoves(
+            [NotNull] ICollection<GameMoveData> resultMoves,
+            PieceColor color,
+            GeneratedMoveTypes moveTypes,
+            PieceType pieceType,
+            ShiftDirection[] directions)
+        {
+            var piece = pieceType.ToPiece(color);
+            var pieces = GetBitboard(piece);
+
+            var emptySquares = GetBitboard(Piece.None);
+            var enemies = GetBitboard(color.Invert());
+
+            var shouldGenerateQuiets = moveTypes.IsAnySet(GeneratedMoveTypes.Quiet);
+            var shouldGenerateCaptures = moveTypes.IsAnySet(GeneratedMoveTypes.Capture);
+
+            while (pieces.IsAny)
+            {
+                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref pieces);
+                var sourceBitboard = Bitboard.FromSquareIndex(sourceSquareIndex);
+                var sourcePosition = Position.FromSquareIndex(sourceSquareIndex);
+
+                foreach (var direction in directions)
+                {
+                    var current = sourceBitboard;
+
+                    while ((current = current.Shift(direction)).IsAny)
+                    {
+                        if ((current & emptySquares).IsAny)
+                        {
+                            if (shouldGenerateQuiets)
+                            {
+                                var move = new GameMove(sourcePosition, current.GetFirstPosition());
+                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.None)));
+                            }
+
+                            continue;
+                        }
+
+                        if ((current & enemies).IsAny)
+                        {
+                            if (shouldGenerateCaptures)
+                            {
+                                var move = new GameMove(sourcePosition, current.GetFirstPosition());
+                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsCapture)));
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
 
         #endregion
