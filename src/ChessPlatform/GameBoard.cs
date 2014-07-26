@@ -628,17 +628,6 @@ namespace ChessPlatform
             var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
             var basicMove = new GameMove(sourcePosition, targetPosition, promotionResult);
 
-            var isEnPassantCapture = addMoveData.GameBoardData.IsEnPassantCapture(
-                sourcePosition,
-                targetPosition,
-                addMoveData.EnPassantCaptureInfo);
-
-            if (isEnPassantCapture)
-            {
-                moveFlags |= GameMoveFlags.IsEnPassantCapture;
-                moveFlags &= ~GameMoveFlags.IsCapture;
-            }
-
             var pieceMoveInfo = new GameMoveInfo(moveFlags);
             addMoveData.ValidMoves.Add(basicMove, pieceMoveInfo);
 
