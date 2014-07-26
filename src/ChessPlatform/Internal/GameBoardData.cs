@@ -468,11 +468,11 @@ namespace ChessPlatform.Internal
 
             var emptySquares = GetBitboard(Piece.None);
             var nonCaptures = directTargets & emptySquares;
-            PopulateKingMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
+            PopulateSimpleMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
 
             var enemies = GetBitboard(color.Invert());
             var captures = directTargets & enemies;
-            PopulateKingMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
+            PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
 
             var nonEmptySquares = ~emptySquares;
 
@@ -489,6 +489,69 @@ namespace ChessPlatform.Internal
                 allowedCastlingOptions,
                 nonEmptySquares,
                 CastlingSide.QueenSide.ToCastlingType(color));
+        }
+
+        public void GenerateKnightMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            PieceColor color,
+            GeneratedMoveTypes moveTypes,
+            Bitboard target)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException("resultMoves");
+            }
+
+            #endregion
+
+            var emptySquares = GetBitboard(Piece.None);
+            var enemies = GetBitboard(color.Invert());
+
+            var internalTarget = Bitboard.None;
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+            {
+                internalTarget |= emptySquares;
+            }
+            
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+            {
+                internalTarget |= enemies;
+            }
+
+            var actualTarget = target & internalTarget;
+            if (actualTarget.IsNone)
+            {
+                return;
+            }
+
+            var knightPiece = PieceType.Knight.ToPiece(color);
+            var knights = GetBitboard(knightPiece);
+
+            while (knights.IsAny)
+            {
+                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref knights);
+                var moves = KnightAttacksOrMoves[sourceSquareIndex];
+                var movesOnTarget = moves & actualTarget;
+                if (movesOnTarget.IsNone)
+                {
+                    continue;
+                }
+
+                var sourcePosition = Position.FromSquareIndex(sourceSquareIndex);
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+                {
+                    var captures = movesOnTarget & enemies;
+                    PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
+                }
+
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+                {
+                    var nonCaptures = movesOnTarget & emptySquares;
+                    PopulateSimpleMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
+                }
+            }
         }
 
         #endregion
@@ -912,7 +975,7 @@ namespace ChessPlatform.Internal
                 GameMoveFlags.IsCapture | GameMoveFlags.IsPawnPromotion);
         }
 
-        private static void PopulateKingMoves(
+        private static void PopulateSimpleMoves(
             ICollection<GameMoveData> resultMoves,
             Position sourcePosition,
             Bitboard destinationsBitboard,
@@ -1291,7 +1354,7 @@ namespace ChessPlatform.Internal
 
                 var attackingPawns = (targetBitboard.Shift(left) | targetBitboard.Shift(right)) & opponentPawns;
                 result |= attackingPawns;
-                if (result.IsAny && findFirstAttackOnly)
+                if (findFirstAttackOnly && result.IsAny)
                 {
                     return result;
                 }
@@ -1303,7 +1366,7 @@ namespace ChessPlatform.Internal
                 var knightAttacks = KnightAttacksOrMoves[targetSquareIndex];
                 var attackingKnights = knightAttacks & opponentKnights;
                 result |= attackingKnights;
-                if (result.IsAny && findFirstAttackOnly)
+                if (findFirstAttackOnly && result.IsAny)
                 {
                     return result;
                 }
@@ -1315,7 +1378,7 @@ namespace ChessPlatform.Internal
                 var kingAttacks = KingAttacksOrMoves[targetSquareIndex];
                 var attackingKings = kingAttacks & opponentKings;
                 result |= attackingKings;
-                if (result.IsAny && findFirstAttackOnly)
+                if (findFirstAttackOnly && result.IsAny)
                 {
                     return result;
                 }
@@ -1336,7 +1399,7 @@ namespace ChessPlatform.Internal
                     findFirstAttackOnly);
 
             result |= slidingStraightAttackers;
-            if (result.IsAny && findFirstAttackOnly)
+            if (findFirstAttackOnly && result.IsAny)
             {
                 return result;
             }
