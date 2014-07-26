@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Omnifactotum.Annotations;
 
@@ -42,6 +43,19 @@ namespace ChessPlatform.Internal
             {
                 return _moveInfo;
             }
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0} : {1}",
+                this.Move,
+                this.MoveInfo);
         }
 
         #endregion

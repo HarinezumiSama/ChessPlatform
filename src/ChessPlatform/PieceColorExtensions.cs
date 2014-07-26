@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {
@@ -10,27 +9,30 @@ namespace ChessPlatform
     {
         #region Public Methods
 
+        //// TODO [vmcl] Use for FW 4.5+
+        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceColor EnsureDefined(this PieceColor color)
         {
-            if (DebugConstants.EnsureEnumValuesDefined && !ChessConstants.PieceColors.Contains(color))
+            switch (color)
             {
-                throw new InvalidEnumArgumentException("color", (int)color, color.GetType());
-            }
+                case PieceColor.White:
+                case PieceColor.Black:
+                    return color;
 
-            return color;
+                default:
+                    throw new InvalidEnumArgumentException("color", (int)color, color.GetType());
+            }
         }
 
+        //// TODO [vmcl] Use for FW 4.5+
+        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceColor Invert(this PieceColor color)
         {
-            #region Argument Check
-
-            color.EnsureDefined();
-
-            #endregion
-
-            return color == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+            return (PieceColor)(PieceColor.Black - color);
         }
 
+        //// TODO [vmcl] Use for FW 4.5+
+        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetFenSnippet(this PieceColor color)
         {
             return ChessConstants.ColorToFenSnippetMap[color];

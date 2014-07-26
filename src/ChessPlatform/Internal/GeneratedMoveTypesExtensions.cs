@@ -7,6 +7,8 @@ namespace ChessPlatform.Internal
     {
         #region Public Methods
 
+        //// TODO [vmcl] Use for FW 4.5+
+        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAnySet(this GeneratedMoveTypes value, GeneratedMoveTypes flags)
         {
             return (value & flags) != 0;
