@@ -1318,7 +1318,7 @@ namespace ChessPlatform
                     perftData.EnPassantCaptureCount += enPassantCaptureCount;
                 }
 
-                if (!includeExtraCountTypes && !includeDivideMap)
+                if (!includeDivideMap && !includeExtraCountTypes)
                 {
                     checked
                     {
@@ -1351,8 +1351,37 @@ namespace ChessPlatform
                 return;
             }
 
+            GameBoardData gameBoardDataCopy = null;
+            if (depth == 1 && includeExtraCountTypes && !includeDivideMap)
+            {
+                gameBoardDataCopy = gameBoard._gameBoardData.Copy();
+            }
+
             foreach (var move in moves)
             {
+                if (gameBoardDataCopy != null)
+                {
+                    var castlingOptions = gameBoard._castlingOptions;
+                    gameBoardDataCopy.MakeMove(
+                        move,
+                        gameBoard._activeColor,
+                        gameBoard._enPassantCaptureInfo,
+                        ref castlingOptions);
+
+                    var isInCheck = gameBoardDataCopy.IsInCheck(gameBoard._activeColor.Invert());
+                    gameBoardDataCopy.UndoMove();
+
+                    if (!isInCheck)
+                    {
+                        checked
+                        {
+                            perftData.NodeCount++;
+                        }
+
+                        continue;
+                    }
+                }
+
                 var previousNodeCount = perftData.NodeCount;
 
                 var newBoard = gameBoard.MakeMove(move);
