@@ -143,6 +143,20 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 {
                     task.Wait(timeoutCancellationToken);
                 }
+                catch (AggregateException ex)
+                {
+                    var operationCanceledException = ex.InnerException as OperationCanceledException;
+                    if (operationCanceledException != null)
+                    {
+                        if (operationCanceledException.CancellationToken == internalCancellationToken
+                            || operationCanceledException.CancellationToken == request.CancellationToken)
+                        {
+                            request.CancellationToken.ThrowIfCancellationRequested();
+                        }
+                    }
+
+                    throw;
+                }
                 catch (OperationCanceledException ex)
                 {
                     if (ex.CancellationToken != timeoutCancellationToken)
