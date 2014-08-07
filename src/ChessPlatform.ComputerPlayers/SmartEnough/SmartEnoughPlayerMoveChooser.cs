@@ -78,7 +78,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _previousIterationBestMoveInfo = previousIterationBestMoveInfo;
             _cancellationToken = cancellationToken;
 
-            _transpositionTable = new SimpleTranspositionTable(1000000);
+            _transpositionTable = new SimpleTranspositionTable(0);  // Disabled for now due to bug
         }
 
         #endregion
