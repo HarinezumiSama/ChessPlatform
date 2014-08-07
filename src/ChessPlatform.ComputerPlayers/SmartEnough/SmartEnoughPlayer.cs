@@ -214,6 +214,42 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
+        private static BestMoveData FindMateMove(
+            [NotNull] IGameBoard board,
+            [NotNull] BoardCache boardCache,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var mateMoves = board
+                .ValidMoves
+                .Keys
+                .Where(
+                    move =>
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var currentBoard = boardCache.MakeMove(board, move);
+                        return currentBoard.State == GameState.Checkmate;
+                    })
+                .ToArray();
+
+            if (mateMoves.Length == 0)
+            {
+                return null;
+            }
+
+            var mateMove = mateMoves
+                .OrderBy(
+                    move => SmartEnoughPlayerMoveChooser.PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                .ThenBy(move => move.From.SquareIndex)
+                .ThenBy(move => move.To.SquareIndex)
+                .ThenBy(move => move.PromotionResult)
+                .First();
+
+            return new BestMoveData(mateMove, board.ValidMoves.Count, 1);
+        }
+
         private void DoGetMoveInternal(
             [NotNull] IGameBoard board,
             CancellationToken cancellationToken,
@@ -259,8 +295,17 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var boardCache = new BoardCache(100000);
 
+            var mateMove = FindMateMove(board, boardCache, cancellationToken);
+            if (mateMove != null)
+            {
+                bestMoveContainer.Value = mateMove;
+                Trace.TraceInformation("[{0}] Immediate mate move: {1}.", currentMethodName, mateMove.Move);
+                return;
+            }
+
             BestMoveInfo bestMoveInfo = null;
             var totalNodeCount = 0L;
+            ScoreCache scoreCache = null;
 
             for (var plyDepth = SmartEnoughPlayerMoveChooser.MaxPlyDepthLowerLimit;
                 plyDepth <= _maxPlyDepth;
@@ -275,11 +320,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     board,
                     plyDepth,
                     boardCache,
+                    scoreCache,
                     bestMoveInfo,
                     cancellationToken);
 
                 bestMoveInfo = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;
+                scoreCache = moveChooser.ScoreCache;
 
                 bestMoveContainer.Value = new BestMoveData(bestMoveInfo.BestMove, totalNodeCount, plyDepth);
             }

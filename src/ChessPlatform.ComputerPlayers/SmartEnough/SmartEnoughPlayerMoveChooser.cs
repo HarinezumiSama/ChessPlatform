@@ -21,7 +21,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
 
-        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
+        internal static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
 
         // ReSharper disable once UnusedMember.Local
@@ -40,6 +40,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
+        private readonly ScoreCache _previousIterationScoreCache;
 
         #endregion
 
@@ -52,6 +53,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] IGameBoard rootBoard,
             int maxPlyDepth,
             [NotNull] BoardCache boardCache,
+            [CanBeNull] ScoreCache previousIterationScoreCache,
             [CanBeNull] BestMoveInfo previousIterationBestMoveInfo,
             CancellationToken cancellationToken)
         {
@@ -78,10 +80,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _rootBoard = rootBoard;
             _maxPlyDepth = maxPlyDepth;
             _boardCache = boardCache;
+            _previousIterationScoreCache = previousIterationScoreCache;
             _previousIterationBestMoveInfo = previousIterationBestMoveInfo;
             _cancellationToken = cancellationToken;
 
-            _transpositionTable = new SimpleTranspositionTable(0);  // Disabled for now due to bug
+            _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
+            this.ScoreCache = new ScoreCache(rootBoard);
         }
 
         #endregion
@@ -95,6 +99,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 return _boardCache.TotalRequestCount;
             }
+        }
+
+        public ScoreCache ScoreCache
+        {
+            get;
+            private set;
         }
 
         #endregion
@@ -476,9 +486,24 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private GameMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
         {
-            var result = new List<GameMove>(board.ValidMoves.Count);
+            const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
+
+            var resultList = new List<GameMove>(board.ValidMoves.Count);
 
             var validMoves = board.ValidMoves.ToArray();
+
+            if (_previousIterationScoreCache != null && plyDistance == 0)
+            {
+                var movesOrderedByScore = _previousIterationScoreCache.OrderMovesByScore();
+                resultList.AddRange(movesOrderedByScore.Select(pair => pair.Key));
+
+                if (resultList.Count != board.ValidMoves.Count)
+                {
+                    throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
+                }
+
+                return resultList.ToArray();
+            }
 
             if (_previousIterationBestMoveInfo != null
                 && plyDistance < _previousIterationBestMoveInfo.PrincipalVariationMoves.Count)
@@ -486,7 +511,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var principalVariationMove = _previousIterationBestMoveInfo.PrincipalVariationMoves[plyDistance];
                 if (board.ValidMoves.ContainsKey(principalVariationMove))
                 {
-                    result.Add(principalVariationMove);
+                    resultList.Add(principalVariationMove);
                     validMoves = validMoves.Where(pair => pair.Key != principalVariationMove).ToArray();
                 }
             }
@@ -505,7 +530,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .ThenBy(move => move.To.SquareIndex)
                 .ToArray();
 
-            result.AddRange(capturingMoves);
+            resultList.AddRange(capturingMoves);
 
             var nonCapturingMoves = validMoves
                 .Where(pair => !pair.Value.IsCapture)
@@ -519,14 +544,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .ThenBy(move => move.To.SquareIndex)
                 .ToArray();
 
-            result.AddRange(nonCapturingMoves);
+            resultList.AddRange(nonCapturingMoves);
 
-            if (result.Count != board.ValidMoves.Count)
+            if (resultList.Count != board.ValidMoves.Count)
             {
-                throw new InvalidOperationException("Internal logic error in move ordering procedure.");
+                throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
             }
 
-            return result.ToArray();
+            return resultList.ToArray();
         }
 
         // ReSharper disable once MemberCanBeMadeStatic.Local
@@ -730,7 +755,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             GameMove bestMove = null;
             AlphaBetaScore bestAlphaBetaScore = null;
             var bestMoveLocalScore = int.MinValue;
-            ////var alpha = LocalConstants.RootAlpha;
             var stopwatch = new Stopwatch();
 
             foreach (var move in orderedMoves)
@@ -745,6 +769,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 stopwatch.Stop();
 
                 var alphaBetaScore = move + score;
+                this.ScoreCache[move] = alphaBetaScore;
 
                 Trace.TraceInformation(
                     "[{0}] PV {1} (local {2}). Time spent: {3}",
@@ -758,7 +783,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     continue;
                 }
 
-                ////alpha = alphaBetaScore.Value;
                 bestMove = move;
                 bestMoveLocalScore = localScore;
                 bestAlphaBetaScore = alphaBetaScore;
@@ -775,50 +799,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return new BestMoveInfo(principalVariationMoves);
         }
 
-        private GameMove FindMateMove()
-        {
-            _cancellationToken.ThrowIfCancellationRequested();
-
-            var mateMoves = _rootBoard
-                .ValidMoves
-                .Keys
-                .Where(
-                    move =>
-                    {
-                        _cancellationToken.ThrowIfCancellationRequested();
-
-                        var currentBoard = _boardCache.MakeMove(_rootBoard, move);
-                        return currentBoard.State == GameState.Checkmate;
-                    })
-                .ToArray();
-
-            if (mateMoves.Length == 0)
-            {
-                return null;
-            }
-
-            return mateMoves
-                .OrderBy(move => PieceTypeToMaterialWeightMap[_rootBoard[move.From].GetPieceType()])
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ThenBy(move => move.PromotionResult)
-                .First();
-        }
-
         private BestMoveInfo GetBestMoveInternal()
         {
             _cancellationToken.ThrowIfCancellationRequested();
-
-            var mateMove = FindMateMove();
-            if (mateMove != null)
-            {
-                Trace.TraceInformation(
-                    "[{0}] Immediate mate move: {1}.",
-                    MethodBase.GetCurrentMethod().GetQualifiedName(),
-                    mateMove);
-
-                return new BestMoveInfo(mateMove.AsArray());
-            }
 
             var result = ComputeAlphaBetaRoot(_rootBoard);
             return result.EnsureNotNull();

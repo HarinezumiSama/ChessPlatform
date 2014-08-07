@@ -56,6 +56,7 @@
     <Compile Include="SmartEnough\BoardCache.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
     <Compile Include="SmartEnough\LocalConstants.cs" />
+    <Compile Include="SmartEnough\ScoreCache.cs" />
     <Compile Include="SmartEnough\SimpleTranspositionTable.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

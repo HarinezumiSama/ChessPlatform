@@ -87,6 +87,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Operators
 
+        [DebuggerNonUserCode]
         [NotNull]
         public static AlphaBetaScore operator -(AlphaBetaScore alphaBetaScore)
         {
@@ -102,6 +103,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return new AlphaBetaScore(-alphaBetaScore.Value, alphaBetaScore._movesInternal);
         }
 
+        [DebuggerNonUserCode]
         [NotNull]
         public static AlphaBetaScore operator +(GameMove move, AlphaBetaScore alphaBetaScore)
         {
@@ -121,6 +123,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
+        [DebuggerNonUserCode]
         public override string ToString()
         {
             return string.Format(
