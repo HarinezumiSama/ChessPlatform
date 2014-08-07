@@ -21,7 +21,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 {
                     ControlItem.Create((PlayerInfo)null, "Human Player"),
                     ControlItem.Create(
-                        new PlayerInfo(color => new SmartEnoughPlayer(color, 10, true, TimeSpan.FromSeconds(15))),
+                        new PlayerInfo(color => new SmartEnoughPlayer(color, 100, true, TimeSpan.FromSeconds(15))),
                         "Computer Player")
                 };
 
