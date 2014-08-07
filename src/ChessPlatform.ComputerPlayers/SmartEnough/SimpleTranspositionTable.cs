@@ -24,18 +24,25 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             #region Argument Check
 
-            if (maximumItemCount <= 0)
+            if (maximumItemCount < 0)
             {
                 throw new ArgumentOutOfRangeException(
                     "maximumItemCount",
                     maximumItemCount,
-                    @"The value must be positive.");
+                    @"The value cannot be negative.");
             }
 
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
             _scoreMap = new Dictionary<InternalKey, AlphaBetaScore>(maximumItemCount);
+
+            if (this.MaximumItemCount <= 0)
+            {
+                Trace.TraceWarning(
+                    "[{0}] The transposition table is DISABLED.",
+                    MethodBase.GetCurrentMethod().GetQualifiedName());
+            }
         }
 
         #endregion
@@ -98,13 +105,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        public void SaveScore([NotNull] IGameBoard board, int plyDistance, AlphaBetaScore score)
+        public void SaveScore([NotNull] IGameBoard board, int plyDistance, [NotNull] AlphaBetaScore score)
         {
             #region Argument Check
 
             if (board == null)
             {
                 throw new ArgumentNullException("board");
+            }
+
+            if (score == null)
+            {
+                throw new ArgumentNullException("score");
             }
 
             #endregion

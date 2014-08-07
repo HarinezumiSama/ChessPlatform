@@ -22,6 +22,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             typeof(SmartEnoughPlayer).Assembly.GetName().Name,
             typeof(SmartEnoughPlayer).GetQualifiedName());
 
+        private static readonly string TraceSeparator = new string('-', 120);
+
         private readonly int _maxPlyDepth;
         private readonly OpeningBook _openingBook;
         private readonly Random _openingBookRandom;
@@ -98,6 +100,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var board = request.Board;
+
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine(TraceSeparator);
 
             Trace.TraceInformation(
                 "[{0}] Max ply depth: {1}. Analyzing \"{2}\"...",
@@ -192,6 +198,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 nps,
                 board.GetFen());
 
+            Trace.WriteLine(TraceSeparator);
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine(string.Empty);
+
             if (bestMove == null)
             {
                 throw new InvalidOperationException("Could not determine the best move. (Has timeout expired?)");
@@ -253,6 +263,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                Trace.WriteLine(string.Empty);
                 Trace.TraceInformation("[{0}] Iterative deepening: {1}.", currentMethodName, plyDepth);
 
                 var moveChooser = new SmartEnoughPlayerMoveChooser(

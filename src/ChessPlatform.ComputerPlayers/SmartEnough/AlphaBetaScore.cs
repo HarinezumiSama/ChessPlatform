@@ -18,15 +18,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constructors
 
-        public AlphaBetaScore(int score)
+        public AlphaBetaScore(int value)
         {
             _movesInternal = new List<GameMove>();
-            this.Score = score;
+            this.Value = value;
             this.Moves = _movesInternal.AsReadOnly();
         }
 
-        private AlphaBetaScore(int score, [NotNull] GameMove move, [NotNull] ICollection<GameMove> successiveMoves)
-            : this(score)
+        private AlphaBetaScore(int value, [NotNull] GameMove move, [NotNull] ICollection<GameMove> successiveMoves)
+            : this(value)
         {
             #region Argument Check
 
@@ -51,8 +51,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _movesInternal.AddRange(successiveMoves);
         }
 
-        private AlphaBetaScore(int score, ICollection<GameMove> moves)
-            : this(score)
+        private AlphaBetaScore(int value, ICollection<GameMove> moves)
+            : this(value)
         {
             #region Argument Check
 
@@ -70,7 +70,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Properties
 
-        public int Score
+        public int Value
         {
             get;
             private set;
@@ -99,7 +99,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            return new AlphaBetaScore(-alphaBetaScore.Score, alphaBetaScore._movesInternal);
+            return new AlphaBetaScore(-alphaBetaScore.Value, alphaBetaScore._movesInternal);
         }
 
         [NotNull]
@@ -114,7 +114,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            return new AlphaBetaScore(alphaBetaScore.Score, move, alphaBetaScore._movesInternal);
+            return new AlphaBetaScore(alphaBetaScore.Value, move, alphaBetaScore._movesInternal);
         }
 
         #endregion
@@ -126,7 +126,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{{ {0} : {1} }}",
-                this.Score,
+                this.Value,
                 this.Moves.Count == 0 ? "x" : this.Moves.Select(move => move.ToString()).Join(", "));
         }
 
