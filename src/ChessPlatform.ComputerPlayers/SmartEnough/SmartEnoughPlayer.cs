@@ -221,13 +221,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            Trace.TraceInformation(
+                "[{0}] Number of available moves: {1}.",
+                currentMethodName,
+                board.ValidMoves.Count);
+
             if (board.ValidMoves.Count == 1)
             {
                 bestMoveContainer.Value = new BestMoveData(board.ValidMoves.Keys.Single(), 0L, 1);
                 return;
             }
-
-            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
             if (_openingBook != null)
             {

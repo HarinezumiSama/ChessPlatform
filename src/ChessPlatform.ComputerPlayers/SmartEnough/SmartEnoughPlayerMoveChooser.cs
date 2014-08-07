@@ -18,6 +18,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public const int MaxPlyDepthLowerLimit = 2;
 
+        private const int KingTropismNormingFactor = 14;
+        private const int KingTropismRelativeFactor = 5;
+
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
 
@@ -29,7 +32,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(CreatePieceToPositionWeightMap());
 
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
-            new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
+            CreatePieceTypeToKingTropismWeightMap();
 
         private readonly IGameBoard _rootBoard;
         private readonly int _maxPlyDepth;
@@ -155,6 +158,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 { PieceType.Knight, 5 },
                 { PieceType.Pawn, 4 }
             };
+        }
+
+        private static EnumFixedSizeDictionary<PieceType, int> CreatePieceTypeToKingTropismWeightMap()
+        {
+            var result = new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
+            result[PieceType.King] = 0;
+            return result;
         }
 
         private static PositionDictionary<int> ToPositionWeightMap(PieceColor color, int[,] weights)
@@ -438,8 +448,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Position attackerPosition,
             Position kingPosition)
         {
-            const int KingTropismNormingFactor = 14;
-
             var proximity = KingTropismNormingFactor - GetKingTropismDistance(attackerPosition, kingPosition);
             var attackerPieceType = board[attackerPosition].GetPieceType();
             var score = proximity * PieceTypeToKingTropismWeightMap[attackerPieceType] / KingTropismNormingFactor;
@@ -462,7 +470,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 result -= score;
             }
 
-            return result;
+            return result / KingTropismRelativeFactor;
         }
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
