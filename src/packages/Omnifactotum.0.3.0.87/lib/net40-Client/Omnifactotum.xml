@@ -1756,7 +1756,7 @@
                 <paramref name="dictionary"/> is <b>null</b>.
             </exception>
         </member>
-        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.#ctor(Omnifactotum.FixedSizeDictionary{`0,`1,Omnifactotum.EnumFixedSizeDictionary{`0,`1}.EnumDeterminant})">
+        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.#ctor(Omnifactotum.FixedSizeDictionary{`0,`1,Omnifactotum.EnumFixedSizeDictionaryDeterminant{`0}})">
             <summary>
                 Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class
                 by copying the key/values pairs from the specified dictionary.
@@ -1768,17 +1768,17 @@
                 <paramref name="dictionary"/> is <b>null</b>.
             </exception>
         </member>
-        <member name="T:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant">
+        <member name="T:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1">
             <summary>
                 Represents the determinant for the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2"/> class.
             </summary>
         </member>
-        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.#ctor">
+        <member name="M:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1.#ctor">
             <summary>
-                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant"/> class.
+                Initializes a new instance of the <see cref="T:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1"/> class.
             </summary>
         </member>
-        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.GetIndex(`0)">
+        <member name="M:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1.GetIndex(`0)">
             <summary>
                 Gets the internal index corresponding to the specified key.
             </summary>
@@ -1789,7 +1789,7 @@
                 The internal index corresponding to the specified key.
             </returns>
         </member>
-        <member name="M:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.GetKey(System.Int32)">
+        <member name="M:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1.GetKey(System.Int32)">
             <summary>
                 Gets the key corresponding to the specified internal index.
             </summary>
@@ -1800,11 +1800,272 @@
                 The key corresponding to the specified internal index.
             </returns>
         </member>
-        <member name="P:Omnifactotum.EnumFixedSizeDictionary`2.EnumDeterminant.Size">
+        <member name="P:Omnifactotum.EnumFixedSizeDictionaryDeterminant`1.Size">
             <summary>
                 Gets the constant size of an internal array used in
                 the <see cref="T:Omnifactotum.FixedSizeDictionary`3"/>.
             </summary>
+        </member>
+        <member name="T:System.OmnifactotumMathExtensions">
+            <summary>
+                Contains math extension methods for the numbers.
+            </summary>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.Int32)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.UInt32)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.Int64)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.UInt64)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.Single)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.Double)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqr(System.Decimal)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>suppresses</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.Int32)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.UInt32)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.Int64)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.UInt64)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.Single)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.Double)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.SqrChecked(System.Decimal)">
+            <summary>
+                Returns the square of the specified number.
+                NOTE: This method <b>enforces</b> overflow-checking.
+            </summary>
+            <param name="value">
+                The value to compute the square of.
+            </param>
+            <returns>
+                The square of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Sqrt(System.Double)">
+            <summary>
+                Returns the square root of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the square root of.
+            </param>
+            <returns>
+                The square root of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.SByte)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Int16)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Int32)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Int64)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Single)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Double)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
+        </member>
+        <member name="M:System.OmnifactotumMathExtensions.Abs(System.Decimal)">
+            <summary>
+                Returns the absolute value of the specified number.
+            </summary>
+            <param name="value">
+                The value to compute the absolute value of.
+            </param>
+            <returns>
+                The absolute value of the specified number.
+            </returns>
         </member>
         <member name="T:System.Linq.Expressions.OmnifactotumExpressionExtensions">
             <summary>
@@ -1889,6 +2150,615 @@
             <returns>
                 The modified expression, if it or any subexpression was modified;
                 otherwise, returns the original expression.
+            </returns>
+        </member>
+        <member name="T:Omnifactotum.Factotum">
+            <summary>
+                Provides helper methods and properties for common use.
+            </summary>
+        </member>
+        <member name="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize">
+            <summary>
+                The minimum size of a generated identifier part (see <see cref="M:Omnifactotum.Factotum.GenerateId(System.Int32,Omnifactotum.IdGenerationModes)"/> and
+                <see cref="T:Omnifactotum.IdGenerationModes"/>).
+            </summary>
+        </member>
+        <member name="F:Omnifactotum.Factotum.PointerStringFormat">
+            <summary>
+                The pointer string format.
+            </summary>
+        </member>
+        <member name="M:Omnifactotum.Factotum.DisposeAndNull``1(``0@)">
+            <summary>
+                Calls the <see cref="M:System.IDisposable.Dispose"/> method of the instance, passed by reference, implementing
+                the <see cref="T:System.IDisposable"/> interface and sets the reference to this object to <b>null</b>.
+                If the <see cref="M:System.IDisposable.Dispose"/> method implementation throws an exception,
+                the reference to the instance remains unchanged.
+            </summary>
+            <typeparam name="T">
+                The type of the disposable instance.
+            </typeparam>
+            <param name="disposable">
+                A reference to an object to dispose and set to <b>null</b>.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Factotum.Exchange``1(``0@,``0@)">
+            <summary>
+                Exchanges two specified values, passed by reference. This method is not thread-safe.
+            </summary>
+            <typeparam name="T">
+                The type of the values to exchange.
+            </typeparam>
+            <param name="value1">
+                The first value to exchange with the second value.
+            </param>
+            <param name="value2">
+                The second value to exchange with the first value.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.Factotum.Identity``1(``0)">
+            <summary>
+                Represents an identity function which returns the instance passed as an argument.
+                The intended usage is instead of identity lambda expression similar to <c>obj => obj</c>.
+            </summary>
+            <typeparam name="T">
+                The type of the instance to receive and return.
+            </typeparam>
+            <param name="obj">
+                The instance to return.
+            </param>
+            <returns>
+                The instance passed as an argument.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.SetDefaultValues``1(``0)">
+            <summary>
+                Sets the values of the public instance properties of the specified object to the values indicated
+                in the <see cref="T:System.ComponentModel.DefaultValueAttribute">DefaultValue</see> attribute which a property is marked with.
+                If a property is not marked with the <see cref="T:System.ComponentModel.DefaultValueAttribute">DefaultValue</see> attribute,
+                its value remains unchanged.
+            </summary>
+            <typeparam name="T">
+                The type of the object whose properties to change.
+            </typeparam>
+            <param name="obj">
+                The object whose properties to change.
+            </param>
+            <returns>
+                The input object.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ToPropertyString``1(``0,Omnifactotum.ToPropertyStringOptions)">
+            <summary>
+                Gets a string representing the properties of the specified object.
+            </summary>
+            <typeparam name="T">
+                The type of the object to convert.
+            </typeparam>
+            <param name="obj">
+                The object to convert.
+            </param>
+            <param name="options">
+                The options specifying how to build the string representation.
+            </param>
+            <returns>
+                A string representing the properties of the specified object.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.AreEqualByContents``1(``0,``0)">
+            <summary>
+                Determines if the contents of the two specified objects are equal, that is, if the objects are of
+                the same type and the values of all their corresponding instance fields are equal.
+            </summary>
+            <remarks>
+                This method uses reflection to obtain the list of fields for comparison.
+                This method recursively processes the composite objects, if any.
+            </remarks>
+            <typeparam name="T">
+                The type of the objects to compare.
+            </typeparam>
+            <param name="valueA">
+                The first object to compare.
+            </param>
+            <param name="valueB">
+                The second object to compare.
+            </param>
+            <returns>
+                <b>true</b> if the contents of the two specified objects are equal; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.Max``1(``0,``0)">
+            <summary>
+                Compares the two specified values and returns the larger of those.
+            </summary>
+            <typeparam name="T">
+                The type of values to compare.
+            </typeparam>
+            <param name="x">
+                The first value to compare.
+            </param>
+            <param name="y">
+                The second value to compare.
+            </param>
+            <returns>
+                The larger of the two specified values.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.Min``1(``0,``0)">
+            <summary>
+                Compares the two specified values and returns the smaller of those.
+            </summary>
+            <typeparam name="T">
+                The type of values to compare.
+            </typeparam>
+            <param name="x">
+                The first value to compare.
+            </param>
+            <param name="y">
+                The second value to compare.
+            </param>
+            <returns>
+                The smaller of the two specified values.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GenerateId(System.Int32,Omnifactotum.IdGenerationModes)">
+            <summary>
+                Generates an identifier which is unique, cryptographically random, or both.
+            </summary>
+            <param name="size">
+                <para>The size, in bytes, of the resulting identifier.</para>
+                <para>
+                    This value must be at least <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> when either
+                    <see cref="F:Omnifactotum.IdGenerationModes.Unique"/> or <see cref="F:Omnifactotum.IdGenerationModes.Random"/> is solely
+                    specified, and it must be at least twice as <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> if
+                    both modes are specified.
+                </para>
+            </param>
+            <param name="modes">
+                Specifies the modes of identifier generation.
+            </param>
+            <returns>
+                An array of bytes representing the generated identifier.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+                <paramref name="size"/> is less than required by the specified <paramref name="modes"/>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+                <paramref name="modes"/> does not specify anything to generate.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GenerateIdString(System.Int32,Omnifactotum.IdGenerationModes)">
+            <summary>
+                Generates an identifier, which is unique, cryptographically random, or both, and returns its
+                hexadecimal representation.
+            </summary>
+            <param name="size">
+                <para>The size, in bytes, of the resulting identifier.</para>
+                <para>
+                    This value must be at least <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> when either
+                    <see cref="F:Omnifactotum.IdGenerationModes.Unique"/> or <see cref="F:Omnifactotum.IdGenerationModes.Random"/> is solely
+                    specified, and it must be at least twice as <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> if
+                    both modes are specified.
+                </para>
+            </param>
+            <param name="modes">
+                Specifies the modes of identifier generation.
+            </param>
+            <returns>
+                A hexadecimal representation of the generated identifier.
+            </returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">
+                <paramref name="size"/> is less than required by the specified <paramref name="modes"/>.
+            </exception>
+            <exception cref="T:System.ArgumentException">
+                <paramref name="modes"/> does not specify anything to generate.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetExecutableLocalPath">
+            <summary>
+                <para>Gets the local path of the process executable.</para>
+                <para><b>NOTE</b>: The entry assembly is used to determine the executable path.
+                If the entry assembly is not available, the calling assembly is used.</para>
+            </summary>
+            <returns>
+                The local path of the process executable.
+            </returns>
+            <exception cref="T:System.InvalidOperationException">
+                The entry assembly (or the calling assembly) does not have a local path.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetExecutableDirectory">
+            <summary>
+                <para>Gets the directory of the process executable.</para>
+                <para><b>NOTE</b>: The entry assembly is used to determine the executable directory.
+                If the entry assembly is not available, the calling assembly is used.</para>
+            </summary>
+            <returns>
+                The directory of the process executable.
+            </returns>
+            <exception cref="T:System.InvalidOperationException">
+                The entry assembly (or the calling assembly) does not have a local path.
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldOrPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field or property.
+            </typeparam>
+            <typeparam name="TMember">
+                The type of the field or property.
+            </typeparam>
+            <param name="memberGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Member</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field specified by the lambda expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetQualifiedFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the type-qualified name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the field.
+            </typeparam>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field in the following form: <c>SomeType.Field</c>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the property.
+            </typeparam>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetPropertyName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the name of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the property.
+            </typeparam>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The name of the property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetQualifiedPropertyName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
+            <summary>
+                Gets the type-qualified name of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TObject">
+                The type containing the property.
+            </typeparam>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The name of the property in the following form: <c>SomeType.Property</c>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the static property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the static property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required static property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+                Gets the name of the static property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the static property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
+            </param>
+            <returns>
+                The name of the static property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.GetQualifiedPropertyName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
+            <summary>
+                Gets the type-qualified name of the static property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the static property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
+            </param>
+            <returns>
+                The type-qualified name of the static property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective},Omnifactotum.RecursiveProcessingContext{``0})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <param name="processingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Action{``0},Omnifactotum.RecursiveProcessingContext{``0})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <param name="processingContext">
+                The context of the recursive processing, or <b>null</b> to use a new context.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
+        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Action{``0})">
+            <summary>
+                Processes the specified instance recursively.
+            </summary>
+            <typeparam name="T">
+                The type of the instances to process.
+            </typeparam>
+            <param name="instance">
+                The instance to process. Can be <b>null</b>.
+            </param>
+            <param name="getItems">
+                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
+                to process them recursively.
+            </param>
+            <param name="processItem">
+                A reference to the method that processes each single item.
+            </param>
+            <exception cref="T:System.ArgumentNullException">
+                <para>
+                    <paramref name="getItems"/> is <b>null</b>.
+                </para>
+                <para>-or-</para>
+                <para>
+                    <paramref name="processItem"/> is <b>null</b>.
+                </para>
+            </exception>
+        </member>
+        <member name="T:Omnifactotum.Factotum.For`1">
+            <summary>
+                Provides a convenient access to helper methods for the specified type.
+            </summary>
+            <typeparam name="TObject">
+                The type that the helper methods are provided for.
+            </typeparam>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldOrPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
+            </summary>
+            <typeparam name="TMember">
+                The type of the field or property.
+            </typeparam>
+            <param name="memberGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Member</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field specified by the lambda expression.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetQualifiedFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the type-qualified name of the field specified by the lambda expression.
+            </summary>
+            <typeparam name="TField">
+                The type of the field.
+            </typeparam>
+            <param name="fieldGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
+            </param>
+            <returns>
+                The name of the field in the following form: <c>SomeType.Field</c>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the name of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The name of the property.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.Factotum.For`1.GetQualifiedPropertyName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
+            <summary>
+                Gets the type-qualified name of the property specified by the lambda expression.
+            </summary>
+            <typeparam name="TProperty">
+                The type of the property.
+            </typeparam>
+            <param name="propertyGetterExpression">
+                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
+            </param>
+            <returns>
+                The name of the property in the following form: <c>SomeType.Property</c>.
             </returns>
         </member>
         <member name="T:Omnifactotum.RecursiveProcessingContext`1">
@@ -2871,6 +3741,78 @@
                 Initializes a new instance of the <see cref="T:Omnifactotum.SyncValueContainer`1"/> class
                 using the default value for the type <typeparamref name="T"/>.
             </summary>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.op_Equality(Omnifactotum.SyncValueContainer{`0},Omnifactotum.SyncValueContainer{`0})">
+            <summary>
+                Determines whether the two specified <see cref="T:Omnifactotum.SyncValueContainer`1"/> instances are equal.
+            </summary>
+            <param name="left">
+                The first <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance to compare.
+            </param>
+            <param name="right">
+                The second <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance to compare.
+            </param>
+            <returns>
+                <b>true</b> if the two specified <see cref="T:Omnifactotum.SyncValueContainer`1"/> instances are equal;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.op_Inequality(Omnifactotum.SyncValueContainer{`0},Omnifactotum.SyncValueContainer{`0})">
+            <summary>
+                Determines whether the two specified <see cref="T:Omnifactotum.SyncValueContainer`1"/> instances are not equal.
+            </summary>
+            <param name="left">
+                The first <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance to compare.
+            </param>
+            <param name="right">
+                The second <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance to compare.
+            </param>
+            <returns>
+                <b>true</b> if the two specified <see cref="T:Omnifactotum.SyncValueContainer`1"/> instances are not equal;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.ToString">
+            <summary>
+                Returns a <see cref="T:System.String"/> that represents this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </summary>
+            <returns>
+                A <see cref="T:System.String"/> that represents this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.Equals(System.Object)">
+            <summary>
+                Determines whether the specified <see cref="T:System.Object"/> is equal to
+                this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </summary>
+            <param name="obj">
+                The <see cref="T:System.Object"/> to compare with this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </param>
+            <returns>
+                <b>true</b> if the specified <see cref="T:System.Object"/> is equal to
+                this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.GetHashCode">
+            <summary>
+                Returns a hash code for this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </summary>
+            <returns>
+                A hash code for this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.SyncValueContainer`1.Equals(Omnifactotum.SyncValueContainer{`0})">
+            <summary>
+                Determines whether the current <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance is equal to another instance
+                of the same type.
+            </summary>
+            <param name="other">
+                An object to compare with this <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance.
+            </param>
+            <returns>
+                <b>true</b> if the current <see cref="T:Omnifactotum.SyncValueContainer`1"/> instance is equal to
+                the <paramref name="other"/> parameter; otherwise, <b>false</b>.
+            </returns>
         </member>
         <member name="P:Omnifactotum.SyncValueContainer`1.SyncObject">
             <summary>
@@ -3946,7 +4888,7 @@
                 the type of the value parameter.
             </returns>
         </member>
-        <member name="M:System.Collections.Generic.OmnifactotumDictionaryExtensions.GetValueOrCreate``2(System.Collections.Generic.IDictionary{``0,``1},``0,System.Func{``0,``1})">
+        <member name="M:System.Collections.Generic.OmnifactotumDictionaryExtensions.GetOrCreateValue``2(System.Collections.Generic.IDictionary{``0,``1},``0,System.Func{``0,``1})">
             <summary>
                 Gets the value associated with the specified key from the specified dictionary.
                 If the specified key is not found, then a value is created, using the specified value factory, and
@@ -3971,7 +4913,7 @@
                 A value that was associated with the specified key, or has been associated if it was not.
             </returns>
         </member>
-        <member name="M:System.Collections.Generic.OmnifactotumDictionaryExtensions.GetValueOrCreate``2(System.Collections.Generic.IDictionary{``0,``1},``0)">
+        <member name="M:System.Collections.Generic.OmnifactotumDictionaryExtensions.GetOrCreateValue``2(System.Collections.Generic.IDictionary{``0,``1},``0)">
             <summary>
                 Gets the value associated with the specified key from the specified dictionary.
                 If the specified key is not found, then a value is created, using the default constructor for
@@ -5317,615 +6259,6 @@
                 The name of the specified type.
             </returns>
         </member>
-        <member name="T:Omnifactotum.Factotum">
-            <summary>
-                Provides helper methods and properties for common use.
-            </summary>
-        </member>
-        <member name="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize">
-            <summary>
-                The minimum size of a generated identifier part (see <see cref="M:Omnifactotum.Factotum.GenerateId(System.Int32,Omnifactotum.IdGenerationModes)"/> and
-                <see cref="T:Omnifactotum.IdGenerationModes"/>).
-            </summary>
-        </member>
-        <member name="F:Omnifactotum.Factotum.PointerStringFormat">
-            <summary>
-                The pointer string format.
-            </summary>
-        </member>
-        <member name="M:Omnifactotum.Factotum.DisposeAndNull``1(``0@)">
-            <summary>
-                Calls the <see cref="M:System.IDisposable.Dispose"/> method of the instance, passed by reference, implementing
-                the <see cref="T:System.IDisposable"/> interface and sets the reference to this object to <b>null</b>.
-                If the <see cref="M:System.IDisposable.Dispose"/> method implementation throws an exception,
-                the reference to the instance remains unchanged.
-            </summary>
-            <typeparam name="T">
-                The type of the disposable instance.
-            </typeparam>
-            <param name="disposable">
-                A reference to an object to dispose and set to <b>null</b>.
-            </param>
-        </member>
-        <member name="M:Omnifactotum.Factotum.Exchange``1(``0@,``0@)">
-            <summary>
-                Exchanges two specified values, passed by reference. This method is not thread-safe.
-            </summary>
-            <typeparam name="T">
-                The type of the values to exchange.
-            </typeparam>
-            <param name="value1">
-                The first value to exchange with the second value.
-            </param>
-            <param name="value2">
-                The second value to exchange with the first value.
-            </param>
-        </member>
-        <member name="M:Omnifactotum.Factotum.Identity``1(``0)">
-            <summary>
-                Represents an identity function which returns the instance passed as an argument.
-                The intended usage is instead of identity lambda expression similar to <c>obj => obj</c>.
-            </summary>
-            <typeparam name="T">
-                The type of the instance to receive and return.
-            </typeparam>
-            <param name="obj">
-                The instance to return.
-            </param>
-            <returns>
-                The instance passed as an argument.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.SetDefaultValues``1(``0)">
-            <summary>
-                Sets the values of the public instance properties of the specified object to the values indicated
-                in the <see cref="T:System.ComponentModel.DefaultValueAttribute">DefaultValue</see> attribute which a property is marked with.
-                If a property is not marked with the <see cref="T:System.ComponentModel.DefaultValueAttribute">DefaultValue</see> attribute,
-                its value remains unchanged.
-            </summary>
-            <typeparam name="T">
-                The type of the object whose properties to change.
-            </typeparam>
-            <param name="obj">
-                The object whose properties to change.
-            </param>
-            <returns>
-                The input object.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.ToPropertyString``1(``0,Omnifactotum.ToPropertyStringOptions)">
-            <summary>
-                Gets a string representing the properties of the specified object.
-            </summary>
-            <typeparam name="T">
-                The type of the object to convert.
-            </typeparam>
-            <param name="obj">
-                The object to convert.
-            </param>
-            <param name="options">
-                The options specifying how to build the string representation.
-            </param>
-            <returns>
-                A string representing the properties of the specified object.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.AreEqualByContents``1(``0,``0)">
-            <summary>
-                Determines if the contents of the two specified objects are equal, that is, if the objects are of
-                the same type and the values of all their corresponding instance fields are equal.
-            </summary>
-            <remarks>
-                This method uses reflection to obtain the list of fields for comparison.
-                This method recursively processes the composite objects, if any.
-            </remarks>
-            <typeparam name="T">
-                The type of the objects to compare.
-            </typeparam>
-            <param name="valueA">
-                The first object to compare.
-            </param>
-            <param name="valueB">
-                The second object to compare.
-            </param>
-            <returns>
-                <b>true</b> if the contents of the two specified objects are equal; otherwise, <b>false</b>.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.Max``1(``0,``0)">
-            <summary>
-                Compares the two specified values and returns the larger of those.
-            </summary>
-            <typeparam name="T">
-                The type of values to compare.
-            </typeparam>
-            <param name="x">
-                The first value to compare.
-            </param>
-            <param name="y">
-                The second value to compare.
-            </param>
-            <returns>
-                The larger of the two specified values.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.Min``1(``0,``0)">
-            <summary>
-                Compares the two specified values and returns the smaller of those.
-            </summary>
-            <typeparam name="T">
-                The type of values to compare.
-            </typeparam>
-            <param name="x">
-                The first value to compare.
-            </param>
-            <param name="y">
-                The second value to compare.
-            </param>
-            <returns>
-                The smaller of the two specified values.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GenerateId(System.Int32,Omnifactotum.IdGenerationModes)">
-            <summary>
-                Generates an identifier which is unique, cryptographically random, or both.
-            </summary>
-            <param name="size">
-                <para>The size, in bytes, of the resulting identifier.</para>
-                <para>
-                    This value must be at least <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> when either
-                    <see cref="F:Omnifactotum.IdGenerationModes.Unique"/> or <see cref="F:Omnifactotum.IdGenerationModes.Random"/> is solely
-                    specified, and it must be at least twice as <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> if
-                    both modes are specified.
-                </para>
-            </param>
-            <param name="modes">
-                Specifies the modes of identifier generation.
-            </param>
-            <returns>
-                An array of bytes representing the generated identifier.
-            </returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">
-                <paramref name="size"/> is less than required by the specified <paramref name="modes"/>.
-            </exception>
-            <exception cref="T:System.ArgumentException">
-                <paramref name="modes"/> does not specify anything to generate.
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GenerateIdString(System.Int32,Omnifactotum.IdGenerationModes)">
-            <summary>
-                Generates an identifier, which is unique, cryptographically random, or both, and returns its
-                hexadecimal representation.
-            </summary>
-            <param name="size">
-                <para>The size, in bytes, of the resulting identifier.</para>
-                <para>
-                    This value must be at least <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> when either
-                    <see cref="F:Omnifactotum.IdGenerationModes.Unique"/> or <see cref="F:Omnifactotum.IdGenerationModes.Random"/> is solely
-                    specified, and it must be at least twice as <see cref="F:Omnifactotum.Factotum.MinimumGeneratedIdPartSize"/> if
-                    both modes are specified.
-                </para>
-            </param>
-            <param name="modes">
-                Specifies the modes of identifier generation.
-            </param>
-            <returns>
-                A hexadecimal representation of the generated identifier.
-            </returns>
-            <exception cref="T:System.ArgumentOutOfRangeException">
-                <paramref name="size"/> is less than required by the specified <paramref name="modes"/>.
-            </exception>
-            <exception cref="T:System.ArgumentException">
-                <paramref name="modes"/> does not specify anything to generate.
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetExecutableLocalPath">
-            <summary>
-                <para>Gets the local path of the process executable.</para>
-                <para><b>NOTE</b>: The entry assembly is used to determine the executable path.
-                If the entry assembly is not available, the calling assembly is used.</para>
-            </summary>
-            <returns>
-                The local path of the process executable.
-            </returns>
-            <exception cref="T:System.InvalidOperationException">
-                The entry assembly (or the calling assembly) does not have a local path.
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetExecutableDirectory">
-            <summary>
-                <para>Gets the directory of the process executable.</para>
-                <para><b>NOTE</b>: The entry assembly is used to determine the executable directory.
-                If the entry assembly is not available, the calling assembly is used.</para>
-            </summary>
-            <returns>
-                The directory of the process executable.
-            </returns>
-            <exception cref="T:System.InvalidOperationException">
-                The entry assembly (or the calling assembly) does not have a local path.
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetFieldOrPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the field or property.
-            </typeparam>
-            <typeparam name="TMember">
-                The type of the field or property.
-            </typeparam>
-            <param name="memberGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Member</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetFieldInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the field.
-            </typeparam>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the name of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the field.
-            </typeparam>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The name of the field specified by the lambda expression.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetQualifiedFieldName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the type-qualified name of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the field.
-            </typeparam>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The name of the field in the following form: <c>SomeType.Field</c>.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetPropertyInfo``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the property.
-            </typeparam>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetPropertyName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the name of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the property.
-            </typeparam>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The name of the property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetQualifiedPropertyName``2(System.Linq.Expressions.Expression{System.Func{``0,``1}})">
-            <summary>
-                Gets the type-qualified name of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TObject">
-                The type containing the property.
-            </typeparam>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>(SomeType x) =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The name of the property in the following form: <c>SomeType.Property</c>.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{``0}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the static property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the static property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required static property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
-            <summary>
-                Gets the name of the static property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the static property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
-            </param>
-            <returns>
-                The name of the static property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.GetQualifiedPropertyName``1(System.Linq.Expressions.Expression{System.Func{``0}})">
-            <summary>
-                Gets the type-qualified name of the static property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the static property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>() =&gt; propertyExpression</c>.
-            </param>
-            <returns>
-                The type-qualified name of the static property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective},Omnifactotum.RecursiveProcessingContext{``0})">
-            <summary>
-                Processes the specified instance recursively.
-            </summary>
-            <typeparam name="T">
-                The type of the instances to process.
-            </typeparam>
-            <param name="instance">
-                The instance to process. Can be <b>null</b>.
-            </param>
-            <param name="getItems">
-                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
-                to process them recursively.
-            </param>
-            <param name="processItem">
-                A reference to the method that processes each single item.
-            </param>
-            <param name="processingContext">
-                The context of the recursive processing, or <b>null</b> to use a new context.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-                <para>
-                    <paramref name="getItems"/> is <b>null</b>.
-                </para>
-                <para>-or-</para>
-                <para>
-                    <paramref name="processItem"/> is <b>null</b>.
-                </para>
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Func{``0,Omnifactotum.RecursiveProcessingDirective})">
-            <summary>
-                Processes the specified instance recursively.
-            </summary>
-            <typeparam name="T">
-                The type of the instances to process.
-            </typeparam>
-            <param name="instance">
-                The instance to process. Can be <b>null</b>.
-            </param>
-            <param name="getItems">
-                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
-                to process them recursively.
-            </param>
-            <param name="processItem">
-                A reference to the method that processes each single item.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-                <para>
-                    <paramref name="getItems"/> is <b>null</b>.
-                </para>
-                <para>-or-</para>
-                <para>
-                    <paramref name="processItem"/> is <b>null</b>.
-                </para>
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Action{``0},Omnifactotum.RecursiveProcessingContext{``0})">
-            <summary>
-                Processes the specified instance recursively.
-            </summary>
-            <typeparam name="T">
-                The type of the instances to process.
-            </typeparam>
-            <param name="instance">
-                The instance to process. Can be <b>null</b>.
-            </param>
-            <param name="getItems">
-                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
-                to process them recursively.
-            </param>
-            <param name="processItem">
-                A reference to the method that processes each single item.
-            </param>
-            <param name="processingContext">
-                The context of the recursive processing, or <b>null</b> to use a new context.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-                <para>
-                    <paramref name="getItems"/> is <b>null</b>.
-                </para>
-                <para>-or-</para>
-                <para>
-                    <paramref name="processItem"/> is <b>null</b>.
-                </para>
-            </exception>
-        </member>
-        <member name="M:Omnifactotum.Factotum.ProcessRecursively``1(``0,System.Func{``0,System.Collections.Generic.IEnumerable{``0}},System.Action{``0})">
-            <summary>
-                Processes the specified instance recursively.
-            </summary>
-            <typeparam name="T">
-                The type of the instances to process.
-            </typeparam>
-            <param name="instance">
-                The instance to process. Can be <b>null</b>.
-            </param>
-            <param name="getItems">
-                A reference to the method that maps <paramref name="instance"/> to the collection of associated objects
-                to process them recursively.
-            </param>
-            <param name="processItem">
-                A reference to the method that processes each single item.
-            </param>
-            <exception cref="T:System.ArgumentNullException">
-                <para>
-                    <paramref name="getItems"/> is <b>null</b>.
-                </para>
-                <para>-or-</para>
-                <para>
-                    <paramref name="processItem"/> is <b>null</b>.
-                </para>
-            </exception>
-        </member>
-        <member name="T:Omnifactotum.Factotum.For`1">
-            <summary>
-                Provides a convenient access to helper methods for the specified type.
-            </summary>
-            <typeparam name="TObject">
-                The type that the helper methods are provided for.
-            </typeparam>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetFieldOrPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.MemberInfo"/> of the field or property specified by the lambda expression.
-            </summary>
-            <typeparam name="TMember">
-                The type of the field or property.
-            </typeparam>
-            <param name="memberGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Member</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.MemberInfo"/> containing information about the required field or property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetFieldInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.FieldInfo"/> of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.FieldInfo"/> containing information about the required field.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the name of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The name of the field specified by the lambda expression.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetQualifiedFieldName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the type-qualified name of the field specified by the lambda expression.
-            </summary>
-            <typeparam name="TField">
-                The type of the field.
-            </typeparam>
-            <param name="fieldGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Field</c>.
-            </param>
-            <returns>
-                The name of the field in the following form: <c>SomeType.Field</c>.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetPropertyInfo``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the <see cref="T:System.Reflection.PropertyInfo"/> of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The <see cref="T:System.Reflection.PropertyInfo"/> containing information about the required property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetPropertyName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the name of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The name of the property.
-            </returns>
-        </member>
-        <member name="M:Omnifactotum.Factotum.For`1.GetQualifiedPropertyName``1(System.Linq.Expressions.Expression{System.Func{`0,``0}})">
-            <summary>
-                Gets the type-qualified name of the property specified by the lambda expression.
-            </summary>
-            <typeparam name="TProperty">
-                The type of the property.
-            </typeparam>
-            <param name="propertyGetterExpression">
-                The lambda expression in the following form: <c>x =&gt; x.Property</c>.
-            </param>
-            <returns>
-                The name of the property in the following form: <c>SomeType.Property</c>.
-            </returns>
-        </member>
         <member name="T:Omnifactotum.IdGenerationModes">
             <summary>
                 Specifies the modes of identifier generation.
@@ -6638,7 +6971,7 @@
         </member>
         <member name="P:Omnifactotum.SmartDisposable`1.Instance">
             <summary>
-                Gets the object to dispose of, if it is disposable.
+                Gets the underlying object.
             </summary>
         </member>
         <member name="T:Omnifactotum.SmartDisposable">
@@ -6773,9 +7106,81 @@
                 using the default value for the type <typeparamref name="T"/>.
             </summary>
         </member>
+        <member name="M:Omnifactotum.ValueContainer`1.op_Equality(Omnifactotum.ValueContainer{`0},Omnifactotum.ValueContainer{`0})">
+            <summary>
+                Determines whether the two specified <see cref="T:Omnifactotum.ValueContainer`1"/> instances are equal.
+            </summary>
+            <param name="left">
+                The first <see cref="T:Omnifactotum.ValueContainer`1"/> instance to compare.
+            </param>
+            <param name="right">
+                The second <see cref="T:Omnifactotum.ValueContainer`1"/> instance to compare.
+            </param>
+            <returns>
+                <b>true</b> if the two specified <see cref="T:Omnifactotum.ValueContainer`1"/> instances are equal;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.ValueContainer`1.op_Inequality(Omnifactotum.ValueContainer{`0},Omnifactotum.ValueContainer{`0})">
+            <summary>
+                Determines whether the two specified <see cref="T:Omnifactotum.ValueContainer`1"/> instances are not equal.
+            </summary>
+            <param name="left">
+                The first <see cref="T:Omnifactotum.ValueContainer`1"/> instance to compare.
+            </param>
+            <param name="right">
+                The second <see cref="T:Omnifactotum.ValueContainer`1"/> instance to compare.
+            </param>
+            <returns>
+                <b>true</b> if the two specified <see cref="T:Omnifactotum.ValueContainer`1"/> instances are not equal;
+                otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.ValueContainer`1.ToString">
+            <summary>
+                Returns a <see cref="T:System.String"/> that represents this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </summary>
+            <returns>
+                A <see cref="T:System.String"/> that represents this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.ValueContainer`1.Equals(System.Object)">
+            <summary>
+                Determines whether the specified <see cref="T:System.Object"/> is equal to
+                this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </summary>
+            <param name="obj">
+                The <see cref="T:System.Object"/> to compare with this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </param>
+            <returns>
+                <b>true</b> if the specified <see cref="T:System.Object"/> is equal to
+                this <see cref="T:Omnifactotum.ValueContainer`1"/> instance; otherwise, <b>false</b>.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.ValueContainer`1.GetHashCode">
+            <summary>
+                Returns a hash code for this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </summary>
+            <returns>
+                A hash code for this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </returns>
+        </member>
+        <member name="M:Omnifactotum.ValueContainer`1.Equals(Omnifactotum.ValueContainer{`0})">
+            <summary>
+                Determines whether the current <see cref="T:Omnifactotum.ValueContainer`1"/> instance is equal to another instance
+                of the same type.
+            </summary>
+            <param name="other">
+                An object to compare with this <see cref="T:Omnifactotum.ValueContainer`1"/> instance.
+            </param>
+            <returns>
+                <b>true</b> if the current <see cref="T:Omnifactotum.ValueContainer`1"/> instance is equal to
+                the <paramref name="other"/> parameter; otherwise, <b>false</b>.
+            </returns>
+        </member>
         <member name="P:Omnifactotum.ValueContainer`1.Value">
             <summary>
-                Gets or sets the contained value.
+                Gets or sets the encapsulated value.
             </summary>
         </member>
         <member name="T:Omnifactotum.ValueRange`1">
@@ -7358,7 +7763,7 @@
         </member>
         <member name="M:Omnifactotum.WinEventLog.Write(System.String,System.Diagnostics.EventLogEntryType,System.String)">
             <summary>
-                Writes the specified message to the Windows Event Log.
+                Writes the specified message to the <b>Windows Event Log</b>.
             </summary>
             <param name="source">
                 The source by which the application is registered on the specified computer.
@@ -7370,9 +7775,29 @@
                 The message to write to the event log.
             </param>
         </member>
+        <member name="M:Omnifactotum.WinEventLog.Write(System.String,System.Diagnostics.EventLogEntryType,System.String,System.Object[])">
+            <summary>
+                Writes the message to the <b>Windows Event Log</b>, using the specified array of objects and
+                formatting information.
+            </summary>
+            <param name="source">
+                The source by which the application is registered on the specified computer.
+            </param>
+            <param name="type">
+                The type of the event log entry.
+            </param>
+            <param name="format">
+                A format string that contains zero or more format items, which correspond to objects in
+                the <paramref name="args"/> array.
+            </param>
+            <param name="args">
+                An object array containing zero or more objects to format.
+            </param>
+        </member>
         <member name="M:Omnifactotum.WinEventLog.Write(System.Diagnostics.EventLogEntryType,System.String)">
             <summary>
-                Writes the specified message to the Windows Event Log using <see cref="P:Omnifactotum.WinEventLog.DefaultSource"/>.
+                Writes the specified message to the <b>Windows Event Log</b>
+                using <see cref="P:Omnifactotum.WinEventLog.DefaultSource"/>.
                 If <see cref="P:Omnifactotum.WinEventLog.DefaultSource"/> is <b>null</b> or empty, the entry assembly name is used.
             </summary>
             <param name="type">
@@ -7380,6 +7805,24 @@
             </param>
             <param name="message">
                 The message to write to the event log.
+            </param>
+        </member>
+        <member name="M:Omnifactotum.WinEventLog.Write(System.Diagnostics.EventLogEntryType,System.String,System.Object[])">
+            <summary>
+                Writes the message to the <b>Windows Event Log</b>
+                using <see cref="P:Omnifactotum.WinEventLog.DefaultSource"/> and the specified array of objects and
+                formatting information.
+                If <see cref="P:Omnifactotum.WinEventLog.DefaultSource"/> is <b>null</b> or empty, the entry assembly name is used.
+            </summary>
+            <param name="type">
+                The type of the event log entry.
+            </param>
+            <param name="format">
+                A format string that contains zero or more format items, which correspond to objects in
+                the <paramref name="args"/> array.
+            </param>
+            <param name="args">
+                An object array containing zero or more objects to format.
             </param>
         </member>
         <member name="P:Omnifactotum.WinEventLog.DefaultSource">

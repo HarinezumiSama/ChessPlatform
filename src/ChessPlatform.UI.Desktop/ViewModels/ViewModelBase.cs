@@ -51,7 +51,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var propertyName = GetPropertyName(propertyGetterExpression);
 
-            var handlers = _propertyChangedSubscriptionsDictionary.GetValueOrCreate(propertyName);
+            var handlers = _propertyChangedSubscriptionsDictionary.GetOrCreateValue(propertyName);
             handlers.Add(handler);
         }
 

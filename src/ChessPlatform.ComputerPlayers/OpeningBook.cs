@@ -63,7 +63,7 @@ namespace ChessPlatform.ComputerPlayers
                 foreach (var tuple in openingLine)
                 {
                     var packedGameBoard = tuple.Item1;
-                    var openingMoves = openingMap.GetValueOrCreate(packedGameBoard);
+                    var openingMoves = openingMap.GetOrCreateValue(packedGameBoard);
                     openingMoves.Add(tuple.Item2);
                 }
             }
