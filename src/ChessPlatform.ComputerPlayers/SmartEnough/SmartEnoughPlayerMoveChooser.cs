@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using ChessPlatform.GamePlay;
 using ChessPlatform.Utilities;
@@ -18,11 +19,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public const int MaxPlyDepthLowerLimit = 2;
 
-        internal static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
-            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
-
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
+
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
+            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
 
         // ReSharper disable once UnusedMember.Local
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
@@ -137,6 +138,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 _rootBoard.GetFen());
 
             return result;
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int GetMaterialWeight(PieceType pieceType)
+        {
+            return PieceTypeToMaterialWeightMap[pieceType];
         }
 
         #endregion
@@ -400,7 +411,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     continue;
                 }
 
-                var materialWeight = PieceTypeToMaterialWeightMap[pieceType];
+                var materialWeight = GetMaterialWeight(pieceType);
                 if (!gamePhase.HasValue)
                 {
                     var pieceCount = pieceBitboard.GetBitSetCount();
@@ -452,8 +463,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .ValidMoves
                 .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
                 .Select(pair => pair.Key)
-                .OrderBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .OrderBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
+                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
                 .FirstOrDefault();
 
             return cheapestAttackerMove;
@@ -538,9 +549,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)
                 .Select(pair => pair.Key)
-                .OrderByDescending(move => PieceTypeToMaterialWeightMap[board[move.To].GetPieceType()])
-                .ThenBy(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .OrderByDescending(move => GetMaterialWeight(board[move.To].GetPieceType()))
+                .ThenBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
+                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
                 .ThenBy(move => move.PromotionResult)
                 .ThenBy(move => move.From.SquareIndex)
                 .ThenBy(move => move.To.SquareIndex)
@@ -553,8 +564,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetKingTropismDistance(move.To, opponentKingPosition))
                 ////.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
-                .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
+                .ThenByDescending(move => GetMaterialWeight(board[move.From].GetPieceType()))
+                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
                 .ThenBy(move => move.PromotionResult)
                 .ThenBy(move => move.From.SquareIndex)
                 .ThenBy(move => move.To.SquareIndex)
@@ -636,7 +647,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var currentBoard = _boardCache.MakeMove(board, actualMove);
-            var weight = PieceTypeToMaterialWeightMap[currentBoard.LastCapturedPiece.GetPieceType()];
+            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType());
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
 

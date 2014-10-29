@@ -241,7 +241,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var mateMove = mateMoves
                 .OrderBy(
-                    move => SmartEnoughPlayerMoveChooser.PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
+                    move => SmartEnoughPlayerMoveChooser.GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenBy(move => move.From.SquareIndex)
                 .ThenBy(move => move.To.SquareIndex)
                 .ThenBy(move => move.PromotionResult)
