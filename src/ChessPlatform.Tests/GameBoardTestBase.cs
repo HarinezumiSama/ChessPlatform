@@ -36,29 +36,6 @@ namespace ChessPlatform.Tests
             Assert.That(gameBoard.GetAutoDrawType(), Is.EqualTo(autoDrawType));
         }
 
-        private static void AssertEnPassantCaptureInfo(
-            EnPassantCaptureInfo actualEnPassantCaptureInfo,
-            EnPassantCaptureInfo expectedEnPassantCaptureInfo)
-        {
-            if (expectedEnPassantCaptureInfo == null)
-            {
-                Assert.That(actualEnPassantCaptureInfo, Is.Null);
-                return;
-            }
-
-            Assert.That(actualEnPassantCaptureInfo, Is.Not.Null);
-
-            Assert.That(
-                actualEnPassantCaptureInfo.CapturePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.CapturePosition),
-                "Capture position.");
-
-            Assert.That(
-                actualEnPassantCaptureInfo.TargetPiecePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPiecePosition),
-                "Target piece position.");
-        }
-
         protected static void AssertValidMoves(GameBoard gameBoard, params GameMove[] expectedValidMoves)
         {
             Assert.That(gameBoard, Is.Not.Null);
@@ -148,6 +125,33 @@ namespace ChessPlatform.Tests
                 "b1-c3",
                 "g1-f3",
                 "g1-h3");
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static void AssertEnPassantCaptureInfo(
+            EnPassantCaptureInfo actualEnPassantCaptureInfo,
+            EnPassantCaptureInfo expectedEnPassantCaptureInfo)
+        {
+            if (expectedEnPassantCaptureInfo == null)
+            {
+                Assert.That(actualEnPassantCaptureInfo, Is.Null);
+                return;
+            }
+
+            Assert.That(actualEnPassantCaptureInfo, Is.Not.Null);
+
+            Assert.That(
+                actualEnPassantCaptureInfo.CapturePosition,
+                Is.EqualTo(expectedEnPassantCaptureInfo.CapturePosition),
+                "Capture position.");
+
+            Assert.That(
+                actualEnPassantCaptureInfo.TargetPiecePosition,
+                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPiecePosition),
+                "Target piece position.");
         }
 
         #endregion

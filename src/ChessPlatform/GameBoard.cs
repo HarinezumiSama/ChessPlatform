@@ -875,6 +875,150 @@ namespace ChessPlatform
             }
         }
 
+        private static void PerftInternal(
+            GameBoard gameBoard,
+            int depth,
+            bool canUseParallelism,
+            PerftData perftData,
+            bool includeDivideMap,
+            bool includeExtraCountTypes)
+        {
+            if (depth == 0)
+            {
+                perftData.NodeCount++;
+
+                if (!includeExtraCountTypes)
+                {
+                    return;
+                }
+
+                switch (gameBoard.State)
+                {
+                    case GameState.Check:
+                    case GameState.DoubleCheck:
+                        checked
+                        {
+                            perftData.CheckCount++;
+                        }
+
+                        break;
+
+                    case GameState.Checkmate:
+                        checked
+                        {
+                            perftData.CheckCount++;
+                            perftData.CheckmateCount++;
+                        }
+
+                        break;
+                }
+
+                return;
+            }
+
+            var validMoves = gameBoard.ValidMoves;
+            var moves = validMoves.Keys;
+
+            if (depth == 1)
+            {
+                ulong captureCount = 0;
+                ulong enPassantCaptureCount = 0;
+                foreach (var validMove in validMoves)
+                {
+                    if (validMove.Value.IsAnyCapture)
+                    {
+                        captureCount++;
+                    }
+
+                    if (validMove.Value.IsEnPassantCapture)
+                    {
+                        enPassantCaptureCount++;
+                    }
+                }
+
+                checked
+                {
+                    perftData.CaptureCount += captureCount;
+                    perftData.EnPassantCaptureCount += enPassantCaptureCount;
+                }
+
+                if (!includeDivideMap && !includeExtraCountTypes)
+                {
+                    checked
+                    {
+                        perftData.NodeCount += (ulong)moves.Count;
+                    }
+
+                    return;
+                }
+            }
+
+            if (canUseParallelism)
+            {
+                var topDatas = moves
+                    .AsParallel()
+                    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                    .Select(
+                        move =>
+                        {
+                            var localData = new PerftData();
+                            var newBoard = gameBoard.MakeMove(move);
+                            PerftInternal(newBoard, depth - 1, false, localData, false, includeExtraCountTypes);
+                            return KeyValuePair.Create(move, localData);
+                        })
+                    .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+                var totalTopDatas = topDatas.Aggregate(new PerftData(), (acc, pair) => acc + pair.Value);
+                perftData.Include(totalTopDatas);
+                topDatas.DoForEach(pair => perftData.DividedMoves.Add(pair.Key, pair.Value.NodeCount));
+
+                return;
+            }
+
+            GameBoardData gameBoardDataCopy = null;
+            if (depth == 1 && includeExtraCountTypes && !includeDivideMap)
+            {
+                gameBoardDataCopy = gameBoard._gameBoardData.Copy();
+            }
+
+            foreach (var move in moves)
+            {
+                if (gameBoardDataCopy != null)
+                {
+                    var castlingOptions = gameBoard._castlingOptions;
+                    gameBoardDataCopy.MakeMove(
+                        move,
+                        gameBoard._activeColor,
+                        gameBoard._enPassantCaptureInfo,
+                        ref castlingOptions);
+
+                    var isInCheck = gameBoardDataCopy.IsInCheck(gameBoard._activeColor.Invert());
+                    gameBoardDataCopy.UndoMove();
+
+                    if (!isInCheck)
+                    {
+                        checked
+                        {
+                            perftData.NodeCount++;
+                        }
+
+                        continue;
+                    }
+                }
+
+                var previousNodeCount = perftData.NodeCount;
+
+                var newBoard = gameBoard.MakeMove(move);
+                PerftInternal(newBoard, depth - 1, false, perftData, false, includeExtraCountTypes);
+
+                if (includeDivideMap)
+                {
+                    perftData.DividedMoves[move] = checked(perftData.DividedMoves.GetValueOrDefault(move)
+                        + perftData.NodeCount - previousNodeCount);
+                }
+            }
+        }
+
         private void Validate(bool forceValidation)
         {
             if (!forceValidation && !_validateAfterMove)
@@ -1248,150 +1392,6 @@ namespace ChessPlatform
             if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out fullMoveIndex) || fullMoveIndex <= 0)
             {
                 throw new ArgumentException(InvalidFenMessage, "fen");
-            }
-        }
-
-        private static void PerftInternal(
-            GameBoard gameBoard,
-            int depth,
-            bool canUseParallelism,
-            PerftData perftData,
-            bool includeDivideMap,
-            bool includeExtraCountTypes)
-        {
-            if (depth == 0)
-            {
-                perftData.NodeCount++;
-
-                if (!includeExtraCountTypes)
-                {
-                    return;
-                }
-
-                switch (gameBoard.State)
-                {
-                    case GameState.Check:
-                    case GameState.DoubleCheck:
-                        checked
-                        {
-                            perftData.CheckCount++;
-                        }
-
-                        break;
-
-                    case GameState.Checkmate:
-                        checked
-                        {
-                            perftData.CheckCount++;
-                            perftData.CheckmateCount++;
-                        }
-
-                        break;
-                }
-
-                return;
-            }
-
-            var validMoves = gameBoard.ValidMoves;
-            var moves = validMoves.Keys;
-
-            if (depth == 1)
-            {
-                ulong captureCount = 0;
-                ulong enPassantCaptureCount = 0;
-                foreach (var validMove in validMoves)
-                {
-                    if (validMove.Value.IsAnyCapture)
-                    {
-                        captureCount++;
-                    }
-
-                    if (validMove.Value.IsEnPassantCapture)
-                    {
-                        enPassantCaptureCount++;
-                    }
-                }
-
-                checked
-                {
-                    perftData.CaptureCount += captureCount;
-                    perftData.EnPassantCaptureCount += enPassantCaptureCount;
-                }
-
-                if (!includeDivideMap && !includeExtraCountTypes)
-                {
-                    checked
-                    {
-                        perftData.NodeCount += (ulong)moves.Count;
-                    }
-
-                    return;
-                }
-            }
-
-            if (canUseParallelism)
-            {
-                var topDatas = moves
-                    .AsParallel()
-                    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                    .Select(
-                        move =>
-                        {
-                            var localData = new PerftData();
-                            var newBoard = gameBoard.MakeMove(move);
-                            PerftInternal(newBoard, depth - 1, false, localData, false, includeExtraCountTypes);
-                            return KeyValuePair.Create(move, localData);
-                        })
-                    .ToDictionary(pair => pair.Key, pair => pair.Value);
-
-                var totalTopDatas = topDatas.Aggregate(new PerftData(), (acc, pair) => acc + pair.Value);
-                perftData.Include(totalTopDatas);
-                topDatas.DoForEach(pair => perftData.DividedMoves.Add(pair.Key, pair.Value.NodeCount));
-
-                return;
-            }
-
-            GameBoardData gameBoardDataCopy = null;
-            if (depth == 1 && includeExtraCountTypes && !includeDivideMap)
-            {
-                gameBoardDataCopy = gameBoard._gameBoardData.Copy();
-            }
-
-            foreach (var move in moves)
-            {
-                if (gameBoardDataCopy != null)
-                {
-                    var castlingOptions = gameBoard._castlingOptions;
-                    gameBoardDataCopy.MakeMove(
-                        move,
-                        gameBoard._activeColor,
-                        gameBoard._enPassantCaptureInfo,
-                        ref castlingOptions);
-
-                    var isInCheck = gameBoardDataCopy.IsInCheck(gameBoard._activeColor.Invert());
-                    gameBoardDataCopy.UndoMove();
-
-                    if (!isInCheck)
-                    {
-                        checked
-                        {
-                            perftData.NodeCount++;
-                        }
-
-                        continue;
-                    }
-                }
-
-                var previousNodeCount = perftData.NodeCount;
-
-                var newBoard = gameBoard.MakeMove(move);
-                PerftInternal(newBoard, depth - 1, false, perftData, false, includeExtraCountTypes);
-
-                if (includeDivideMap)
-                {
-                    perftData.DividedMoves[move] = checked(perftData.DividedMoves.GetValueOrDefault(move)
-                        + perftData.NodeCount - previousNodeCount);
-                }
             }
         }
 

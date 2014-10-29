@@ -109,30 +109,6 @@ namespace ChessPlatform.Tests
 
         #endregion
 
-        #region FromStringNotationCaseData Class
-
-        private sealed class FromStringNotationCaseData : TestCaseData
-        {
-            #region Constructors
-
-            /// <summary>
-            ///     Initializes a new instance of the <see cref="FromStringNotationCaseData"/> class.
-            /// </summary>
-            internal FromStringNotationCaseData(
-                string input,
-                Position expectedFrom,
-                Position expectedTo,
-                PieceType expectedPromotionResult)
-                : base(input, expectedFrom, expectedTo, expectedPromotionResult)
-            {
-                // Nothing to do
-            }
-
-            #endregion
-        }
-
-        #endregion
-
         #region FromStringNotationCases Class
 
         public sealed class FromStringNotationCases : IEnumerable<TestCaseData>
@@ -195,6 +171,30 @@ namespace ChessPlatform.Tests
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
+            }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region FromStringNotationCaseData Class
+
+        private sealed class FromStringNotationCaseData : TestCaseData
+        {
+            #region Constructors
+
+            /// <summary>
+            ///     Initializes a new instance of the <see cref="FromStringNotationCaseData"/> class.
+            /// </summary>
+            internal FromStringNotationCaseData(
+                string input,
+                Position expectedFrom,
+                Position expectedTo,
+                PieceType expectedPromotionResult)
+                : base(input, expectedFrom, expectedTo, expectedPromotionResult)
+            {
+                // Nothing to do
             }
 
             #endregion

@@ -65,6 +65,33 @@ namespace ChessPlatform.UI.Desktop
 
         #endregion
 
+        #region Internal Methods
+
+        internal void ApplyMove([NotNull] GameMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            lock (_syncLock)
+            {
+                if (!_isAwaitingMove)
+                {
+                    throw new InvalidOperationException("Not waiting for a move.");
+                }
+
+                _move = move;
+                _isAwaitingMove = false;
+            }
+        }
+
+        #endregion
+
         #region Protected Methods
 
         protected override GameMove DoGetMove(GetMoveRequest request)
@@ -104,33 +131,6 @@ namespace ChessPlatform.UI.Desktop
                     RaiseMoveRequestCancelledAsync();
                 },
                 TaskContinuationOptions.OnlyOnCanceled);
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        internal void ApplyMove([NotNull] GameMove move)
-        {
-            #region Argument Check
-
-            if (move == null)
-            {
-                throw new ArgumentNullException("move");
-            }
-
-            #endregion
-
-            lock (_syncLock)
-            {
-                if (!_isAwaitingMove)
-                {
-                    throw new InvalidOperationException("Not waiting for a move.");
-                }
-
-                _move = move;
-                _isAwaitingMove = false;
-            }
         }
 
         #endregion

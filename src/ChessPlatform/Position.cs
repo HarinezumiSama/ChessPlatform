@@ -283,6 +283,16 @@ namespace ChessPlatform
 
         #endregion
 
+        #region IEquatable<Position> Members
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Equals(Position other)
+        {
+            return Equals(this, other);
+        }
+
+        #endregion
+
         #region Internal Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -312,16 +322,6 @@ namespace ChessPlatform
 
             var x88Value = (byte)(((squareIndex & 0x38) << 1) | (squareIndex & 7));
             return new Position(x88Value);
-        }
-
-        #endregion
-
-        #region IEquatable<Position> Members
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Position other)
-        {
-            return Equals(this, other);
         }
 
         #endregion
