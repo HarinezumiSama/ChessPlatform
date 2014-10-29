@@ -168,6 +168,30 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Position FromSquareIndex(int squareIndex)
+        {
+            #region Argument Check
+
+            if ((squareIndex & ~0x3F) != 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    "squareIndex",
+                    squareIndex,
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        @"The value is out of the valid range ({0} .. {1}).",
+                        0,
+                        ChessConstants.SquareCount - 1));
+            }
+
+            #endregion
+
+            var x88Value = (byte)(((squareIndex & 0x38) << 1) | (squareIndex & 7));
+            return new Position(x88Value);
+        }
+
+        [DebuggerNonUserCode]
         public static Position FromAlgebraic(string algebraicNotation)
         {
             var position = TryFromAlgebraic(algebraicNotation);
@@ -299,29 +323,6 @@ namespace ChessPlatform
         internal static bool IsValidX88Value(int x88Value)
         {
             return (x88Value & 0xFFFFFF88) == 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Position FromSquareIndex(int squareIndex)
-        {
-            #region Argument Check
-
-            if ((squareIndex & ~0x3F) != 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    "squareIndex",
-                    squareIndex,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range ({0} .. {1}).",
-                        0,
-                        ChessConstants.SquareCount - 1));
-            }
-
-            #endregion
-
-            var x88Value = (byte)(((squareIndex & 0x38) << 1) | (squareIndex & 7));
-            return new Position(x88Value);
         }
 
         #endregion

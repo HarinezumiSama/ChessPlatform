@@ -372,7 +372,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             return isHumanPlayer ? "Human Player" : "Computer";
         }
 
-        private static Dictionary<PieceType, int> GetPieceCounts([NotNull] IGameBoard board, PieceColor color)
+        private static Dictionary<PieceType, int> GetPieceCounts([NotNull] GameBoard board, PieceColor color)
         {
             return ChessConstants
                 .PieceTypesExceptNone

@@ -93,7 +93,7 @@ namespace ChessPlatform.Tests
 
             var bitboard = new Bitboard(value);
             Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));
-            Assert.That(bitboard.GetCount(), Is.EqualTo(expectedResult.Length));
+            Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedResult.Length));
         }
 
         [Test]

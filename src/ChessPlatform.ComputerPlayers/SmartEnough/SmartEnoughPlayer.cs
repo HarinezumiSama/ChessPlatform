@@ -215,7 +215,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         #region Private Methods
 
         private static BestMoveData FindMateMove(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             [NotNull] BoardCache boardCache,
             CancellationToken cancellationToken)
         {
@@ -251,7 +251,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         private void DoGetMoveInternal(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             CancellationToken cancellationToken,
             SyncValueContainer<BestMoveData> bestMoveContainer)
         {

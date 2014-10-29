@@ -15,7 +15,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constants and Fields
 
-        public ScoreCache([NotNull] IGameBoard board)
+        public ScoreCache([NotNull] GameBoard board)
         {
             #region Argument Check
 

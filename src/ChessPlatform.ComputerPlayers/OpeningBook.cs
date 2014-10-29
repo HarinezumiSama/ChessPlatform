@@ -107,7 +107,7 @@ namespace ChessPlatform.ComputerPlayers
             return moves == null ? NoMoves : moves.Copy();
         }
 
-        public GameMove[] FindPossibleMoves([NotNull] IGameBoard board)
+        public GameMove[] FindPossibleMoves([NotNull] GameBoard board)
         {
             #region Argument Check
 

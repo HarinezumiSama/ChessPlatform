@@ -34,7 +34,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
             CreatePieceTypeToKingTropismWeightMap();
 
-        private readonly IGameBoard _rootBoard;
+        private readonly GameBoard _rootBoard;
         private readonly int _maxPlyDepth;
         private readonly BestMoveInfo _previousIterationBestMoveInfo;
         private readonly CancellationToken _cancellationToken;
@@ -50,7 +50,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         ///     Initializes a new instance of the <see cref="SmartEnoughPlayerMoveChooser"/> class.
         /// </summary>
         internal SmartEnoughPlayerMoveChooser(
-            [NotNull] IGameBoard rootBoard,
+            [NotNull] GameBoard rootBoard,
             int maxPlyDepth,
             [NotNull] BoardCache boardCache,
             [CanBeNull] ScoreCache previousIterationScoreCache,
@@ -359,9 +359,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         // ReSharper disable once UnusedParameter.Local - Temporary
-        private static GamePhase GetGamePhase([NotNull] IGameBoard board)
+        private static GamePhase GetGamePhase([NotNull] GameBoard board)
         {
-            //////// TODO [vmcl] Think up  a good idea of determining the game phase
+            //////// TODO [vmcl] Think up a good idea of determining the game phase
 
             return GamePhase.Undetermined;
 
@@ -376,42 +376,56 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         private static int EvaluateMaterialAndItsPositionByColor(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             PieceColor color,
             GamePhase? gamePhase)
         {
             var result = 0;
 
-            foreach (var pieceType in ChessConstants.PieceTypesExceptNone)
+            if (gamePhase.HasValue)
+            {
+                var king = PieceType.King.ToPiece(color);
+                var position = board.GetBitboard(king).GetFirstPosition();
+                var positionWeightMap = PieceToPositionWeightMap[king];
+                var positionScore = positionWeightMap[position];
+                result += positionScore;
+            }
+
+            foreach (var pieceType in ChessConstants.PieceTypesExceptNoneAndKing)
             {
                 var piece = pieceType.ToPiece(color);
-                var piecePositions = board.GetPositions(piece);
-                if (piecePositions.Length == 0)
+                var pieceBitboard = board.GetBitboard(piece);
+                if (pieceBitboard.IsNone)
                 {
                     continue;
                 }
 
-                if (pieceType != PieceType.King)
-                {
-                    var materialWeight = PieceTypeToMaterialWeightMap[pieceType];
-                    var materialScore = piecePositions.Length * materialWeight;
-                    result += materialScore;
-                }
-
+                var materialWeight = PieceTypeToMaterialWeightMap[pieceType];
                 if (!gamePhase.HasValue)
                 {
+                    var pieceCount = pieceBitboard.GetBitSetCount();
+                    result += materialWeight * pieceCount;
                     continue;
                 }
 
                 var positionWeightMap = PieceToPositionWeightMap[piece];
-                var positionScore = piecePositions.Sum(position => positionWeightMap[position]);
-                result += positionScore;
+
+                var remainingBitboard = pieceBitboard;
+                int currentSquareIndex;
+                while ((currentSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingBitboard)) >= 0)
+                {
+                    result += materialWeight;
+
+                    var position = Position.FromSquareIndex(currentSquareIndex);
+                    var positionScore = positionWeightMap[position];
+                    result += positionScore;
+                }
             }
 
             return result;
         }
 
-        private static int EvaluateMaterialAndItsPosition([NotNull] IGameBoard board, GamePhase? gamePhase)
+        private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase? gamePhase)
         {
             var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
             var inactiveScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor.Invert(), gamePhase);
@@ -420,7 +434,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         // ReSharper disable once UnusedMember.Local
-        private static int EvaluateBoardMobility([NotNull] IGameBoard board)
+        private static int EvaluateBoardMobility([NotNull] GameBoard board)
         {
             var result = board
                 .ValidMoves
@@ -430,7 +444,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static GameMove GetCheapestAttackerMove([NotNull] IGameBoard board, Position position)
+        private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Position position)
         {
             //// TODO [vmcl] Consider en passant capture
 
@@ -454,7 +468,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         private static int GetKingTropismScore(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             Position attackerPosition,
             Position kingPosition)
         {
@@ -465,17 +479,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return score;
         }
 
-        private static int EvaluateKingTropism([NotNull] IGameBoard board, PieceColor kingColor)
+        private static int EvaluateKingTropism([NotNull] GameBoard board, PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = board.GetPositions(king).Single();
-            var attackerPositions = board.GetPositions(kingColor.Invert());
+            var kingPosition = board.GetBitboard(king).GetFirstPosition();
+            var allAttackersBitboard = board.GetBitboard(kingColor.Invert());
 
             var result = 0;
 
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var attackerPosition in attackerPositions)
+            var remainingAttackers = allAttackersBitboard;
+            int attackerSquareIndex;
+            while ((attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
             {
+                var attackerPosition = Position.FromSquareIndex(attackerSquareIndex);
                 var score = GetKingTropismScore(board, attackerPosition, kingPosition);
                 result -= score;
             }
@@ -484,7 +500,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private GameMove[] OrderMoves([NotNull] IGameBoard board, int plyDistance)
+        private GameMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
         {
             const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
 
@@ -516,8 +532,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
             }
 
-            var opponentKingPosition =
-                board.GetPositions(PieceType.King.ToPiece(board.ActiveColor.Invert())).Single();
+            var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
+            var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
 
             var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)
@@ -556,7 +572,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         // ReSharper disable once MemberCanBeMadeStatic.Local
         // ReSharper disable once UnusedParameter.Local
-        private int EvaluateMobility([NotNull] IGameBoard board)
+        private int EvaluateMobility([NotNull] GameBoard board)
         {
             return 0;
 
@@ -574,7 +590,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             ////return result;
         }
 
-        private int EvaluatePositionScore([NotNull] IGameBoard board, int plyDistance)
+        private int EvaluatePositionScore([NotNull] GameBoard board, int plyDistance)
         {
             switch (board.State)
             {
@@ -607,7 +623,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         private int ComputeStaticExchangeEvaluationScore(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             Position position,
             [CanBeNull] GameMove move)
         {
@@ -633,7 +649,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private int Quiesce([NotNull] IGameBoard board, int alpha, int beta, int plyDistance)
+        private int Quiesce([NotNull] GameBoard board, int alpha, int beta, int plyDistance)
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
@@ -678,7 +694,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         private AlphaBetaScore ComputeAlphaBeta(
-            [NotNull] IGameBoard board,
+            [NotNull] GameBoard board,
             int plyDistance,
             AlphaBetaScore alpha,
             AlphaBetaScore beta)
@@ -742,7 +758,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return bestScore;
         }
 
-        private BestMoveInfo ComputeAlphaBetaRoot(IGameBoard board)
+        private BestMoveInfo ComputeAlphaBetaRoot(GameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 

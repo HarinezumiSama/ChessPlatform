@@ -9,7 +9,7 @@ namespace ChessPlatform.GamePlay
     {
         #region Constructors
 
-        public GetMoveRequest([NotNull] IGameBoard board, CancellationToken cancellationToken)
+        public GetMoveRequest([NotNull] GameBoard board, CancellationToken cancellationToken)
         {
             #region Argument Check
 
@@ -29,7 +29,7 @@ namespace ChessPlatform.GamePlay
         #region Public Properties
 
         [NotNull]
-        public IGameBoard Board
+        public GameBoard Board
         {
             get;
             private set;

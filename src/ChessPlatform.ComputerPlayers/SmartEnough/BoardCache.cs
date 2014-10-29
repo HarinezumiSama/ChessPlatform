@@ -11,7 +11,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<BoardCacheKey, IGameBoard> _boards;
+        private readonly Dictionary<BoardCacheKey, GameBoard> _boards;
 
         #endregion
 
@@ -32,7 +32,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
-            _boards = new Dictionary<BoardCacheKey, IGameBoard>(maximumItemCount);
+            _boards = new Dictionary<BoardCacheKey, GameBoard>(maximumItemCount);
         }
 
         #endregion
@@ -70,13 +70,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public IGameBoard MakeMove([NotNull] IGameBoard board, [NotNull] GameMove move)
+        public GameBoard MakeMove([NotNull] GameBoard board, [NotNull] GameMove move)
         {
             var result = MakeMoveInternal(board, move);
             return result;
         }
 
-        public IGameBoard MakeNullMove([NotNull] IGameBoard board)
+        public GameBoard MakeNullMove([NotNull] GameBoard board)
         {
             var result = MakeMoveInternal(board, null);
             return result;
@@ -86,13 +86,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private IGameBoard MakeMoveInternal([NotNull] IGameBoard board, [CanBeNull] GameMove move)
+        private GameBoard MakeMoveInternal([NotNull] GameBoard board, [CanBeNull] GameMove move)
         {
             var key = new BoardCacheKey(board, move);
 
             this.TotalRequestCount++;
 
-            IGameBoard result;
+            GameBoard result;
             if (_boards.TryGetValue(key, out result))
             {
                 this.HitCount++;

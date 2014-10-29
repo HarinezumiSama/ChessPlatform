@@ -325,7 +325,7 @@ namespace ChessPlatform
             return Position.FromSquareIndex(squareIndex);
         }
 
-        public int GetCount()
+        public int GetBitSetCount()
         {
             var result = 0;
 

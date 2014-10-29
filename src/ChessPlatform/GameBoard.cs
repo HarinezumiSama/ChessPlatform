@@ -9,7 +9,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public sealed class GameBoard : IGameBoard
+    public sealed class GameBoard
     {
         #region Constants and Fields
 
@@ -203,10 +203,6 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region IGameBoard Members: Properties
-
         public PieceColor ActiveColor
         {
             [DebuggerStepThrough]
@@ -267,15 +263,6 @@ namespace ChessPlatform
             get
             {
                 return _fullMoveIndex;
-            }
-        }
-
-        IGameBoard IGameBoard.PreviousBoard
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return this.PreviousBoard;
             }
         }
 
@@ -449,10 +436,6 @@ namespace ChessPlatform
             return boards.ToArray();
         }
 
-        #endregion
-
-        #region IGameBoard Members: Methods
-
         public string GetFen()
         {
             var pieceDataSnippet = _gameBoardData.GetFenSnippet();
@@ -475,6 +458,16 @@ namespace ChessPlatform
         public PieceInfo GetPieceInfo(Position position)
         {
             return _gameBoardData.GetPieceInfo(position);
+        }
+
+        public Bitboard GetBitboard(Piece piece)
+        {
+            return _gameBoardData.GetBitboard(piece);
+        }
+
+        public Bitboard GetBitboard(PieceColor color)
+        {
+            return _gameBoardData.GetBitboard(color);
         }
 
         public Position[] GetPositions(Piece piece)
@@ -585,22 +578,6 @@ namespace ChessPlatform
             }
 
             return _packedGameBoard;
-        }
-
-        IGameBoard IGameBoard.MakeMove(GameMove move)
-        {
-            return MakeMove(move);
-        }
-
-        IGameBoard IGameBoard.MakeNullMove()
-        {
-            return MakeNullMove();
-        }
-
-        IGameBoard[] IGameBoard.GetHistory()
-        {
-            // ReSharper disable once CoVariantArrayConversion
-            return GetHistory();
         }
 
         #endregion
@@ -1030,7 +1007,7 @@ namespace ChessPlatform
 
             foreach (var king in ChessConstants.BothKings)
             {
-                var count = _gameBoardData.GetBitboard(king).GetCount();
+                var count = _gameBoardData.GetBitboard(king).GetBitSetCount();
                 if (count != 1)
                 {
                     throw new ChessPlatformException(

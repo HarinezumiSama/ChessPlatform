@@ -80,7 +80,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public AlphaBetaScore GetScore([NotNull] IGameBoard board, int plyDistance)
+        public AlphaBetaScore GetScore([NotNull] GameBoard board, int plyDistance)
         {
             #region Argument Check
 
@@ -105,7 +105,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        public void SaveScore([NotNull] IGameBoard board, int plyDistance, [NotNull] AlphaBetaScore score)
+        public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] AlphaBetaScore score)
         {
             #region Argument Check
 
@@ -142,7 +142,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private static InternalKey GetKey([NotNull] IGameBoard board, int plyDepth)
+        private static InternalKey GetKey([NotNull] GameBoard board, int plyDepth)
         {
             var packedGameBoard = board.Pack();
             return new InternalKey(packedGameBoard, plyDepth);

@@ -167,7 +167,7 @@ namespace ChessPlatform
             return true;
         }
 
-        private static byte[] PopulatePieces([NotNull] IGameBoard board)
+        private static byte[] PopulatePieces([NotNull] GameBoard board)
         {
             var pieces = new byte[Size];
 

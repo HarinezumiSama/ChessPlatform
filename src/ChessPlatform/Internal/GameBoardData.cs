@@ -164,7 +164,7 @@ namespace ChessPlatform.Internal
         public int GetPieceCount(Piece piece)
         {
             var bitboard = GetBitboard(piece);
-            return bitboard.GetCount();
+            return bitboard.GetBitSetCount();
         }
 
         public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] GameMove move)
@@ -490,7 +490,7 @@ namespace ChessPlatform.Internal
                         CultureInfo.InvariantCulture,
                         "There are multiple {0} pieces ({1}) on the board.",
                         kingPiece.GetDescription(),
-                        king.GetCount()));
+                        king.GetBitSetCount()));
             }
 
             var kingSquareIndex = king.FindFirstBitSetIndex();

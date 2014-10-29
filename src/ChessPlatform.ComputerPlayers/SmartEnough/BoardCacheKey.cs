@@ -16,7 +16,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constructors
 
-        internal BoardCacheKey([NotNull] IGameBoard board, [CanBeNull] GameMove move)
+        internal BoardCacheKey([NotNull] GameBoard board, [CanBeNull] GameMove move)
         {
             #region Argument Check
 
