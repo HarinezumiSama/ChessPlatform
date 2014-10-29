@@ -18,18 +18,18 @@ namespace ChessPlatform
 
         public const double DefaultZeroTolerance = 1E-7d;
 
-        public static readonly ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
             ColorToCastlingOptionSetMap =
-                new ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
+                new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
                     new Dictionary<PieceColor, ReadOnlySet<CastlingOptions>>
                     {
                         {
@@ -46,15 +46,15 @@ namespace ChessPlatform
                         }
                     });
 
-        public static readonly ReadOnlyDictionary<PieceColor, CastlingOptions> ColorToCastlingOptionsMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, CastlingOptions> ColorToCastlingOptionsMap =
             ColorToCastlingOptionSetMap
                 .ToDictionary(
                     pair => pair.Key,
                     pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceColor, int> ColorToPawnPromotionRankMap =
-            new ReadOnlyDictionary<PieceColor, int>(
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, int> ColorToPawnPromotionRankMap =
+            new Omnifactotum.ReadOnlyDictionary<PieceColor, int>(
                 new EnumFixedSizeDictionary<PieceColor, int>
                 {
                     { PieceColor.White, ChessConstants.WhitePawnPromotionRank },
@@ -97,24 +97,24 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<RayInfo> AllRays =
             new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
 
-        internal static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
-            new ReadOnlyDictionary<PieceColor, RayInfo>(
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
+            new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
                 new Dictionary<PieceColor, RayInfo>
                 {
                     { PieceColor.White, new RayInfo(0x10, true) },
                     { PieceColor.Black, new RayInfo(0xF0, true) }
                 });
 
-        internal static readonly ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
-            new ReadOnlyDictionary<PieceColor, RayInfo>(
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
+            new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
                 new Dictionary<PieceColor, RayInfo>
                 {
                     { PieceColor.White, new RayInfo(0x20, true) },
                     { PieceColor.Black, new RayInfo(0xE0, true) }
                 });
 
-        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
-            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
+            new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
                 new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
                 {
                     {
@@ -127,8 +127,8 @@ namespace ChessPlatform
                     }
                 });
 
-        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnReverseAttackRayMap =
-            new ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnReverseAttackRayMap =
+            new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
                 new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
                 {
                     {
@@ -141,7 +141,7 @@ namespace ChessPlatform
                     }
                 });
 
-        internal static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
             PawnAttackRayMap.ToDictionary(
                 pair => pair.Key,
                 pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
@@ -164,7 +164,7 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
-        internal static readonly ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
         internal static readonly Bitboard InvalidPawnPositionsBitboard =
@@ -172,7 +172,7 @@ namespace ChessPlatform
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
-        private static readonly ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
+        private static readonly Omnifactotum.ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
             AllPositions
                 .ToDictionary(
                     Factotum.Identity,
@@ -330,7 +330,7 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
-        private static ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()
+        private static Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()
         {
             var resultMap = new Dictionary<PositionBridgeKey, Bitboard>(AllPositions.Count * AllPositions.Count);
 

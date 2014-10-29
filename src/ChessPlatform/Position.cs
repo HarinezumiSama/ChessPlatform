@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
@@ -82,6 +83,7 @@ namespace ChessPlatform
         public int File
         {
             [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return _x88Value & 0x07;
@@ -91,6 +93,7 @@ namespace ChessPlatform
         public int Rank
         {
             [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return _x88Value >> 4;
@@ -100,6 +103,7 @@ namespace ChessPlatform
         public int SquareIndex
         {
             [DebuggerNonUserCode]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return (this.Rank << 3) | this.File;
@@ -109,6 +113,7 @@ namespace ChessPlatform
         public Bitboard Bitboard
         {
             [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return Bitboard.FromSquareIndex(this.SquareIndex);
@@ -122,6 +127,7 @@ namespace ChessPlatform
         internal int X88Value
         {
             [DebuggerNonUserCode]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return _x88Value;
@@ -133,16 +139,19 @@ namespace ChessPlatform
         #region Operators
 
         [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Position(string algebraicNotation)
         {
             return FromAlgebraic(algebraicNotation);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Position left, Position right)
         {
             return Equals(left, right);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Position left, Position right)
         {
             return !(left == right);
@@ -152,6 +161,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Position left, Position right)
         {
             return left._x88Value == right._x88Value;
@@ -275,11 +285,13 @@ namespace ChessPlatform
 
         #region Internal Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsValidX88Value(int x88Value)
         {
             return (x88Value & 0xFFFFFF88) == 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Position FromSquareIndex(int squareIndex)
         {
             #region Argument Check
@@ -306,6 +318,7 @@ namespace ChessPlatform
 
         #region IEquatable<Position> Members
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Position other)
         {
             return Equals(this, other);

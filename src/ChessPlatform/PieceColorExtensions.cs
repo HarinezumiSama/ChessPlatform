@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
@@ -9,8 +10,7 @@ namespace ChessPlatform
     {
         #region Public Methods
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceColor EnsureDefined(this PieceColor color)
         {
             switch (color)
@@ -24,15 +24,13 @@ namespace ChessPlatform
             }
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceColor Invert(this PieceColor color)
         {
             return (PieceColor)(PieceColor.Black - color);
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetFenSnippet(this PieceColor color)
         {
             return ChessConstants.ColorToFenSnippetMap[color];

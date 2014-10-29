@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ChessPlatform.Internal;
 
 namespace ChessPlatform
@@ -11,8 +12,7 @@ namespace ChessPlatform
     {
         #region Public Methods
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceType EnsureDefined(this PieceType pieceType)
         {
             if (DebugConstants.EnsureEnumValuesDefined && !ChessConstants.PieceTypes.Contains(pieceType))
@@ -23,8 +23,7 @@ namespace ChessPlatform
             return pieceType;
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Piece ToPiece(this PieceType pieceType, PieceColor color)
         {
             var result = pieceType == PieceType.None
@@ -34,8 +33,7 @@ namespace ChessPlatform
             return result;
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char GetFenChar(this PieceType pieceType)
         {
             char result;
@@ -49,22 +47,19 @@ namespace ChessPlatform
             return result;
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSlidingDiagonally(this PieceType pieceType)
         {
             return ((int)pieceType & (int)PieceTypeMask.SlidingDiagonally) == (int)PieceTypeMask.SlidingDiagonally;
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSlidingStraight(this PieceType pieceType)
         {
             return ((int)pieceType & (int)PieceTypeMask.SlidingStraight) == (int)PieceTypeMask.SlidingStraight;
         }
 
-        //// TODO [vmcl] Use for FW 4.5+
-        ////[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsSliding(this PieceType pieceType)
         {
             return ((int)pieceType & (int)PieceTypeMask.Sliding) == (int)PieceTypeMask.Sliding;

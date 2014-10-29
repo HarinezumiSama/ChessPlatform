@@ -1,6 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30723.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform", "ChessPlatform\ChessPlatform.csproj", "{AA84E743-3651-4436-BD27-CDD81D525D3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Tests", "ChessPlatform.Tests\ChessPlatform.Tests.csproj", "{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}"
@@ -13,6 +15,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{52E075
 	ProjectSection(SolutionItems) = preProject
 		.build\MSBuild.Community.Tasks.dll = .build\MSBuild.Community.Tasks.dll
 		.build\MSBuild.Community.Tasks.targets = .build\MSBuild.Community.Tasks.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{16BCA1B0-CA13-4F76-997D-603A68D1551A}"
+	ProjectSection(SolutionItems) = preProject
+		..\Settings.StyleCop = ..\Settings.StyleCop
 	EndProjectSection
 EndProject
 Global

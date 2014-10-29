@@ -365,7 +365,7 @@ namespace ChessPlatform.GamePlay
                     var getMoveState = _getMoveStateContainer.Value;
                     if (getMoveState != null)
                     {
-                        if ((getMoveState.State != _state || getMoveState.ActiveBoard != originalActiveBoard))
+                        if (getMoveState.State != _state || getMoveState.ActiveBoard != originalActiveBoard)
                         {
                             getMoveState.Cancel();
                         }

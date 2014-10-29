@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Omnifactotum;
 
 namespace ChessPlatform.Utilities
@@ -10,6 +11,7 @@ namespace ChessPlatform.Utilities
 
         public override int Size
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return ChessConstants.SquareCount;
@@ -20,11 +22,13 @@ namespace ChessPlatform.Utilities
 
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetIndex(Position key)
         {
             return key.SquareIndex;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override Position GetKey(int index)
         {
             return Position.FromSquareIndex(index);

@@ -38,7 +38,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public override bool Equals(object obj)
         {
-            //return obj is BoardCacheKey && Equals((BoardCacheKey)obj);
+            ////return obj is BoardCacheKey && Equals((BoardCacheKey)obj);
             return Equals(obj as BoardCacheKey);
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
@@ -9,6 +10,7 @@ namespace ChessPlatform
     {
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceColor? GetColor(this Piece piece)
         {
             if (piece == Piece.None)
@@ -20,12 +22,14 @@ namespace ChessPlatform
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceType GetPieceType(this Piece piece)
         {
             var result = (PieceType)((int)piece & PieceConstants.TypeMask);
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceInfo GetPieceInfo(this Piece piece)
         {
             var result = new PieceInfo(piece);

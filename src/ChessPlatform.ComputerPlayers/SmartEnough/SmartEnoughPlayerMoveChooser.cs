@@ -18,11 +18,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public const int MaxPlyDepthLowerLimit = 2;
 
-        private const int KingTropismNormingFactor = 14;
-        private const int KingTropismRelativeFactor = 5;
-
         internal static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
+
+        private const int KingTropismNormingFactor = 14;
+        private const int KingTropismRelativeFactor = 5;
 
         // ReSharper disable once UnusedMember.Local
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
@@ -536,7 +536,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .Where(pair => !pair.Value.IsCapture)
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetKingTropismDistance(move.To, opponentKingPosition))
-                //.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
+                ////.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
                 .ThenByDescending(move => PieceTypeToMaterialWeightMap[board[move.From].GetPieceType()])
                 .ThenByDescending(move => PieceTypeToMaterialWeightMap[move.PromotionResult])
                 .ThenBy(move => move.PromotionResult)

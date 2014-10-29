@@ -623,12 +623,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnGameBoardChanged()
         {
-            _dispatcher.Invoke(new Action(this.RefreshBoardHistory), DispatcherPriority.Render);
+            _dispatcher.Invoke(this.RefreshBoardHistory, DispatcherPriority.Render);
 
             var gameManager = _gameManager;
             if (gameManager != null)
             {
-                _dispatcher.Invoke(new Action(gameManager.Play), DispatcherPriority.ContextIdle);
+                _dispatcher.Invoke(gameManager.Play, DispatcherPriority.ContextIdle);
             }
         }
 

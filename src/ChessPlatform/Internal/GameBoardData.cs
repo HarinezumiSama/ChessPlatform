@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -91,6 +92,7 @@ namespace ChessPlatform.Internal
 
         public Piece this[Position position]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return _pieces[position.X88Value];
@@ -121,12 +123,14 @@ namespace ChessPlatform.Internal
             return new GameBoardData(this);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PieceInfo GetPieceInfo(Position position)
         {
             var piece = this[position];
             return piece.GetPieceInfo();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetBitboard(Piece piece)
         {
             var index = GetPieceArrayIndexInternal(piece);
@@ -135,24 +139,28 @@ namespace ChessPlatform.Internal
             return bitboard;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetBitboard(PieceColor color)
         {
             var bitboard = _entireColorBitboards[GetColorArrayIndexInternal(color)];
             return bitboard;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Position[] GetPositions(Piece piece)
         {
             var bitboard = GetBitboard(piece);
             return bitboard.GetPositions();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Position[] GetPositions(PieceColor color)
         {
             var bitboard = GetBitboard(color);
             return bitboard.GetPositions();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetPieceCount(Piece piece)
         {
             var bitboard = GetBitboard(piece);
@@ -232,17 +240,20 @@ namespace ChessPlatform.Internal
             return ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetAttackers(Position targetPosition, PieceColor attackingColor)
         {
             return GetAttackersInternal(targetPosition, attackingColor, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
         {
             var bitboard = GetAttackersInternal(targetPosition, attackingColor, true);
             return bitboard.IsAny;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAnyUnderAttack(
             [NotNull] IEnumerable<Position> targetPositions,
             PieceColor attackingColor)
@@ -296,9 +307,10 @@ namespace ChessPlatform.Internal
             var oppositeColor = kingColor.Invert();
             var kingPositions = GetPositions(king);
             return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
-            //return kingPositions.Length > 0 && IsUnderAttack(kingPositions[0], oppositeColor);
+            ////return kingPositions.Length > 0 && IsUnderAttack(kingPositions[0], oppositeColor);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsInsufficientMaterialState()
         {
             return IsKingLeftOnly(PieceColor.White) && IsKingLeftOnly(PieceColor.Black);
@@ -926,16 +938,19 @@ namespace ChessPlatform.Internal
 
         #region Private Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetPieceArrayIndexInternal(Piece piece)
         {
             return (int)piece;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetColorArrayIndexInternal(PieceColor color)
         {
             return (int)color;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
         {
             return (int)castlingType;
@@ -1241,14 +1256,16 @@ namespace ChessPlatform.Internal
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetConnectionIndex(int squareIndex1, int squareIndex2)
         {
-            Debug.Assert(squareIndex1 >= 0);
-            Debug.Assert(squareIndex2 >= 0);
+            Debug.Assert(squareIndex1 >= 0, "squareIndex1 must be non-negative.");
+            Debug.Assert(squareIndex2 >= 0, "squareIndex2 must be non-negative.");
 
             return squareIndex1 + squareIndex2 * ChessConstants.SquareCount;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Bitboard GetConnection(int squareIndex1, int squareIndex2)
         {
             var index = GetConnectionIndex(squareIndex1, squareIndex2);

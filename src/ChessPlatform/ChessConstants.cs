@@ -25,17 +25,6 @@ namespace ChessPlatform
 
         public const string DefaultInitialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        internal const int X88Length = FileCount * RankCount * 2;
-
-        internal const int MaxPieceCountPerColor = 16;
-        internal const int MaxPawnCountPerColor = 8;
-
-        internal const int FenSnippetCount = 6;
-        internal const string NoneCastlingOptionsFenSnippet = "-";
-        internal const string NoEnPassantCaptureFenSnippet = "-";
-        internal const char FenRankSeparator = '/';
-        internal const string FenSnippetSeparator = " ";
-
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
 
@@ -57,7 +46,7 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<PieceType> PieceTypesExceptNoneAndKing =
             PieceTypes.Where(item => item != PieceType.None && item != PieceType.King).ToHashSet().AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
             PieceColors
                 .ToDictionary(
                     Factotum.Identity,
@@ -81,17 +70,17 @@ namespace ChessPlatform
         public static readonly Position WhiteKingInitialPosition = "e1";
         public static readonly Position BlackKingInitialPosition = "e8";
 
-        public static readonly ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToEnPassantInfoMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToEnPassantInfoMap =
             PieceColors.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =
             PieceColors
                 .ToDictionary(
                     Factotum.Identity,
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture))
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<string, PieceColor> FenSnippetToColorMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<string, PieceColor> FenSnippetToColorMap =
             PieceColors
                 .ToDictionary(
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture),
@@ -108,17 +97,17 @@ namespace ChessPlatform
                     CastlingOptions.BlackQueenSide
                 });
 
-        public static readonly ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
             FenRelatedCastlingOptions
                 .ToDictionary(Factotum.Identity, item => FenCharAttribute.Get(item))
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
             FenRelatedCastlingOptions
                 .ToDictionary(item => FenCharAttribute.Get(item), Factotum.Identity)
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<PieceType, char> PieceTypeToFenCharMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceType, char> PieceTypeToFenCharMap =
             typeof(PieceType)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
@@ -128,10 +117,10 @@ namespace ChessPlatform
                     obj => obj.FenChar.Value)
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
             PieceTypeToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
             typeof(Piece)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
@@ -141,7 +130,7 @@ namespace ChessPlatform
                     obj => obj.FenChar.Value)
                 .AsReadOnly();
 
-        public static readonly ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
             PieceToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
 
         public static readonly ReadOnlyCollection<CastlingInfo> AllCastlingInfos =
@@ -175,6 +164,17 @@ namespace ChessPlatform
                         "c8",
                         "d8")
                 });
+
+        internal const int X88Length = FileCount * RankCount * 2;
+
+        internal const int MaxPieceCountPerColor = 16;
+        internal const int MaxPawnCountPerColor = 8;
+
+        internal const int FenSnippetCount = 6;
+        internal const string NoneCastlingOptionsFenSnippet = "-";
+        internal const string NoEnPassantCaptureFenSnippet = "-";
+        internal const char FenRankSeparator = '/';
+        internal const string FenSnippetSeparator = " ";
 
         #endregion
 
