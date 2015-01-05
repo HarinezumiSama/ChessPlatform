@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ChessPlatform.Internal;
 using Omnifactotum;
 using Omnifactotum.Annotations;
@@ -14,7 +15,13 @@ namespace ChessPlatform
         #region Constants and Fields
 
         private const int ThreefoldCount = 3;
-        private const int ValidMoveCapacity = 64;
+        private const int ValidMoveCapacity = 512;
+
+        [ThreadStatic]
+        private static volatile List<GameMoveData> _potentialMoveDatas;
+
+        [ThreadStatic]
+        private static volatile List<GameMoveData> _initializeValidMovesAndStateWhenNotInCheckMoveDatas;
 
         private readonly GameBoardData _gameBoardData;
 
@@ -584,6 +591,19 @@ namespace ChessPlatform
 
         #region Private Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void ClearPotentialMoveDatas()
+        {
+            if (_potentialMoveDatas == null)
+            {
+                _potentialMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+            }
+            else
+            {
+                _potentialMoveDatas.Clear();
+            }
+        }
+
         private static bool IsValidMoveByPinning(
             Bitboard[] pinLimitations,
             Position sourcePosition,
@@ -622,15 +642,15 @@ namespace ChessPlatform
         {
             var gameBoardData = addMoveData.GameBoardData;
 
-            var potentialMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+            ClearPotentialMoveDatas();
 
             gameBoardData.GenerateKingMoves(
-                potentialMoveDatas,
+                _potentialMoveDatas,
                 addMoveData.ActiveColor,
                 isInCheck ? CastlingOptions.None : addMoveData.CastlingOptions,
                 Bitboard.Everything);
 
-            if (potentialMoveDatas.Count == 0)
+            if (_potentialMoveDatas.Count == 0)
             {
                 return;
             }
@@ -640,8 +660,11 @@ namespace ChessPlatform
 
             var oppositeColor = addMoveData.OppositeColor;
 
-            foreach (var potentialMoveData in potentialMoveDatas)
+            // ReSharper disable once ForCanBeConvertedToForeach - For optimization
+            for (var index = 0; index < _potentialMoveDatas.Count; index++)
             {
+                var potentialMoveData = _potentialMoveDatas[index];
+
                 if (noActiveKingGameBoardData.IsUnderAttack(potentialMoveData.Move.To, oppositeColor))
                 {
                     continue;
@@ -665,7 +688,17 @@ namespace ChessPlatform
             GeneratePawnMoves(addMoveData, GeneratedMoveTypes.All, Bitboard.Everything);
 
             var gameBoardData = addMoveData.GameBoardData;
-            var moveDatas = new List<GameMoveData>(ValidMoveCapacity);
+
+            if (_initializeValidMovesAndStateWhenNotInCheckMoveDatas == null)
+            {
+                _initializeValidMovesAndStateWhenNotInCheckMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+            }
+            else
+            {
+                _initializeValidMovesAndStateWhenNotInCheckMoveDatas.Clear();
+            }
+
+            var moveDatas = _initializeValidMovesAndStateWhenNotInCheckMoveDatas;
 
             gameBoardData.GenerateKnightMoves(
                 moveDatas,
@@ -803,17 +836,20 @@ namespace ChessPlatform
             var enPassantCaptureInfo = addMoveData.EnPassantCaptureInfo;
             var pinLimitations = addMoveData.PinLimitations;
 
-            var potentialPawnMoves = new List<GameMoveData>(ValidMoveCapacity);
+            ClearPotentialMoveDatas();
 
             gameBoardData.GeneratePawnMoves(
-                potentialPawnMoves,
+                _potentialMoveDatas,
                 addMoveData.ActiveColor,
                 generatedMoveTypes,
                 enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
                 target);
 
-            foreach (var gameMoveData in potentialPawnMoves)
+            // ReSharper disable once ForCanBeConvertedToForeach - For optimization
+            for (var index = 0; index < _potentialMoveDatas.Count; index++)
             {
+                var gameMoveData = _potentialMoveDatas[index];
+
                 var potentialPawnMove = gameMoveData.Move;
 
                 var sourcePosition = potentialPawnMove.From;
