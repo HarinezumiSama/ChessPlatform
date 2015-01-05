@@ -825,6 +825,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return cachedScore;
             }
 
+            var autoDrawType = board.GetAutoDrawType();
+            if (autoDrawType != AutoDrawType.None)
+            {
+                return AlphaBetaScore.Zero;
+            }
+
             var plyDepth = _maxPlyDepth - plyDistance;
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {

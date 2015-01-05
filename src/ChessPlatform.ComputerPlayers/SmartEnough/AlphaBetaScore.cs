@@ -12,6 +12,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
+        public static readonly AlphaBetaScore Zero = new AlphaBetaScore(0);
+
         private readonly List<GameMove> _movesInternal;
 
         #endregion
