@@ -130,10 +130,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                     internalCancellationToken = linkedTokenSource.Token;
 
+                    var adjustedTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
+
                     timer = new Timer(
                         state => timeoutCancellationTokenSource.Cancel(),
                         null,
-                        _maxTimePerMove.Value,
+                        adjustedTime,
                         TimeSpan.FromMilliseconds(Timeout.Infinite));
                 }
 
