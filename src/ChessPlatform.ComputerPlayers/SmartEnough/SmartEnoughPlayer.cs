@@ -19,7 +19,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static readonly string PlayerName = string.Format(
             CultureInfo.InvariantCulture,
             "{0}:{1}",
-            typeof(SmartEnoughPlayer).Assembly.GetName().Name,
+            typeof(ChessPlayerBase).Assembly.GetName().Name,
             typeof(SmartEnoughPlayer).GetQualifiedName());
 
         private static readonly string TraceSeparator = new string('-', 120);
@@ -240,8 +240,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var mateMove = mateMoves
-                .OrderBy(
-                    move => SmartEnoughPlayerMoveChooser.GetMaterialWeight(board[move.From].GetPieceType()))
+                .OrderBy(move => SmartEnoughPlayerMoveChooser.GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenBy(move => move.From.SquareIndex)
                 .ThenBy(move => move.To.SquareIndex)
                 .ThenBy(move => move.PromotionResult)

@@ -22,18 +22,39 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
 
-        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightMap =
-            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightMap());
+        ////private const int MidgameMaterialLimit = 5800;
+        private const int EndgameMaterialLimit = 1470;
+
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightInMiddlegameMap =
+            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightInMiddlegameMap());
+
+        private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightInEndgameMap =
+            new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightInEndgameMap());
 
         // ReSharper disable once UnusedMember.Local
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMobilityWeightMap());
 
-        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>> PieceToPositionWeightMap =
-            new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(CreatePieceToPositionWeightMap());
+        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
+            PieceToPositionWeightInMiddlegameMap =
+                new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
+                    CreatePieceToPositionWeightInMiddlegameMap());
+
+        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
+            PieceToPositionWeightInEndgameMap =
+                new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
+                    CreatePieceToPositionWeightInEndgameMap());
 
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
             CreatePieceTypeToKingTropismWeightMap();
+
+        private static readonly PieceType[] PhaseDeterminationPieceTypes =
+        {
+            PieceType.Queen,
+            PieceType.Rook,
+            PieceType.Bishop,
+            PieceType.Knight
+        };
 
         private readonly GameBoard _rootBoard;
         private readonly int _maxPlyDepth;
@@ -145,25 +166,43 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         #region Internal Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetMaterialWeight(PieceType pieceType)
+        internal static int GetMaterialWeight(PieceType pieceType, GamePhase gamePhase = GamePhase.Middlegame)
         {
-            return PieceTypeToMaterialWeightMap[pieceType];
+            var materialWeightMap = gamePhase == GamePhase.Endgame
+                ? PieceTypeToMaterialWeightInEndgameMap
+                : PieceTypeToMaterialWeightInMiddlegameMap;
+
+            return materialWeightMap[pieceType];
         }
 
         #endregion
 
         #region Private Methods
 
-        private static Dictionary<PieceType, int> CreatePieceTypeToMaterialWeightMap()
+        private static Dictionary<PieceType, int> CreatePieceTypeToMaterialWeightInMiddlegameMap()
         {
             return new Dictionary<PieceType, int>
             {
                 { PieceType.King, 20000 },
                 { PieceType.Queen, 900 },
                 { PieceType.Rook, 500 },
-                { PieceType.Bishop, 330 },
+                { PieceType.Bishop, 325 },
                 { PieceType.Knight, 320 },
                 { PieceType.Pawn, 100 },
+                { PieceType.None, 0 }
+            };
+        }
+
+        private static Dictionary<PieceType, int> CreatePieceTypeToMaterialWeightInEndgameMap()
+        {
+            return new Dictionary<PieceType, int>
+            {
+                { PieceType.King, 20000 },
+                { PieceType.Queen, 915 },
+                { PieceType.Rook, 505 },
+                { PieceType.Bishop, 335 },
+                { PieceType.Knight, 330 },
+                { PieceType.Pawn, 130 },
                 { PieceType.None, 0 }
             };
         }
@@ -183,7 +222,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static EnumFixedSizeDictionary<PieceType, int> CreatePieceTypeToKingTropismWeightMap()
         {
-            var result = new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightMap);
+            var result = new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightInMiddlegameMap);
             result[PieceType.King] = 0;
             return result;
         }
@@ -225,20 +264,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightMap()
+        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightMap(
+            [NotNull] Dictionary<PieceType, Func<int[,]>> weightGetters)
         {
-            var weightGetters =
-                new Dictionary<PieceType, Func<int[,]>>
-                {
-                    { PieceType.Pawn, CreatePawnPositionWeightMap },
-                    { PieceType.Knight, CreateKnightPositionWeightMap },
-                    { PieceType.Bishop, CreateBishopPositionWeightMap },
-                    { PieceType.Rook, CreateRookPositionWeightMap },
-                    { PieceType.Queen, CreateQueenPositionWeightMap },
-                    { PieceType.King, CreateKingPositionWeightMap },
-                };
-
             var result = weightGetters
+                .EnsureNotNull()
                 .SelectMany(
                     pair =>
                         ChessConstants.PieceColors.Select(
@@ -253,14 +283,46 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static int[,] CreatePawnPositionWeightMap()
+        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightInMiddlegameMap()
+        {
+            var weightGetters =
+                new Dictionary<PieceType, Func<int[,]>>
+                {
+                    { PieceType.Pawn, CreatePawnPositionWeightInMiddlegameMap },
+                    { PieceType.Knight, CreateKnightPositionWeightMap },
+                    { PieceType.Bishop, CreateBishopPositionWeightMap },
+                    { PieceType.Rook, CreateRookPositionWeightMap },
+                    { PieceType.Queen, CreateQueenPositionWeightMap },
+                    { PieceType.King, CreateKingPositionWeightInMiddlegameMap }
+                };
+
+            return CreatePieceToPositionWeightMap(weightGetters);
+        }
+
+        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightInEndgameMap()
+        {
+            var weightGetters =
+                new Dictionary<PieceType, Func<int[,]>>
+                {
+                    { PieceType.Pawn, CreatePawnPositionWeightInEndgameMap },
+                    { PieceType.Knight, CreateKnightPositionWeightMap },
+                    { PieceType.Bishop, CreateBishopPositionWeightMap },
+                    { PieceType.Rook, CreateRookPositionWeightMap },
+                    { PieceType.Queen, CreateQueenPositionWeightMap },
+                    { PieceType.King, CreateKingPositionWeightInEndgameMap }
+                };
+
+            return CreatePieceToPositionWeightMap(weightGetters);
+        }
+
+        private static int[,] CreatePawnPositionWeightInMiddlegameMap()
         {
             var weights = new[,]
             {
                 { 000, 000, 000, 000, 000, 000, 000, 000 },
-                { +50, +50, +50, +50, +50, +50, +50, +50 },
-                { +10, +10, +20, +30, +30, +20, +10, +10 },
-                { +05, +05, +10, +25, +25, +10, +05, +05 },
+                { +40, +50, +50, +50, +50, +50, +50, +40 },
+                { +10, +20, +20, +30, +30, +20, +20, +10 },
+                { +05, +07, +10, +25, +25, +10, +07, +05 },
                 { 000, 000, 000, +20, +20, 000, 000, 000 },
                 { +05, -05, -10, 000, 000, -10, -05, +05 },
                 { +05, +10, +10, -20, -20, +10, +10, +05 },
@@ -270,17 +332,41 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return weights;
         }
 
-        private static int[,] CreateKnightPositionWeightMap()
+        private static int[,] CreatePawnPositionWeightInEndgameMap()
         {
             var weights = new[,]
             {
+                { 000, 000, 000, 000, 000, 000, 000, 000 },
+                { +72, +90, +90, +90, +90, +90, +90, +72 },
+                { +43, +54, +54, +54, +54, +54, +54, +43 },
+                { +36, +45, +45, +45, +45, +45, +45, +36 },
+                { +28, +36, +36, +36, +36, +36, +36, +28 },
+                { 000, 000, 000, 000, 000, 000, 000, 000 },
+                { -28, -36, -36, -36, -36, -36, -36, -28 },
+                { 000, 000, 000, 000, 000, 000, 000, 000 }
+            };
+
+            return weights;
+        }
+
+        private static int[,] CreateKnightPositionWeightMap()
+        {
+            //// Formula used here for knight (normalized to range from -50 to +30):
+            ////   Weight = ((Sq - 2) * 10) - 50
+            //// where:
+            ////   Sq - number of controlled/attacked squares on the empty board plus:
+            ////        if positioned on a central square (e4, d4, e5, or d5), then bonus +2;
+            ////        otherwise, no bonus.
+
+            var weights = new[,]
+            {
                 { -50, -40, -30, -30, -30, -30, -40, -50 },
-                { -40, -20, 000, 000, 000, 000, -20, -40 },
-                { -30, 000, +10, +15, +15, +10, 000, -30 },
-                { -30, +05, +15, +20, +20, +15, +05, -30 },
-                { -30, 000, +15, +20, +20, +15, 000, -30 },
-                { -30, +05, +10, +15, +15, +10, +05, -30 },
-                { -40, -20, 000, +05, +05, 000, -20, -40 },
+                { -40, -30, -10, -10, -10, -10, -30, -40 },
+                { -30, -10, +10, +10, +10, +10, -10, -30 },
+                { -30, -10, +10, +30, +30, +10, -10, -30 },
+                { -30, -10, +10, +30, +30, +10, -10, -30 },
+                { -30, -10, +10, +10, +10, +10, -10, -30 },
+                { -40, -30, -10, -10, -10, -10, -30, -40 },
                 { -50, -40, -30, -30, -30, -30, -40, -50 }
             };
 
@@ -289,16 +375,22 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static int[,] CreateBishopPositionWeightMap()
         {
+            //// Formula used here for bishop (normalized to range from -20 to +20):
+            ////   Weight = (((Sq * N) - 7) / 45 * 40) - 20
+            //// where:
+            ////   Sq - number of controlled/attacked squares on the empty board
+            ////   N  - number of possible move directions on the empty board (1, 2 or 4)
+
             var weights = new[,]
             {
-                { -20, -10, -10, -10, -10, -10, -10, -20 },
-                { -10, 0, 0, 0, 0, 0, 0, -10 },
-                { -10, 0, 5, 10, 10, 5, 0, -10 },
-                { -10, 5, 5, 10, 10, 5, 5, -10 },
-                { -10, 0, 10, 10, 10, 10, 0, -10 },
-                { -10, 10, 10, 10, 10, 10, 10, -10 },
-                { -10, 5, 0, 0, 0, 0, 5, -10 },
-                { -20, -10, -10, -10, -10, -10, -10, -20 }
+                { -20, -13, -13, -13, -13, -13, -13, -20 },
+                { -13, +05, +05, +05, +05, +05, +05, -13 },
+                { -13, +05, +12, +12, +12, +12, +05, -13 },
+                { -13, +05, +12, +20, +20, +12, +05, -13 },
+                { -13, +05, +12, +20, +20, +12, +05, -13 },
+                { -13, +05, +12, +12, +12, +12, +05, -13 },
+                { -13, +05, +05, +05, +05, +05, +05, -13 },
+                { -20, -13, -13, -13, -13, -13, -13, -20 }
             };
 
             return weights;
@@ -338,9 +430,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return weights;
         }
 
-        private static int[,] CreateKingPositionWeightMap()
+        private static int[,] CreateKingPositionWeightInMiddlegameMap()
         {
-            // King middle game
             var weights = new[,]
             {
                 { -30, -40, -40, -50, -50, -40, -40, -30 },
@@ -353,56 +444,64 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 { +20, +30, +10, 000, 000, +10, +30, +20 }
             };
 
-            ////// King end game
-            ////var weights = new[,]
-            ////{
-            ////    { -50, -40, -30, -20, -20, -30, -40, -50 },
-            ////    { -30, -20, -10, 000, 000, -10, -20, -30 },
-            ////    { -30, -10, +20, +30, +30, +20, -10, -30 },
-            ////    { -30, -10, +30, +40, +40, +30, -10, -30 },
-            ////    { -30, -10, +30, +40, +40, +30, -10, -30 },
-            ////    { -30, -10, +20, +30, +30, +20, -10, -30 },
-            ////    { -30, -30, 000, 000, 000, 000, -30, -30 },
-            ////    { -50, -30, -30, -30, -30, -30, -30, -50 }
-            ////};
+            return weights;
+        }
+
+        private static int[,] CreateKingPositionWeightInEndgameMap()
+        {
+            var weights = new[,]
+            {
+                { -80, -50, -30, -20, -20, -30, -50, -80 },
+                { -50, -30, -10, -10, -10, -10, -30, -50 },
+                { -30, -10, +20, +30, +30, +20, -10, -30 },
+                { -20, -10, +30, +40, +40, +30, -10, -20 },
+                { -20, -10, +30, +40, +40, +30, -10, -20 },
+                { -30, -10, +20, +30, +30, +20, -10, -30 },
+                { -50, -30, -10, -10, -10, -10, -30, -50 },
+                { -80, -50, -30, -20, -20, -30, -50, -80 }
+            };
 
             return weights;
         }
 
-        // ReSharper disable once UnusedParameter.Local - Temporary
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetNonPawnMaterialValue([NotNull] GameBoard board, PieceColor color)
+        {
+            var result = 0;
+
+            //// ReSharper disable once ForCanBeConvertedToForeach - For optimization (hopefully)
+            //// ReSharper disable once LoopCanBeConvertedToQuery - For optimization (hopefully)
+            for (var index = 0; index < PhaseDeterminationPieceTypes.Length; index++)
+            {
+                var pieceType = PhaseDeterminationPieceTypes[index];
+                var piece = pieceType.ToPiece(color);
+                var count = board.GetBitboard(piece).GetBitSetCount();
+                result += PieceTypeToMaterialWeightInMiddlegameMap[pieceType] * count;
+            }
+
+            return result;
+        }
+
         private static GamePhase GetGamePhase([NotNull] GameBoard board)
         {
-            //////// TODO [vmcl] Think up a good idea of determining the game phase
+            var nonPawnMaterialValue = GetNonPawnMaterialValue(board, PieceColor.White)
+                + GetNonPawnMaterialValue(board, PieceColor.Black);
 
-            return GamePhase.Undetermined;
-
-            ////var endGameScoreLimit = PieceTypeToMaterialWeightMap[PieceType.Rook] * 2;
-
-            ////var whiteMaterialScore = EvaluateMaterialAndItsPositionByColor(board, PieceColor.White, null);
-            ////var blackMaterialScore = EvaluateMaterialAndItsPositionByColor(board, PieceColor.Black, null);
-
-            ////return whiteMaterialScore <= endGameScoreLimit || blackMaterialScore <= endGameScoreLimit
-            ////    ? GamePhase.Endgame
-            ////    : GamePhase.Middlegame;
+            return nonPawnMaterialValue <= EndgameMaterialLimit ? GamePhase.Endgame : GamePhase.Middlegame;
         }
 
         private static int EvaluateMaterialAndItsPositionByColor(
             [NotNull] GameBoard board,
             PieceColor color,
-            GamePhase? gamePhase)
+            GamePhase gamePhase)
         {
             var result = 0;
 
-            if (gamePhase.HasValue)
-            {
-                var king = PieceType.King.ToPiece(color);
-                var position = board.GetBitboard(king).GetFirstPosition();
-                var positionWeightMap = PieceToPositionWeightMap[king];
-                var positionScore = positionWeightMap[position];
-                result += positionScore;
-            }
+            var pieceToPositionWeightMap = gamePhase == GamePhase.Endgame
+                ? PieceToPositionWeightInEndgameMap
+                : PieceToPositionWeightInMiddlegameMap;
 
-            foreach (var pieceType in ChessConstants.PieceTypesExceptNoneAndKing)
+            foreach (var pieceType in ChessConstants.PieceTypesExceptNone)
             {
                 var piece = pieceType.ToPiece(color);
                 var pieceBitboard = board.GetBitboard(piece);
@@ -411,15 +510,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     continue;
                 }
 
-                var materialWeight = GetMaterialWeight(pieceType);
-                if (!gamePhase.HasValue)
-                {
-                    var pieceCount = pieceBitboard.GetBitSetCount();
-                    result += materialWeight * pieceCount;
-                    continue;
-                }
-
-                var positionWeightMap = PieceToPositionWeightMap[piece];
+                var materialWeight = GetMaterialWeight(pieceType, gamePhase);
+                var positionWeightMap = pieceToPositionWeightMap[piece];
 
                 var remainingBitboard = pieceBitboard;
                 int currentSquareIndex;
@@ -436,7 +528,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase? gamePhase)
+        private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase gamePhase)
         {
             var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
             var inactiveScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor.Invert(), gamePhase);
@@ -472,8 +564,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
         {
+            //// Using Manhattan-Distance
+
             var result = Math.Abs(attackerPosition.Rank - kingPosition.Rank)
-                - Math.Abs(attackerPosition.File - kingPosition.File);
+                + Math.Abs(attackerPosition.File - kingPosition.File);
 
             return result;
         }
@@ -647,7 +741,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var currentBoard = _boardCache.MakeMove(board, actualMove);
-            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType());
+            var gamePhase = GetGamePhase(board);
+            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType(), gamePhase);
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
 
@@ -760,7 +855,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 if (score.Value > alpha.Value)
                 {
                     alpha = score;
-                    bestScore = move + score;
+                    bestScore = move | score;
                 }
             }
 
@@ -795,7 +890,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaScore, -LocalConstants.RootAlphaScore);
                 stopwatch.Stop();
 
-                var alphaBetaScore = move + score;
+                var alphaBetaScore = move | score;
                 this.ScoreCache[move] = alphaBetaScore;
 
                 Trace.TraceInformation(

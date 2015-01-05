@@ -105,7 +105,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         [DebuggerNonUserCode]
         [NotNull]
-        public static AlphaBetaScore operator +(GameMove move, AlphaBetaScore alphaBetaScore)
+        public static AlphaBetaScore operator |(GameMove move, AlphaBetaScore alphaBetaScore)
         {
             #region Argument Check
 
