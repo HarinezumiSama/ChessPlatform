@@ -52,6 +52,14 @@ namespace ChessPlatform.Tests
 
         private static void ExecuteTestForFenAndDepth(string fen, int maxPlyDepth)
         {
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
+            Console.WriteLine(
+                @"[{0}] Executing the test for '{1}' with max ply depth {2}...",
+                currentMethodName,
+                fen,
+                maxPlyDepth);
+
             var gameBoard = new GameBoard(fen);
             var player = new SmartEnoughPlayer(gameBoard.ActiveColor, maxPlyDepth, false, null);
 
@@ -63,7 +71,7 @@ namespace ChessPlatform.Tests
 
             Console.WriteLine(
                 @"[{0} @ {1}] ({2}) Time {3}, move {4}, max ply depth {5}.",
-                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                currentMethodName,
                 DateTimeOffset.Now.ToFixedString(),
                 ChessHelper.GetPlatformVersion(true),
                 stopwatch.Elapsed,
