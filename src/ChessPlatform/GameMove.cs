@@ -189,7 +189,7 @@ namespace ChessPlatform
                 CultureInfo.InvariantCulture,
                 "{0}{1}{2}{3}",
                 this.From,
-                renderCaptureSign ? "x" : "-",
+                renderCaptureSign ? "x" : string.Empty,
                 this.To,
                 this.PromotionResult == PieceType.None ? string.Empty : "=" + this.PromotionResult.GetFenChar());
 
