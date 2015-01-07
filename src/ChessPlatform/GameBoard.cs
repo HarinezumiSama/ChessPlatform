@@ -15,7 +15,8 @@ namespace ChessPlatform
         #region Constants and Fields
 
         private const int ThreefoldCount = 3;
-        private const int ValidMoveCapacity = 512;
+        private const int ValidMoveCapacity = 64;
+        private const int PotentialMoveListCapacity = 512;
 
         [ThreadStatic]
         private static volatile List<GameMoveData> _potentialMoveDatas;
@@ -596,7 +597,7 @@ namespace ChessPlatform
         {
             if (_potentialMoveDatas == null)
             {
-                _potentialMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+                _potentialMoveDatas = new List<GameMoveData>(PotentialMoveListCapacity);
             }
             else
             {
@@ -691,7 +692,8 @@ namespace ChessPlatform
 
             if (_initializeValidMovesAndStateWhenNotInCheckMoveDatas == null)
             {
-                _initializeValidMovesAndStateWhenNotInCheckMoveDatas = new List<GameMoveData>(ValidMoveCapacity);
+                _initializeValidMovesAndStateWhenNotInCheckMoveDatas =
+                    new List<GameMoveData>(PotentialMoveListCapacity);
             }
             else
             {
