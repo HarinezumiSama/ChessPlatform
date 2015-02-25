@@ -9,17 +9,17 @@ namespace ChessPlatform.Internal
         #region Constants and Fields
 
         private readonly Position _destinationPosition;
-        private readonly Bitboard _emptyPositions;
+        private readonly long _emptyPositions;
 
         #endregion
 
         #region Constructors
 
-        internal DoublePushData(Position destinationPosition, Bitboard emptyPositions)
+        internal DoublePushData(Position destinationPosition, long emptyPositions)
         {
             #region Argument Check
 
-            if ((destinationPosition.Bitboard & emptyPositions).IsNone)
+            if ((destinationPosition.Bitboard & emptyPositions) == Bitboards.None)
             {
                 throw new ArgumentException("Empty positions should contain destination position.");
             }
@@ -43,7 +43,7 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public Bitboard EmptyPositions
+        public long EmptyPositions
         {
             [DebuggerStepThrough]
             get

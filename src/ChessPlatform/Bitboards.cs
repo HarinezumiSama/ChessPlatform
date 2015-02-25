@@ -7,33 +7,36 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        public static readonly Bitboard Rank1 = new Bitboard(Position.GenerateRank(0));
-        public static readonly Bitboard Rank2 = new Bitboard(Position.GenerateRank(1));
-        public static readonly Bitboard Rank3 = new Bitboard(Position.GenerateRank(2));
-        public static readonly Bitboard Rank6 = new Bitboard(Position.GenerateRank(5));
-        public static readonly Bitboard Rank7 = new Bitboard(Position.GenerateRank(6));
-        public static readonly Bitboard Rank8 = new Bitboard(Position.GenerateRank(7));
+        public const long Everything = ~0L;
+        public const long None = 0L;
 
-        public static readonly Bitboard FileA = new Bitboard(Position.GenerateFile('a'));
-        public static readonly Bitboard FileH = new Bitboard(Position.GenerateFile('h'));
+        public static readonly long Rank1 = Position.GenerateRank(0).ToBitboard();
+        public static readonly long Rank2 = Position.GenerateRank(1).ToBitboard();
+        public static readonly long Rank3 = Position.GenerateRank(2).ToBitboard();
+        public static readonly long Rank6 = Position.GenerateRank(5).ToBitboard();
+        public static readonly long Rank7 = Position.GenerateRank(6).ToBitboard();
+        public static readonly long Rank8 = Position.GenerateRank(7).ToBitboard();
 
-        public static readonly Bitboard Rank1WithFileA = Rank1 | FileA;
-        public static readonly Bitboard Rank1WithFileH = Rank1 | FileH;
+        public static readonly long FileA = Position.GenerateFile('a').ToBitboard();
+        public static readonly long FileH = Position.GenerateFile('h').ToBitboard();
 
-        public static readonly Bitboard Rank8WithFileA = Rank8 | FileA;
-        public static readonly Bitboard Rank8WithFileH = Rank8 | FileH;
+        public static readonly long Rank1WithFileA = Rank1 | FileA;
+        public static readonly long Rank1WithFileH = Rank1 | FileH;
 
-        internal static readonly ulong Rank1Value = Rank1.InternalValue;
-        internal static readonly ulong Rank8Value = Rank8.InternalValue;
+        public static readonly long Rank8WithFileA = Rank8 | FileA;
+        public static readonly long Rank8WithFileH = Rank8 | FileH;
 
-        internal static readonly ulong Rank1WithFileAValue = Rank1WithFileA.InternalValue;
-        internal static readonly ulong Rank1WithFileHValue = Rank1WithFileH.InternalValue;
+        internal static readonly ulong Rank1Value = (ulong)Rank1;
+        internal static readonly ulong Rank8Value = (ulong)Rank8;
 
-        internal static readonly ulong Rank8WithFileAValue = Rank8WithFileA.InternalValue;
-        internal static readonly ulong Rank8WithFileHValue = Rank8WithFileH.InternalValue;
+        internal static readonly ulong Rank1WithFileAValue = (ulong)Rank1WithFileA;
+        internal static readonly ulong Rank1WithFileHValue = (ulong)Rank1WithFileH;
 
-        internal static readonly ulong FileAValue = FileA.InternalValue;
-        internal static readonly ulong FileHValue = FileH.InternalValue;
+        internal static readonly ulong Rank8WithFileAValue = (ulong)Rank8WithFileA;
+        internal static readonly ulong Rank8WithFileHValue = (ulong)Rank8WithFileH;
+
+        internal static readonly ulong FileAValue = (ulong)FileA;
+        internal static readonly ulong FileHValue = (ulong)FileH;
 
         #endregion
     }

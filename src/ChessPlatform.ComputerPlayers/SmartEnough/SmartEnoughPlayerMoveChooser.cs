@@ -475,7 +475,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 var pieceType = PhaseDeterminationPieceTypes[index];
                 var piece = pieceType.ToPiece(color);
-                var count = board.GetBitboard(piece).GetBitSetCount();
+                var count = BitboardHelper.GetBitSetCount(board.GetBitboard(piece));
                 result += PieceTypeToMaterialWeightInMiddlegameMap[pieceType] * count;
             }
 
@@ -505,7 +505,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 var piece = pieceType.ToPiece(color);
                 var pieceBitboard = board.GetBitboard(piece);
-                if (pieceBitboard.IsNone)
+                if (pieceBitboard == Bitboards.None)
                 {
                     continue;
                 }
@@ -515,7 +515,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 var remainingBitboard = pieceBitboard;
                 int currentSquareIndex;
-                while ((currentSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingBitboard)) >= 0)
+                while ((currentSquareIndex = BitboardHelper.PopFirstBitSetIndex(ref remainingBitboard)) >= 0)
                 {
                     result += materialWeight;
 
@@ -587,14 +587,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static int EvaluateKingTropism([NotNull] GameBoard board, PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = board.GetBitboard(king).GetFirstPosition();
+            var kingPosition = BitboardHelper.GetFirstPosition(board.GetBitboard(king));
             var allAttackersBitboard = board.GetBitboard(kingColor.Invert());
 
             var result = 0;
 
             var remainingAttackers = allAttackersBitboard;
             int attackerSquareIndex;
-            while ((attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
+            while ((attackerSquareIndex = BitboardHelper.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
             {
                 var attackerPosition = Position.FromSquareIndex(attackerSquareIndex);
                 var score = GetKingTropismScore(board, attackerPosition, kingPosition);
@@ -638,7 +638,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
-            var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
+            var opponentKingPosition = BitboardHelper.GetFirstPosition(board.GetBitboard(opponentKing));
 
             var capturingMoves = validMoves
                 .Where(pair => pair.Value.IsCapture)

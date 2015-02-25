@@ -65,7 +65,7 @@
     <Compile Include="GameBoardMoveGeneratorTests.cs" />
     <Compile Include="GameBoardTestHelper.cs" />
     <Compile Include="GameBoardTests.cs" />
-    <Compile Include="BitboardTests.cs" />
+    <Compile Include="BitboardHelperTests.cs" />
     <Compile Include="GameMoveTests.cs" />
     <Compile Include="PieceColorExtensionsTests.cs" />
     <Compile Include="PieceTypeExtensionsTests.cs" />

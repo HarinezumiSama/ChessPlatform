@@ -110,13 +110,13 @@ namespace ChessPlatform
             }
         }
 
-        public Bitboard Bitboard
+        public long Bitboard
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return Bitboard.FromSquareIndex(this.SquareIndex);
+                return BitboardHelper.FromSquareIndex(this.SquareIndex);
             }
         }
 

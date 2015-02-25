@@ -164,11 +164,11 @@ namespace ChessPlatform
                 .ToHashSet()
                 .AsReadOnly();
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, long> PositionBridgeMap =
             GeneratePositionBridgeMap();
 
-        internal static readonly Bitboard InvalidPawnPositionsBitboard =
-            new Bitboard(Position.GenerateRanks(ChessConstants.RankRange.Lower, ChessConstants.RankRange.Upper));
+        internal static readonly long InvalidPawnPositionsBitboard =
+            Position.GenerateRanks(ChessConstants.RankRange.Lower, ChessConstants.RankRange.Upper).ToBitboard();
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
@@ -330,9 +330,9 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
-        private static Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()
+        private static Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, long> GeneratePositionBridgeMap()
         {
-            var resultMap = new Dictionary<PositionBridgeKey, Bitboard>(AllPositions.Count * AllPositions.Count);
+            var resultMap = new Dictionary<PositionBridgeKey, long>(AllPositions.Count * AllPositions.Count);
 
             var allPositions = AllPositions.ToArray();
             for (var outerIndex = 0; outerIndex < allPositions.Length; outerIndex++)
@@ -352,7 +352,7 @@ namespace ChessPlatform
                         }
 
                         var positionBridgeKey = new PositionBridgeKey(first, second);
-                        var positionBridge = new Bitboard(positions.Take(index));
+                        var positionBridge = positions.Take(index).ToBitboard();
                         resultMap.Add(positionBridgeKey, positionBridge);
                         break;
                     }

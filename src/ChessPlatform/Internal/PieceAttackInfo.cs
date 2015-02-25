@@ -9,7 +9,7 @@ namespace ChessPlatform.Internal
     {
         #region Constants and Fields
 
-        private readonly Bitboard _bitboard;
+        private readonly long _bitboard;
         private readonly bool _isDirectAttack;
 
         #endregion
@@ -32,7 +32,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            _bitboard = new Bitboard(positions);
+            _bitboard = positions.ToBitboard();
             _isDirectAttack = isDirectAttack;
         }
 
@@ -40,7 +40,7 @@ namespace ChessPlatform.Internal
 
         #region Public Properties
 
-        public Bitboard Bitboard
+        public long Bitboard
         {
             [DebuggerStepThrough]
             get

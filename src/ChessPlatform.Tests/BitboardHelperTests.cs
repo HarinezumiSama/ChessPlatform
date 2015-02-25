@@ -7,55 +7,26 @@ using NUnit.Framework;
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class BitboardTests
+    public sealed class BitboardHelperTests
     {
         #region Tests
 
         [Test]
         public void TestBitboardConstants()
         {
-            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
-            Assert.That(Bitboard.None.Value, Is.EqualTo(0L));
-            Assert.That(Bitboard.Everything.Value, Is.EqualTo(~0L));
-        }
-
-        [Test]
-        [TestCase(0L)]
-        [TestCase(1L)]
-        [TestCase(0x1234567890ABCDEFL)]
-        public void TestConstructionFromValue(long value)
-        {
-            var bitboard = new Bitboard(value);
-            Assert.That(bitboard.Value, Is.EqualTo(value));
-            Assert.That(bitboard.InternalValue, Is.EqualTo((ulong)value));
-            Assert.That(bitboard.IsNone, Is.EqualTo(value == 0));
-            Assert.That(bitboard.IsAny, Is.EqualTo(value != 0));
-        }
-
-        [Test]
-        [TestCase(0L)]
-        [TestCase(1L, "a1")]
-        [TestCase(1L << 1, "b1")]
-        [TestCase(1L << 49, "b7")]
-        [TestCase((1L << 49) | (1L << 23), "b7", "h3")]
-        [TestCase((1L << 1) | (1L << 59), "b1", "d8")]
-        public void TestConstructionFromPositions(long expectedValue, params string[] positionNotations)
-        {
-            Assert.That(positionNotations, Is.Not.Null);
-            var positions = positionNotations.Select(Position.FromAlgebraic).ToArray();
-
-            var bitboard = new Bitboard(positions);
-            Assert.That(bitboard.Value, Is.EqualTo(expectedValue));
+            Assert.That(BitboardHelper.NoBitSetIndex, Is.LessThan(0));
+            Assert.That(Bitboards.None, Is.EqualTo(0L));
+            Assert.That(Bitboards.Everything, Is.EqualTo(~0L));
         }
 
         [Test]
         public void TestFindFirstBitSetWhenNoBitsAreSet()
         {
-            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
+            Assert.That(BitboardHelper.NoBitSetIndex, Is.LessThan(0));
 
-            var bitboard = new Bitboard(0L);
-            var actualResult = bitboard.FindFirstBitSetIndex();
-            Assert.That(actualResult, Is.EqualTo(Bitboard.NoBitSetIndex));
+            var bitboard = 0L;
+            var actualResult = BitboardHelper.FindFirstBitSetIndex(bitboard);
+            Assert.That(actualResult, Is.EqualTo(BitboardHelper.NoBitSetIndex));
         }
 
         [Test]
@@ -63,9 +34,8 @@ namespace ChessPlatform.Tests
         {
             for (var index = 0; index < ChessConstants.SquareCount; index++)
             {
-                var value = 1L << index;
-                var bitboard = new Bitboard(value);
-                var actualResult = bitboard.FindFirstBitSetIndex();
+                var bitboard = 1L << index;
+                var actualResult = BitboardHelper.FindFirstBitSetIndex(bitboard);
                 Assert.That(actualResult, Is.EqualTo(index), "Failed for the bit {0}", index);
             }
         }
@@ -75,8 +45,7 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 49) | (1L << 23), 23)]
         public void TestFindFirstBitSetWhenMultipleBitsAreSet(long value, int expectedResult)
         {
-            var bitboard = new Bitboard(value);
-            var actualResult = bitboard.FindFirstBitSetIndex();
+            var actualResult = BitboardHelper.FindFirstBitSetIndex(value);
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
@@ -92,9 +61,8 @@ namespace ChessPlatform.Tests
             Assert.That(expectedIndexesResult, Is.Not.Null);
             var expectedResult = expectedIndexesResult.Select(Position.FromSquareIndex).ToArray();
 
-            var bitboard = new Bitboard(value);
-            Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));
-            Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedResult.Length));
+            Assert.That(BitboardHelper.GetPositions(value), Is.EquivalentTo(expectedResult));
+            Assert.That(BitboardHelper.GetBitSetCount(value), Is.EqualTo(expectedResult.Length));
         }
 
         [Test]
@@ -105,8 +73,7 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 1) | (1L << 59), 1L << 1)]
         public void TestIsolateFirstBitSet(long value, long expectedResult)
         {
-            var bitboard = new Bitboard(value);
-            var result = bitboard.IsolateFirstBitSet().Value;
+            var result = BitboardHelper.IsolateFirstBitSet(value);
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
@@ -161,55 +128,12 @@ namespace ChessPlatform.Tests
 
             if (expectedResultPositionNotation == null)
             {
-                Assert.That(resultBitboard.IsNone, Is.True);
+                Assert.That(resultBitboard == Bitboards.None, Is.True);
                 return;
             }
 
             var expectedResultBitboard = Position.FromAlgebraic(expectedResultPositionNotation).Bitboard;
-            Assert.That(resultBitboard.Value, Is.EqualTo(expectedResultBitboard.Value));
-        }
-
-        [Test]
-        [Explicit]
-        public void TestPerformance()
-        {
-            const int Count = 1000 * 1000 * 1000;
-            var value1 = Bitboard.FromSquareIndexInternal(1);
-            var value2 = Bitboard.FromSquareIndexInternal(2);
-            var value3 = value1 | value2;
-
-            var bitboardStopwatch = Stopwatch.StartNew();
-            for (var index = 0; index < Count; index++)
-            {
-                var bitboard1 = new Bitboard(value1);
-                var bitboard2 = new Bitboard(value2);
-                var bitboard3 = new Bitboard(value3);
-
-                var bitboard = (bitboard1 | bitboard2) & ~bitboard3;
-                if (bitboard.IsAny)
-                {
-                    Assert.Fail();
-                }
-            }
-
-            bitboardStopwatch.Stop();
-            Console.WriteLine(@"Bitboard performance @ {0}: {1}", Count, bitboardStopwatch.Elapsed);
-
-            var valueStopwatch = Stopwatch.StartNew();
-            for (var index = 0; index < Count; index++)
-            {
-                var value = (value1 | value2) & ~value3;
-                if (value != 0)
-                {
-                    Assert.Fail();
-                }
-            }
-
-            valueStopwatch.Stop();
-            Console.WriteLine(@"Value performance @ {0}: {1}", Count, valueStopwatch.Elapsed);
-
-            var ratio = (double)bitboardStopwatch.ElapsedTicks / valueStopwatch.ElapsedTicks;
-            Console.WriteLine(@"Ratio: {0}", ratio);
+            Assert.That(resultBitboard, Is.EqualTo(expectedResultBitboard));
         }
 
         #endregion
