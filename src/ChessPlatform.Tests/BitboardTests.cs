@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 
@@ -100,7 +101,7 @@ namespace ChessPlatform.Tests
         [TestCase(0L, 0L)]
         [TestCase(1L << 1, 1L << 1)]
         [TestCase(1L << 49, 1L << 49)]
-        [TestCase((1L << 49) | (1L << 23), (1L << 23))]
+        [TestCase((1L << 49) | (1L << 23), 1L << 23)]
         [TestCase((1L << 1) | (1L << 59), 1L << 1)]
         public void TestIsolateFirstBitSet(long value, long expectedResult)
         {
@@ -166,6 +167,49 @@ namespace ChessPlatform.Tests
 
             var expectedResultBitboard = Position.FromAlgebraic(expectedResultPositionNotation).Bitboard;
             Assert.That(resultBitboard.Value, Is.EqualTo(expectedResultBitboard.Value));
+        }
+
+        [Test]
+        [Explicit]
+        public void TestPerformance()
+        {
+            const int Count = 1000 * 1000 * 1000;
+            var value1 = Bitboard.FromSquareIndexInternal(1);
+            var value2 = Bitboard.FromSquareIndexInternal(2);
+            var value3 = value1 | value2;
+
+            var bitboardStopwatch = Stopwatch.StartNew();
+            for (var index = 0; index < Count; index++)
+            {
+                var bitboard1 = new Bitboard(value1);
+                var bitboard2 = new Bitboard(value2);
+                var bitboard3 = new Bitboard(value3);
+
+                var bitboard = (bitboard1 | bitboard2) & ~bitboard3;
+                if (bitboard.IsAny)
+                {
+                    Assert.Fail();
+                }
+            }
+
+            bitboardStopwatch.Stop();
+            Console.WriteLine(@"Bitboard performance @ {0}: {1}", Count, bitboardStopwatch.Elapsed);
+
+            var valueStopwatch = Stopwatch.StartNew();
+            for (var index = 0; index < Count; index++)
+            {
+                var value = (value1 | value2) & ~value3;
+                if (value != 0)
+                {
+                    Assert.Fail();
+                }
+            }
+
+            valueStopwatch.Stop();
+            Console.WriteLine(@"Value performance @ {0}: {1}", Count, valueStopwatch.Elapsed);
+
+            var ratio = (double)bitboardStopwatch.ElapsedTicks / valueStopwatch.ElapsedTicks;
+            Console.WriteLine(@"Ratio: {0}", ratio);
         }
 
         #endregion
