@@ -17,8 +17,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        public const int MaxPlyDepthLowerLimit = 2;
-
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
 
@@ -86,7 +84,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException("rootBoard");
             }
 
-            if (maxPlyDepth < MaxPlyDepthLowerLimit)
+            if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     "maxPlyDepth",
@@ -94,7 +92,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
-                        MaxPlyDepthLowerLimit));
+                        SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit));
             }
 
             #endregion

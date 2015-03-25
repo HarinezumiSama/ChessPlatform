@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using Omnifactotum.Annotations;
+using Omnifactotum.Validation;
 
 namespace ChessPlatform.UI.Desktop.ViewModels
 {
@@ -13,7 +14,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Constants and Fields
 
         private const string InvalidExpressionMessageAutoFormat =
-            "Invalid expression (must be a getter of a property of some type): {{ {0} }}.";
+            "Invalid expression (must be a getter of a property of the type '{0}'): {{ {1} }}.";
 
         private readonly Dictionary<string, List<EventHandler>> _propertyChangedSubscriptionsDictionary;
 
@@ -55,6 +56,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             handlers.Add(handler);
         }
 
+        public ObjectValidationResult Validate()
+        {
+            return ObjectValidator.Validate(this);
+        }
+
+        public bool IsValid()
+        {
+            return Validate().IsObjectValid;
+        }
+
         #endregion
 
         #region Protected Methods
@@ -93,11 +104,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             #endregion
 
+            var thisType = GetType();
+
             var memberExpression = propertyGetterExpression.Body as MemberExpression;
             if ((memberExpression == null) || (memberExpression.NodeType != ExpressionType.MemberAccess))
             {
                 throw new ArgumentException(
-                    string.Format(InvalidExpressionMessageAutoFormat, propertyGetterExpression),
+                    string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
                     "propertyGetterExpression");
             }
 
@@ -105,14 +118,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (propertyInfo == null)
             {
                 throw new ArgumentException(
-                    string.Format(InvalidExpressionMessageAutoFormat, propertyGetterExpression),
+                    string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
                     "propertyGetterExpression");
             }
 
-            if (propertyInfo.DeclaringType != GetType())
+            if (propertyInfo.DeclaringType != thisType)
             {
                 throw new ArgumentException(
-                    string.Format(InvalidExpressionMessageAutoFormat, propertyGetterExpression),
+                    string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
                     "propertyGetterExpression");
             }
 
@@ -122,7 +135,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 if ((accessor == null) || !accessor.IsStatic)
                 {
                     throw new ArgumentException(
-                        string.Format(InvalidExpressionMessageAutoFormat, propertyGetterExpression),
+                        string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
                         "propertyGetterExpression");
                 }
             }

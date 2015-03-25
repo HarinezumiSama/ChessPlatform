@@ -46,22 +46,23 @@
     <ApplicationIcon>..\Solution Items\Icons\ChessPlatformIcon-256.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum, Version=0.3.0.87, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
-      <HintPath>..\packages\Omnifactotum.0.3.0.87\lib\net40-Client\Omnifactotum.dll</HintPath>
+    <Reference Include="Omnifactotum, Version=0.3.0.114, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Omnifactotum.0.3.0.114\lib\net40-Client\Omnifactotum.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit">
+      <HintPath>..\packages\Extended.Wpf.Toolkit.2.4\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Solution Items\CommonAssemblyInfo.cs">
@@ -74,21 +75,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Commands\NewGameWindowCommands.cs" />
     <Compile Include="Controls\ControlItem.cs" />
     <Compile Include="Controls\ControlItem.Helper.cs" />
     <Compile Include="Converters\BooleanToValueConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\DebugConverter.cs" />
     <Compile Include="Converters\KeyGestureConverter.cs" />
+    <Compile Include="Converters\PlayerDataPropertyGridVisibilityConverter.cs" />
     <Compile Include="Converters\StatusLabelTextConverter.cs" />
     <Compile Include="GuiHumanChessPlayer.cs" />
+    <Compile Include="ViewModels\GuiHumanChessPlayerCreationData.cs" />
+    <Compile Include="IPlayerInfo.cs" />
     <Compile Include="NewGameWindow.xaml.cs">
       <DependentUpon>NewGameWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\PlayerChoiceControl.xaml.cs">
       <DependentUpon>PlayerChoiceControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\NewGameWindowViewModel.cs" />
+    <Compile Include="ViewModels\PlayerCreationData.cs" />
     <Compile Include="PlayerInfo.cs" />
+    <Compile Include="ViewModels\SmartEnoughPlayerCreationData.cs" />
     <Compile Include="ViewModels\BoardSquareViewModel.cs" />
     <Compile Include="Commands\GameWindowCommands.cs" />
     <Compile Include="Converters\RatioDoubleConverter.cs" />
@@ -99,6 +107,7 @@
     <Compile Include="UIHelper.cs" />
     <Compile Include="ViewModels\PlayerChoiceControlViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="ViewModels\ViewModelHelper.cs" />
     <Page Include="GameWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

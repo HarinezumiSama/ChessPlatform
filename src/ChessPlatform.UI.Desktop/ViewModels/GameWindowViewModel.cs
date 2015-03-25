@@ -55,7 +55,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             SubscribeToChangeOf(() => this.IsReversedView, this.OnIsReversedViewChanged);
             SubscribeToChangeOf(() => this.CurrentGameBoard, this.OnCurrentGameBoardChanged);
 
-            InitializeNewGame(ChessConstants.DefaultInitialFen, null, null);
+            InitializeNewGame(
+                ChessConstants.DefaultInitialFen,
+                ViewModelHelper.CreateGuiHumanChessPlayerInfo(),
+                ViewModelHelper.CreateGuiHumanChessPlayerInfo());
         }
 
         #endregion
@@ -275,8 +278,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void InitializeNewGame(
             [NotNull] string fen,
-            [CanBeNull] PlayerInfo whitePlayerInfo,
-            [CanBeNull] PlayerInfo blackPlayerInfo)
+            [NotNull] IPlayerInfo whitePlayerInfo,
+            [NotNull] IPlayerInfo blackPlayerInfo)
         {
             #region Argument Check
 
@@ -517,7 +520,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ////resultBuilder
             ////    .AppendFormat(CultureInfo.InvariantCulture, @"[Site ""{0}""]", Environment.MachineName)
             ////    .AppendLine();
-
             resultBuilder
                 .AppendFormat(CultureInfo.InvariantCulture, @"[Date ""{0:yyyy.MM.dd}""]", DateTime.Now)
                 .AppendLine();
@@ -632,26 +634,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        [NotNull]
-        private GuiHumanChessPlayer CreateGuiHumanChessPlayer(PieceColor color)
+        private void CreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
         {
-            var player = new GuiHumanChessPlayer(color);
-            player.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
-            player.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
-
-            return player;
-        }
-
-        private void CreatePlayer(ref IChessPlayer player, [CanBeNull] PlayerInfo playerInfo, PieceColor color)
-        {
-            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
-            if (guiHumanChessPlayer != null)
+            var oldGuiHumanChessPlayer = player as GuiHumanChessPlayer;
+            if (oldGuiHumanChessPlayer != null)
             {
-                guiHumanChessPlayer.MoveRequested -= this.GuiHumanChessPlayer_MoveRequested;
-                guiHumanChessPlayer.MoveRequestCancelled -= this.GuiHumanChessPlayer_MoveRequestCancelled;
+                oldGuiHumanChessPlayer.MoveRequested -= this.GuiHumanChessPlayer_MoveRequested;
+                oldGuiHumanChessPlayer.MoveRequestCancelled -= this.GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
-            player = playerInfo == null ? CreateGuiHumanChessPlayer(color) : playerInfo.PlayerFactory(color);
+            player = playerInfo.CreatePlayer(color);
+
+            var newGuiHumanChessPlayer = player as GuiHumanChessPlayer;
+            if (newGuiHumanChessPlayer != null)
+            {
+                newGuiHumanChessPlayer.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
+                newGuiHumanChessPlayer.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
+            }
         }
 
         [CanBeNull]

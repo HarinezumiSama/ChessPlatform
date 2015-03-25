@@ -36,12 +36,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
-        public SmartEnoughPlayer(PieceColor color, int maxPlyDepth, bool useOpeningBook, TimeSpan? maxTimePerMove)
+        public SmartEnoughPlayer(PieceColor color, bool useOpeningBook, int maxPlyDepth, TimeSpan? maxTimePerMove)
             : base(color)
         {
             #region Argument Check
 
-            if (maxPlyDepth < SmartEnoughPlayerMoveChooser.MaxPlyDepthLowerLimit)
+            if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     "maxPlyDepth",
@@ -49,7 +49,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
-                        SmartEnoughPlayerMoveChooser.MaxPlyDepthLowerLimit));
+                        SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit));
             }
 
             if (maxTimePerMove.HasValue && maxTimePerMove.Value <= TimeSpan.Zero)
@@ -308,7 +308,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var totalNodeCount = 0L;
             ScoreCache scoreCache = null;
 
-            for (var plyDepth = SmartEnoughPlayerMoveChooser.MaxPlyDepthLowerLimit;
+            for (var plyDepth = SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit;
                 plyDepth <= _maxPlyDepth;
                 plyDepth++)
             {

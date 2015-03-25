@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
 {
@@ -21,7 +23,7 @@ namespace ChessPlatform.UI.Desktop
 
             var clipboardText = Clipboard.GetText();
 
-            this.FenTextBox.Text = GameBoard.IsValidFen(clipboardText)
+            this.ViewModel.Fen = GameBoard.IsValidFen(clipboardText)
                 ? clipboardText
                 : ChessConstants.DefaultInitialFen;
         }
@@ -30,27 +32,31 @@ namespace ChessPlatform.UI.Desktop
 
         #region Public Properties
 
-        public PlayerInfo WhitePlayer
+        [NotNull]
+        public IPlayerInfo WhitePlayer
         {
             get
             {
-                return this.WhitePlayerChoiceControl.ViewModel.SelectedPlayerControlItem.EnsureNotNull().Value;
+                return this.ViewModel
+                    .WhitePlayerViewModel
+                    .SelectedPlayerControlItem
+                    .EnsureNotNull()
+                    .Value
+                    .EnsureNotNull();
             }
         }
 
-        public PlayerInfo BlackPlayer
+        [NotNull]
+        public IPlayerInfo BlackPlayer
         {
             get
             {
-                return this.BlackPlayerChoiceControl.ViewModel.SelectedPlayerControlItem.EnsureNotNull().Value;
-            }
-        }
-
-        public string InitialFen
-        {
-            get
-            {
-                return this.FenTextBox.Text.TrimSafely();
+                return this.ViewModel
+                    .BlackPlayerViewModel
+                    .SelectedPlayerControlItem
+                    .EnsureNotNull()
+                    .Value
+                    .EnsureNotNull();
             }
         }
 
@@ -63,11 +69,16 @@ namespace ChessPlatform.UI.Desktop
             this.DialogResult = null;
         }
 
-        private void OKButton_Click(object sender, RoutedEventArgs e)
+        private void Start_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            if (!GameBoard.IsValidFen(this.InitialFen))
+            e.CanExecute = this.ViewModel.IsValid();
+        }
+
+        private void Start_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (!this.ViewModel.IsValid())
             {
-                this.ShowErrorDialog("The specified FEN has invalid format or represents an invalid board position.");
+                this.DialogResult = null;
                 return;
             }
 
@@ -75,20 +86,20 @@ namespace ChessPlatform.UI.Desktop
             Close();
         }
 
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             this.DialogResult = false;
             Close();
         }
 
-        private void DefaultButton_Click(object sender, RoutedEventArgs e)
+        private void SetDefaultFenButton_Click(object sender, RoutedEventArgs e)
         {
-            this.FenTextBox.Text = ChessConstants.DefaultInitialFen;
+            this.ViewModel.Fen = ChessConstants.DefaultInitialFen;
         }
 
-        private void FromClipboardButton_Click(object sender, RoutedEventArgs e)
+        private void PasteFenFromClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            this.FenTextBox.Text = Clipboard.GetText();
+            this.ViewModel.Fen = Clipboard.GetText();
         }
 
         #endregion

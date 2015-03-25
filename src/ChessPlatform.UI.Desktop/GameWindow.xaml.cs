@@ -79,7 +79,7 @@ namespace ChessPlatform.UI.Desktop
             }
 
             this.ViewModel.InitializeNewGame(
-                newGameWindow.InitialFen,
+                newGameWindow.ViewModel.Fen,
                 newGameWindow.WhitePlayer,
                 newGameWindow.BlackPlayer);
 
