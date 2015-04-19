@@ -308,14 +308,27 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var totalNodeCount = 0L;
             ScoreCache scoreCache = null;
 
-            for (var plyDepth = SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit;
+            var useIterativeDeepening = _maxTimePerMove.HasValue;
+
+            var startingPlyDepth = useIterativeDeepening
+                ? SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit
+                : _maxPlyDepth;
+
+            for (var plyDepth = startingPlyDepth;
                 plyDepth <= _maxPlyDepth;
                 plyDepth++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 Trace.WriteLine(string.Empty);
-                Trace.TraceInformation("[{0}] Iterative deepening: {1}.", currentMethodName, plyDepth);
+                if (useIterativeDeepening)
+                {
+                    Trace.TraceInformation("[{0}] Iterative deepening: {1}.", currentMethodName, plyDepth);
+                }
+                else
+                {
+                    Trace.TraceInformation("[{0}] Fixed depth: {1}.", currentMethodName, plyDepth);
+                }
 
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
