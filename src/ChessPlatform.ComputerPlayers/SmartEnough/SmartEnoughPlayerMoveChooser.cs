@@ -33,13 +33,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMobilityWeightMap());
 
-        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
-            PieceToPositionWeightInMiddlegameMap =
+        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>> PieceToPositionWeightInMiddlegameMap =
                 new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
                     CreatePieceToPositionWeightInMiddlegameMap());
 
-        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
-            PieceToPositionWeightInEndgameMap =
+        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>> PieceToPositionWeightInEndgameMap =
                 new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
                     CreatePieceToPositionWeightInEndgameMap());
 
@@ -317,14 +315,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { 000, 000, 000, 000, 000, 000, 000, 000 },
-                { +40, +50, +50, +50, +50, +50, +50, +40 },
-                { +10, +20, +20, +30, +30, +20, +20, +10 },
-                { +05, +07, +10, +25, +25, +10, +07, +05 },
-                { 000, 000, 000, +20, +20, 000, 000, 000 },
-                { +05, -05, -10, 000, 000, -10, -05, +05 },
-                { +05, +10, +10, -20, -20, +10, +10, +05 },
-                { 000, 000, 000, 000, 000, 000, 000, 000 }
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                },
+                {
+                   +40, +50, +50, +50, +50, +50, +50, +40
+                },
+                {
+                   +10, +20, +20, +30, +30, +20, +20, +10
+                },
+                {
+                   +05, +07, +10, +25, +25, +10, +07, +05
+                },
+                {
+                   000, 000, 000, +20, +20, 000, 000, 000
+                },
+                {
+                   +05, -05, -10, 000, 000, -10, -05, +05
+                },
+                {
+                   +05, +10, +10, -20, -20, +10, +10, +05
+                },
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                }
             };
 
             return weights;
@@ -334,14 +348,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { 000, 000, 000, 000, 000, 000, 000, 000 },
-                { +72, +90, +90, +90, +90, +90, +90, +72 },
-                { +43, +54, +54, +54, +54, +54, +54, +43 },
-                { +36, +45, +45, +45, +45, +45, +45, +36 },
-                { +28, +36, +36, +36, +36, +36, +36, +28 },
-                { 000, 000, 000, 000, 000, 000, 000, 000 },
-                { -28, -36, -36, -36, -36, -36, -36, -28 },
-                { 000, 000, 000, 000, 000, 000, 000, 000 }
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                },
+                {
+                   +72, +90, +90, +90, +90, +90, +90, +72
+                },
+                {
+                   +43, +54, +54, +54, +54, +54, +54, +43
+                },
+                {
+                   +36, +45, +45, +45, +45, +45, +45, +36
+                },
+                {
+                   +28, +36, +36, +36, +36, +36, +36, +28
+                },
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                },
+                {
+                   -28, -36, -36, -36, -36, -36, -36, -28
+                },
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                }
             };
 
             return weights;
@@ -355,17 +385,32 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             ////   Sq - number of controlled/attacked squares on the empty board plus:
             ////        if positioned on a central square (e4, d4, e5, or d5), then bonus +2;
             ////        otherwise, no bonus.
-
             var weights = new[,]
             {
-                { -50, -40, -30, -30, -30, -30, -40, -50 },
-                { -40, -30, -10, -10, -10, -10, -30, -40 },
-                { -30, -10, +10, +10, +10, +10, -10, -30 },
-                { -30, -10, +10, +30, +30, +10, -10, -30 },
-                { -30, -10, +10, +30, +30, +10, -10, -30 },
-                { -30, -10, +10, +10, +10, +10, -10, -30 },
-                { -40, -30, -10, -10, -10, -10, -30, -40 },
-                { -50, -40, -30, -30, -30, -30, -40, -50 }
+                {
+                   -50, -40, -30, -30, -30, -30, -40, -50
+                },
+                {
+                   -40, -30, -10, -10, -10, -10, -30, -40
+                },
+                {
+                   -30, -10, +10, +10, +10, +10, -10, -30
+                },
+                {
+                   -30, -10, +10, +30, +30, +10, -10, -30
+                },
+                {
+                   -30, -10, +10, +30, +30, +10, -10, -30
+                },
+                {
+                   -30, -10, +10, +10, +10, +10, -10, -30
+                },
+                {
+                   -40, -30, -10, -10, -10, -10, -30, -40
+                },
+                {
+                   -50, -40, -30, -30, -30, -30, -40, -50
+                }
             };
 
             return weights;
@@ -378,17 +423,32 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             //// where:
             ////   Sq - number of controlled/attacked squares on the empty board
             ////   N  - number of possible move directions on the empty board (1, 2 or 4)
-
             var weights = new[,]
             {
-                { -20, -13, -13, -13, -13, -13, -13, -20 },
-                { -13, +05, +05, +05, +05, +05, +05, -13 },
-                { -13, +05, +12, +12, +12, +12, +05, -13 },
-                { -13, +05, +12, +20, +20, +12, +05, -13 },
-                { -13, +05, +12, +20, +20, +12, +05, -13 },
-                { -13, +05, +12, +12, +12, +12, +05, -13 },
-                { -13, +05, +05, +05, +05, +05, +05, -13 },
-                { -20, -13, -13, -13, -13, -13, -13, -20 }
+                {
+                   -20, -13, -13, -13, -13, -13, -13, -20
+                },
+                {
+                   -13, +05, +05, +05, +05, +05, +05, -13
+                },
+                {
+                   -13, +05, +12, +12, +12, +12, +05, -13
+                },
+                {
+                   -13, +05, +12, +20, +20, +12, +05, -13
+                },
+                {
+                   -13, +05, +12, +20, +20, +12, +05, -13
+                },
+                {
+                   -13, +05, +12, +12, +12, +12, +05, -13
+                },
+                {
+                   -13, +05, +05, +05, +05, +05, +05, -13
+                },
+                {
+                   -20, -13, -13, -13, -13, -13, -13, -20
+                }
             };
 
             return weights;
@@ -398,14 +458,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { 000, 000, 000, 000, 000, 000, 000, 000 },
-                { +05, +10, +10, +10, +10, +10, +10, +05 },
-                { -05, 000, 000, 000, 000, 000, 000, -05 },
-                { -05, 000, 000, 000, 000, 000, 000, -05 },
-                { -05, 000, 000, 000, 000, 000, 000, -05 },
-                { -05, 000, 000, 000, 000, 000, 000, -05 },
-                { -05, 000, 000, 000, 000, 000, 000, -05 },
-                { 000, 000, 000, +05, +05, 000, 000, 000 }
+                {
+                   000, 000, 000, 000, 000, 000, 000, 000
+                },
+                {
+                   +05, +10, +10, +10, +10, +10, +10, +05
+                },
+                {
+                   -05, 000, 000, 000, 000, 000, 000, -05
+                },
+                {
+                   -05, 000, 000, 000, 000, 000, 000, -05
+                },
+                {
+                   -05, 000, 000, 000, 000, 000, 000, -05
+                },
+                {
+                   -05, 000, 000, 000, 000, 000, 000, -05
+                },
+                {
+                   -05, 000, 000, 000, 000, 000, 000, -05
+                },
+                {
+                   000, 000, 000, +05, +05, 000, 000, 000
+                }
             };
 
             return weights;
@@ -415,14 +491,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { -20, -10, -10, -05, -05, -10, -10, -20 },
-                { -10, 000, 000, 000, 000, 000, 000, -10 },
-                { -10, 000, +05, +05, +05, +05, 000, -10 },
-                { -05, 000, +05, +05, +05, +05, 000, -05 },
-                { 000, 000, +05, +05, +05, +05, 000, -05 },
-                { -10, +05, +05, +05, +05, +05, 000, -10 },
-                { -10, 000, +05, 000, 000, 000, 000, -10 },
-                { -20, -10, -10, -05, -05, -10, -10, -20 }
+                {
+                   -20, -10, -10, -05, -05, -10, -10, -20
+                },
+                {
+                   -10, 000, 000, 000, 000, 000, 000, -10
+                },
+                {
+                   -10, 000, +05, +05, +05, +05, 000, -10
+                },
+                {
+                   -05, 000, +05, +05, +05, +05, 000, -05
+                },
+                {
+                   000, 000, +05, +05, +05, +05, 000, -05
+                },
+                {
+                   -10, +05, +05, +05, +05, +05, 000, -10
+                },
+                {
+                   -10, 000, +05, 000, 000, 000, 000, -10
+                },
+                {
+                   -20, -10, -10, -05, -05, -10, -10, -20
+                }
             };
 
             return weights;
@@ -432,14 +524,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { -30, -40, -40, -50, -50, -40, -40, -30 },
-                { -30, -40, -40, -50, -50, -40, -40, -30 },
-                { -30, -40, -40, -50, -50, -40, -40, -30 },
-                { -30, -40, -40, -50, -50, -40, -40, -30 },
-                { -20, -30, -30, -40, -40, -30, -30, -20 },
-                { -10, -20, -20, -20, -20, -20, -20, -10 },
-                { +20, +20, 000, 000, 000, 000, +20, +20 },
-                { +20, +30, +10, 000, 000, +10, +30, +20 }
+                {
+                   -30, -40, -40, -50, -50, -40, -40, -30
+                },
+                {
+                   -30, -40, -40, -50, -50, -40, -40, -30
+                },
+                {
+                   -30, -40, -40, -50, -50, -40, -40, -30
+                },
+                {
+                   -30, -40, -40, -50, -50, -40, -40, -30
+                },
+                {
+                   -20, -30, -30, -40, -40, -30, -30, -20
+                },
+                {
+                   -10, -20, -20, -20, -20, -20, -20, -10
+                },
+                {
+                   +20, +20, 000, 000, 000, 000, +20, +20
+                },
+                {
+                   +20, +30, +10, 000, 000, +10, +30, +20
+                }
             };
 
             return weights;
@@ -449,14 +557,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             var weights = new[,]
             {
-                { -80, -50, -30, -20, -20, -30, -50, -80 },
-                { -50, -30, -10, -10, -10, -10, -30, -50 },
-                { -30, -10, +20, +30, +30, +20, -10, -30 },
-                { -20, -10, +30, +40, +40, +30, -10, -20 },
-                { -20, -10, +30, +40, +40, +30, -10, -20 },
-                { -30, -10, +20, +30, +30, +20, -10, -30 },
-                { -50, -30, -10, -10, -10, -10, -30, -50 },
-                { -80, -50, -30, -20, -20, -30, -50, -80 }
+                {
+                   -80, -50, -30, -20, -20, -30, -50, -80
+                },
+                {
+                   -50, -30, -10, -10, -10, -10, -30, -50
+                },
+                {
+                   -30, -10, +20, +30, +30, +20, -10, -30
+                },
+                {
+                   -20, -10, +30, +40, +40, +30, -10, -20
+                },
+                {
+                   -20, -10, +30, +40, +40, +30, -10, -20
+                },
+                {
+                   -30, -10, +20, +30, +30, +20, -10, -30
+                },
+                {
+                   -50, -30, -10, -10, -10, -10, -30, -50
+                },
+                {
+                   -80, -50, -30, -20, -20, -30, -50, -80
+                }
             };
 
             return weights;
@@ -548,7 +672,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Position position)
         {
             //// TODO [vmcl] Consider en passant capture
-
             var cheapestAttackerMove = board
                 .ValidMoves
                 .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
@@ -563,7 +686,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
         {
             //// Using Manhattan-Distance
-
             var result = Math.Abs(attackerPosition.Rank - kingPosition.Rank)
                 + Math.Abs(attackerPosition.File - kingPosition.File);
 
@@ -602,75 +724,138 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result / KingTropismRelativeFactor;
         }
 
-        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private GameMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
+        private int CompareMovesForMoveOrdering(
+            KeyValuePair<GameMove, GameMoveInfo> left,
+            KeyValuePair<GameMove, GameMoveInfo> right,
+            [NotNull] GameBoard board,
+            int plyDistance,
+            Position opponentKingPosition)
         {
-            const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
+            const int LeftEqualRight = 0;
+            const int LeftBeforeRight = -1;
+            const int LeftAfterRight = 1;
 
-            var resultList = new List<GameMove>(board.ValidMoves.Count);
-
-            var validMoves = board.ValidMoves.ToArray();
-
-            if (_previousIterationScoreCache != null && plyDistance == 0)
+            if (left.Key == right.Key)
             {
-                var movesOrderedByScore = _previousIterationScoreCache.OrderMovesByScore();
-                resultList.AddRange(movesOrderedByScore.Select(pair => pair.Key));
-
-                if (resultList.Count != board.ValidMoves.Count)
-                {
-                    throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
-                }
-
-                return resultList.ToArray();
+                return LeftEqualRight;
             }
 
             if (_previousIterationBestMoveInfo != null
                 && plyDistance < _previousIterationBestMoveInfo.PrincipalVariationMoves.Count)
             {
                 var principalVariationMove = _previousIterationBestMoveInfo.PrincipalVariationMoves[plyDistance];
-                if (board.ValidMoves.ContainsKey(principalVariationMove))
+
+                if (left.Key == principalVariationMove)
                 {
-                    resultList.Add(principalVariationMove);
-                    validMoves = validMoves.Where(pair => pair.Key != principalVariationMove).ToArray();
+                    return LeftBeforeRight;
+                }
+
+                if (right.Key == principalVariationMove)
+                {
+                    return LeftAfterRight;
                 }
             }
 
-            var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
-            var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
-
-            var capturingMoves = validMoves
-                .Where(pair => pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderByDescending(move => GetMaterialWeight(board[move.To].GetPieceType()))
-                .ThenBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
-                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ToArray();
-
-            resultList.AddRange(capturingMoves);
-
-            var nonCapturingMoves = validMoves
-                .Where(pair => !pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderBy(move => GetKingTropismDistance(move.To, opponentKingPosition))
-                ////.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
-                .ThenByDescending(move => GetMaterialWeight(board[move.From].GetPieceType()))
-                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ToArray();
-
-            resultList.AddRange(nonCapturingMoves);
-
-            if (resultList.Count != board.ValidMoves.Count)
+            if (left.Value.IsCapture != right.Value.IsCapture)
             {
-                throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
+                return left.Value.IsCapture ? LeftBeforeRight : LeftAfterRight;
             }
 
-            return resultList.ToArray();
+            var integerComparer = Comparer<int>.Default;
+
+            int result;
+            if (left.Value.IsCapture)
+            {
+                result = -integerComparer.Compare(
+                    GetMaterialWeight(board[left.Key.To].GetPieceType()),
+                    GetMaterialWeight(board[right.Key.To].GetPieceType()));
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = integerComparer.Compare(
+                    GetMaterialWeight(board[left.Key.From].GetPieceType()),
+                    GetMaterialWeight(board[right.Key.From].GetPieceType()));
+                if (result != 0)
+                {
+                    return result;
+                }
+            }
+            else
+            {
+                result = integerComparer.Compare(
+                    GetKingTropismDistance(left.Key.To, opponentKingPosition),
+                    GetKingTropismDistance(right.Key.To, opponentKingPosition));
+                if (result != 0)
+                {
+                    return result;
+                }
+
+                result = -integerComparer.Compare(
+                    GetMaterialWeight(board[left.Key.From].GetPieceType()),
+                    GetMaterialWeight(board[right.Key.From].GetPieceType()));
+                if (result != 0)
+                {
+                    return result;
+                }
+            }
+
+            result = -integerComparer.Compare(
+                GetMaterialWeight(left.Key.PromotionResult),
+                GetMaterialWeight(right.Key.PromotionResult));
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = Comparer<PieceType>.Default.Compare(left.Key.PromotionResult, right.Key.PromotionResult);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = integerComparer.Compare(left.Key.From.SquareIndex, right.Key.From.SquareIndex);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            result = integerComparer.Compare(left.Key.To.SquareIndex, right.Key.To.SquareIndex);
+            return result;
+        }
+
+        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
+        private GameMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
+        {
+            GameMove[] result;
+
+            if (_previousIterationScoreCache != null && plyDistance == 0)
+            {
+                var movesOrderedByScore = _previousIterationScoreCache.OrderMovesByScore();
+                result = movesOrderedByScore.Select(pair => pair.Key).ToArray();
+            }
+            else
+            {
+                var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
+                var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
+
+                var moves = board.ValidMoves.ToArray();
+
+                Array.Sort(
+                    moves,
+                    (left, right) =>
+                        CompareMovesForMoveOrdering(left, right, board, plyDistance, opponentKingPosition));
+
+                result = moves.Select(pair => pair.Key).ToArray();
+            }
+
+            if (result.Length != board.ValidMoves.Count)
+            {
+                throw new InvalidOperationException("Internal logic error in move ordering procedure.");
+            }
+
+            return result;
         }
 
         // ReSharper disable once MemberCanBeMadeStatic.Local

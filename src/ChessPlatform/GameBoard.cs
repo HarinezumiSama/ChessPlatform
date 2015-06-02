@@ -302,6 +302,7 @@ namespace ChessPlatform
 
         public Piece this[Position position]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 return _gameBoardData[position];
