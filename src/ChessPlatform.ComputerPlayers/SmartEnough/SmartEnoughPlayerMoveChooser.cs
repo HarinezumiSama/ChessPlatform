@@ -965,7 +965,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
 
                 var currentBoard = _boardCache.MakeMove(board, captureMove);
-                var score = -Quiesce(currentBoard, -beta, -alpha, plyDistance);
+                var score = -Quiesce(currentBoard, -beta, -alpha, plyDistance + 1);
 
                 if (beta <= score)
                 {
