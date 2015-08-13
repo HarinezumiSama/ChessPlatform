@@ -25,6 +25,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -36,6 +37,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Omnifactotum, Version=0.3.0.87, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
@@ -72,6 +74,9 @@
     <Compile Include="GamePlay\GetMoveRequest.cs" />
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="BitboardHelper.cs" />
+    <Compile Include="Internal\PiecesData.cs" />
+    <Compile Include="Internal\EntireColorBitboardsData.cs" />
+    <Compile Include="Internal\BitboardsData.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />

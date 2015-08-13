@@ -9,12 +9,9 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
 {
-    internal sealed class GameBoardData
+    internal unsafe sealed class GameBoardData
     {
         #region Constants and Fields
-
-        private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
-        private static readonly int ColorArrayLength = ChessConstants.PieceColors.Max(item => (int)item) + 1;
 
         private static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
         private static readonly ShiftDirection[] QueenDirections = AllDirections;
@@ -46,11 +43,13 @@ namespace ChessPlatform.Internal
         private static readonly long[] DefaultPinLimitations =
             Enumerable.Repeat(Bitboards.Everything, ChessConstants.SquareCount).ToArray();
 
+        private static readonly int NonePieceArrayIndexInternal = GetPieceArrayIndexInternal(Piece.None);
+
         private readonly Stack<MakeMoveData> _undoMoveDatas;
 
-        private readonly long[] _bitboards;
-        private readonly long[] _entireColorBitboards;
-        private readonly Piece[] _pieces;
+        private BitboardsData _bitboardsData;
+        private EntireColorBitboardsData _entireColorBitboardsData;
+        private PiecesData _piecesData;
 
         #endregion
 
@@ -61,12 +60,15 @@ namespace ChessPlatform.Internal
             Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
 
             _undoMoveDatas = new Stack<MakeMoveData>();
-            _pieces = new Piece[ChessConstants.X88Length];
+            _piecesData = new PiecesData();
 
-            _bitboards = new long[PieceArrayLength];
-            _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboards.Everything;
+            _bitboardsData = new BitboardsData();
+            fixed (long* bitboards = _bitboardsData.Bitboards)
+            {
+                bitboards[NonePieceArrayIndexInternal] = Bitboards.Everything;
+            }
 
-            _entireColorBitboards = new long[ColorArrayLength];
+            _entireColorBitboardsData = new EntireColorBitboardsData();
         }
 
         private GameBoardData(GameBoardData other)
@@ -81,9 +83,9 @@ namespace ChessPlatform.Internal
             #endregion
 
             _undoMoveDatas = new Stack<MakeMoveData>();
-            _pieces = other._pieces.Copy();
-            _bitboards = other._bitboards.Copy();
-            _entireColorBitboards = other._entireColorBitboards.Copy();
+            _piecesData = new PiecesData(other._piecesData);
+            _bitboardsData = new BitboardsData(other._bitboardsData);
+            _entireColorBitboardsData = new EntireColorBitboardsData(other._entireColorBitboardsData);
         }
 
         #endregion
@@ -95,7 +97,10 @@ namespace ChessPlatform.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _pieces[position.X88Value];
+                fixed (byte* items = _piecesData.Items)
+                {
+                    return (Piece)items[position.X88Value];
+                }
             }
         }
 
@@ -135,14 +140,24 @@ namespace ChessPlatform.Internal
         {
             var index = GetPieceArrayIndexInternal(piece);
 
-            var bitboard = _bitboards[index];
+            long bitboard;
+            fixed (long* bitboards = _bitboardsData.Bitboards)
+            {
+                bitboard = bitboards[index];
+            }
+
             return bitboard;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public long GetBitboard(PieceColor color)
         {
-            var bitboard = _entireColorBitboards[GetColorArrayIndexInternal(color)];
+            long bitboard;
+            fixed (long* bitboards = _entireColorBitboardsData.Bitboards)
+            {
+                bitboard = bitboards[GetColorArrayIndexInternal(color)];
+            }
+
             return bitboard;
         }
 
@@ -645,23 +660,39 @@ namespace ChessPlatform.Internal
             var x88Value = position.X88Value;
             var bitboardBit = position.Bitboard;
 
-            var oldPiece = _pieces[x88Value];
-            _pieces[x88Value] = piece;
+            Piece oldPiece;
+            fixed (byte* items = _piecesData.Items)
+            {
+                oldPiece = (Piece)items[x88Value];
+                items[x88Value] = (byte)piece;
+            }
 
-            _bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
+            fixed (long* bitboards = _bitboardsData.Bitboards)
+            {
+                bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
+            }
 
             var oldPieceColor = oldPiece.GetColor();
             if (oldPieceColor.HasValue)
             {
-                _entireColorBitboards[GetColorArrayIndexInternal(oldPieceColor.Value)] &= ~bitboardBit;
+                fixed (long* bitboards = _entireColorBitboardsData.Bitboards)
+                {
+                    bitboards[GetColorArrayIndexInternal(oldPieceColor.Value)] &= ~bitboardBit;
+                }
             }
 
-            _bitboards[GetPieceArrayIndexInternal(piece)] |= bitboardBit;
+            fixed (long* bitboards = _bitboardsData.Bitboards)
+            {
+                bitboards[GetPieceArrayIndexInternal(piece)] |= bitboardBit;
+            }
 
             var pieceColor = piece.GetColor();
             if (pieceColor.HasValue)
             {
-                _entireColorBitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
+                fixed (long* bitboards = _entireColorBitboardsData.Bitboards)
+                {
+                    bitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
+                }
             }
 
             return oldPiece;
@@ -1280,7 +1311,11 @@ namespace ChessPlatform.Internal
                 var x88Value = position.X88Value;
                 var bitboardBit = position.Bitboard;
 
-                var piece = _pieces[x88Value];
+                Piece piece;
+                fixed (byte* items = _piecesData.Items)
+                {
+                    piece = (Piece)items[x88Value];
+                }
 
                 foreach (var currentPiece in ChessConstants.Pieces)
                 {
@@ -1297,7 +1332,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var allBitboards = ChessConstants.Pieces.Select(this.GetBitboard).ToArray();
+            var allBitboards = ChessConstants.Pieces.Select(GetBitboard).ToArray();
             for (var outerIndex = 0; outerIndex < allBitboards.Length; outerIndex++)
             {
                 var outerBitboard = allBitboards[outerIndex];
