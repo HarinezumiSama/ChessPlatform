@@ -21,7 +21,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private static readonly ValueRange<TimeSpan> MaxTimePerMoveRange = ValueRange.Create(
             TimeSpan.FromSeconds(1),
-            TimeSpan.FromMinutes(10));
+            TimeSpan.FromDays(7));
 
         private int? _maxPlyDepth;
         private bool _useOpeningBook;

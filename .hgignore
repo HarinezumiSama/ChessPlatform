@@ -16,3 +16,4 @@ glob:Generated.*
 glob:SolutionItems/*.pfx
 glob:published/
 glob:data.new/
+glob:*.GhostDoc.xml
