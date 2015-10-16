@@ -884,20 +884,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 ScoreCache[move] = principalVariationInfo;
 
                 Trace.TraceInformation(
-                    $@"[{currentMethodName}] PV {principalVariationInfo}. Time spent: {stopwatch.Elapsed}");
+                    $@"[{currentMethodName}] {principalVariationInfo.FirstMove}: {principalVariationInfo.Value
+                        }. Time spent: {stopwatch.Elapsed}");
             }
 
             var orderedMovesByScore = ScoreCache.OrderMovesByScore().ToArray();
+            var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
+
             var orderedVariationsString =
                 orderedMovesByScore.Select(pair => $@"  {pair.Value}").Join(Environment.NewLine);
 
-            Trace.WriteLine(string.Empty);
-            Trace.WriteLine($@"[{currentMethodName}] Ordered PVs:{Environment.NewLine}{orderedVariationsString}");
-
-            var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
-
             var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
-            Trace.TraceInformation($@"[{currentMethodName}] Best move {bestVariation.FirstMove}: {scoreValue}.");
+            Trace.TraceInformation(
+                $@"[{currentMethodName}] Best move {bestVariation.FirstMove}: {scoreValue}.{Environment.NewLine}{
+                    Environment.NewLine}PVs ordered by score:{Environment.NewLine}{
+                    orderedVariationsString}{Environment.NewLine}");
 
             return bestVariation;
         }
