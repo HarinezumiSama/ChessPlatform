@@ -94,7 +94,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Protected Methods
 
-        protected override GameMove DoGetMove(GetMoveRequest request)
+        protected override PrincipalVariationInfo DoGetMove(GetMoveRequest request)
         {
             request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -181,7 +181,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var bestMoveData = bestMoveContainer.Value;
-            var bestMove = bestMoveData?.Move;
+            var bestMove = bestMoveData?.PrincipalVariation;
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
             var nodeCount = bestMoveData?.NodeCount ?? 0L;
@@ -248,7 +248,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 .ThenBy(move => move.PromotionResult)
                 .First();
 
-            return new BestMoveData(mateMove, board.ValidMoves.Count, 1);
+            return new BestMoveData(
+                mateMove | new PrincipalVariationInfo(LocalConstants.MateScoreAbs),
+                board.ValidMoves.Count,
+                1);
         }
 
         private void DoGetMoveInternal(
@@ -267,7 +270,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (board.ValidMoves.Count == 1)
             {
-                bestMoveContainer.Value = new BestMoveData(board.ValidMoves.Keys.Single(), 0L, 1);
+                var onlyMove = board.ValidMoves.Keys.Single();
+                bestMoveContainer.Value = new BestMoveData(onlyMove | PrincipalVariationInfo.Zero, 0L, 1);
                 return;
             }
 
@@ -289,7 +293,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         openingMove,
                         furtherOpeningMoves.Select(move => move.ToString()).Join(", "));
 
-                    bestMoveContainer.Value = new BestMoveData(openingMove, 1L, 1);
+                    bestMoveContainer.Value = new BestMoveData(openingMove | PrincipalVariationInfo.Zero, 1L, 1);
                     return;
                 }
             }
@@ -300,11 +304,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (mateMove != null)
             {
                 bestMoveContainer.Value = mateMove;
-                Trace.TraceInformation("[{0}] Immediate mate move: {1}.", currentMethodName, mateMove.Move);
+                Trace.TraceInformation("[{0}] Immediate mate move: {1}.", currentMethodName, mateMove.PrincipalVariation);
                 return;
             }
 
-            BestMoveInfo bestMoveInfo = null;
+            PrincipalVariationInfo bestPrincipalVariationInfo = null;
             var totalNodeCount = 0L;
             ScoreCache scoreCache = null;
 
@@ -333,14 +337,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     plyDepth,
                     boardCache,
                     scoreCache,
-                    bestMoveInfo,
+                    bestPrincipalVariationInfo,
                     cancellationToken);
 
-                bestMoveInfo = moveChooser.GetBestMove();
+                bestPrincipalVariationInfo = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;
                 scoreCache = moveChooser.ScoreCache;
 
-                bestMoveContainer.Value = new BestMoveData(bestMoveInfo.BestMove, totalNodeCount, plyDepth);
+                bestMoveContainer.Value = new BestMoveData(bestPrincipalVariationInfo, totalNodeCount, plyDepth);
             }
         }
 
@@ -352,11 +356,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             #region Constructors
 
-            internal BestMoveData(GameMove move, long nodeCount, int plyDepth)
+            internal BestMoveData(PrincipalVariationInfo principalVariation, long nodeCount, int plyDepth)
             {
-                this.Move = move.EnsureNotNull();
-                this.NodeCount = nodeCount;
-                this.PlyDepth = plyDepth;
+                PrincipalVariation = principalVariation.EnsureNotNull();
+                NodeCount = nodeCount;
+                PlyDepth = plyDepth;
             }
 
             #endregion
@@ -368,7 +372,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 get;
             }
 
-            public GameMove Move
+            public PrincipalVariationInfo PrincipalVariation
             {
                 get;
             }

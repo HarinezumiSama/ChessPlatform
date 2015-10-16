@@ -52,11 +52,11 @@ namespace ChessPlatform
         /// </summary>
         public GameMove(Position from, Position to, PieceType promotionResult)
         {
-            this.From = from;
-            this.To = to;
-            this.PromotionResult = promotionResult;
+            From = from;
+            To = to;
+            PromotionResult = promotionResult;
 
-            _hashCode = ((byte)this.PromotionResult << 16) | (this.To.X88Value << 8) | this.From.X88Value;
+            _hashCode = ((byte)PromotionResult << 16) | (To.X88Value << 8) | From.X88Value;
         }
 
         /// <summary>
@@ -185,10 +185,10 @@ namespace ChessPlatform
             var result = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}{1}{2}{3}",
-                this.From,
+                From,
                 renderCaptureSign ? "x" : string.Empty,
-                this.To,
-                this.PromotionResult == PieceType.None ? string.Empty : "=" + this.PromotionResult.GetFenChar());
+                To,
+                PromotionResult == PieceType.None ? string.Empty : "=" + PromotionResult.GetFenChar());
 
             return result;
         }
@@ -209,12 +209,12 @@ namespace ChessPlatform
 
             #endregion
 
-            return new GameMove(this.From, this.To, promotionResult);
+            return new GameMove(From, To, promotionResult);
         }
 
         public GameMove[] MakeAllPromotions()
         {
-            return ChessConstants.ValidPromotions.Select(item => new GameMove(this.From, this.To, item)).ToArray();
+            return ChessConstants.ValidPromotions.Select(item => new GameMove(From, To, item)).ToArray();
         }
 
         #endregion

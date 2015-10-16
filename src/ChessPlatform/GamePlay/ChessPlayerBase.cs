@@ -16,7 +16,7 @@ namespace ChessPlatform.GamePlay
         /// </summary>
         protected ChessPlayerBase(PieceColor color)
         {
-            this.Color = color.EnsureDefined();
+            Color = color.EnsureDefined();
         }
 
         #endregion
@@ -30,7 +30,7 @@ namespace ChessPlatform.GamePlay
 
         public virtual string Name => GetType().FullName;
 
-        public Task<GameMove> CreateGetMoveTask(GetMoveRequest request)
+        public Task<PrincipalVariationInfo> CreateGetMoveTask(GetMoveRequest request)
         {
             #region Argument Check
 
@@ -39,14 +39,14 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (request.Board.ActiveColor != this.Color)
+            if (request.Board.ActiveColor != Color)
             {
                 throw new ArgumentException(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         @"The board's active color '{0}' is inconsistent with the player's color '{1}'.",
                         request.Board.ActiveColor,
-                        this.Color),
+                        Color),
                     nameof(request));
             }
 
@@ -57,7 +57,7 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            var result = new Task<GameMove>(() => DoGetMove(request), request.CancellationToken);
+            var result = new Task<PrincipalVariationInfo>(() => DoGetMove(request), request.CancellationToken);
             OnGetMoveTaskCreated(result, request.CancellationToken);
             return result;
         }
@@ -67,10 +67,10 @@ namespace ChessPlatform.GamePlay
         #region Protected Methods
 
         [NotNull]
-        protected abstract GameMove DoGetMove([NotNull] GetMoveRequest request);
+        protected abstract PrincipalVariationInfo DoGetMove([NotNull] GetMoveRequest request);
 
         protected virtual void OnGetMoveTaskCreated(
-            [NotNull] Task<GameMove> getMoveTask,
+            [NotNull] Task<PrincipalVariationInfo> getMoveTask,
             CancellationToken cancellationToken)
         {
             // Nothing to do; for overriding only

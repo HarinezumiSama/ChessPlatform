@@ -49,8 +49,6 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
-    <Compile Include="SmartEnough\AlphaBetaScore.cs" />
-    <Compile Include="SmartEnough\BestMoveInfo.cs" />
     <Compile Include="SmartEnough\BoardCache.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
     <Compile Include="SmartEnough\LocalConstants.cs" />

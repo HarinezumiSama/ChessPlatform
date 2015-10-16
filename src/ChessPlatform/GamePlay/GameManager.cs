@@ -403,7 +403,7 @@ namespace ChessPlatform.GamePlay
                                     return;
                                 }
 
-                                var move = t.Result.EnsureNotNull();
+                                var move = t.Result.EnsureNotNull().FirstMove.EnsureNotNull();
                                 var newGameBoard = activeBoard.MakeMove(move).EnsureNotNull();
                                 _gameBoards.Push(newGameBoard);
 

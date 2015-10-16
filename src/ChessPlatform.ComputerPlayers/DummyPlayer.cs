@@ -18,9 +18,9 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Protected Methods
 
-        protected override GameMove DoGetMove(GetMoveRequest request)
+        protected override PrincipalVariationInfo DoGetMove(GetMoveRequest request)
         {
-            var result = request.Board
+            var bestMove = request.Board
                 .ValidMoves
                 .Keys
                 .OrderBy(move => move.From.SquareIndex)
@@ -28,7 +28,7 @@ namespace ChessPlatform.ComputerPlayers
                 .ThenBy(move => move.PromotionResult)
                 .First();
 
-            return result;
+            return bestMove | PrincipalVariationInfo.Zero;
         }
 
         #endregion

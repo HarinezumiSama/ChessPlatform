@@ -88,7 +88,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Protected Methods
 
-        protected override GameMove DoGetMove(GetMoveRequest request)
+        protected override PrincipalVariationInfo DoGetMove(GetMoveRequest request)
         {
             while (true)
             {
@@ -100,7 +100,7 @@ namespace ChessPlatform.UI.Desktop
                     if (move != null)
                     {
                         _move = null;
-                        return move;
+                        return move | PrincipalVariationInfo.Zero;
                     }
 
                     if (!_isAwaitingMove)
@@ -114,7 +114,9 @@ namespace ChessPlatform.UI.Desktop
             }
         }
 
-        protected override void OnGetMoveTaskCreated(Task<GameMove> getMoveTask, CancellationToken cancellationToken)
+        protected override void OnGetMoveTaskCreated(
+            Task<PrincipalVariationInfo> getMoveTask,
+            CancellationToken cancellationToken)
         {
             base.OnGetMoveTaskCreated(getMoveTask, cancellationToken);
 

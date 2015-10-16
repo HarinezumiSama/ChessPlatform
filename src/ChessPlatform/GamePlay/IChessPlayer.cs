@@ -23,7 +23,7 @@ namespace ChessPlatform.GamePlay
 
         #region Methods
 
-        Task<GameMove> CreateGetMoveTask([NotNull] GetMoveRequest request);
+        Task<PrincipalVariationInfo> CreateGetMoveTask([NotNull] GetMoveRequest request);
 
         #endregion
     }

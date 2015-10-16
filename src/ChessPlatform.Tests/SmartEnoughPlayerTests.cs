@@ -66,21 +66,21 @@ namespace ChessPlatform.Tests
             var stopwatch = Stopwatch.StartNew();
             var task = player.CreateGetMoveTask(new GetMoveRequest(gameBoard, CancellationToken.None));
             task.Start();
-            var move = task.Result;
+            var principalVariationInfo = task.Result;
             stopwatch.Stop();
 
             Console.WriteLine(
-                @"[{0} @ {1}] ({2}) Time {3}, move {4}, max ply depth {5}.",
+                @"[{0} @ {1}] ({2}) Time {3}, PV {{{4}}}, max ply depth {5}.",
                 currentMethodName,
                 DateTimeOffset.Now.ToFixedString(),
                 ChessHelper.GetPlatformVersion(true),
                 stopwatch.Elapsed,
-                move,
+                principalVariationInfo,
                 player.MaxPlyDepth);
 
             Console.WriteLine();
 
-            Assert.That(move, Is.Not.Null);
+            Assert.That(principalVariationInfo, Is.Not.Null);
         }
 
         #endregion

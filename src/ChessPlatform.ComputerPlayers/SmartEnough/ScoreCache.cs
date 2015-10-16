@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -9,7 +10,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<GameMove, AlphaBetaScore> _cache;
+        private readonly Dictionary<GameMove, PrincipalVariationInfo> _cache;
 
         #endregion
 
@@ -26,14 +27,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            _cache = board.ValidMoves.ToDictionary(pair => pair.Key, pair => (AlphaBetaScore)null);
+            _cache = board.ValidMoves.ToDictionary(pair => pair.Key, pair => (PrincipalVariationInfo)null);
         }
 
         #endregion
 
         #region Public Properties
 
-        public AlphaBetaScore this[[NotNull] GameMove move]
+        public PrincipalVariationInfo this[[NotNull] GameMove move]
         {
             get
             {
@@ -59,7 +60,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var oldScore = _cache[move];
                 if (oldScore != null)
                 {
-                    throw new InvalidOperationException("Unable to overwrite the score.");
+                    throw new InvalidOperationException($@"Unable to overwrite the score for move {move}.");
                 }
 
                 _cache[move] = value;
@@ -70,9 +71,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public IOrderedEnumerable<KeyValuePair<GameMove, AlphaBetaScore>> OrderMovesByScore()
+        public IOrderedEnumerable<KeyValuePair<GameMove, PrincipalVariationInfo>> OrderMovesByScore()
         {
-            return _cache.OrderByDescending(pair => pair.Value.EnsureNotNull().Value);
+            return _cache
+                .OrderByDescending(pair => pair.Value.EnsureNotNull().Value)
+                .ThenBy(pair => pair.Key.GetHashCode());
         }
 
         #endregion

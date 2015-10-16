@@ -67,6 +67,7 @@
     <Compile Include="GamePlay\GetMoveRequest.cs" />
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="Bitboard.cs" />
+    <Compile Include="GamePlay\PrincipalVariationInfo.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />

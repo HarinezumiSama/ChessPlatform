@@ -56,7 +56,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private readonly GameBoard _rootBoard;
         private readonly int _maxPlyDepth;
-        private readonly BestMoveInfo _previousIterationBestMoveInfo;
+        private readonly PrincipalVariationInfo _previousIterationBestMoveInfo;
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
@@ -74,7 +74,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             int maxPlyDepth,
             [NotNull] BoardCache boardCache,
             [CanBeNull] ScoreCache previousIterationScoreCache,
-            [CanBeNull] BestMoveInfo previousIterationBestMoveInfo,
+            [CanBeNull] PrincipalVariationInfo previousIterationBestMoveInfo,
             CancellationToken cancellationToken)
         {
             #region Argument Check
@@ -130,7 +130,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public BestMoveInfo GetBestMove()
+        public PrincipalVariationInfo GetBestMove()
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -139,21 +139,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, PV: {{ {3} }}, TT {{hits {4}/{5}, size {6}/{7}}}"
-                    + @", B-Cache {{hits {8}/{9}, size {10}/{11}}}, for ""{12}"".",
-                currentMethodName,
-                result,
-                stopwatch.Elapsed,
-                result.PrincipalVariationMoves.Select(item => item.ToString()).Join(", "),
-                _transpositionTable.HitCount,
-                _transpositionTable.TotalRequestCount,
-                _transpositionTable.ItemCount,
-                _transpositionTable.MaximumItemCount,
-                _boardCache.HitCount,
-                _boardCache.TotalRequestCount,
-                _boardCache.ItemCount,
-                _boardCache.MaximumItemCount,
-                _rootBoard.GetFen());
+                $@"[{currentMethodName}] Result: {result}, time spent: {stopwatch.Elapsed}, BoardCache {{hits {
+                    _boardCache.HitCount}/{_boardCache.TotalRequestCount}, size {_boardCache.ItemCount}/{
+                    _boardCache.MaximumItemCount}}}, FEN ""{_rootBoard.GetFen()}"".");
 
             return result;
         }
@@ -627,9 +615,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             if (_previousIterationBestMoveInfo != null
-                && plyDistance < _previousIterationBestMoveInfo.PrincipalVariationMoves.Count)
+                && plyDistance < _previousIterationBestMoveInfo.Moves.Count)
             {
-                var principalVariationMove = _previousIterationBestMoveInfo.PrincipalVariationMoves[plyDistance];
+                var principalVariationMove = _previousIterationBestMoveInfo.Moves[plyDistance];
                 if (board.ValidMoves.ContainsKey(principalVariationMove))
                 {
                     resultList.Add(principalVariationMove);
@@ -799,11 +787,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return alpha;
         }
 
-        private AlphaBetaScore ComputeAlphaBeta(
+        private PrincipalVariationInfo ComputeAlphaBeta(
             [NotNull] GameBoard board,
             int plyDistance,
-            AlphaBetaScore alpha,
-            AlphaBetaScore beta)
+            PrincipalVariationInfo alpha,
+            PrincipalVariationInfo beta)
         {
             #region Argument Check
 
@@ -828,14 +816,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var autoDrawType = board.GetAutoDrawType();
             if (autoDrawType != AutoDrawType.None)
             {
-                return AlphaBetaScore.Zero;
+                return PrincipalVariationInfo.Zero;
             }
 
             var plyDepth = _maxPlyDepth - plyDistance;
             if (plyDepth == 0 || board.ValidMoves.Count == 0)
             {
                 var quiesceScore = Quiesce(board, alpha.Value, beta.Value, plyDistance);
-                var score = new AlphaBetaScore(quiesceScore);
+                var score = new PrincipalVariationInfo(quiesceScore);
                 _transpositionTable.SaveScore(board, plyDistance, score);
                 return score;
             }
@@ -870,7 +858,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return bestScore;
         }
 
-        private BestMoveInfo ComputeAlphaBetaRoot(GameBoard board)
+        private PrincipalVariationInfo ComputeAlphaBetaRoot(GameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -880,9 +868,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            GameMove bestMove = null;
-            AlphaBetaScore bestAlphaBetaScore = null;
-            var bestMoveLocalScore = int.MinValue;
             var stopwatch = new Stopwatch();
 
             foreach (var move in orderedMoves)
@@ -891,43 +876,33 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 stopwatch.Restart();
                 var currentBoard = _boardCache.MakeMove(board, move);
-                var localScore = -EvaluatePositionScore(currentBoard, 1);
-                var score =
-                    -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaScore, -LocalConstants.RootAlphaScore);
+                var innerPrincipalVariationInfo =
+                    -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaInfo, -LocalConstants.RootAlphaInfo);
                 stopwatch.Stop();
 
-                var alphaBetaScore = move | score;
-                ScoreCache[move] = alphaBetaScore;
+                var principalVariationInfo = move | innerPrincipalVariationInfo;
+                ScoreCache[move] = principalVariationInfo;
 
                 Trace.TraceInformation(
-                    "[{0}] PV {1} (local {2}). Time spent: {3}",
-                    currentMethodName,
-                    alphaBetaScore,
-                    localScore,
-                    stopwatch.Elapsed);
-
-                if (bestAlphaBetaScore != null && score.Value <= bestAlphaBetaScore.Value)
-                {
-                    continue;
-                }
-
-                bestMove = move;
-                bestMoveLocalScore = localScore;
-                bestAlphaBetaScore = alphaBetaScore;
+                    $@"[{currentMethodName}] PV {principalVariationInfo}. Time spent: {stopwatch.Elapsed}");
             }
 
-            Trace.TraceInformation(
-                "[{0}] Best move {1}: {2} (local {3}).",
-                currentMethodName,
-                bestMove,
-                bestAlphaBetaScore?.Value.ToString(CultureInfo.InvariantCulture) ?? "?",
-                bestMoveLocalScore);
+            var orderedMovesByScore = ScoreCache.OrderMovesByScore().ToArray();
+            var orderedVariationsString =
+                orderedMovesByScore.Select(pair => $@"  {pair.Value}").Join(Environment.NewLine);
 
-            var principalVariationMoves = bestAlphaBetaScore.EnsureNotNull().Moves.AsEnumerable().ToArray();
-            return new BestMoveInfo(principalVariationMoves);
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine($@"[{currentMethodName}] Ordered PVs:{Environment.NewLine}{orderedVariationsString}");
+
+            var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
+
+            var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
+            Trace.TraceInformation($@"[{currentMethodName}] Best move {bestVariation.FirstMove}: {scoreValue}.");
+
+            return bestVariation;
         }
 
-        private BestMoveInfo GetBestMoveInternal()
+        private PrincipalVariationInfo GetBestMoveInternal()
         {
             _cancellationToken.ThrowIfCancellationRequested();
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -11,7 +12,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<InternalKey, AlphaBetaScore> _scoreMap;
+        private readonly Dictionary<InternalKey, PrincipalVariationInfo> _scoreMap;
 
         #endregion
 
@@ -35,7 +36,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
-            _scoreMap = new Dictionary<InternalKey, AlphaBetaScore>(maximumItemCount);
+            _scoreMap = new Dictionary<InternalKey, PrincipalVariationInfo>(maximumItemCount);
 
             if (this.MaximumItemCount <= 0)
             {
@@ -79,7 +80,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public AlphaBetaScore GetScore([NotNull] GameBoard board, int plyDistance)
+        public PrincipalVariationInfo GetScore([NotNull] GameBoard board, int plyDistance)
         {
             #region Argument Check
 
@@ -94,7 +95,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var key = GetKey(board, plyDistance);
 
-            AlphaBetaScore result;
+            PrincipalVariationInfo result;
             if (!_scoreMap.TryGetValue(key, out result))
             {
                 return null;
@@ -104,7 +105,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] AlphaBetaScore score)
+        public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] PrincipalVariationInfo info)
         {
             #region Argument Check
 
@@ -113,9 +114,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (score == null)
+            if (info == null)
             {
-                throw new ArgumentNullException(nameof(score));
+                throw new ArgumentNullException(nameof(info));
             }
 
             #endregion
@@ -126,7 +127,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var key = GetKey(board, plyDistance);
-            _scoreMap.Add(key, score);
+            _scoreMap.Add(key, info);
 
             if (_scoreMap.Count >= this.MaximumItemCount)
             {

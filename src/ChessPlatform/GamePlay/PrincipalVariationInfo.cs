@@ -6,13 +6,13 @@ using System.Globalization;
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.GamePlay
 {
-    internal sealed class AlphaBetaScore
+    public sealed class PrincipalVariationInfo
     {
         #region Constants and Fields
 
-        public static readonly AlphaBetaScore Zero = new AlphaBetaScore(0);
+        public static readonly PrincipalVariationInfo Zero = new PrincipalVariationInfo(0);
 
         private readonly List<GameMove> _movesInternal;
 
@@ -20,14 +20,17 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constructors
 
-        public AlphaBetaScore(int value)
+        public PrincipalVariationInfo(int value)
         {
             _movesInternal = new List<GameMove>();
-            this.Value = value;
-            this.Moves = _movesInternal.AsReadOnly();
+            Value = value;
+            Moves = _movesInternal.AsReadOnly();
         }
 
-        private AlphaBetaScore(int value, [NotNull] GameMove move, [NotNull] ICollection<GameMove> successiveMoves)
+        private PrincipalVariationInfo(
+            int value,
+            [NotNull] GameMove move,
+            [NotNull] ICollection<GameMove> successiveMoves)
             : this(value)
         {
             #region Argument Check
@@ -42,25 +45,20 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(successiveMoves));
             }
 
-            if (successiveMoves.Any(item => item == null))
-            {
-                throw new ArgumentException(@"The collection contains a null element.", nameof(successiveMoves));
-            }
-
             #endregion
 
             _movesInternal.Add(move);
             _movesInternal.AddRange(successiveMoves);
         }
 
-        private AlphaBetaScore(int value, ICollection<GameMove> moves)
+        private PrincipalVariationInfo(int value, [NotNull] ICollection<GameMove> moves)
             : this(value)
         {
             #region Argument Check
 
-            if (moves.Any(item => item == null))
+            if (moves == null)
             {
-                throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
+                throw new ArgumentNullException(nameof(moves));
             }
 
             #endregion
@@ -83,40 +81,53 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             get;
         }
 
+        [CanBeNull]
+        public GameMove FirstMove => _movesInternal.FirstOrDefault();
+
         #endregion
 
         #region Operators
 
         [DebuggerNonUserCode]
         [NotNull]
-        public static AlphaBetaScore operator -(AlphaBetaScore alphaBetaScore)
+        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo principalVariationInfo)
         {
             #region Argument Check
 
-            if (alphaBetaScore == null)
+            if (principalVariationInfo == null)
             {
-                throw new ArgumentNullException(nameof(alphaBetaScore));
+                throw new ArgumentNullException(nameof(principalVariationInfo));
             }
 
             #endregion
 
-            return new AlphaBetaScore(-alphaBetaScore.Value, alphaBetaScore._movesInternal);
+            return new PrincipalVariationInfo(-principalVariationInfo.Value, principalVariationInfo._movesInternal);
         }
 
         [DebuggerNonUserCode]
         [NotNull]
-        public static AlphaBetaScore operator |(GameMove move, AlphaBetaScore alphaBetaScore)
+        public static PrincipalVariationInfo operator |(
+            [NotNull] GameMove move,
+            [NotNull] PrincipalVariationInfo principalVariationInfo)
         {
             #region Argument Check
 
-            if (alphaBetaScore == null)
+            if (move == null)
             {
-                throw new ArgumentNullException(nameof(alphaBetaScore));
+                throw new ArgumentNullException(nameof(move));
+            }
+
+            if (principalVariationInfo == null)
+            {
+                throw new ArgumentNullException(nameof(principalVariationInfo));
             }
 
             #endregion
 
-            return new AlphaBetaScore(alphaBetaScore.Value, move, alphaBetaScore._movesInternal);
+            return new PrincipalVariationInfo(
+                principalVariationInfo.Value,
+                move,
+                principalVariationInfo._movesInternal);
         }
 
         #endregion
@@ -129,8 +140,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{{ {0} : {1} }}",
-                this.Value,
-                this.Moves.Count == 0 ? "x" : this.Moves.Select(move => move.ToString()).Join(", "));
+                Value,
+                _movesInternal.Count == 0 ? "x" : _movesInternal.Select(move => move.ToString()).Join(", "));
         }
 
         #endregion

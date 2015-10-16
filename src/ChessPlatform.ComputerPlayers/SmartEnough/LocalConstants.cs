@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using ChessPlatform.GamePlay;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
 {
@@ -12,7 +13,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         public static readonly int RootAlpha = checked(-MateScoreAbs - 1);
 
-        public static readonly AlphaBetaScore RootAlphaScore = new AlphaBetaScore(RootAlpha);
+        public static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlpha);
 
         #endregion
 
