@@ -45,7 +45,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             if (handler == null)
             {
-                throw new ArgumentNullException("handler");
+                throw new ArgumentNullException(nameof(handler));
             }
 
             #endregion
@@ -99,7 +99,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             if (propertyGetterExpression == null)
             {
-                throw new ArgumentNullException("propertyGetterExpression");
+                throw new ArgumentNullException(nameof(propertyGetterExpression));
             }
 
             #endregion
@@ -111,7 +111,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
-                    "propertyGetterExpression");
+                    nameof(propertyGetterExpression));
             }
 
             var propertyInfo = memberExpression.Member as PropertyInfo;
@@ -119,14 +119,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
-                    "propertyGetterExpression");
+                    nameof(propertyGetterExpression));
             }
 
             if (propertyInfo.DeclaringType != thisType)
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
-                    "propertyGetterExpression");
+                    nameof(propertyGetterExpression));
             }
 
             if (memberExpression.Expression == null)
@@ -136,7 +136,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 {
                     throw new ArgumentException(
                         string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
-                        "propertyGetterExpression");
+                        nameof(propertyGetterExpression));
                 }
             }
 

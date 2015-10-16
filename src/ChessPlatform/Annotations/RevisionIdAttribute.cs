@@ -20,7 +20,7 @@ namespace ChessPlatform.Annotations
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
-                    "revisionId");
+                    nameof(revisionId));
             }
 
             #endregion

@@ -81,13 +81,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (rootBoard == null)
             {
-                throw new ArgumentNullException("rootBoard");
+                throw new ArgumentNullException(nameof(rootBoard));
             }
 
             if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
-                    "maxPlyDepth",
+                    nameof(maxPlyDepth),
                     maxPlyDepth,
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -105,7 +105,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _cancellationToken = cancellationToken;
 
             _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
-            this.ScoreCache = new ScoreCache(rootBoard);
+            ScoreCache = new ScoreCache(rootBoard);
         }
 
         #endregion
@@ -124,7 +124,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public ScoreCache ScoreCache
         {
             get;
-            private set;
         }
 
         #endregion
@@ -220,8 +219,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static EnumFixedSizeDictionary<PieceType, int> CreatePieceTypeToKingTropismWeightMap()
         {
-            var result = new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightInMiddlegameMap);
-            result[PieceType.King] = 0;
+            var result = new EnumFixedSizeDictionary<PieceType, int>(PieceTypeToMaterialWeightInMiddlegameMap)
+            {
+                [PieceType.King] = 0
+            };
+
             return result;
         }
 
@@ -231,12 +233,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (weights == null)
             {
-                throw new ArgumentNullException("weights");
+                throw new ArgumentNullException(nameof(weights));
             }
 
             if (weights.Length != ChessConstants.SquareCount)
             {
-                throw new ArgumentException(@"Invalid array length.", "weights");
+                throw new ArgumentException(@"Invalid array length.", nameof(weights));
             }
 
             #endregion
@@ -808,7 +810,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (plyDistance <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "plyDistance",
+                    nameof(plyDistance),
                     plyDistance,
                     @"The value must be positive.");
             }
@@ -895,7 +897,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 stopwatch.Stop();
 
                 var alphaBetaScore = move | score;
-                this.ScoreCache[move] = alphaBetaScore;
+                ScoreCache[move] = alphaBetaScore;
 
                 Trace.TraceInformation(
                     "[{0}] PV {1} (local {2}). Time spent: {3}",
@@ -918,7 +920,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 "[{0}] Best move {1}: {2} (local {3}).",
                 currentMethodName,
                 bestMove,
-                bestAlphaBetaScore == null ? "?" : bestAlphaBetaScore.Value.ToString(CultureInfo.InvariantCulture),
+                bestAlphaBetaScore?.Value.ToString(CultureInfo.InvariantCulture) ?? "?",
                 bestMoveLocalScore);
 
             var principalVariationMoves = bestAlphaBetaScore.EnsureNotNull().Moves.AsEnumerable().ToArray();

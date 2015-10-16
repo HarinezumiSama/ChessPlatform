@@ -15,8 +15,8 @@ namespace ChessPlatform.UI.Desktop.Controls
         /// </summary>
         public ControlItem([CanBeNull] T value, [CanBeNull] string text)
         {
-            this.Value = value;
-            this.Text = text ?? value.ToStringSafelyInvariant();
+            Value = value;
+            Text = text ?? value.ToStringSafelyInvariant();
         }
 
         /// <summary>
@@ -37,14 +37,12 @@ namespace ChessPlatform.UI.Desktop.Controls
         public T Value
         {
             get;
-            private set;
         }
 
         [NotNull]
         public string Text
         {
             get;
-            private set;
         }
 
         #endregion
@@ -58,12 +56,12 @@ namespace ChessPlatform.UI.Desktop.Controls
 
         public override int GetHashCode()
         {
-            return this.Value.GetHashCodeSafely();
+            return Value.GetHashCodeSafely();
         }
 
         public override string ToString()
         {
-            return this.Text;
+            return Text;
         }
 
         #endregion
@@ -82,7 +80,7 @@ namespace ChessPlatform.UI.Desktop.Controls
                 return false;
             }
 
-            return EqualityComparer<T>.Default.Equals(this.Value, other.Value);
+            return EqualityComparer<T>.Default.Equals(Value, other.Value);
         }
 
         #endregion

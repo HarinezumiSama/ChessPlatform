@@ -20,7 +20,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         /// </summary>
         public PlayerChoiceControlViewModel(PieceColor playerColor)
         {
-            this.PlayerColor = playerColor;
+            PlayerColor = playerColor;
 
             var playerTypesInternal =
                 new[]
@@ -43,8 +43,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                             typeof(SmartEnoughPlayer).GetQualifiedName()))
                 };
 
-            this.PlayerControlItems = CollectionViewSource.GetDefaultView(playerTypesInternal);
-            this.PlayerControlItems.CurrentChanged += this.PlayerTypes_CurrentChanged;
+            PlayerControlItems = CollectionViewSource.GetDefaultView(playerTypesInternal);
+            PlayerControlItems.CurrentChanged += PlayerTypes_CurrentChanged;
 
             RaiseSelectedPlayerControlItemChanged();
         }
@@ -56,23 +56,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public PieceColor PlayerColor
         {
             get;
-            private set;
         }
 
         public ICollectionView PlayerControlItems
         {
             get;
-            private set;
         }
 
         [MemberConstraint(typeof(ValidPlayerSettingsConstraint))]
         public ControlItem<IPlayerInfo> SelectedPlayerControlItem
-        {
-            get
-            {
-                return (ControlItem<IPlayerInfo>)this.PlayerControlItems.CurrentItem;
-            }
-        }
+            => (ControlItem<IPlayerInfo>)PlayerControlItems.CurrentItem;
 
         #endregion
 
@@ -80,7 +73,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void RaiseSelectedPlayerControlItemChanged()
         {
-            RaisePropertyChanged(() => this.SelectedPlayerControlItem);
+            RaisePropertyChanged(() => SelectedPlayerControlItem);
         }
 
         private void PlayerTypes_CurrentChanged(object sender, EventArgs eventArgs)
@@ -101,7 +94,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 MemberConstraintValidationContext memberContext,
                 ControlItem<IPlayerInfo> value)
             {
-                if (value == null || value.Value == null)
+                if (value?.Value == null)
                 {
                     AddError(
                         validatorContext,

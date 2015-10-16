@@ -75,7 +75,7 @@ namespace ChessPlatform.Internal
 
             if (other == null)
             {
-                throw new ArgumentNullException("other");
+                throw new ArgumentNullException(nameof(other));
             }
 
             #endregion
@@ -173,7 +173,7 @@ namespace ChessPlatform.Internal
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -262,7 +262,7 @@ namespace ChessPlatform.Internal
 
             if (targetPositions == null)
             {
-                throw new ArgumentNullException("targetPositions");
+                throw new ArgumentNullException(nameof(targetPositions));
             }
 
             #endregion
@@ -324,7 +324,7 @@ namespace ChessPlatform.Internal
             var pieceInfo = GetPieceInfo(sourcePosition);
             if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Color.HasValue)
             {
-                throw new ArgumentException("No piece at the source position.", "sourcePosition");
+                throw new ArgumentException("No piece at the source position.", nameof(sourcePosition));
             }
 
             var pieceColor = pieceInfo.Color.Value;
@@ -386,7 +386,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -471,7 +471,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -532,7 +532,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -594,7 +594,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -611,7 +611,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -628,7 +628,7 @@ namespace ChessPlatform.Internal
 
             if (resultMoves == null)
             {
-                throw new ArgumentNullException("resultMoves");
+                throw new ArgumentNullException(nameof(resultMoves));
             }
 
             #endregion
@@ -673,7 +673,7 @@ namespace ChessPlatform.Internal
 
             if (piece == Piece.None)
             {
-                throw new ArgumentException("Must be a piece rather than empty square.", "piece");
+                throw new ArgumentException("Must be a piece rather than empty square.", nameof(piece));
             }
 
             #endregion
@@ -700,7 +700,7 @@ namespace ChessPlatform.Internal
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
-                    "fenSnippet");
+                    nameof(fenSnippet));
             }
 
             #endregion
@@ -715,7 +715,7 @@ namespace ChessPlatform.Internal
                 {
                     if (currentFile != ChessConstants.FileCount)
                     {
-                        throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
                     }
 
                     currentFile = 0;
@@ -723,7 +723,7 @@ namespace ChessPlatform.Internal
 
                     if (currentRank < 0)
                     {
-                        throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
                     }
 
                     continue;
@@ -731,7 +731,7 @@ namespace ChessPlatform.Internal
 
                 if (currentFile >= ChessConstants.FileCount)
                 {
-                    throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
                 }
 
                 Piece piece;
@@ -746,7 +746,7 @@ namespace ChessPlatform.Internal
                 var emptySquareCount = byte.Parse(new string(ch, 1));
                 if (emptySquareCount == 0)
                 {
-                    throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
                 }
 
                 currentFile += emptySquareCount;
@@ -754,7 +754,7 @@ namespace ChessPlatform.Internal
 
             if (currentFile != ChessConstants.FileCount)
             {
-                throw new ArgumentException(InvalidFenMessage, "fenSnippet");
+                throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
             }
         }
 
@@ -768,13 +768,13 @@ namespace ChessPlatform.Internal
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             var pieceInfo = GetPieceInfo(move.From);
             if (pieceInfo.PieceType == PieceType.None || pieceInfo.Color != movingColor)
             {
-                throw new ArgumentException("Invalid move.", "move");
+                throw new ArgumentException("Invalid move.", nameof(move));
             }
 
             #endregion
@@ -1343,7 +1343,7 @@ namespace ChessPlatform.Internal
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion

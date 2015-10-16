@@ -17,7 +17,7 @@ namespace ChessPlatform
         {
             if (DebugConstants.EnsureEnumValuesDefined && !ChessConstants.PieceTypes.Contains(pieceType))
             {
-                throw new InvalidEnumArgumentException("pieceType", (int)pieceType, pieceType.GetType());
+                throw new InvalidEnumArgumentException(nameof(pieceType), (int)pieceType, pieceType.GetType());
             }
 
             return pieceType;
@@ -41,7 +41,7 @@ namespace ChessPlatform
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "Invalid piece type ({0}).", pieceType),
-                    "pieceType");
+                    nameof(pieceType));
             }
 
             return result;

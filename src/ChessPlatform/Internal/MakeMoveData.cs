@@ -20,12 +20,12 @@ namespace ChessPlatform.Internal
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             if (movedPiece == Piece.None)
             {
-                throw new ArgumentException("Invalid moved piece.", "movedPiece");
+                throw new ArgumentException("Invalid moved piece.", nameof(movedPiece));
             }
 
             if (castlingRookMove != null && enPassantCapturedPiecePosition.HasValue)
@@ -40,14 +40,12 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            this.Move = move;
-            this.MovedPiece = movedPiece;
-            this.CapturedPiece = capturedPiece;
-            this.CastlingRookMove = castlingRookMove;
+            Move = move;
+            MovedPiece = movedPiece;
+            CapturedPiece = capturedPiece;
+            CastlingRookMove = castlingRookMove;
 
-            this.CapturedPiecePosition = enPassantCapturedPiecePosition.HasValue
-                ? enPassantCapturedPiecePosition.Value
-                : move.To;
+            CapturedPiecePosition = enPassantCapturedPiecePosition ?? move.To;
         }
 
         #endregion
@@ -57,31 +55,26 @@ namespace ChessPlatform.Internal
         public GameMove Move
         {
             get;
-            private set;
         }
 
         public Piece MovedPiece
         {
             get;
-            private set;
         }
 
         public Piece CapturedPiece
         {
             get;
-            private set;
         }
 
         public GameMove CastlingRookMove
         {
             get;
-            private set;
         }
 
         public Position CapturedPiecePosition
         {
             get;
-            private set;
         }
 
         #endregion
@@ -93,7 +86,7 @@ namespace ChessPlatform.Internal
             [DebuggerNonUserCode]
             get
             {
-                return this.MovedPiece.GetPieceType() != PieceType.Pawn && this.CapturedPiece == Piece.None;
+                return MovedPiece.GetPieceType() != PieceType.Pawn && CapturedPiece == Piece.None;
             }
         }
 

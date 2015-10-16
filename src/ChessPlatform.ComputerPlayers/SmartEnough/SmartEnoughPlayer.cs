@@ -44,7 +44,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
-                    "maxPlyDepth",
+                    nameof(maxPlyDepth),
                     maxPlyDepth,
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -55,7 +55,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (maxTimePerMove.HasValue && maxTimePerMove.Value <= TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    "maxTimePerMove",
+                    nameof(maxTimePerMove),
                     maxTimePerMove,
                     @"The time per move must be positive.");
             }
@@ -181,10 +181,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var bestMoveData = bestMoveContainer.Value;
-            var bestMove = bestMoveData == null ? null : bestMoveData.Move;
+            var bestMove = bestMoveData?.Move;
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
-            var nodeCount = bestMoveData == null ? 0L : bestMoveData.NodeCount;
+            var nodeCount = bestMoveData?.NodeCount ?? 0L;
 
             var nps = elapsedSeconds.IsZero()
                 ? "?"
@@ -193,9 +193,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Trace.TraceInformation(
                 @"[{0}] Result: {1}, {2} spent, depth {3}, {4} nodes ({5} NPS), position ""{6}"".",
                 currentMethodName,
-                bestMove == null ? "<not found>" : bestMove.ToString(),
+                bestMove?.ToString() ?? "<not found>",
                 stopwatch.Elapsed,
-                bestMoveData == null ? "?" : bestMoveData.PlyDepth.ToString(CultureInfo.InvariantCulture),
+                bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?",
                 nodeCount,
                 nps,
                 board.GetFen());
@@ -321,14 +321,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 cancellationToken.ThrowIfCancellationRequested();
 
                 Trace.WriteLine(string.Empty);
-                if (useIterativeDeepening)
-                {
-                    Trace.TraceInformation("[{0}] Iterative deepening: {1}.", currentMethodName, plyDepth);
-                }
-                else
-                {
-                    Trace.TraceInformation("[{0}] Fixed depth: {1}.", currentMethodName, plyDepth);
-                }
+                Trace.TraceInformation(
+                    useIterativeDeepening
+                        ? "[{0}] Iterative deepening: {1}."
+                        : "[{0}] Fixed depth: {1}.",
+                    currentMethodName,
+                    plyDepth);
 
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
@@ -368,19 +366,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             public int PlyDepth
             {
                 get;
-                private set;
             }
 
             public GameMove Move
             {
                 get;
-                private set;
             }
 
             public long NodeCount
             {
                 get;
-                private set;
             }
 
             #endregion

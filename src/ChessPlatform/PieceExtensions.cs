@@ -41,7 +41,7 @@ namespace ChessPlatform
             char result;
             if (!ChessConstants.PieceToFenCharMap.TryGetValue(piece, out result))
             {
-                throw new ArgumentException("Invalid piece.", "piece");
+                throw new ArgumentException("Invalid piece.", nameof(piece));
             }
 
             return result;

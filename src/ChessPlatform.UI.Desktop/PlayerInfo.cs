@@ -26,12 +26,12 @@ namespace ChessPlatform.UI.Desktop
 
             if (createPlayer == null)
             {
-                throw new ArgumentNullException("createPlayer");
+                throw new ArgumentNullException(nameof(createPlayer));
             }
 
             #endregion
 
-            this.CreationData = initialCreationData;
+            CreationData = initialCreationData;
             _createPlayer = createPlayer;
         }
 
@@ -43,7 +43,6 @@ namespace ChessPlatform.UI.Desktop
         public TCreationData CreationData
         {
             get;
-            private set;
         }
 
         #endregion
@@ -53,20 +52,14 @@ namespace ChessPlatform.UI.Desktop
         [NotNull]
         public TPlayer CreatePlayer(PieceColor color)
         {
-            return _createPlayer(color, this.CreationData).EnsureNotNull();
+            return _createPlayer(color, CreationData).EnsureNotNull();
         }
 
         #endregion
 
         #region IPlayerInfo Members
 
-        PlayerCreationData IPlayerInfo.CreationData
-        {
-            get
-            {
-                return this.CreationData;
-            }
-        }
+        PlayerCreationData IPlayerInfo.CreationData => CreationData;
 
         IChessPlayer IPlayerInfo.CreatePlayer(PieceColor color)
         {

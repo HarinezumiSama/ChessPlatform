@@ -22,12 +22,12 @@ namespace ChessPlatform.Internal
 
             if (positions == null)
             {
-                throw new ArgumentNullException("positions");
+                throw new ArgumentNullException(nameof(positions));
             }
 
             if (positions.Count == 0)
             {
-                throw new ArgumentException("No positions specified.", "positions");
+                throw new ArgumentException("No positions specified.", nameof(positions));
             }
 
             #endregion

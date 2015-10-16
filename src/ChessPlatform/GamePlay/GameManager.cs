@@ -44,17 +44,17 @@ namespace ChessPlatform.GamePlay
 
             if (white == null)
             {
-                throw new ArgumentNullException("white");
+                throw new ArgumentNullException(nameof(white));
             }
 
             if (black == null)
             {
-                throw new ArgumentNullException("black");
+                throw new ArgumentNullException(nameof(black));
             }
 
             if (gameBoard == null)
             {
-                throw new ArgumentNullException("gameBoard");
+                throw new ArgumentNullException(nameof(gameBoard));
             }
 
             #endregion
@@ -192,7 +192,7 @@ namespace ChessPlatform.GamePlay
             if (moveCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "moveCount",
+                    nameof(moveCount),
                     moveCount,
                     @"The value must be positive.");
             }
@@ -214,7 +214,7 @@ namespace ChessPlatform.GamePlay
             if (moveCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "moveCount",
+                    nameof(moveCount),
                     moveCount,
                     @"The value must be positive.");
             }
@@ -324,10 +324,7 @@ namespace ChessPlatform.GamePlay
                 ExecuteGameInternal();
 
                 var getMoveState = _getMoveStateContainer.Value;
-                if (getMoveState != null)
-                {
-                    getMoveState.Cancel();
-                }
+                getMoveState?.Cancel();
             }
             catch (Exception ex)
             {
@@ -533,13 +530,11 @@ namespace ChessPlatform.GamePlay
             public GameManagerState State
             {
                 get;
-                private set;
             }
 
             public GameBoard ActiveBoard
             {
                 get;
-                private set;
             }
 
             public CancellationToken CancellationToken
@@ -554,7 +549,6 @@ namespace ChessPlatform.GamePlay
             public SyncValueContainer<bool> IsCancelled
             {
                 get;
-                private set;
             }
 
             #endregion

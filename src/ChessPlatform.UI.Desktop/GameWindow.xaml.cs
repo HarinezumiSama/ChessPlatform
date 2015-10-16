@@ -67,7 +67,7 @@ namespace ChessPlatform.UI.Desktop
         private static Position? GetSquarePosition(object element)
         {
             var source = element as FrameworkElement;
-            return source == null || !(source.Tag is Position) ? null : (Position)source.Tag;
+            return source?.Tag as Position?;
         }
 
         private void StartNewGame()

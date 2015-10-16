@@ -27,7 +27,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             if (parentViewModel == null)
             {
-                throw new ArgumentNullException("parentViewModel");
+                throw new ArgumentNullException(nameof(parentViewModel));
             }
 
             #endregion
@@ -60,7 +60,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public Position Position
         {
             get;
-            private set;
         }
 
         public Brush Background

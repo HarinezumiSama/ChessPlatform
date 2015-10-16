@@ -28,45 +28,15 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public bool IsPawnPromotion
-        {
-            get
-            {
-                return (_flags & GameMoveFlags.IsPawnPromotion) != 0;
-            }
-        }
+        public bool IsPawnPromotion => (_flags & GameMoveFlags.IsPawnPromotion) != 0;
 
-        public bool IsAnyCapture
-        {
-            get
-            {
-                return (_flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
-            }
-        }
+        public bool IsAnyCapture => (_flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
 
-        public bool IsCapture
-        {
-            get
-            {
-                return (_flags & GameMoveFlags.IsCapture) != 0;
-            }
-        }
+        public bool IsCapture => (_flags & GameMoveFlags.IsCapture) != 0;
 
-        public bool IsEnPassantCapture
-        {
-            get
-            {
-                return (_flags & GameMoveFlags.IsEnPassantCapture) != 0;
-            }
-        }
+        public bool IsEnPassantCapture => (_flags & GameMoveFlags.IsEnPassantCapture) != 0;
 
-        public bool IsKingCastling
-        {
-            get
-            {
-                return (_flags & GameMoveFlags.IsKingCastling) != 0;
-            }
-        }
+        public bool IsKingCastling => (_flags & GameMoveFlags.IsKingCastling) != 0;
 
         #endregion
 

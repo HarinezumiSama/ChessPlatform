@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace ChessPlatform.Internal
 {
-    [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field)]
     internal sealed class FenCharAttribute : Attribute
     {
         #region Constructors
@@ -19,7 +19,7 @@ namespace ChessPlatform.Internal
 
             if (!char.IsLetter(baseFenChar))
             {
-                throw new ArgumentException("The FEN character must be a letter.", "baseFenChar");
+                throw new ArgumentException("The FEN character must be a letter.", nameof(baseFenChar));
             }
 
             #endregion
@@ -34,7 +34,6 @@ namespace ChessPlatform.Internal
         public char BaseFenChar
         {
             get;
-            private set;
         }
 
         #endregion
@@ -47,18 +46,18 @@ namespace ChessPlatform.Internal
 
             if (enumValueFieldInfo == null)
             {
-                throw new ArgumentNullException("enumValueFieldInfo");
+                throw new ArgumentNullException(nameof(enumValueFieldInfo));
             }
 
             if (!enumValueFieldInfo.DeclaringType.EnsureNotNull().IsEnum)
             {
-                throw new ArgumentException("Invalid field.", "enumValueFieldInfo");
+                throw new ArgumentException("Invalid field.", nameof(enumValueFieldInfo));
             }
 
             #endregion
 
             var attribute = enumValueFieldInfo.GetSingleOrDefaultCustomAttribute<FenCharAttribute>(false);
-            return attribute == null ? (char?)null : attribute.BaseFenChar;
+            return attribute?.BaseFenChar;
         }
 
         internal static char? TryGet(Enum enumValue)
@@ -82,7 +81,7 @@ namespace ChessPlatform.Internal
                         "The enumeration value '{0}' does not have the attribute '{1}' applied.",
                         enumValue,
                         typeof(FenCharAttribute).GetQualifiedName()),
-                    "enumValue");
+                    nameof(enumValue));
             }
 
             return intermediateResult.Value;

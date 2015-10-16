@@ -24,7 +24,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (maximumItemCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "maximumItemCount",
+                    nameof(maximumItemCount),
                     maximumItemCount,
                     @"The value must be positive.");
             }
@@ -42,7 +42,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public int MaximumItemCount
         {
             get;
-            private set;
         }
 
         public int ItemCount

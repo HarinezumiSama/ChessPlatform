@@ -16,19 +16,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (principalVariationMoves == null)
             {
-                throw new ArgumentNullException("principalVariationMoves");
+                throw new ArgumentNullException(nameof(principalVariationMoves));
             }
 
             if (principalVariationMoves.Any(item => item == null))
             {
-                throw new ArgumentException(@"The collection contains a null element.", "principalVariationMoves");
+                throw new ArgumentException(@"The collection contains a null element.", nameof(principalVariationMoves));
             }
 
             if (principalVariationMoves.Count == 0)
             {
                 throw new ArgumentException(
                     @"Principal variation must have at least one move.",
-                    "principalVariationMoves");
+                    nameof(principalVariationMoves));
             }
 
             #endregion
@@ -50,7 +50,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public ReadOnlyCollection<GameMove> PrincipalVariationMoves
         {
             get;
-            private set;
         }
 
         #endregion

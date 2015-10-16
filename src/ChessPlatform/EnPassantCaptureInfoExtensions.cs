@@ -9,9 +9,7 @@ namespace ChessPlatform
 
         public static string GetFenSnippet(this EnPassantCaptureInfo enPassantCaptureInfo)
         {
-            return enPassantCaptureInfo == null
-                ? ChessConstants.NoEnPassantCaptureFenSnippet
-                : enPassantCaptureInfo.CapturePosition.ToString();
+            return enPassantCaptureInfo?.CapturePosition.ToString() ?? ChessConstants.NoEnPassantCaptureFenSnippet;
         }
 
         #endregion

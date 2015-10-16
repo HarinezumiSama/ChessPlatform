@@ -30,21 +30,19 @@ namespace ChessPlatform
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion
 
             _pieces = PopulatePieces(board);
-            this.ActiveColor = board.ActiveColor;
-            this.CastlingOptions = board.CastlingOptions;
+            ActiveColor = board.ActiveColor;
+            CastlingOptions = board.CastlingOptions;
 
-            this.EnPassantMoveCapturePositionIndex =
-                board.EnPassantCaptureInfo == null
-                    ? -1
-                    : board.EnPassantCaptureInfo.CapturePosition.Bitboard.FindFirstBitSetIndex();
+            EnPassantMoveCapturePositionIndex =
+                board.EnPassantCaptureInfo?.CapturePosition.Bitboard.FindFirstBitSetIndex() ?? -1;
 
-            this.HashCode = _pieces.ComputeCollectionHashCode()
+            HashCode = _pieces.ComputeCollectionHashCode()
                 .CombineHashCodes(ActiveColor)
                 .CombineHashCodes(CastlingOptions)
                 .CombineHashCodes(EnPassantMoveCapturePositionIndex);
@@ -57,25 +55,21 @@ namespace ChessPlatform
         internal PieceColor ActiveColor
         {
             get;
-            private set;
         }
 
         internal CastlingOptions CastlingOptions
         {
             get;
-            private set;
         }
 
         internal int EnPassantMoveCapturePositionIndex
         {
             get;
-            private set;
         }
 
         internal int HashCode
         {
             get;
-            private set;
         }
 
         #endregion
@@ -122,7 +116,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return this.HashCode;
+            return HashCode;
         }
 
         #endregion

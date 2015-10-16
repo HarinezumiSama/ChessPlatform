@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ChessPlatform.ComputerPlayers</RootNamespace>
     <AssemblyName>ChessPlatform.ComputerPlayers</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -34,9 +34,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum, Version=0.3.0.114, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Omnifactotum.0.3.0.114\lib\net40-Client\Omnifactotum.dll</HintPath>
+    <Reference Include="Omnifactotum, Version=0.3.0.119, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
+      <HintPath>..\packages\Omnifactotum.0.3.0.119\lib\net40-Client\Omnifactotum.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -32,7 +32,7 @@ namespace ChessPlatform
             if (depth < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "depth",
+                    nameof(depth),
                     depth,
                     @"The value cannot be negative.");
             }
@@ -40,14 +40,14 @@ namespace ChessPlatform
             if (elapsed < TimeSpan.Zero)
             {
                 throw new ArgumentOutOfRangeException(
-                    "elapsed",
+                    nameof(elapsed),
                     elapsed,
                     @"The value cannot be negative.");
             }
 
             if (dividedMoves == null)
             {
-                throw new ArgumentNullException("dividedMoves");
+                throw new ArgumentNullException(nameof(dividedMoves));
             }
 
             #endregion
@@ -79,19 +79,16 @@ namespace ChessPlatform
         public int Depth
         {
             get;
-            private set;
         }
 
         public TimeSpan Elapsed
         {
             get;
-            private set;
         }
 
         public ulong NodeCount
         {
             get;
-            private set;
         }
 
         public ulong CaptureCount
@@ -127,7 +124,6 @@ namespace ChessPlatform
         public ulong NodesPerSecond
         {
             get;
-            private set;
         }
 
         #endregion

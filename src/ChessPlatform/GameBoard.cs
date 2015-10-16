@@ -105,7 +105,7 @@ namespace ChessPlatform
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
-                    "fen");
+                    nameof(fen));
             }
 
             #endregion
@@ -141,7 +141,7 @@ namespace ChessPlatform
 
             if (previousBoard == null)
             {
-                throw new ArgumentNullException("previousBoard");
+                throw new ArgumentNullException(nameof(previousBoard));
             }
 
             #endregion
@@ -292,21 +292,9 @@ namespace ChessPlatform
             }
         }
 
-        public bool CanMakeNullMove
-        {
-            get
-            {
-                return !_state.IsAnyCheck();
-            }
-        }
+        public bool CanMakeNullMove => !_state.IsAnyCheck();
 
-        public Piece this[Position position]
-        {
-            get
-            {
-                return _gameBoardData[position];
-            }
-        }
+        public Piece this[Position position] => _gameBoardData[position];
 
         #endregion
 
@@ -361,7 +349,7 @@ namespace ChessPlatform
             if (depth < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "depth",
+                    nameof(depth),
                     depth,
                     @"The value cannot be negative.");
             }
@@ -402,14 +390,14 @@ namespace ChessPlatform
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             if (!_validMoves.ContainsKey(move))
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
-                    "move");
+                    nameof(move));
             }
 
             #endregion
@@ -494,7 +482,7 @@ namespace ChessPlatform
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -508,7 +496,7 @@ namespace ChessPlatform
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -523,7 +511,7 @@ namespace ChessPlatform
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -548,7 +536,7 @@ namespace ChessPlatform
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -844,7 +832,7 @@ namespace ChessPlatform
                 _potentialMoveDatas,
                 addMoveData.ActiveColor,
                 generatedMoveTypes,
-                enPassantCaptureInfo == null ? Bitboard.None : enPassantCaptureInfo.CapturePosition.Bitboard,
+                enPassantCaptureInfo?.CapturePosition.Bitboard ?? Bitboard.None,
                 target);
 
             // ReSharper disable once ForCanBeConvertedToForeach - For optimization
@@ -1343,7 +1331,7 @@ namespace ChessPlatform
                 .Split(ChessConstants.FenSnippetSeparator.AsArray(), StringSplitOptions.None);
             if (fenSnippets.Length != ChessConstants.FenSnippetCount)
             {
-                throw new ArgumentException(InvalidFenMessage, "fen");
+                throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
 
             var pieceDataSnippet = fenSnippets[0];
@@ -1352,7 +1340,7 @@ namespace ChessPlatform
             var activeColorSnippet = fenSnippets[1];
             if (!ChessConstants.FenSnippetToColorMap.TryGetValue(activeColorSnippet, out activeColor))
             {
-                throw new ArgumentException(InvalidFenMessage, "fen");
+                throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
 
             castlingOptions = CastlingOptions.None;
@@ -1365,7 +1353,7 @@ namespace ChessPlatform
                     CastlingOptions option;
                     if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out option))
                     {
-                        throw new ArgumentException(InvalidFenMessage, "fen");
+                        throw new ArgumentException(InvalidFenMessage, nameof(fen));
                     }
 
                     castlingOptions |= option;
@@ -1379,7 +1367,7 @@ namespace ChessPlatform
                 var capturePosition = Position.TryFromAlgebraic(enPassantCaptureTargetSnippet);
                 if (!capturePosition.HasValue)
                 {
-                    throw new ArgumentException(InvalidFenMessage, "fen");
+                    throw new ArgumentException(InvalidFenMessage, nameof(fen));
                 }
 
                 var enPassantInfo =
@@ -1388,7 +1376,7 @@ namespace ChessPlatform
 
                 if (enPassantInfo == null)
                 {
-                    throw new ArgumentException(InvalidFenMessage, "fen");
+                    throw new ArgumentException(InvalidFenMessage, nameof(fen));
                 }
 
                 enPassantCaptureTarget = new EnPassantCaptureInfo(
@@ -1400,13 +1388,13 @@ namespace ChessPlatform
             if (!ChessHelper.TryParseInt(halfMovesBy50MoveRuleSnippet, out halfMovesBy50MoveRule)
                 || halfMovesBy50MoveRule < 0)
             {
-                throw new ArgumentException(InvalidFenMessage, "fen");
+                throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
 
             var fullMoveIndexSnippet = fenSnippets[5];
             if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out fullMoveIndex) || fullMoveIndex <= 0)
             {
-                throw new ArgumentException(InvalidFenMessage, "fen");
+                throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
         }
 
@@ -1460,7 +1448,6 @@ namespace ChessPlatform
             public Dictionary<GameMove, ulong> DividedMoves
             {
                 get;
-                private set;
             }
 
             #endregion
@@ -1489,7 +1476,7 @@ namespace ChessPlatform
 
                 if (other == null)
                 {
-                    throw new ArgumentNullException("other");
+                    throw new ArgumentNullException(nameof(other));
                 }
 
                 #endregion
@@ -1539,52 +1526,44 @@ namespace ChessPlatform
             public GameBoardData GameBoardData
             {
                 get;
-                private set;
             }
 
             [NotNull]
             public IDictionary<GameMove, GameMoveInfo> ValidMoves
             {
                 get;
-                private set;
             }
 
             [CanBeNull]
             public EnPassantCaptureInfo EnPassantCaptureInfo
             {
                 get;
-                private set;
             }
 
             public PieceColor ActiveColor
             {
                 get;
-                private set;
             }
 
             public PieceColor OppositeColor
             {
                 get;
-                private set;
             }
 
             public CastlingOptions CastlingOptions
             {
                 get;
-                private set;
             }
 
             [NotNull]
             public Bitboard[] PinLimitations
             {
                 get;
-                private set;
             }
 
             public Bitboard ActivePiecesExceptKingAndPawnsBitboard
             {
                 get;
-                private set;
             }
 
             #endregion

@@ -34,17 +34,17 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             if (successiveMoves == null)
             {
-                throw new ArgumentNullException("successiveMoves");
+                throw new ArgumentNullException(nameof(successiveMoves));
             }
 
             if (successiveMoves.Any(item => item == null))
             {
-                throw new ArgumentException(@"The collection contains a null element.", "successiveMoves");
+                throw new ArgumentException(@"The collection contains a null element.", nameof(successiveMoves));
             }
 
             #endregion
@@ -60,7 +60,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (moves.Any(item => item == null))
             {
-                throw new ArgumentException(@"The collection contains a null element.", "moves");
+                throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
 
             #endregion
@@ -75,14 +75,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public int Value
         {
             get;
-            private set;
         }
 
         [NotNull]
         public ReadOnlyCollection<GameMove> Moves
         {
             get;
-            private set;
         }
 
         #endregion
@@ -97,7 +95,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (alphaBetaScore == null)
             {
-                throw new ArgumentNullException("alphaBetaScore");
+                throw new ArgumentNullException(nameof(alphaBetaScore));
             }
 
             #endregion
@@ -113,7 +111,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (alphaBetaScore == null)
             {
-                throw new ArgumentNullException("alphaBetaScore");
+                throw new ArgumentNullException(nameof(alphaBetaScore));
             }
 
             #endregion

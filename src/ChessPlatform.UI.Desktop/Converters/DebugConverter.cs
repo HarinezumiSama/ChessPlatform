@@ -44,7 +44,6 @@ namespace ChessPlatform.UI.Desktop.Converters
         public string Name
         {
             get;
-            private set;
         }
 
         #endregion

@@ -22,13 +22,11 @@ namespace ChessPlatform.Internal
         public byte Offset
         {
             get;
-            private set;
         }
 
         public bool IsStraight
         {
             get;
-            private set;
         }
 
         #endregion

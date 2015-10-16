@@ -42,13 +42,7 @@ namespace ChessPlatform.UI.Desktop
 
         #region Public Properties
 
-        public override string Name
-        {
-            get
-            {
-                return "Human Player";
-            }
-        }
+        public override string Name => "Human Player";
 
         #endregion
 
@@ -73,7 +67,7 @@ namespace ChessPlatform.UI.Desktop
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion

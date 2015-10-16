@@ -19,11 +19,11 @@ namespace ChessPlatform.UI.Desktop
         {
             InitializeComponent();
 
-            this.Title = string.Format(CultureInfo.InvariantCulture, "New Game – {0}", App.Title);
+            Title = string.Format(CultureInfo.InvariantCulture, "New Game – {0}", App.Title);
 
             var clipboardText = Clipboard.GetText();
 
-            this.ViewModel.Fen = GameBoard.IsValidFen(clipboardText)
+            ViewModel.Fen = GameBoard.IsValidFen(clipboardText)
                 ? clipboardText
                 : ChessConstants.DefaultInitialFen;
         }
@@ -34,31 +34,11 @@ namespace ChessPlatform.UI.Desktop
 
         [NotNull]
         public IPlayerInfo WhitePlayer
-        {
-            get
-            {
-                return this.ViewModel
-                    .WhitePlayerViewModel
-                    .SelectedPlayerControlItem
-                    .EnsureNotNull()
-                    .Value
-                    .EnsureNotNull();
-            }
-        }
+            => ViewModel.WhitePlayerViewModel.SelectedPlayerControlItem.EnsureNotNull().Value.EnsureNotNull();
 
         [NotNull]
         public IPlayerInfo BlackPlayer
-        {
-            get
-            {
-                return this.ViewModel
-                    .BlackPlayerViewModel
-                    .SelectedPlayerControlItem
-                    .EnsureNotNull()
-                    .Value
-                    .EnsureNotNull();
-            }
-        }
+            => ViewModel.BlackPlayerViewModel.SelectedPlayerControlItem.EnsureNotNull().Value.EnsureNotNull();
 
         #endregion
 
@@ -66,40 +46,40 @@ namespace ChessPlatform.UI.Desktop
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            this.DialogResult = null;
+            DialogResult = null;
         }
 
         private void Start_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = this.ViewModel.IsValid();
+            e.CanExecute = ViewModel.IsValid();
         }
 
         private void Start_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (!this.ViewModel.IsValid())
+            if (!ViewModel.IsValid())
             {
-                this.DialogResult = null;
+                DialogResult = null;
                 return;
             }
 
-            this.DialogResult = true;
+            DialogResult = true;
             Close();
         }
 
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            this.DialogResult = false;
+            DialogResult = false;
             Close();
         }
 
         private void SetDefaultFenButton_Click(object sender, RoutedEventArgs e)
         {
-            this.ViewModel.Fen = ChessConstants.DefaultInitialFen;
+            ViewModel.Fen = ChessConstants.DefaultInitialFen;
         }
 
         private void PasteFenFromClipboardButton_Click(object sender, RoutedEventArgs e)
         {
-            this.ViewModel.Fen = Clipboard.GetText();
+            ViewModel.Fen = Clipboard.GetText();
         }
 
         #endregion

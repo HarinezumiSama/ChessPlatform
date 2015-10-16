@@ -20,7 +20,7 @@ namespace ChessPlatform
                     return color;
 
                 default:
-                    throw new InvalidEnumArgumentException("color", (int)color, color.GetType());
+                    throw new InvalidEnumArgumentException(nameof(color), (int)color, color.GetType());
             }
         }
 

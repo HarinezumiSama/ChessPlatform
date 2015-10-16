@@ -75,19 +75,16 @@ namespace ChessPlatform
         public Position From
         {
             get;
-            private set;
         }
 
         public Position To
         {
             get;
-            private set;
         }
 
         public PieceType PromotionResult
         {
             get;
-            private set;
         }
 
         #endregion
@@ -136,7 +133,7 @@ namespace ChessPlatform
 
             if (stringNotation == null)
             {
-                throw new ArgumentNullException("stringNotation");
+                throw new ArgumentNullException(nameof(stringNotation));
             }
 
             #endregion
@@ -165,7 +162,7 @@ namespace ChessPlatform
                     CultureInfo.InvariantCulture,
                     "Invalid string notation of a move '{0}'.",
                     stringNotation),
-                "stringNotation");
+                nameof(stringNotation));
         }
 
         public override bool Equals(object obj)
@@ -207,7 +204,7 @@ namespace ChessPlatform
                         CultureInfo.InvariantCulture,
                         "Must be a valid promotion piece ({0}).",
                         promotionResult),
-                    "promotionResult");
+                    nameof(promotionResult));
             }
 
             #endregion

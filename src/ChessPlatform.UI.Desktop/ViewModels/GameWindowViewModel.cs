@@ -45,15 +45,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _validMoveTargetPositionsInternal = new HashSet<Position>();
 
             _selectionMode = GameWindowSelectionMode.Default;
-            this.ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
+            ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
 
-            this.SquareViewModels = ChessHelper
+            SquareViewModels = ChessHelper
                 .AllPositions
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
                 .AsReadOnly();
 
-            SubscribeToChangeOf(() => this.IsReversedView, this.OnIsReversedViewChanged);
-            SubscribeToChangeOf(() => this.CurrentGameBoard, this.OnCurrentGameBoardChanged);
+            SubscribeToChangeOf(() => IsReversedView, OnIsReversedViewChanged);
+            SubscribeToChangeOf(() => CurrentGameBoard, OnCurrentGameBoardChanged);
 
             InitializeNewGame(
                 ChessConstants.DefaultInitialFen,
@@ -88,7 +88,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _selectionMode = value;
-                RaisePropertyChanged(() => this.SelectionMode);
+                RaisePropertyChanged(() => SelectionMode);
             }
         }
 
@@ -109,7 +109,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _currentGameBoard = value;
-                RaisePropertyChanged(() => this.CurrentGameBoard);
+                RaisePropertyChanged(() => CurrentGameBoard);
             }
         }
 
@@ -129,42 +129,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _currentTargetPosition = value;
-                RaisePropertyChanged(() => this.CurrentTargetPosition);
+                RaisePropertyChanged(() => CurrentTargetPosition);
             }
         }
 
         [NotNull]
-        public string MoveHistory
-        {
-            get
-            {
-                return GetMoveHistory();
-            }
-        }
+        public string MoveHistory => GetMoveHistory();
 
-        public bool IsComputerPlayerActive
-        {
-            get
-            {
-                return GetActiveHumanPlayer() == null;
-            }
-        }
+        public bool IsComputerPlayerActive => GetActiveHumanPlayer() == null;
 
-        public GameResult? GameManagerResult
-        {
-            get
-            {
-                return _gameManager == null ? null : _gameManager.Result;
-            }
-        }
+        public GameResult? GameManagerResult => _gameManager?.Result;
 
-        public AutoDrawType GameManagerAutoDrawType
-        {
-            get
-            {
-                return _gameManager == null ? AutoDrawType.None : _gameManager.AutoDrawType;
-            }
-        }
+        public AutoDrawType GameManagerAutoDrawType => _gameManager?.AutoDrawType ?? AutoDrawType.None;
 
         public bool IsReversedView
         {
@@ -182,63 +158,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _isReversedView = value;
-                RaisePropertyChanged(() => this.IsReversedView);
+                RaisePropertyChanged(() => IsReversedView);
             }
         }
 
-        public Brush UpperPlayerBrush
-        {
-            get
-            {
-                return this.IsReversedView ? UIHelper.WhitePieceBrush : UIHelper.BlackPieceBrush;
-            }
-        }
+        public Brush UpperPlayerBrush => IsReversedView ? UIHelper.WhitePieceBrush : UIHelper.BlackPieceBrush;
 
-        public Brush LowerPlayerBrush
-        {
-            get
-            {
-                return this.IsReversedView ? UIHelper.BlackPieceBrush : UIHelper.WhitePieceBrush;
-            }
-        }
+        public Brush LowerPlayerBrush => IsReversedView ? UIHelper.BlackPieceBrush : UIHelper.WhitePieceBrush;
 
-        public string UpperPlayerTitle
-        {
-            get
-            {
-                var player = this.IsReversedView ? _whitePlayer : _blackPlayer;
-                return GetPlayerTitle(player);
-            }
-        }
+        public string UpperPlayerTitle => GetPlayerTitle(IsReversedView ? _whitePlayer : _blackPlayer);
 
-        public string LowerPlayerTitle
-        {
-            get
-            {
-                var player = this.IsReversedView ? _blackPlayer : _whitePlayer;
-                return GetPlayerTitle(player);
-            }
-        }
+        public string LowerPlayerTitle => GetPlayerTitle(IsReversedView ? _blackPlayer : _whitePlayer);
 
         public string UpperPlayerPieceAdvantage
-        {
-            get
-            {
-                return this.IsReversedView
-                    ? GetPlayerPieceAdvantage(PieceColor.White)
-                    : GetPlayerPieceAdvantage(PieceColor.Black);
-            }
-        }
+            => IsReversedView ? GetPlayerPieceAdvantage(PieceColor.White) : GetPlayerPieceAdvantage(PieceColor.Black);
 
         public string LowerPlayerPieceAdvantage
-        {
-            get
-            {
-                return this.IsReversedView
-                    ? GetPlayerPieceAdvantage(PieceColor.Black)
-                    : GetPlayerPieceAdvantage(PieceColor.White);
-            }
-        }
+            => IsReversedView ? GetPlayerPieceAdvantage(PieceColor.Black) : GetPlayerPieceAdvantage(PieceColor.White);
 
         #endregion
 
@@ -287,7 +223,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             {
                 throw new ArgumentException(
                     @"The specified FEN has invalid format or represents an invalid position.",
-                    "fen");
+                    nameof(fen));
             }
 
             #endregion
@@ -300,8 +236,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionMode();
 
             _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
-            _gameManager.GameBoardChanged += this.GameManager_GameBoardChanged;
-            _gameManager.PlayerThinkingStarted += this.GameManager_PlayerThinkingStarted;
+            _gameManager.GameBoardChanged += GameManager_GameBoardChanged;
+            _gameManager.PlayerThinkingStarted += GameManager_PlayerThinkingStarted;
 
             RefreshBoardHistory();
             OnNewGameStarted();
@@ -325,7 +261,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -384,7 +320,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private string GetPlayerPieceAdvantage(PieceColor color)
         {
-            var currentGameBoard = this.CurrentGameBoard;
+            var currentGameBoard = CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 return string.Empty;
@@ -415,17 +351,17 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void ResetSelectionModeInternal(GameWindowSelectionMode? selectionMode)
         {
             _validMoveTargetPositionsInternal.Clear();
-            this.CurrentSourcePosition = null;
+            CurrentSourcePosition = null;
 
             if (selectionMode.HasValue)
             {
-                this.SelectionMode = selectionMode.Value;
+                SelectionMode = selectionMode.Value;
                 return;
             }
 
             var humanChessPlayer = GetActiveHumanPlayer();
 
-            this.SelectionMode = humanChessPlayer == null || _gameManager == null
+            SelectionMode = humanChessPlayer == null || _gameManager == null
                 || _gameManager.State == GameManagerState.GameFinished
                 ? GameWindowSelectionMode.None
                 : GameWindowSelectionMode.Default;
@@ -452,7 +388,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             _validMoveTargetPositionsInternal.Clear();
 
-            var currentGameBoard = this.CurrentGameBoard;
+            var currentGameBoard = CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 return;
@@ -466,8 +402,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             validMoves.DoForEach(move => _validMoveTargetPositionsInternal.Add(move.To));
 
-            this.CurrentSourcePosition = currentSourcePosition;
-            this.SelectionMode = selectionMode;
+            CurrentSourcePosition = currentSourcePosition;
+            SelectionMode = selectionMode;
         }
 
         private int GetUndoMoveCount(GameManager gameManager)
@@ -493,12 +429,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _boardHistory = boardHistory;
 
             ResetSelectionMode();
-            RaisePropertyChanged(() => this.MoveHistory);
+            RaisePropertyChanged(() => MoveHistory);
 
             var currentGameBoard = boardHistory.Last();
-            this.CurrentGameBoard = currentGameBoard;
+            CurrentGameBoard = currentGameBoard;
 
-            RaisePropertyChanged(() => this.IsComputerPlayerActive);
+            RaisePropertyChanged(() => IsComputerPlayerActive);
         }
 
         [NotNull]
@@ -625,7 +561,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnGameBoardChanged()
         {
-            _dispatcher.Invoke(this.RefreshBoardHistory, DispatcherPriority.Render);
+            _dispatcher.Invoke(RefreshBoardHistory, DispatcherPriority.Render);
 
             var gameManager = _gameManager;
             if (gameManager != null)
@@ -639,8 +575,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var oldGuiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (oldGuiHumanChessPlayer != null)
             {
-                oldGuiHumanChessPlayer.MoveRequested -= this.GuiHumanChessPlayer_MoveRequested;
-                oldGuiHumanChessPlayer.MoveRequestCancelled -= this.GuiHumanChessPlayer_MoveRequestCancelled;
+                oldGuiHumanChessPlayer.MoveRequested -= GuiHumanChessPlayer_MoveRequested;
+                oldGuiHumanChessPlayer.MoveRequestCancelled -= GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
             player = playerInfo.CreatePlayer(color);
@@ -648,8 +584,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var newGuiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (newGuiHumanChessPlayer != null)
             {
-                newGuiHumanChessPlayer.MoveRequested += this.GuiHumanChessPlayer_MoveRequested;
-                newGuiHumanChessPlayer.MoveRequestCancelled += this.GuiHumanChessPlayer_MoveRequestCancelled;
+                newGuiHumanChessPlayer.MoveRequested += GuiHumanChessPlayer_MoveRequested;
+                newGuiHumanChessPlayer.MoveRequestCancelled += GuiHumanChessPlayer_MoveRequestCancelled;
             }
         }
 
@@ -661,14 +597,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void AffectPlayerInfo()
         {
-            RaisePropertyChanged(() => this.UpperPlayerBrush);
-            RaisePropertyChanged(() => this.LowerPlayerBrush);
+            RaisePropertyChanged(() => UpperPlayerBrush);
+            RaisePropertyChanged(() => LowerPlayerBrush);
 
-            RaisePropertyChanged(() => this.UpperPlayerTitle);
-            RaisePropertyChanged(() => this.LowerPlayerTitle);
+            RaisePropertyChanged(() => UpperPlayerTitle);
+            RaisePropertyChanged(() => LowerPlayerTitle);
 
-            RaisePropertyChanged(() => this.UpperPlayerPieceAdvantage);
-            RaisePropertyChanged(() => this.LowerPlayerPieceAdvantage);
+            RaisePropertyChanged(() => UpperPlayerPieceAdvantage);
+            RaisePropertyChanged(() => LowerPlayerPieceAdvantage);
         }
 
         private void OnNewGameStarted()
@@ -688,7 +624,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnPlayerThinkingStarted()
         {
-            RaisePropertyChanged(() => this.IsComputerPlayerActive);
+            RaisePropertyChanged(() => IsComputerPlayerActive);
         }
 
         #endregion
@@ -698,7 +634,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
-                this.OnHumanChessPlayerMoveRequested,
+                OnHumanChessPlayerMoveRequested,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
@@ -707,7 +643,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void GuiHumanChessPlayer_MoveRequestCancelled(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
-                this.OnHumanChessPlayerMoveRequestCancelled,
+                OnHumanChessPlayerMoveRequestCancelled,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
@@ -716,7 +652,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void GameManager_GameBoardChanged(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
-                this.OnGameBoardChanged,
+                OnGameBoardChanged,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
@@ -725,7 +661,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void GameManager_PlayerThinkingStarted(object sender, EventArgs eventArgs)
         {
             Task.Factory.StartNew(
-                this.OnPlayerThinkingStarted,
+                OnPlayerThinkingStarted,
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);

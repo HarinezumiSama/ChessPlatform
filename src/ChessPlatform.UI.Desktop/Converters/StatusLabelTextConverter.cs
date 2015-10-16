@@ -30,7 +30,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             if (targetType == null)
             {
-                throw new ArgumentNullException("targetType");
+                throw new ArgumentNullException(nameof(targetType));
             }
 
             if (!targetType.IsAssignableFrom(typeof(string)))
@@ -40,7 +40,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                         CultureInfo.InvariantCulture,
                         "Invalid target type ({0}).",
                         targetType.GetFullName()),
-                    "targetType");
+                    nameof(targetType));
             }
 
             #endregion

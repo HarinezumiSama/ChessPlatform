@@ -46,7 +46,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             if (!(value is bool))
             {
-                throw new ArgumentException(string.Format(@"The value must be {0}.", typeof(bool).Name), "value");
+                throw new ArgumentException($@"The value must be {typeof(bool).Name}.", nameof(value));
             }
 
             #endregion
@@ -61,8 +61,8 @@ namespace ChessPlatform.UI.Desktop.Converters
             if (!(value is T))
             {
                 throw new ArgumentException(
-                    string.Format(@"The value must be {0}.", typeof(T).Name),
-                    "value");
+                    $@"The value must be {typeof(T).Name}.",
+                    nameof(value));
             }
 
             #endregion

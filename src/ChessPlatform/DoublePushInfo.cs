@@ -56,13 +56,11 @@ namespace ChessPlatform
         public byte StartRank
         {
             get;
-            private set;
         }
 
         public byte EndRank
         {
             get;
-            private set;
         }
 
         public byte CaptureTargetRank

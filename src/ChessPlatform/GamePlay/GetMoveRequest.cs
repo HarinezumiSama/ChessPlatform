@@ -15,7 +15,7 @@ namespace ChessPlatform.GamePlay
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion

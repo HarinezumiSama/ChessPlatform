@@ -70,6 +70,19 @@ namespace ChessPlatform.Tests
 
         #endregion
 
+        #region SetUp/TearDown
+
+        [TestFixtureSetUp]
+        public void TestFixtureSetUp()
+        {
+            Console.WriteLine($@"*** CLR version: {Environment.Version}");
+
+            var coreAssemblyName = typeof(GameBoard).Assembly.GetName();
+            Console.WriteLine($@"*** {coreAssemblyName.Name} assembly version: {coreAssemblyName.Version}");
+        }
+
+        #endregion
+
         #region Tests
 
         [Test]
@@ -223,7 +236,7 @@ namespace ChessPlatform.Tests
                 if (depth < 0)
                 {
                     throw new ArgumentOutOfRangeException(
-                        "depth",
+                        nameof(depth),
                         depth,
                         @"The value cannot be negative.");
                 }
@@ -241,13 +254,11 @@ namespace ChessPlatform.Tests
             public int Depth
             {
                 get;
-                private set;
             }
 
             public ulong NodeCount
             {
                 get;
-                private set;
             }
 
             public ulong? CaptureCount
@@ -347,13 +358,11 @@ namespace ChessPlatform.Tests
             public PerftPosition Position
             {
                 get;
-                private set;
             }
 
             public ExpectedPerftResult ExpectedResult
             {
                 get;
-                private set;
             }
 
             #endregion

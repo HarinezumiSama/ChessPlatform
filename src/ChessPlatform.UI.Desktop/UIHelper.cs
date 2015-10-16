@@ -116,14 +116,14 @@ namespace ChessPlatform.UI.Desktop
 
             if (popupElement == null)
             {
-                throw new ArgumentNullException("popupElement");
+                throw new ArgumentNullException(nameof(popupElement));
             }
 
             if (string.IsNullOrWhiteSpace(text))
             {
                 throw new ArgumentException(
                     @"The value can be neither empty or whitespace-only string nor null.",
-                    "text");
+                    nameof(text));
             }
 
             #endregion
@@ -158,8 +158,8 @@ namespace ChessPlatform.UI.Desktop
                 AllowsTransparency = true,
                 Placement = popupPoint.HasValue ? PlacementMode.Relative : PlacementMode.Center,
                 PlacementTarget = popupElement,
-                HorizontalOffset = popupPoint.HasValue ? popupPoint.Value.X : 0,
-                VerticalOffset = popupPoint.HasValue ? popupPoint.Value.Y : 0,
+                HorizontalOffset = popupPoint?.X ?? 0,
+                VerticalOffset = popupPoint?.Y ?? 0,
                 PopupAnimation = PopupAnimation.None,
                 Focusable = false,
                 Opacity = 0d,
@@ -186,10 +186,7 @@ namespace ChessPlatform.UI.Desktop
             popup.Opened +=
                 (sender, e) =>
                 {
-                    if (popupOpened != null)
-                    {
-                        popupOpened();
-                    }
+                    popupOpened?.Invoke();
 
                     popup.BeginStoryboard(storyboard);
                 };
@@ -197,10 +194,7 @@ namespace ChessPlatform.UI.Desktop
             popup.Closed +=
                 (sender, args) =>
                 {
-                    if (popupClosed != null)
-                    {
-                        popupClosed();
-                    }
+                    popupClosed?.Invoke();
                 };
 
             // Must be the final statement
@@ -213,7 +207,7 @@ namespace ChessPlatform.UI.Desktop
 
             if (grid == null)
             {
-                throw new ArgumentNullException("grid");
+                throw new ArgumentNullException(nameof(grid));
             }
 
             #endregion

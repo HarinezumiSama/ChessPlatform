@@ -23,22 +23,22 @@ namespace ChessPlatform
 
             if (kingMove == null)
             {
-                throw new ArgumentNullException("kingMove");
+                throw new ArgumentNullException(nameof(kingMove));
             }
 
             if (rookMove == null)
             {
-                throw new ArgumentNullException("rookMove");
+                throw new ArgumentNullException(nameof(rookMove));
             }
 
             if (emptySquares == null)
             {
-                throw new ArgumentNullException("emptySquares");
+                throw new ArgumentNullException(nameof(emptySquares));
             }
 
             if (Math.Abs(kingMove.From.X88Value - kingMove.To.X88Value) != 2)
             {
-                throw new ArgumentException("Invalid castling move.", "kingMove");
+                throw new ArgumentException("Invalid castling move.", nameof(kingMove));
             }
 
             #endregion

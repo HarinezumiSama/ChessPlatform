@@ -27,7 +27,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             if (maximumItemCount < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "maximumItemCount",
+                    nameof(maximumItemCount),
                     maximumItemCount,
                     @"The value cannot be negative.");
             }
@@ -52,7 +52,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public int MaximumItemCount
         {
             get;
-            private set;
         }
 
         public ulong HitCount
@@ -86,7 +85,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion
@@ -111,12 +110,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             if (score == null)
             {
-                throw new ArgumentNullException("score");
+                throw new ArgumentNullException(nameof(score));
             }
 
             #endregion

@@ -21,7 +21,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion
@@ -46,12 +46,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 if (move == null)
                 {
-                    throw new ArgumentNullException("move");
+                    throw new ArgumentNullException(nameof(move));
                 }
 
                 if (value == null)
                 {
-                    throw new ArgumentNullException("value");
+                    throw new ArgumentNullException(nameof(value));
                 }
 
                 #endregion

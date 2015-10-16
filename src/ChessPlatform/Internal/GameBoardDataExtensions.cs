@@ -15,12 +15,12 @@ namespace ChessPlatform.Internal
 
             if (gameBoardData == null)
             {
-                throw new ArgumentNullException("gameBoardData");
+                throw new ArgumentNullException(nameof(gameBoardData));
             }
 
             if (resultBuilder == null)
             {
-                throw new ArgumentNullException("resultBuilder");
+                throw new ArgumentNullException(nameof(resultBuilder));
             }
 
             #endregion

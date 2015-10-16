@@ -238,7 +238,7 @@ namespace ChessPlatform
 
             if (x88Offsets == null)
             {
-                throw new ArgumentNullException("x88Offsets");
+                throw new ArgumentNullException(nameof(x88Offsets));
             }
 
             #endregion
@@ -274,12 +274,12 @@ namespace ChessPlatform
 
             if (hashSet == null)
             {
-                throw new ArgumentNullException("hashSet");
+                throw new ArgumentNullException(nameof(hashSet));
             }
 
             if (collection == null)
             {
-                throw new ArgumentNullException("collection");
+                throw new ArgumentNullException(nameof(collection));
             }
 
             #endregion
@@ -294,7 +294,7 @@ namespace ChessPlatform
             {
                 throw new ArgumentException(
                     string.Format(CultureInfo.InvariantCulture, "Invalid FEN character ({0}).", fenChar),
-                    "fenChar");
+                    nameof(fenChar));
             }
 
             return result;

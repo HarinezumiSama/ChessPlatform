@@ -36,7 +36,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (reader == null)
             {
-                throw new ArgumentNullException("reader");
+                throw new ArgumentNullException(nameof(reader));
             }
 
             #endregion
@@ -75,13 +75,7 @@ namespace ChessPlatform.ComputerPlayers
 
         #region Public Properties
 
-        public static OpeningBook Default
-        {
-            get
-            {
-                return DefaultInstance.Value;
-            }
-        }
+        public static OpeningBook Default => DefaultInstance.Value;
 
         #endregion
 
@@ -98,7 +92,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (packedGameBoard == null)
             {
-                throw new ArgumentNullException("packedGameBoard");
+                throw new ArgumentNullException(nameof(packedGameBoard));
             }
 
             #endregion
@@ -113,7 +107,7 @@ namespace ChessPlatform.ComputerPlayers
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion

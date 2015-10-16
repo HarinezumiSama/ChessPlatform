@@ -22,14 +22,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (board == null)
             {
-                throw new ArgumentNullException("board");
+                throw new ArgumentNullException(nameof(board));
             }
 
             #endregion
 
             _packedGameBoard = board.Pack();
             _move = move;
-            _hashCode = _packedGameBoard.GetHashCode() ^ (_move == null ? 0 : _move.GetHashCode());
+            _hashCode = _packedGameBoard.GetHashCode() ^ (_move?.GetHashCode() ?? 0);
         }
 
         #endregion

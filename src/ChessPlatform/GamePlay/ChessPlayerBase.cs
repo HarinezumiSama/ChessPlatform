@@ -26,16 +26,9 @@ namespace ChessPlatform.GamePlay
         public PieceColor Color
         {
             get;
-            private set;
         }
 
-        public virtual string Name
-        {
-            get
-            {
-                return GetType().FullName;
-            }
-        }
+        public virtual string Name => GetType().FullName;
 
         public Task<GameMove> CreateGetMoveTask(GetMoveRequest request)
         {
@@ -43,7 +36,7 @@ namespace ChessPlatform.GamePlay
 
             if (request == null)
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
 
             if (request.Board.ActiveColor != this.Color)
@@ -54,12 +47,12 @@ namespace ChessPlatform.GamePlay
                         @"The board's active color '{0}' is inconsistent with the player's color '{1}'.",
                         request.Board.ActiveColor,
                         this.Color),
-                    "request");
+                    nameof(request));
             }
 
             if (request.Board.ValidMoves.Count == 0)
             {
-                throw new ArgumentException("There are no valid moves.", "request");
+                throw new ArgumentException("There are no valid moves.", nameof(request));
             }
 
             #endregion

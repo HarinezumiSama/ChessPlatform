@@ -32,13 +32,11 @@ namespace ChessPlatform.UI.Desktop
         public Color DarkSquareColor
         {
             get;
-            private set;
         }
 
         public Color LightSquareColor
         {
             get;
-            private set;
         }
 
         #endregion

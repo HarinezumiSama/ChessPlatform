@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Vitalii Maklai")]
 [assembly: AssemblyProduct("Chess Platform")]
-[assembly: AssemblyCopyright("Copyright © Vitalii Maklai 2014")]
+[assembly: AssemblyCopyright("Copyright © Vitalii Maklai 2014-2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -51,7 +51,7 @@ namespace ChessPlatform
                 if ((file & ~0x07) != 0)
                 {
                     throw new ArgumentOutOfRangeException(
-                        "file",
+                        nameof(file),
                         file,
                         string.Format(
                             CultureInfo.InvariantCulture,
@@ -62,7 +62,7 @@ namespace ChessPlatform
                 if ((rank & ~0x07) != 0)
                 {
                     throw new ArgumentOutOfRangeException(
-                        "rank",
+                        nameof(rank),
                         rank,
                         string.Format(
                             CultureInfo.InvariantCulture,
@@ -176,7 +176,7 @@ namespace ChessPlatform
             if ((squareIndex & ~0x3F) != 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    "squareIndex",
+                    nameof(squareIndex),
                     squareIndex,
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -197,7 +197,7 @@ namespace ChessPlatform
             var position = TryFromAlgebraic(algebraicNotation);
             if (!position.HasValue)
             {
-                throw new ArgumentException("Invalid algebraic notation.", "algebraicNotation");
+                throw new ArgumentException("Invalid algebraic notation.", nameof(algebraicNotation));
             }
 
             return position.Value;
@@ -206,12 +206,7 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         public static Position? TryFromAlgebraic(string algebraicNotation)
         {
-            if (algebraicNotation == null)
-            {
-                return null;
-            }
-
-            if (algebraicNotation.Length != 2)
+            if (algebraicNotation?.Length != 2)
             {
                 return null;
             }
@@ -231,7 +226,7 @@ namespace ChessPlatform
             if (!ChessConstants.FileRange.Contains(file))
             {
                 throw new ArgumentOutOfRangeException(
-                    "file",
+                    nameof(file),
                     file,
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -260,7 +255,7 @@ namespace ChessPlatform
             if (!ChessConstants.RankRange.Contains(rank))
             {
                 throw new ArgumentOutOfRangeException(
-                    "rank",
+                    nameof(rank),
                     rank,
                     string.Format(
                         CultureInfo.InvariantCulture,
@@ -282,7 +277,7 @@ namespace ChessPlatform
 
             if (ranks == null)
             {
-                throw new ArgumentNullException("ranks");
+                throw new ArgumentNullException(nameof(ranks));
             }
 
             #endregion

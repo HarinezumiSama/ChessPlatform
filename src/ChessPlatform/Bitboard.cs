@@ -117,7 +117,7 @@ namespace ChessPlatform
 
             if (positions == null)
             {
-                throw new ArgumentNullException("positions");
+                throw new ArgumentNullException(nameof(positions));
             }
 
             #endregion
