@@ -6,7 +6,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
 {
-    internal sealed class ScoreCache
+    internal sealed class PrincipalVariationCache
     {
         #region Constants and Fields
 
@@ -16,7 +16,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constants and Fields
 
-        public ScoreCache([NotNull] GameBoard board)
+        public PrincipalVariationCache([NotNull] GameBoard board)
         {
             #region Argument Check
 

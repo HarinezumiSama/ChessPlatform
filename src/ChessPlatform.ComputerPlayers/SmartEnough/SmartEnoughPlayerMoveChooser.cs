@@ -60,7 +60,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly CancellationToken _cancellationToken;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardCache _boardCache;
-        private readonly ScoreCache _previousIterationScoreCache;
+        private readonly PrincipalVariationCache _previousIterationPrincipalVariationCache;
 
         #endregion
 
@@ -73,7 +73,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] GameBoard rootBoard,
             int maxPlyDepth,
             [NotNull] BoardCache boardCache,
-            [CanBeNull] ScoreCache previousIterationScoreCache,
+            [CanBeNull] PrincipalVariationCache previousIterationPrincipalVariationCache,
             [CanBeNull] PrincipalVariationInfo previousIterationBestMoveInfo,
             CancellationToken cancellationToken)
         {
@@ -100,12 +100,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _rootBoard = rootBoard;
             _maxPlyDepth = maxPlyDepth;
             _boardCache = boardCache;
-            _previousIterationScoreCache = previousIterationScoreCache;
+            _previousIterationPrincipalVariationCache = previousIterationPrincipalVariationCache;
             _previousIterationBestMoveInfo = previousIterationBestMoveInfo;
             _cancellationToken = cancellationToken;
 
             _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
-            ScoreCache = new ScoreCache(rootBoard);
+            PrincipalVariationCache = new PrincipalVariationCache(rootBoard);
         }
 
         #endregion
@@ -121,7 +121,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
         }
 
-        public ScoreCache ScoreCache
+        public PrincipalVariationCache PrincipalVariationCache
         {
             get;
         }
@@ -601,9 +601,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var validMoves = board.ValidMoves.ToArray();
 
-            if (_previousIterationScoreCache != null && plyDistance == 0)
+            if (_previousIterationPrincipalVariationCache != null && plyDistance == 0)
             {
-                var movesOrderedByScore = _previousIterationScoreCache.OrderMovesByScore();
+                var movesOrderedByScore = _previousIterationPrincipalVariationCache.OrderMovesByScore();
                 resultList.AddRange(movesOrderedByScore.Select(pair => pair.Key));
 
                 if (resultList.Count != board.ValidMoves.Count)
@@ -868,27 +868,25 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            var stopwatch = new Stopwatch();
-
             foreach (var move in orderedMoves)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                stopwatch.Restart();
+                var stopwatch = Stopwatch.StartNew();
                 var currentBoard = _boardCache.MakeMove(board, move);
                 var innerPrincipalVariationInfo =
                     -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaInfo, -LocalConstants.RootAlphaInfo);
                 stopwatch.Stop();
 
                 var principalVariationInfo = move | innerPrincipalVariationInfo;
-                ScoreCache[move] = principalVariationInfo;
+                PrincipalVariationCache[move] = principalVariationInfo;
 
                 Trace.TraceInformation(
                     $@"[{currentMethodName}] {principalVariationInfo.FirstMove}: {principalVariationInfo.Value
                         }. Time spent: {stopwatch.Elapsed}");
             }
 
-            var orderedMovesByScore = ScoreCache.OrderMovesByScore().ToArray();
+            var orderedMovesByScore = PrincipalVariationCache.OrderMovesByScore().ToArray();
             var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
 
             var orderedVariationsString =

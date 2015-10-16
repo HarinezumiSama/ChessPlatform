@@ -310,7 +310,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             PrincipalVariationInfo bestPrincipalVariationInfo = null;
             var totalNodeCount = 0L;
-            ScoreCache scoreCache = null;
+            PrincipalVariationCache principalVariationCache = null;
 
             var useIterativeDeepening = _maxTimePerMove.HasValue;
 
@@ -336,13 +336,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     board,
                     plyDepth,
                     boardCache,
-                    scoreCache,
+                    principalVariationCache,
                     bestPrincipalVariationInfo,
                     cancellationToken);
 
                 bestPrincipalVariationInfo = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;
-                scoreCache = moveChooser.ScoreCache;
+                principalVariationCache = moveChooser.PrincipalVariationCache;
 
                 bestMoveContainer.Value = new BestMoveData(bestPrincipalVariationInfo, totalNodeCount, plyDepth);
             }
