@@ -55,11 +55,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         };
 
         private readonly GameBoard _rootBoard;
-        private readonly int _maxPlyDepth;
-        private readonly PrincipalVariationInfo _previousIterationBestMoveInfo;
+        private readonly int _plyDepth;
+        private readonly PrincipalVariationInfo _previousIterationBestVariation;
         private readonly CancellationToken _cancellationToken;
+        private readonly bool _useMultipleProcessors;
         private readonly SimpleTranspositionTable _transpositionTable;
-        private readonly BoardCache _boardCache;
+        private readonly BoardHelper _boardHelper;
         private readonly PrincipalVariationCache _previousIterationPrincipalVariationCache;
 
         #endregion
@@ -71,11 +72,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         /// </summary>
         internal SmartEnoughPlayerMoveChooser(
             [NotNull] GameBoard rootBoard,
-            int maxPlyDepth,
-            [NotNull] BoardCache boardCache,
+            int plyDepth,
+            [NotNull] BoardHelper boardHelper,
             [CanBeNull] PrincipalVariationCache previousIterationPrincipalVariationCache,
-            [CanBeNull] PrincipalVariationInfo previousIterationBestMoveInfo,
-            CancellationToken cancellationToken)
+            [CanBeNull] PrincipalVariationInfo previousIterationBestVariation,
+            CancellationToken cancellationToken,
+            bool useMultipleProcessors)
         {
             #region Argument Check
 
@@ -84,11 +86,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(rootBoard));
             }
 
-            if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
+            if (plyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(maxPlyDepth),
-                    maxPlyDepth,
+                    nameof(plyDepth),
+                    plyDepth,
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
@@ -98,11 +100,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             _rootBoard = rootBoard;
-            _maxPlyDepth = maxPlyDepth;
-            _boardCache = boardCache;
+            _plyDepth = plyDepth;
+            _boardHelper = boardHelper;
             _previousIterationPrincipalVariationCache = previousIterationPrincipalVariationCache;
-            _previousIterationBestMoveInfo = previousIterationBestMoveInfo;
+            _previousIterationBestVariation = previousIterationBestVariation;
             _cancellationToken = cancellationToken;
+            _useMultipleProcessors = useMultipleProcessors;
 
             _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
             PrincipalVariationCache = new PrincipalVariationCache(rootBoard);
@@ -117,7 +120,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [DebuggerStepThrough]
             get
             {
-                return _boardCache.TotalRequestCount;
+                return _boardHelper.MoveCount;
             }
         }
 
@@ -139,9 +142,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Result: {result}, time spent: {stopwatch.Elapsed}, BoardCache {{hits {
-                    _boardCache.HitCount}/{_boardCache.TotalRequestCount}, size {_boardCache.ItemCount}/{
-                    _boardCache.MaximumItemCount}}}, FEN ""{_rootBoard.GetFen()}"".");
+                $@"[{currentMethodName}] Result: {result}, depth {_plyDepth}, time: {stopwatch.Elapsed
+                    }, FEN ""{_rootBoard.GetFen()}"".");
 
             return result;
         }
@@ -603,7 +605,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (_previousIterationPrincipalVariationCache != null && plyDistance == 0)
             {
-                var movesOrderedByScore = _previousIterationPrincipalVariationCache.OrderMovesByScore();
+                var movesOrderedByScore = _previousIterationPrincipalVariationCache.GetOrderedByScore();
                 resultList.AddRange(movesOrderedByScore.Select(pair => pair.Key));
 
                 if (resultList.Count != board.ValidMoves.Count)
@@ -614,10 +616,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return resultList.ToArray();
             }
 
-            if (_previousIterationBestMoveInfo != null
-                && plyDistance < _previousIterationBestMoveInfo.Moves.Count)
+            if (_previousIterationBestVariation != null
+                && plyDistance < _previousIterationBestVariation.Moves.Count)
             {
-                var principalVariationMove = _previousIterationBestMoveInfo.Moves[plyDistance];
+                var principalVariationMove = _previousIterationBestVariation.Moves[plyDistance];
                 if (board.ValidMoves.ContainsKey(principalVariationMove))
                 {
                     resultList.Add(principalVariationMove);
@@ -674,7 +676,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             ////    return 0;
             ////}
 
-            ////var nullMoveBoard = _boardCache.MakeNullMove(board);
+            ////var nullMoveBoard = _boardHelper.MakeNullMove(board);
 
             ////var mobility = EvaluateBoardMobility(board);
             ////var opponentMobility = EvaluateBoardMobility(nullMoveBoard);
@@ -728,7 +730,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return 0;
             }
 
-            var currentBoard = _boardCache.MakeMove(board, actualMove);
+            var currentBoard = _boardHelper.MakeMove(board, actualMove);
             var gamePhase = GetGamePhase(board);
             var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType(), gamePhase);
 
@@ -769,7 +771,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     continue;
                 }
 
-                var currentBoard = _boardCache.MakeMove(board, captureMove);
+                var currentBoard = _boardHelper.MakeMove(board, captureMove);
                 var score = -Quiesce(currentBoard, -beta, -alpha, plyDistance);
 
                 if (beta <= score)
@@ -819,8 +821,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return PrincipalVariationInfo.Zero;
             }
 
-            var plyDepth = _maxPlyDepth - plyDistance;
-            if (plyDepth == 0 || board.ValidMoves.Count == 0)
+            if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
             {
                 var quiesceScore = Quiesce(board, alpha.Value, beta.Value, plyDistance);
                 var score = new PrincipalVariationInfo(quiesceScore);
@@ -835,7 +836,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                var currentBoard = _boardCache.MakeMove(board, move);
+                var currentBoard = _boardHelper.MakeMove(board, move);
                 var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (score.Value >= beta.Value)
@@ -858,6 +859,28 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return bestScore;
         }
 
+        private KeyValuePair<GameMove, PrincipalVariationInfo> AnalyzeRootMoveInternal(
+            GameBoard board,
+            GameMove move,
+            string currentMethodName)
+        {
+            _cancellationToken.ThrowIfCancellationRequested();
+
+            var stopwatch = Stopwatch.StartNew();
+            var currentBoard = _boardHelper.MakeMove(board, move);
+            var innerPrincipalVariationInfo =
+                -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaInfo, -LocalConstants.RootAlphaInfo);
+            stopwatch.Stop();
+
+            var principalVariationInfo = move | innerPrincipalVariationInfo;
+
+            Trace.TraceInformation(
+                $@"[{currentMethodName}] {principalVariationInfo.FirstMove}: {principalVariationInfo.Value
+                    }, time: {stopwatch.Elapsed:g}");
+
+            return KeyValuePair.Create(move, principalVariationInfo);
+        }
+
         private PrincipalVariationInfo ComputeAlphaBetaRoot(GameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
@@ -868,25 +891,23 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            foreach (var move in orderedMoves)
+            var variationPairs = _useMultipleProcessors
+                ? orderedMoves
+                    .AsParallel()
+                    .WithCancellation(_cancellationToken)
+                    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                    .Select(move => AnalyzeRootMoveInternal(board, move, currentMethodName))
+                    .ToArray()
+                : orderedMoves
+                    .Select(move => AnalyzeRootMoveInternal(board, move, currentMethodName))
+                    .ToArray();
+
+            foreach (var variationPair in variationPairs)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
-
-                var stopwatch = Stopwatch.StartNew();
-                var currentBoard = _boardCache.MakeMove(board, move);
-                var innerPrincipalVariationInfo =
-                    -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaInfo, -LocalConstants.RootAlphaInfo);
-                stopwatch.Stop();
-
-                var principalVariationInfo = move | innerPrincipalVariationInfo;
-                PrincipalVariationCache[move] = principalVariationInfo;
-
-                Trace.TraceInformation(
-                    $@"[{currentMethodName}] {principalVariationInfo.FirstMove}: {principalVariationInfo.Value
-                        }. Time spent: {stopwatch.Elapsed}");
+                PrincipalVariationCache[variationPair.Key] = variationPair.Value;
             }
 
-            var orderedMovesByScore = PrincipalVariationCache.OrderMovesByScore().ToArray();
+            var orderedMovesByScore = PrincipalVariationCache.GetOrderedByScore().ToArray();
             var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
 
             var orderedVariationsString =

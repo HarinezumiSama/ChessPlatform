@@ -26,19 +26,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private int? _maxPlyDepth;
         private bool _useOpeningBook;
         private TimeSpan? _maxTimePerMove;
+        private bool _useMultipleProcessors;
 
         #endregion
 
         #region Constructors
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="SmartEnoughPlayerCreationData"/> class.
-        /// </summary>
         public SmartEnoughPlayerCreationData()
         {
-            this.MaxPlyDepth = SmartEnoughPlayerConstants.MaxPlyDepthUpperLimit;
-            this.UseOpeningBook = true;
-            this.MaxTimePerMove = TimeSpan.FromSeconds(15);
+            MaxPlyDepth = SmartEnoughPlayerConstants.MaxPlyDepthUpperLimit;
+            UseOpeningBook = true;
+            MaxTimePerMove = TimeSpan.FromSeconds(15);
+            UseMultipleProcessors = true;
         }
 
         #endregion
@@ -63,7 +62,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _maxPlyDepth = value;
-                RaisePropertyChanged(() => this.MaxPlyDepth);
+                RaisePropertyChanged(() => MaxPlyDepth);
             }
         }
 
@@ -84,7 +83,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _useOpeningBook = value;
-                RaisePropertyChanged(() => this.UseOpeningBook);
+                RaisePropertyChanged(() => UseOpeningBook);
             }
         }
 
@@ -106,7 +105,28 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _maxTimePerMove = value;
-                RaisePropertyChanged(() => this.MaxTimePerMove);
+                RaisePropertyChanged(() => MaxTimePerMove);
+            }
+        }
+
+        [DisplayName(@"Use Multiple CPUs")]
+        public bool UseMultipleProcessors
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _useMultipleProcessors;
+            }
+
+            set
+            {
+                if (value == _useMultipleProcessors)
+                {
+                    return;
+                }
+
+                _useMultipleProcessors = value;
+                RaisePropertyChanged(() => UseMultipleProcessors);
             }
         }
 

@@ -61,7 +61,16 @@ namespace ChessPlatform.Tests
                 maxPlyDepth);
 
             var gameBoard = new GameBoard(fen);
-            var player = new SmartEnoughPlayer(gameBoard.ActiveColor, false, maxPlyDepth, null);
+
+            var playerParameters = new SmartEnoughPlayerParameters
+            {
+                MaxPlyDepth = maxPlyDepth,
+                UseOpeningBook = false,
+                MaxTimePerMove = null,
+                UseMultipleProcessors = false
+            };
+
+            var player = new SmartEnoughPlayer(gameBoard.ActiveColor, playerParameters);
 
             var stopwatch = Stopwatch.StartNew();
             var task = player.CreateGetMoveTask(new GetMoveRequest(gameBoard, CancellationToken.None));

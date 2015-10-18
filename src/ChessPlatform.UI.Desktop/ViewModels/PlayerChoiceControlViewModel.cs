@@ -34,9 +34,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                             (color, data) =>
                                 new SmartEnoughPlayer(
                                     color,
-                                    data.UseOpeningBook,
-                                    data.MaxPlyDepth.EnsureNotNull(),
-                                    data.MaxTimePerMove)),
+                                    new SmartEnoughPlayerParameters
+                                    {
+                                        UseOpeningBook = data.UseOpeningBook,
+                                        MaxPlyDepth = data.MaxPlyDepth.EnsureNotNull(),
+                                        MaxTimePerMove = data.MaxTimePerMove,
+                                        UseMultipleProcessors = data.UseMultipleProcessors
+                                    })),
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Computer ({0})",
@@ -107,15 +111,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     return;
                 }
 
-                var smartEnoughPlayerCreationData = value.Value.CreationData as SmartEnoughPlayerCreationData;
-                if (smartEnoughPlayerCreationData != null)
+                var dataValidationResult = value.Value.CreationData?.Validate();
+                if (dataValidationResult != null && !dataValidationResult.IsObjectValid)
                 {
-                    var creationDataValidationResult = smartEnoughPlayerCreationData.Validate();
-                    if (!creationDataValidationResult.IsObjectValid)
-                    {
-                        creationDataValidationResult.Errors.DoForEach(
-                            error => AddError(validatorContext, error.Context, error.ErrorMessage));
-                    }
+                    dataValidationResult.Errors.DoForEach(
+                        error => AddError(validatorContext, error.Context, error.ErrorMessage));
                 }
             }
 

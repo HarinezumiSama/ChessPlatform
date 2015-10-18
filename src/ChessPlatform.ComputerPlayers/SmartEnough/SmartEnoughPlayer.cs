@@ -24,10 +24,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static readonly string TraceSeparator = new string('-', 120);
 
+        private readonly Random _openingBookRandom;
         private readonly int _maxPlyDepth;
         private readonly OpeningBook _openingBook;
-        private readonly Random _openingBookRandom;
         private readonly TimeSpan? _maxTimePerMove;
+        private readonly bool _useMultipleProcessors;
 
         #endregion
 
@@ -36,36 +37,39 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
-        public SmartEnoughPlayer(PieceColor color, bool useOpeningBook, int maxPlyDepth, TimeSpan? maxTimePerMove)
+        public SmartEnoughPlayer(PieceColor color, [NotNull] SmartEnoughPlayerParameters parameters)
             : base(color)
         {
             #region Argument Check
 
-            if (maxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
+            if (parameters == null)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(maxPlyDepth),
-                    maxPlyDepth,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The value must be at least {0}.",
-                        SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit));
+                throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (maxTimePerMove.HasValue && maxTimePerMove.Value <= TimeSpan.Zero)
+            if (parameters.MaxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(maxTimePerMove),
-                    maxTimePerMove,
-                    @"The time per move must be positive.");
+                    nameof(parameters.MaxPlyDepth),
+                    parameters.MaxPlyDepth,
+                    $"The value must be at least {SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit}.");
+            }
+
+            if (parameters.MaxTimePerMove.HasValue && parameters.MaxTimePerMove.Value <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(parameters.MaxTimePerMove),
+                    parameters.MaxTimePerMove,
+                    @"The time per move, if specified, must be positive.");
             }
 
             #endregion
 
-            _maxPlyDepth = maxPlyDepth;
-            _openingBook = useOpeningBook ? OpeningBook.Default : null;
             _openingBookRandom = new Random();
-            _maxTimePerMove = maxTimePerMove;
+            _maxPlyDepth = parameters.MaxPlyDepth;
+            _openingBook = parameters.UseOpeningBook ? OpeningBook.Default : null;
+            _maxTimePerMove = parameters.MaxTimePerMove;
+            _useMultipleProcessors = parameters.UseMultipleProcessors;
         }
 
         #endregion
@@ -106,22 +110,22 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Trace.WriteLine(TraceSeparator);
 
             Trace.TraceInformation(
-                "[{0}] Max ply depth: {1}. Analyzing \"{2}\"...",
-                currentMethodName,
-                _maxPlyDepth,
-                board.GetFen());
+                $@"[{currentMethodName}] Color: {Color}, max depth: {_maxPlyDepth} plies, max time: {
+                    _maxTimePerMove?.ToString("g") ?? "(infinite)"}, multi CPU: {_useMultipleProcessors
+                    }. Analyzing ""{board.GetFen()}""...");
 
             var bestMoveContainer = new SyncValueContainer<BestMoveData>();
             Stopwatch stopwatch;
 
-            Timer timer = null;
+            CancellationTokenSource timeoutCancellationTokenSource = null;
             try
             {
                 var internalCancellationToken = request.CancellationToken;
                 var timeoutCancellationToken = CancellationToken.None;
+                TimeSpan? maxMoveTime = null;
                 if (_maxTimePerMove.HasValue)
                 {
-                    var timeoutCancellationTokenSource = new CancellationTokenSource();
+                    timeoutCancellationTokenSource = new CancellationTokenSource();
                     timeoutCancellationToken = timeoutCancellationTokenSource.Token;
 
                     var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
@@ -130,13 +134,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                     internalCancellationToken = linkedTokenSource.Token;
 
-                    var adjustedTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
-
-                    timer = new Timer(
-                        state => timeoutCancellationTokenSource.Cancel(),
-                        null,
-                        adjustedTime,
-                        TimeSpan.FromMilliseconds(Timeout.Infinite));
+                    maxMoveTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
                 }
 
                 stopwatch = new Stopwatch();
@@ -144,6 +142,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var task = new Task(
                     () => DoGetMoveInternal(request.Board, internalCancellationToken, bestMoveContainer),
                     internalCancellationToken);
+
+                if (maxMoveTime.HasValue)
+                {
+                    timeoutCancellationTokenSource.CancelAfter(maxMoveTime.Value);
+                }
 
                 stopwatch.Start();
                 task.Start();
@@ -177,11 +180,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
             finally
             {
-                timer.DisposeSafely();
+                timeoutCancellationTokenSource.DisposeSafely();
             }
 
             var bestMoveData = bestMoveContainer.Value;
-            var bestMove = bestMoveData?.PrincipalVariation;
+            var principalVariationInfo = bestMoveData?.PrincipalVariation;
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
             var nodeCount = bestMoveData?.NodeCount ?? 0L;
@@ -191,25 +194,20 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
 
             Trace.TraceInformation(
-                @"[{0}] Result: {1}, {2} spent, depth {3}, {4} nodes ({5} NPS), position ""{6}"".",
-                currentMethodName,
-                bestMove?.ToString() ?? "<not found>",
-                stopwatch.Elapsed,
-                bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?",
-                nodeCount,
-                nps,
-                board.GetFen());
+                $@"[{currentMethodName}] Result: {principalVariationInfo?.ToString() ?? "<not found>"}, time: {
+                    stopwatch.Elapsed:g}, depth {bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?"
+                    }, {nodeCount} nodes ({nps} NPS), position ""{board.GetFen()}"".");
 
             Trace.WriteLine(TraceSeparator);
             Trace.WriteLine(string.Empty);
             Trace.WriteLine(string.Empty);
 
-            if (bestMove == null)
+            if (principalVariationInfo == null)
             {
                 throw new InvalidOperationException("Could not determine the best move. (Has timeout expired?)");
             }
 
-            return bestMove;
+            return principalVariationInfo;
         }
 
         #endregion
@@ -218,7 +216,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static BestMoveData FindMateMove(
             [NotNull] GameBoard board,
-            [NotNull] BoardCache boardCache,
+            [NotNull] BoardHelper boardHelper,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -231,7 +229,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     {
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        var currentBoard = boardCache.MakeMove(board, move);
+                        var currentBoard = boardHelper.MakeMove(board, move);
                         return currentBoard.State == GameState.Checkmate;
                     })
                 .ToArray();
@@ -298,13 +296,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
             }
 
-            var boardCache = new BoardCache(100000);
+            var boardHelper = new BoardHelper();
 
-            var mateMove = FindMateMove(board, boardCache, cancellationToken);
+            var mateMove = FindMateMove(board, boardHelper, cancellationToken);
             if (mateMove != null)
             {
                 bestMoveContainer.Value = mateMove;
-                Trace.TraceInformation("[{0}] Immediate mate move: {1}.", currentMethodName, mateMove.PrincipalVariation);
+
+                Trace.TraceInformation(
+                    "[{0}] Immediate mate move: {1}.",
+                    currentMethodName,
+                    mateMove.PrincipalVariation);
+
                 return;
             }
 
@@ -335,10 +338,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
                     plyDepth,
-                    boardCache,
+                    boardHelper,
                     principalVariationCache,
                     bestPrincipalVariationInfo,
-                    cancellationToken);
+                    cancellationToken,
+                    _useMultipleProcessors);
 
                 bestPrincipalVariationInfo = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;

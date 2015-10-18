@@ -71,7 +71,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public IOrderedEnumerable<KeyValuePair<GameMove, PrincipalVariationInfo>> OrderMovesByScore()
+        public IOrderedEnumerable<KeyValuePair<GameMove, PrincipalVariationInfo>> GetOrderedByScore()
         {
             return _cache
                 .OrderByDescending(pair => pair.Value.EnsureNotNull().Value)
