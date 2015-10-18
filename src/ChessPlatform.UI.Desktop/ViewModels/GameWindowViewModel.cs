@@ -510,35 +510,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     }
                 }
 
-                var move = board.PreviousMove.EnsureNotNull();
-
-                var castlingInfo = previousBoard.CheckCastlingMove(move);
-                if (castlingInfo != null)
-                {
-                    var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
-                    resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " {0}", isKingSide ? "O-O" : "O-O-O");
-                }
-                else
-                {
-                    var movedPiece = previousBoard[move.From].GetPieceType();
-
-                    resultBuilder.AppendFormat(
-                        CultureInfo.InvariantCulture,
-                        " {0}{1}",
-                        movedPiece == PieceType.Pawn || movedPiece == PieceType.None
-                            ? string.Empty
-                            : movedPiece.GetFenChar().ToString(CultureInfo.InvariantCulture),
-                        move.ToString(board.LastCapturedPiece != Piece.None));
-                }
-
-                if (board.State == GameState.Checkmate)
-                {
-                    resultBuilder.Append("#");
-                }
-                else if (board.State.IsCheck())
-                {
-                    resultBuilder.Append("+");
-                }
+                var standardAlgebraicNotation = previousBoard.GetStandardAlgebraicNotation(board.PreviousMove);
+                resultBuilder.Append($" {standardAlgebraicNotation}");
 
                 previousBoard = board;
             }
@@ -547,13 +520,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             {
                 resultBuilder.AppendLine();
                 resultBuilder.Append(currentBoard.ResultString);
-            }
-
-            if (boardHistory.Length > 1)
-            {
-                resultBuilder.AppendLine();
-                resultBuilder.AppendLine();
-                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, @"{{ FEN ""{0}"" }}", currentBoard.GetFen());
             }
 
             return resultBuilder.ToString();
