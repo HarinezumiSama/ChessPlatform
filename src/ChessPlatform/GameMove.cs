@@ -186,9 +186,11 @@ namespace ChessPlatform
                 CultureInfo.InvariantCulture,
                 "{0}{1}{2}{3}",
                 From,
-                renderCaptureSign ? "x" : string.Empty,
+                renderCaptureSign ? ChessConstants.CaptureCharString : string.Empty,
                 To,
-                PromotionResult == PieceType.None ? string.Empty : "=" + PromotionResult.GetFenChar());
+                PromotionResult == PieceType.None
+                    ? string.Empty
+                    : ChessConstants.PromotionPrefixCharString + PromotionResult.GetFenChar());
 
             return result;
         }

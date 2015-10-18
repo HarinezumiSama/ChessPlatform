@@ -106,7 +106,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (this.Rank << 3) | this.File;
+                return (Rank << 3) | File;
             }
         }
 
@@ -116,7 +116,25 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return Bitboard.FromSquareIndex(this.SquareIndex);
+                return Bitboard.FromSquareIndex(SquareIndex);
+            }
+        }
+
+        public char FileChar
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (char)('a' + File);
+            }
+        }
+
+        public char RankChar
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (char)('1' + Rank);
             }
         }
 
@@ -287,7 +305,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{0}{1}", (char)('a' + this.File), this.Rank + 1);
+            return new string(new[] { FileChar, RankChar });
         }
 
         public override bool Equals(object obj)

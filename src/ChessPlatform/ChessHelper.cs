@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using ChessPlatform.Annotations;
 using ChessPlatform.Internal;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
@@ -21,8 +22,9 @@ namespace ChessPlatform
         public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, CastlingInfo> CastlingOptionToInfoMap =
-            ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();
+        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, CastlingInfo>
+            CastlingOptionToInfoMap =
+                ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();
@@ -46,12 +48,13 @@ namespace ChessPlatform
                         }
                     });
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, CastlingOptions> ColorToCastlingOptionsMap =
-            ColorToCastlingOptionSetMap
-                .ToDictionary(
-                    pair => pair.Key,
-                    pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
-                .AsReadOnly();
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, CastlingOptions>
+            ColorToCastlingOptionsMap =
+                ColorToCastlingOptionSetMap
+                    .ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
+                    .AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, int> ColorToPawnPromotionRankMap =
             new Omnifactotum.ReadOnlyDictionary<PieceColor, int>(
@@ -127,19 +130,20 @@ namespace ChessPlatform
                     }
                 });
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnReverseAttackRayMap =
-            new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-                {
+        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>
+            PawnReverseAttackRayMap =
+                new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+                    new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
                     {
-                        PieceColor.White,
-                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-                    },
-                    {
-                        PieceColor.Black,
-                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-                    }
-                });
+                        {
+                            PieceColor.White,
+                            new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+                        },
+                        {
+                            PieceColor.Black,
+                            new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+                        }
+                    });
 
         internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
             PawnAttackRayMap.ToDictionary(
@@ -172,12 +176,13 @@ namespace ChessPlatform
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
-        private static readonly Omnifactotum.ReadOnlyDictionary<Position, ReadOnlyCollection<Position>> KnightMovePositionMap =
-            AllPositions
-                .ToDictionary(
-                    Factotum.Identity,
-                    position => GetKnightMovePositionsNonCached(position).AsReadOnly())
-                .AsReadOnly();
+        private static readonly Omnifactotum.ReadOnlyDictionary<Position, ReadOnlyCollection<Position>>
+            KnightMovePositionMap =
+                AllPositions
+                    .ToDictionary(
+                        Factotum.Identity,
+                        position => GetKnightMovePositionsNonCached(position).AsReadOnly())
+                    .AsReadOnly();
 
         private static readonly Assembly PlatformAssembly = typeof(ChessHelper).Assembly;
         private static readonly Version PlatformVersion = PlatformAssembly.GetName().Version;
@@ -226,6 +231,112 @@ namespace ChessPlatform
         public static bool IsValidFenFormat(string fen)
         {
             return !fen.IsNullOrEmpty() && ValidFenRegex.IsMatch(fen);
+        }
+
+        public static string GetStandardAlgebraicNotation([NotNull] this GameBoard board, [NotNull] GameMove move)
+        {
+            #region Argument Check
+
+            if (board == null)
+            {
+                throw new ArgumentNullException(nameof(board));
+            }
+
+            if (move == null)
+            {
+                throw new ArgumentNullException(nameof(move));
+            }
+
+            #endregion
+
+            GameMoveInfo moveInfo;
+            if (!board.ValidMoves.TryGetValue(move, out moveInfo))
+            {
+                throw new ArgumentException($@"Invalid move {move} for the board '{board.GetFen()}'.", nameof(move));
+            }
+
+            var resultBuilder = new StringBuilder();
+
+            if (moveInfo.IsKingCastling)
+            {
+                var castlingInfo = board.CheckCastlingMove(move).EnsureNotNull();
+                var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
+                resultBuilder.Append(isKingSide ? "O-O" : "O-O-O");
+            }
+            else
+            {
+                var pieceType = board[move.From].GetPieceType();
+                if (pieceType == PieceType.None)
+                {
+                    throw new InvalidOperationException(
+                        $@"Invalid move {move} for the board '{board.GetFen()}': no piece at the source square.");
+                }
+
+                if (pieceType == PieceType.Pawn)
+                {
+                    if (moveInfo.IsAnyCapture)
+                    {
+                        resultBuilder.Append(move.From.FileChar);
+                    }
+                }
+                else
+                {
+                    resultBuilder.Append(pieceType.GetFenChar());
+
+                    var competitorPositions = board
+                        .ValidMoves
+                        .Keys
+                        .Where(
+                            obj => obj != move && obj.To == move.To && board[obj.From].GetPieceType() == pieceType)
+                        .Select(obj => obj.From)
+                        .ToArray();
+
+                    if (competitorPositions.Length != 0)
+                    {
+                        var onSameFile = competitorPositions.Any(position => position.File == move.From.File);
+                        var onSameRank = competitorPositions.Any(position => position.Rank == move.From.Rank);
+
+                        if (onSameFile)
+                        {
+                            if (onSameRank)
+                            {
+                                resultBuilder.Append(move.From.FileChar);
+                            }
+
+                            resultBuilder.Append(move.From.RankChar);
+                        }
+                        else
+                        {
+                            resultBuilder.Append(move.From.FileChar);
+                        }
+                    }
+                }
+
+                if (moveInfo.IsAnyCapture)
+                {
+                    resultBuilder.Append(ChessConstants.CaptureChar);
+                }
+
+                resultBuilder.Append(move.To);
+            }
+
+            if (moveInfo.IsPawnPromotion)
+            {
+                resultBuilder.Append(ChessConstants.PromotionPrefixChar);
+                resultBuilder.Append(move.PromotionResult.GetFenChar());
+            }
+
+            var nextBoard = board.MakeMove(move);
+            if (nextBoard.State == GameState.Checkmate)
+            {
+                resultBuilder.Append("#");
+            }
+            else if (nextBoard.State.IsCheck())
+            {
+                resultBuilder.Append("+");
+            }
+
+            return resultBuilder.ToString();
         }
 
         #endregion

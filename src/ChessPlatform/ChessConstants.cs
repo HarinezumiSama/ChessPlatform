@@ -25,6 +25,14 @@ namespace ChessPlatform
 
         public const string DefaultInitialFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+        public const char CaptureChar = 'x';
+        public const char PromotionPrefixChar = '=';
+
+        public static readonly string CaptureCharString = CaptureChar.ToString(CultureInfo.InvariantCulture);
+
+        public static readonly string PromotionPrefixCharString =
+            PromotionPrefixChar.ToString(CultureInfo.InvariantCulture);
+
         public static readonly ValueRange<int> FileRange = ValueRange.Create(0, FileCount - 1);
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
 
