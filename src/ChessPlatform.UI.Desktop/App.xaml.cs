@@ -32,6 +32,13 @@ namespace ChessPlatform.UI.Desktop
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
+            var titleFrame = new string('-', Title.Length);
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine($@"*-{titleFrame}-*");
+            Trace.WriteLine($@"| {Title} |");
+            Trace.WriteLine($@"*-{titleFrame}-*");
+            Trace.WriteLine(string.Empty);
+
             InitializeDefaultOpeningBookInBackground();
         }
 

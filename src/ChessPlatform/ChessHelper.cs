@@ -207,7 +207,7 @@ namespace ChessPlatform
 
             if (fullVersion)
             {
-                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " [rev. '{0}']", PlatformRevisionId);
+                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " (rev. {0})", PlatformRevisionId);
             }
 
             return resultBuilder.ToString();
