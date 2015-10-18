@@ -46,7 +46,25 @@
 
                 <TextBox Grid.Column="0" HorizontalAlignment="Stretch" Margin="5"
                         AcceptsReturn="False" AcceptsTab="False" TextWrapping="NoWrap" MaxLines="1"
-                        Text="{Binding Fen}" />
+                        Text="{Binding Fen,UpdateSourceTrigger=PropertyChanged}">
+                    <TextBox.Style>
+                        <Style TargetType="TextBox">
+                            <Setter Property="Background" Value="{x:Static SystemColors.WindowBrush}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsFenValid}" Value="False">
+                                    <Setter Property="Background" Value="{x:Static Brushes.Tomato}" />
+                                </DataTrigger>
+                                <MultiDataTrigger>
+                                    <MultiDataTrigger.Conditions>
+                                        <Condition Binding="{Binding IsFenValid}" Value="True" />
+                                        <Condition Binding="{Binding IsFenDefault}" Value="False" />
+                                    </MultiDataTrigger.Conditions>
+                                    <Setter Property="Background" Value="{x:Static Brushes.Gold}" />
+                                </MultiDataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBox.Style>
+                </TextBox>
                 <Button Grid.Column="1" HorizontalAlignment="Right" Content="Set _Default" Margin="5" MinWidth="60"
                         Click="SetDefaultFenButton_Click" />
                 <Button Grid.Column="2" HorizontalAlignment="Right" Content="_Paste From Clipboard" Margin="5"

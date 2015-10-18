@@ -21,8 +21,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         /// </summary>
         public NewGameWindowViewModel()
         {
-            this.WhitePlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.White);
-            this.BlackPlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.Black);
+            WhitePlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.White);
+            BlackPlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.Black);
         }
 
         #endregion
@@ -60,9 +60,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _fen = value;
-                RaisePropertyChanged(() => this.Fen);
+                RaisePropertyChanged(() => Fen);
+                RaisePropertyChanged(() => IsFenValid);
+                RaisePropertyChanged(() => IsFenDefault);
             }
         }
+
+        public bool IsFenValid => GameBoard.IsValidFen(Fen);
+
+        public bool IsFenDefault => Fen == ChessConstants.DefaultInitialFen;
 
         #endregion
 

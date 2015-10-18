@@ -56,6 +56,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             handlers.Add(handler);
         }
 
+        [NotNull]
         public ObjectValidationResult Validate()
         {
             return ObjectValidator.Validate(this);

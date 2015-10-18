@@ -327,7 +327,8 @@ namespace ChessPlatform
                 // ReSharper disable once ObjectCreationAsStatement
                 new GameBoard(fen);
             }
-            catch (ArgumentException)
+            catch (Exception ex)
+                when (ex is ArgumentException || ex is ChessPlatformException)
             {
                 return false;
             }
