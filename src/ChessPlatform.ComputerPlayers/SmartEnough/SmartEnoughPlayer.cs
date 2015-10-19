@@ -111,8 +111,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             Trace.TraceInformation(
                 $@"[{currentMethodName}] Color: {Color}, max depth: {_maxPlyDepth} plies, max time: {
-                    _maxTimePerMove?.ToString("g") ?? "(infinite)"}, multi CPU: {_useMultipleProcessors
-                    }. Analyzing ""{board.GetFen()}""...");
+                    _maxTimePerMove?.ToString("g") ?? "unlimited"}, multi CPU: {_useMultipleProcessors
+                    }, FEN: ""{board.GetFen()}"".");
 
             var bestMoveContainer = new SyncValueContainer<BestMoveData>();
             Stopwatch stopwatch;
@@ -194,9 +194,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Result: {principalVariationInfo?.ToString() ?? "<not found>"}, time: {
-                    stopwatch.Elapsed:g}, depth {bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?"
-                    }, {nodeCount} nodes ({nps} NPS), position ""{board.GetFen()}"".");
+                $@"[{currentMethodName}] Result: {
+                    principalVariationInfo?.ToStandardAlgebraicNotationString(request.Board) ?? "<not found>"
+                    }, depth {bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?"}, time: {
+                    stopwatch.Elapsed:g}, {nodeCount} nodes ({nps} NPS), FEN ""{board.GetFen()}"".");
 
             Trace.WriteLine(TraceSeparator);
             Trace.WriteLine(string.Empty);
@@ -284,12 +285,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     var boardAfterOpeningMove = board.MakeMove(openingMove);
                     var furtherOpeningMoves = _openingBook.FindPossibleMoves(boardAfterOpeningMove);
 
+                    var openingMovesString = openingMoves
+                        .Select(move => move.ToStandardAlgebraicNotation(board))
+                        .Join(", ");
+
+                    var openingMoveString = openingMove.ToStandardAlgebraicNotation(board);
+
+                    var furtherOpeningMovesString = furtherOpeningMoves.Length == 0
+                        ? "n/a"
+                        : furtherOpeningMoves
+                            .Select(move => move.ToStandardAlgebraicNotation(boardAfterOpeningMove))
+                            .Join(", ");
+
                     Trace.TraceInformation(
-                        "[{0}] From the opening moves [ {1} ]: chosen {2}. Further opening moves [ {3} ].",
-                        currentMethodName,
-                        openingMoves.Select(move => move.ToString()).Join(", "),
-                        openingMove,
-                        furtherOpeningMoves.Select(move => move.ToString()).Join(", "));
+                        $@"[{currentMethodName}] From the opening moves [ {openingMovesString} ] chosen {
+                            openingMoveString}. Further opening move variants: {furtherOpeningMovesString}.");
 
                     bestMoveContainer.Value = new BestMoveData(openingMove | PrincipalVariationInfo.Zero, 1L, 1);
                     return;
@@ -306,7 +316,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 Trace.TraceInformation(
                     "[{0}] Immediate mate move: {1}.",
                     currentMethodName,
-                    mateMove.PrincipalVariation);
+                    mateMove.PrincipalVariation.ToStandardAlgebraicNotationString(board));
 
                 return;
             }

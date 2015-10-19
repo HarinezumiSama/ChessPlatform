@@ -235,6 +235,90 @@ namespace ChessPlatform
 
         public static string GetStandardAlgebraicNotation([NotNull] this GameBoard board, [NotNull] GameMove move)
         {
+            GameBoard nextBoard;
+            return GetStandardAlgebraicNotationInternal(board, move, out nextBoard);
+        }
+
+        public static string ToStandardAlgebraicNotation([NotNull] this GameMove move, [NotNull] GameBoard board)
+            => GetStandardAlgebraicNotation(board, move);
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static Position[] GetOnboardPositions(Position position, ICollection<byte> x88Offsets)
+        {
+            #region Argument Check
+
+            if (x88Offsets == null)
+            {
+                throw new ArgumentNullException(nameof(x88Offsets));
+            }
+
+            #endregion
+
+            var result = new List<Position>(x88Offsets.Count);
+
+            // ReSharper disable once LoopCanBeConvertedToQuery
+            foreach (var x88Offset in x88Offsets)
+            {
+                if (x88Offset == 0)
+                {
+                    continue;
+                }
+
+                var x88Value = (byte)(position.X88Value + x88Offset);
+                if (Position.IsValidX88Value(x88Value))
+                {
+                    result.Add(new Position(x88Value));
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        internal static bool TryParseInt(string value, out int result)
+        {
+            return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
+        }
+
+        internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
+        {
+            #region Argument Check
+
+            if (hashSet == null)
+            {
+                throw new ArgumentNullException(nameof(hashSet));
+            }
+
+            if (collection == null)
+            {
+                throw new ArgumentNullException(nameof(collection));
+            }
+
+            #endregion
+
+            collection.DoForEach(item => hashSet.Add(item));
+        }
+
+        internal static PieceType ToPieceType(this char fenChar)
+        {
+            PieceType result;
+            if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out result))
+            {
+                throw new ArgumentException(
+                    string.Format(CultureInfo.InvariantCulture, "Invalid FEN character ({0}).", fenChar),
+                    nameof(fenChar));
+            }
+
+            return result;
+        }
+
+        internal static string GetStandardAlgebraicNotationInternal(
+            [NotNull] this GameBoard board,
+            [NotNull] GameMove move,
+            [NotNull] out GameBoard nextBoard)
+        {
             #region Argument Check
 
             if (board == null)
@@ -326,7 +410,7 @@ namespace ChessPlatform
                 resultBuilder.Append(move.PromotionResult.GetFenChar());
             }
 
-            var nextBoard = board.MakeMove(move);
+            nextBoard = board.MakeMove(move);
             if (nextBoard.State == GameState.Checkmate)
             {
                 resultBuilder.Append("#");
@@ -337,78 +421,6 @@ namespace ChessPlatform
             }
 
             return resultBuilder.ToString();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        internal static Position[] GetOnboardPositions(Position position, ICollection<byte> x88Offsets)
-        {
-            #region Argument Check
-
-            if (x88Offsets == null)
-            {
-                throw new ArgumentNullException(nameof(x88Offsets));
-            }
-
-            #endregion
-
-            var result = new List<Position>(x88Offsets.Count);
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var x88Offset in x88Offsets)
-            {
-                if (x88Offset == 0)
-                {
-                    continue;
-                }
-
-                var x88Value = (byte)(position.X88Value + x88Offset);
-                if (Position.IsValidX88Value(x88Value))
-                {
-                    result.Add(new Position(x88Value));
-                }
-            }
-
-            return result.ToArray();
-        }
-
-        internal static bool TryParseInt(string value, out int result)
-        {
-            return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out result);
-        }
-
-        internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
-        {
-            #region Argument Check
-
-            if (hashSet == null)
-            {
-                throw new ArgumentNullException(nameof(hashSet));
-            }
-
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
-
-            #endregion
-
-            collection.DoForEach(item => hashSet.Add(item));
-        }
-
-        internal static PieceType ToPieceType(this char fenChar)
-        {
-            PieceType result;
-            if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out result))
-            {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid FEN character ({0}).", fenChar),
-                    nameof(fenChar));
-            }
-
-            return result;
         }
 
         #endregion

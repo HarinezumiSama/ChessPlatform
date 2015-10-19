@@ -142,8 +142,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Result: {result}, depth {_plyDepth}, time: {stopwatch.Elapsed
-                    }, FEN ""{_rootBoard.GetFen()}"".");
+                $@"[{currentMethodName}] Result: {result.ToStandardAlgebraicNotationString(_rootBoard)}, depth {
+                    _plyDepth}, time: {stopwatch.Elapsed}, FEN ""{_rootBoard.GetFen()}"".");
 
             return result;
         }
@@ -862,9 +862,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private KeyValuePair<GameMove, PrincipalVariationInfo> AnalyzeRootMoveInternal(
             GameBoard board,
             GameMove move,
-            string currentMethodName)
+            int rootMoveIndex,
+            int moveCount)
         {
             _cancellationToken.ThrowIfCancellationRequested();
+
+            const string CurrentMethodName = nameof(AnalyzeRootMoveInternal);
+
+            var moveOrderNumber = rootMoveIndex + 1;
 
             var stopwatch = Stopwatch.StartNew();
             var currentBoard = _boardHelper.MakeMove(board, move);
@@ -875,8 +880,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var principalVariationInfo = move | innerPrincipalVariationInfo;
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] {principalVariationInfo.FirstMove}: {principalVariationInfo.Value
-                    }, time: {stopwatch.Elapsed:g}");
+                $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
+                    }: {principalVariationInfo.Value}, time: {stopwatch.Elapsed:g}");
 
             return KeyValuePair.Create(move, principalVariationInfo);
         }
@@ -886,7 +891,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
             var orderedMoves = OrderMoves(board, 0);
-            if (orderedMoves.Length == 0)
+            var moveCount = orderedMoves.Length;
+            if (moveCount == 0)
             {
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
@@ -896,10 +902,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     .AsParallel()
                     .WithCancellation(_cancellationToken)
                     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                    .Select(move => AnalyzeRootMoveInternal(board, move, currentMethodName))
+                    .Select((move, index) => AnalyzeRootMoveInternal(board, move, index, moveCount))
                     .ToArray()
                 : orderedMoves
-                    .Select(move => AnalyzeRootMoveInternal(board, move, currentMethodName))
+                    .Select((move, index) => AnalyzeRootMoveInternal(board, move, index, moveCount))
                     .ToArray();
 
             foreach (var variationPair in variationPairs)
@@ -910,13 +916,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var orderedMovesByScore = PrincipalVariationCache.GetOrderedByScore().ToArray();
             var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
 
-            var orderedVariationsString =
-                orderedMovesByScore.Select(pair => $@"  {pair.Value}").Join(Environment.NewLine);
+            var orderedVariationsString = orderedMovesByScore
+                .Select(pair => $@"  {pair.Value.ToStandardAlgebraicNotationString(board)}")
+                .Join(Environment.NewLine);
 
             var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Best move {bestVariation.FirstMove}: {scoreValue}.{Environment.NewLine}{
-                    Environment.NewLine}PVs ordered by score:{Environment.NewLine}{
+                $@"[{currentMethodName}] Best move {
+                    board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
+                    Environment.NewLine}{Environment.NewLine}PVs ordered by score:{Environment.NewLine}{
                     orderedVariationsString}{Environment.NewLine}");
 
             return bestVariation;
