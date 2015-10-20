@@ -40,13 +40,13 @@ namespace ChessPlatform.UI.Desktop
             _canExecuteCopyFenToClipboard = true;
             _canExecuteCopyHistoryToClipboard = true;
 
-            this.Title = App.Title;
+            Title = App.Title;
 
             InitializeControls(false);
             InitializePromotionControls();
 
-            this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.CurrentGameBoard, this.OnCurrentGameBoardChanged);
-            this.ViewModel.SubscribeToChangeOf(() => this.ViewModel.IsReversedView, this.OnIsReversedViewChanged);
+            ViewModel.SubscribeToChangeOf(() => ViewModel.CurrentGameBoard, OnCurrentGameBoardChanged);
+            ViewModel.SubscribeToChangeOf(() => ViewModel.IsReversedView, OnIsReversedViewChanged);
         }
 
         #endregion
@@ -57,7 +57,7 @@ namespace ChessPlatform.UI.Desktop
         {
             base.OnInitialized(e);
 
-            this.ViewModel.Play();
+            ViewModel.Play();
         }
 
         #endregion
@@ -78,17 +78,17 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            this.ViewModel.InitializeNewGame(
+            ViewModel.InitializeNewGame(
                 newGameWindow.ViewModel.Fen,
                 newGameWindow.WhitePlayer,
                 newGameWindow.BlackPlayer);
 
-            this.ViewModel.Play();
+            ViewModel.Play();
         }
 
         private void UndoLastMove(bool confirm)
         {
-            if (!this.ViewModel.CanUndoLastMove())
+            if (!ViewModel.CanUndoLastMove())
             {
                 return;
             }
@@ -102,24 +102,26 @@ namespace ChessPlatform.UI.Desktop
                 }
             }
 
-            this.ViewModel.UndoLastMove();
+            ViewModel.UndoLastMove();
         }
 
         private void InitializeControls(bool reversedView)
         {
-            this.BoardGrid.Children.OfType<FrameworkElement>().DoForEach(obj => obj.DataContext = null);
-            this.BoardGrid.ClearGrid();
+            const double CoordinateSymbolSizeRatio = 0.5d;
 
-            this.RankSymbolGrid.ClearGrid();
-            this.FileSymbolGrid.ClearGrid();
+            BoardGrid.Children.OfType<FrameworkElement>().DoForEach(obj => obj.DataContext = null);
+            BoardGrid.ClearGrid();
+
+            RankSymbolGrid.ClearGrid();
+            FileSymbolGrid.ClearGrid();
 
             Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .DoForEach(i => this.BoardGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
+                .DoForEach(i => BoardGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
 
             Enumerable
                 .Range(0, ChessConstants.FileCount)
-                .DoForEach(i => this.BoardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
+                .DoForEach(i => BoardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
 
             foreach (var position in ChessHelper.AllPositions)
             {
@@ -141,25 +143,18 @@ namespace ChessPlatform.UI.Desktop
                     HorizontalContentAlignment = HorizontalAlignment.Center,
                     VerticalContentAlignment = VerticalAlignment.Center,
                     FontSize = 12,
+                    FontFamily = new FontFamily("Merida"),
                     Width = 16,
                     Height = 16
                 };
 
-                label.SetBinding(
-                    BackgroundProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Background)));
+                label.SetBinding(BackgroundProperty, new Binding(nameof(BoardSquareViewModel.Background)));
+                label.SetBinding(ForegroundProperty, new Binding(nameof(BoardSquareViewModel.Foreground)));
+                label.SetBinding(ContentProperty, new Binding(nameof(BoardSquareViewModel.Text)));
 
-                label.SetBinding(
-                    ForegroundProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Foreground)));
-
-                label.SetBinding(
-                    ContentProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.Text)));
-
-                label.MouseEnter += this.BoardSquare_MouseEnter;
-                label.MouseLeave += this.BoardSquare_MouseLeave;
-                label.MouseLeftButtonUp += this.BoardSquare_MouseLeftButtonUp;
+                label.MouseEnter += BoardSquare_MouseEnter;
+                label.MouseLeave += BoardSquare_MouseLeave;
+                label.MouseLeftButtonUp += BoardSquare_MouseLeftButtonUp;
 
                 var border = new Border
                 {
@@ -168,34 +163,29 @@ namespace ChessPlatform.UI.Desktop
                     Padding = new Thickness(),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
-                    DataContext = this.ViewModel.SquareViewModels[position],
+                    DataContext = ViewModel.SquareViewModels[position],
                     BorderThickness = new Thickness(1)
                 };
 
                 border.SetValue(Grid.RowProperty, row);
                 border.SetValue(Grid.ColumnProperty, column);
 
-                border.SetBinding(
-                    Border.BorderBrushProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.BorderBrush)));
+                border.SetBinding(Border.BorderBrushProperty, new Binding(nameof(BoardSquareViewModel.BorderBrush)));
+                border.SetBinding(Border.BackgroundProperty, new Binding(nameof(BoardSquareViewModel.BorderBrush)));
 
-                border.SetBinding(
-                    Border.BackgroundProperty,
-                    new Binding(Factotum.For<BoardSquareViewModel>.GetPropertyName(obj => obj.BorderBrush)));
-
-                this.BoardGrid.Children.Add(border);
+                BoardGrid.Children.Add(border);
             }
 
             Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .DoForEach(i => this.RankSymbolGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
+                .DoForEach(i => RankSymbolGrid.RowDefinitions.Add(new RowDefinition { Height = StarGridLength }));
 
             for (var rank = 0; rank < ChessConstants.RankCount; rank++)
             {
                 var textBlock = new TextBlock
                 {
                     Margin = new Thickness(1),
-                    LayoutTransform = new ScaleTransform(0.25d, 0.25d),
+                    LayoutTransform = new ScaleTransform(CoordinateSymbolSizeRatio, CoordinateSymbolSizeRatio),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     TextAlignment = TextAlignment.Center,
@@ -210,24 +200,24 @@ namespace ChessPlatform.UI.Desktop
                 textBlock.SetValue(Grid.RowProperty, row);
                 textBlock.SetValue(Grid.ColumnProperty, 0);
 
-                this.RankSymbolGrid.Children.Add(textBlock);
+                RankSymbolGrid.Children.Add(textBlock);
             }
 
             Enumerable
                 .Range(0, ChessConstants.FileCount)
                 .DoForEach(
-                    i => this.FileSymbolGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
+                    i => FileSymbolGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
 
             for (var file = 0; file < ChessConstants.FileCount; file++)
             {
                 var textBlock = new TextBlock
                 {
                     Margin = new Thickness(1),
-                    LayoutTransform = new ScaleTransform(0.25d, 0.25d),
+                    LayoutTransform = new ScaleTransform(CoordinateSymbolSizeRatio, CoordinateSymbolSizeRatio),
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
                     TextAlignment = TextAlignment.Center,
-                    Text = ((char)('A' + file)).ToString(CultureInfo.InvariantCulture),
+                    Text = ((char)('a' + file)).ToString(CultureInfo.InvariantCulture),
                     Foreground = Brushes.CadetBlue
                 };
 
@@ -238,12 +228,12 @@ namespace ChessPlatform.UI.Desktop
                 textBlock.SetValue(Grid.RowProperty, 0);
                 textBlock.SetValue(Grid.ColumnProperty, column);
 
-                this.FileSymbolGrid.Children.Add(textBlock);
+                FileSymbolGrid.Children.Add(textBlock);
             }
 
-            this.StatusLabel.SetBinding(
+            StatusLabel.SetBinding(
                 ContentProperty,
-                new Binding(Factotum.For<GameWindowViewModel>.GetPropertyName(obj => obj.CurrentGameBoard))
+                new Binding(nameof(GameWindowViewModel.CurrentGameBoard))
                 {
                     Converter = StatusLabelTextConverter.Instance
                 });
@@ -251,7 +241,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void InitializePromotionControls()
         {
-            this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
+            PromotionContainerGrid.Visibility = Visibility.Collapsed;
 
             var promotionGrid = new Grid { Background = Brushes.Transparent };
 
@@ -283,7 +273,7 @@ namespace ChessPlatform.UI.Desktop
                 HeightProperty,
                 new Binding
                 {
-                    Source = this.BoardViewbox,
+                    Source = BoardViewbox,
                     Path = new PropertyPath(ActualHeightProperty.Name),
                     Mode = BindingMode.OneWay,
                     Converter = new RatioDoubleConverter(0.2d)
@@ -295,7 +285,7 @@ namespace ChessPlatform.UI.Desktop
                 StaysOpen = false,
                 AllowsTransparency = true,
                 Placement = PlacementMode.Center,
-                PlacementTarget = this.BoardGridBorder,
+                PlacementTarget = BoardGridBorder,
                 HorizontalOffset = 0,
                 VerticalOffset = 0,
                 PopupAnimation = PopupAnimation.None,
@@ -304,11 +294,11 @@ namespace ChessPlatform.UI.Desktop
                 Child = popupContent,
             };
 
-            _promotionPopup.PreviewKeyDown += this.PromotionPopup_PreviewKeyDown;
-            _promotionPopup.Opened += this.PromotionPopup_Opened;
-            _promotionPopup.Closed += this.PromotionPopup_Closed;
+            _promotionPopup.PreviewKeyDown += PromotionPopup_PreviewKeyDown;
+            _promotionPopup.Opened += PromotionPopup_Opened;
+            _promotionPopup.Closed += PromotionPopup_Closed;
 
-            this.MainGrid.Children.Add(_promotionPopup);
+            MainGrid.Children.Add(_promotionPopup);
 
             var validPromotions = ChessConstants.ValidPromotions.ToArray();
             for (var index = 0; index < validPromotions.Length; index++)
@@ -353,12 +343,12 @@ namespace ChessPlatform.UI.Desktop
 
         private void MakeMoveInternal(GameMove move)
         {
-            this.ViewModel.MakeMove(move);
+            ViewModel.MakeMove(move);
         }
 
         private void MakeMove(GameMove move)
         {
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            var currentGameBoard = ViewModel.CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 return;
@@ -372,7 +362,7 @@ namespace ChessPlatform.UI.Desktop
 
             if (!currentGameBoard.IsValidMove(move))
             {
-                this.ViewModel.ResetSelectionMode();
+                ViewModel.ResetSelectionMode();
                 return;
             }
 
@@ -387,9 +377,9 @@ namespace ChessPlatform.UI.Desktop
 
         private void QueryPawnPromotion(GameMove move)
         {
-            this.PromotionContainerGrid.Width = this.BoardGrid.ActualWidth;
-            this.PromotionContainerGrid.Height = this.BoardGrid.ActualHeight;
-            this.PromotionContainerGrid.Visibility = Visibility.Visible;
+            PromotionContainerGrid.Width = BoardGrid.ActualWidth;
+            PromotionContainerGrid.Height = BoardGrid.ActualHeight;
+            PromotionContainerGrid.Visibility = Visibility.Visible;
 
             var promotionPopupClosed = new ValueContainer<EventHandler>();
 
@@ -414,7 +404,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void ClosePromotion(bool cancel)
         {
-            this.PromotionContainerGrid.Visibility = Visibility.Collapsed;
+            PromotionContainerGrid.Visibility = Visibility.Collapsed;
 
             if (cancel)
             {
@@ -430,9 +420,9 @@ namespace ChessPlatform.UI.Desktop
 
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
-            var popupControl = this.BoardGridBorder;
+            var popupControl = BoardGridBorder;
 
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            var currentGameBoard = ViewModel.CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 return;
@@ -461,11 +451,11 @@ namespace ChessPlatform.UI.Desktop
                     break;
 
                 default:
-                    switch (this.ViewModel.GameManagerResult)
+                    switch (ViewModel.GameManagerResult)
                     {
                         case GameResult.Draw:
                             string drawType;
-                            switch (this.ViewModel.GameManagerAutoDrawType)
+                            switch (ViewModel.GameManagerAutoDrawType)
                             {
                                 case AutoDrawType.InsufficientMaterial:
                                     drawType = "insufficient material";
@@ -496,7 +486,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void OnIsReversedViewChanged(object sender, EventArgs e)
         {
-            InitializeControls(this.ViewModel.IsReversedView);
+            InitializeControls(ViewModel.IsReversedView);
         }
 
         private void BoardSquare_MouseEnter(object sender, MouseEventArgs args)
@@ -507,29 +497,29 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            switch (this.ViewModel.SelectionMode)
+            switch (ViewModel.SelectionMode)
             {
                 case GameWindowSelectionMode.None:
                     return;
 
                 case GameWindowSelectionMode.Default:
-                    this.ViewModel.CurrentTargetPosition = null;
-                    this.ViewModel.SetValidMovesOnlySelectionMode(position.Value);
+                    ViewModel.CurrentTargetPosition = null;
+                    ViewModel.SetValidMovesOnlySelectionMode(position.Value);
                     return;
             }
 
-            this.ViewModel.CurrentTargetPosition = position.Value;
+            ViewModel.CurrentTargetPosition = position.Value;
         }
 
         private void BoardSquare_MouseLeave(object sender, MouseEventArgs args)
         {
-            switch (this.ViewModel.SelectionMode)
+            switch (ViewModel.SelectionMode)
             {
                 case GameWindowSelectionMode.None:
                     return;
 
                 case GameWindowSelectionMode.DisplayValidMovesOnly:
-                    this.ViewModel.ResetSelectionMode();
+                    ViewModel.ResetSelectionMode();
                     break;
             }
         }
@@ -542,22 +532,22 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            if (this.ViewModel.SelectionMode == GameWindowSelectionMode.None)
+            if (ViewModel.SelectionMode == GameWindowSelectionMode.None)
             {
                 return;
             }
 
-            var movingPiecePosition = this.ViewModel.CurrentSourcePosition;
-            if (this.ViewModel.SelectionMode != GameWindowSelectionMode.MovingPieceSelected
+            var movingPiecePosition = ViewModel.CurrentSourcePosition;
+            if (ViewModel.SelectionMode != GameWindowSelectionMode.MovingPieceSelected
                 || !movingPiecePosition.HasValue)
             {
-                this.ViewModel.SetMovingPieceSelectionMode(position.Value);
+                ViewModel.SetMovingPieceSelectionMode(position.Value);
                 return;
             }
 
             if (movingPiecePosition.Value == position.Value)
             {
-                this.ViewModel.ResetSelectionMode();
+                ViewModel.ResetSelectionMode();
                 return;
             }
 
@@ -582,12 +572,12 @@ namespace ChessPlatform.UI.Desktop
 
         private void UndoLastMove_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            e.CanExecute = this.ViewModel.CanUndoLastMove();
+            e.CanExecute = ViewModel.CanUndoLastMove();
         }
 
         private void CopyFenToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            var currentGameBoard = ViewModel.CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 return;
@@ -596,7 +586,7 @@ namespace ChessPlatform.UI.Desktop
             var fen = currentGameBoard.GetFen();
             Clipboard.SetText(fen);
 
-            this.MainGrid.ShowInfoPopup(
+            MainGrid.ShowInfoPopup(
                 "FEN has been copied to the clipboard.",
                 popupOpened: () => _canExecuteCopyFenToClipboard = false,
                 popupClosed: () => _canExecuteCopyFenToClipboard = true);
@@ -604,7 +594,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void CopyFenToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            var currentGameBoard = this.ViewModel.CurrentGameBoard;
+            var currentGameBoard = ViewModel.CurrentGameBoard;
             if (currentGameBoard == null)
             {
                 e.CanExecute = false;
@@ -616,10 +606,10 @@ namespace ChessPlatform.UI.Desktop
 
         private void CopyHistoryToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var moveHistory = this.ViewModel.MoveHistory;
+            var moveHistory = ViewModel.MoveHistory;
             Clipboard.SetText(moveHistory);
 
-            this.MainGrid.ShowInfoPopup(
+            MainGrid.ShowInfoPopup(
                 "History has been copied to the clipboard.",
                 popupOpened: () => _canExecuteCopyHistoryToClipboard = false,
                 popupClosed: () => _canExecuteCopyHistoryToClipboard = true);
@@ -650,7 +640,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void ReversedBoardView_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            this.ViewModel.IsReversedView = !this.ViewModel.IsReversedView;
+            ViewModel.IsReversedView = !ViewModel.IsReversedView;
         }
 
         #endregion

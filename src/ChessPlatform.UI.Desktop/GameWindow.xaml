@@ -6,7 +6,7 @@
         xmlns:converters="clr-namespace:ChessPlatform.UI.Desktop.Converters"
         xmlns:viewModels="clr-namespace:ChessPlatform.UI.Desktop.ViewModels"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
-        Width="800" Height="600" MinWidth="800" MinHeight="600" WindowStartupLocation="CenterScreen" Margin="0"
+        Width="1020" Height="600" MinWidth="1020" MinHeight="600" WindowStartupLocation="CenterScreen" Margin="0"
         WindowState="Maximized" x:ClassModifier="internal">
     <Window.Resources>
         <converters:BooleanToVisibilityConverter x:Key="IsComputerPlayerActiveConverter" />
@@ -37,8 +37,8 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*" />
-            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="320" />
         </Grid.ColumnDefinitions>
 
         <Menu Name="MainMenu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
@@ -153,8 +153,8 @@
         </Viewbox>
 
         <ScrollViewer Grid.Row="2" Grid.Column="1" VerticalScrollBarVisibility="Auto"
-                HorizontalScrollBarVisibility="Auto">
-            <TextBlock Text="{Binding MoveHistory, Mode=OneWay}" Margin="5,0,5,0"
+                HorizontalScrollBarVisibility="Auto" Focusable="False">
+            <TextBlock Text="{Binding MoveHistory, Mode=OneWay}" Margin="5,0,5,0" Focusable="False"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left"
                     TextWrapping="WrapWithOverflow" FontSize="12" FontFamily="Courier New"
                     Background="{x:Static SystemColors.ControlDarkBrush}"
