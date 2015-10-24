@@ -155,7 +155,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        [TestCase("6rk/pp3p1p/3p2pb/3Pp3/2P3P1/1P1b1P2/P6P/R3R2K b - - 3 22", 1, 8)]
+        [TestCase("6rk/pp3p1p/3p2pb/3Pp3/2P3P1/1P1b1P2/P6P/R3R2K b - - 3 22", 1, 8, Explicit = true)]
         [TestCase("r1b2rk1/1p3pp1/p1nbqn1p/8/3Pp2N/1NP1B1P1/PPQ2PBP/R3K2R b KQ - 2 15", 2, 3)]
         public void TestPerftSpecificCases(string fen, int startDepth, int endDepth)
         {
