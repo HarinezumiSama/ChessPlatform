@@ -142,8 +142,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Result: {result.ToStandardAlgebraicNotationString(_rootBoard)}, depth {
-                    _plyDepth}, time: {stopwatch.Elapsed}, FEN ""{_rootBoard.GetFen()}"".");
+                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Result: {
+                    result.ToStandardAlgebraicNotationString(_rootBoard)}, depth {_plyDepth}, time: {stopwatch.Elapsed
+                    }, FEN ""{_rootBoard.GetFen()}"".");
 
             return result;
         }

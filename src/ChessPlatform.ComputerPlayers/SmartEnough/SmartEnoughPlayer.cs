@@ -110,9 +110,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Trace.WriteLine(TraceSeparator);
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Color: {Color}, max depth: {_maxPlyDepth} plies, max time: {
-                    _maxTimePerMove?.ToString("g") ?? "unlimited"}, multi CPU: {_useMultipleProcessors
-                    }, FEN: ""{board.GetFen()}"".");
+                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Color: {Color}, max depth: {
+                    _maxPlyDepth} plies, max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}, multi CPU: {
+                    _useMultipleProcessors}, FEN: ""{board.GetFen()}"".");
 
             var bestMoveContainer = new SyncValueContainer<BestMoveData>();
             Stopwatch stopwatch;
@@ -194,7 +194,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Result: {
+                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Result: {
                     principalVariationInfo?.ToStandardAlgebraicNotationString(request.Board) ?? "<not found>"
                     }, depth {bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?"}, time: {
                     stopwatch.Elapsed:g}, {nodeCount} nodes ({nps} NPS), FEN ""{board.GetFen()}"".");
@@ -262,10 +262,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.TraceInformation(
-                "[{0}] Number of available moves: {1}.",
-                currentMethodName,
-                board.ValidMoves.Count);
+            Trace.TraceInformation($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
 
             if (board.ValidMoves.Count == 1)
             {
@@ -338,12 +335,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 cancellationToken.ThrowIfCancellationRequested();
 
                 Trace.WriteLine(string.Empty);
+
+                var description = useIterativeDeepening ? "Iterative deepening" : "Fixed depth";
                 Trace.TraceInformation(
-                    useIterativeDeepening
-                        ? "[{0}] Iterative deepening: {1}."
-                        : "[{0}] Fixed depth: {1}.",
-                    currentMethodName,
-                    plyDepth);
+                    $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] {description}: {plyDepth}.");
 
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
