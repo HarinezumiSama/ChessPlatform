@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.GamePlay
@@ -157,20 +156,9 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            var moveListBuilder = new StringBuilder();
-            var currentBoard = board;
-            foreach (var move in _movesInternal)
-            {
-                if (moveListBuilder.Length != 0)
-                {
-                    moveListBuilder.Append(", ");
-                }
+            var movesString = board.GetStandardAlgebraicNotation(_movesInternal);
 
-                var notation = currentBoard.GetStandardAlgebraicNotationInternal(move, out currentBoard);
-                moveListBuilder.Append(notation);
-            }
-
-            var result = $@"{{ {Value} : {(moveListBuilder.Length == 0 ? "x" : moveListBuilder.ToString())} }}";
+            var result = $@"{{ {Value} : {(movesString.IsNullOrEmpty() ? "x" : movesString)} }}";
             return result;
         }
 

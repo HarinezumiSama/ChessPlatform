@@ -176,6 +176,8 @@ namespace ChessPlatform
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
+        private const string MoveSeparator = ", ";
+
         private static readonly Omnifactotum.ReadOnlyDictionary<Position, ReadOnlyCollection<Position>>
             KnightMovePositionMap =
                 AllPositions
@@ -242,13 +244,43 @@ namespace ChessPlatform
         public static string ToStandardAlgebraicNotation([NotNull] this GameMove move, [NotNull] GameBoard board)
             => GetStandardAlgebraicNotation(board, move);
 
+        public static string GetStandardAlgebraicNotation(
+            [NotNull] this GameBoard board,
+            [NotNull] ICollection<GameMove> moves)
+        {
+            #region Argument Check
+
+            if (board == null)
+            {
+                throw new ArgumentNullException(nameof(board));
+            }
+
+            #endregion
+
+            var resultBuilder = new StringBuilder();
+
+            var currentBoard = board;
+            foreach (var move in moves)
+            {
+                if (resultBuilder.Length != 0)
+                {
+                    resultBuilder.Append(MoveSeparator);
+                }
+
+                var notation = currentBoard.GetStandardAlgebraicNotationInternal(move, out currentBoard);
+                resultBuilder.Append(notation);
+            }
+
+            return resultBuilder.ToString();
+        }
+
         public static string ToUciNotation([NotNull] this GameMove move)
         {
             #region Argument Check
 
             if (move == null)
             {
-                throw new ArgumentNullException("move");
+                throw new ArgumentNullException(nameof(move));
             }
 
             #endregion
@@ -265,6 +297,25 @@ namespace ChessPlatform
             };
 
             return new string(chars, 0, isPromotion ? chars.Length : chars.Length - 1);
+        }
+
+        public static string ToUciNotation([NotNull] this ICollection<GameMove> moves)
+        {
+            #region Argument Check
+
+            if (moves == null)
+            {
+                throw new ArgumentNullException(nameof(moves));
+            }
+
+            if (moves.Any(item => item == null))
+            {
+                throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
+            }
+
+            #endregion
+
+            return moves.Select(ToUciNotation).Join(MoveSeparator);
         }
 
         #endregion

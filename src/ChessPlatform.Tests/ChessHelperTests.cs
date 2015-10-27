@@ -89,8 +89,27 @@ namespace ChessPlatform.Tests
             var board = new GameBoard(fen);
             var move = GameMove.FromStringNotation(moveNotation);
 
-            var actualResult = board.GetStandardAlgebraicNotation(move);
-            Assert.That(actualResult, Is.EqualTo(expectedResult));
+            var actualResult1 = board.GetStandardAlgebraicNotation(move);
+            Assert.That(actualResult1, Is.EqualTo(expectedResult));
+
+            var actualResult2 = move.ToStandardAlgebraicNotation(board);
+            Assert.That(actualResult2, Is.EqualTo(expectedResult));
+        }
+
+        public void TestGetStandardAlgebraicNotationForCollection()
+        {
+            const string Fen = "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1";
+            var board = new GameBoard(Fen);
+
+            var moves = new[]
+            {
+                GameMove.FromStringNotation("d7d5"),
+                GameMove.FromStringNotation("e4d5"),
+                GameMove.FromStringNotation("d8d5")
+            };
+
+            var actualResult = board.GetStandardAlgebraicNotation(moves);
+            Assert.That(actualResult, Is.EqualTo("d5, exd5, Qxd5"));
         }
 
         [Test]
@@ -103,6 +122,23 @@ namespace ChessPlatform.Tests
             var move = new GameMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), promotionResult);
             var actualResult = move.ToUciNotation();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
+        }
+
+        [Test]
+        public void TestToUciNotationForCollection()
+        {
+            Assert.That(new GameMove[0].ToUciNotation(), Is.EqualTo(string.Empty));
+
+            var moves = new[]
+            {
+                new GameMove(Position.FromAlgebraic("a1"), Position.FromAlgebraic("c2"), PieceType.None),
+                new GameMove(Position.FromAlgebraic("f2"), Position.FromAlgebraic("f4"), PieceType.None),
+                new GameMove(Position.FromAlgebraic("b7"), Position.FromAlgebraic("b8"), PieceType.Knight),
+                new GameMove(Position.FromAlgebraic("f2"), Position.FromAlgebraic("e1"), PieceType.Queen)
+            };
+
+            var actualResult = moves.ToUciNotation();
+            Assert.That(actualResult, Is.EqualTo("a1c2, f2f4, b7b8n, f2e1q"));
         }
 
         #endregion

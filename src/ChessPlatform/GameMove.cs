@@ -19,24 +19,17 @@ namespace ChessPlatform
             RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace
                 | RegexOptions.IgnoreCase;
 
+        private static readonly string PromotionFenChars =
+            new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray());
+
         private static readonly Regex MainStringPatternRegex = new Regex(
-            string.Format(
-                CultureInfo.InvariantCulture,
-                @"^ (?<{0}>[a-h][1-8]) (?:\-|x) (?<{1}>[a-h][1-8]) (\=(?<{2}>[{3}]))? $",
-                FromGroupName,
-                ToGroupName,
-                PromotionGroupName,
-                new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray())),
+            $@"^ (?<{FromGroupName}>[a-h][1-8]) (?:\-|x) (?<{ToGroupName}>[a-h][1-8]) (\=(?<{PromotionGroupName}>[{
+                PromotionFenChars}]))? $",
             BasicPatternRegexOptions);
 
         private static readonly Regex UciStringPatternRegex = new Regex(
-            string.Format(
-                CultureInfo.InvariantCulture,
-                @"^ (?<{0}>[a-h][1-8]) (?<{1}>[a-h][1-8]) (?<{2}>[{3}])? $",
-                FromGroupName,
-                ToGroupName,
-                PromotionGroupName,
-                new string(ChessConstants.GetValidPromotions().Select(item => item.GetFenChar()).ToArray())),
+            $@"^ (?<{FromGroupName}>[a-h][1-8]) (?<{ToGroupName}>[a-h][1-8]) (?<{PromotionGroupName}>[{
+                PromotionFenChars}])? $",
             BasicPatternRegexOptions);
 
         private static readonly Regex[] StringPatternRegexes = { MainStringPatternRegex, UciStringPatternRegex };
