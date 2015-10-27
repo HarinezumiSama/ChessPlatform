@@ -882,7 +882,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             Trace.TraceInformation(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
-                    }: {principalVariationInfo.Value}, time: {stopwatch.Elapsed:g}");
+                    }: {principalVariationInfo.Value}, PV: {{ {
+                    board.GetStandardAlgebraicNotation(principalVariationInfo.Moves)} }}, time: {
+                    stopwatch.Elapsed:g}");
 
             return KeyValuePair.Create(move, principalVariationInfo);
         }
