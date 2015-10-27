@@ -93,6 +93,18 @@ namespace ChessPlatform.Tests
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
+        [Test]
+        [TestCase("a1", "c2", PieceType.None, "a1c2")]
+        [TestCase("f2", "f4", PieceType.None, "f2f4")]
+        [TestCase("b7", "b8", PieceType.Knight, "b7b8n")]
+        [TestCase("f2", "e1", PieceType.Queen, "f2e1q")]
+        public void TestToUciNotation(string from, string to, PieceType promotionResult, string expectedResult)
+        {
+            var move = new GameMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), promotionResult);
+            var actualResult = move.ToUciNotation();
+            Assert.That(actualResult, Is.EqualTo(expectedResult));
+        }
+
         #endregion
     }
 }

@@ -242,6 +242,31 @@ namespace ChessPlatform
         public static string ToStandardAlgebraicNotation([NotNull] this GameMove move, [NotNull] GameBoard board)
             => GetStandardAlgebraicNotation(board, move);
 
+        public static string ToUciNotation([NotNull] this GameMove move)
+        {
+            #region Argument Check
+
+            if (move == null)
+            {
+                throw new ArgumentNullException("move");
+            }
+
+            #endregion
+
+            var isPromotion = move.PromotionResult != PieceType.None;
+
+            var chars = new[]
+            {
+                move.From.FileChar,
+                move.From.RankChar,
+                move.To.FileChar,
+                move.To.RankChar,
+                isPromotion ? char.ToLowerInvariant(move.PromotionResult.GetFenChar()) : '\0'
+            };
+
+            return new string(chars, 0, isPromotion ? chars.Length : chars.Length - 1);
+        }
+
         #endregion
 
         #region Internal Methods
