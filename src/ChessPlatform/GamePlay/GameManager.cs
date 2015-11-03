@@ -62,7 +62,7 @@ namespace ChessPlatform.GamePlay
             _white = white;
             _black = black;
             _gameBoards = new Stack<GameBoard>(gameBoard.GetHistory());
-            _thread = new Thread(this.ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
+            _thread = new Thread(ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
             _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
             _state = GameManagerState.Paused;
 
@@ -85,6 +85,8 @@ namespace ChessPlatform.GamePlay
         public event EventHandler GameBoardChanged;
 
         public event EventHandler PlayerThinkingStarted;
+
+        public event ThreadExceptionEventHandler UnhandledExceptionOccurred;
 
         #endregion
 
@@ -337,6 +339,8 @@ namespace ChessPlatform.GamePlay
                 {
                     _state = GameManagerState.UnhandledExceptionOccurred;
                 }
+
+                RaiseUnhandledExceptionOccurredAsync(ex);
             }
         }
 
@@ -344,6 +348,11 @@ namespace ChessPlatform.GamePlay
         {
             while (!_shouldStop && !_isDisposed)
             {
+                if (_state == GameManagerState.UnhandledExceptionOccurred)
+                {
+                    throw new InvalidOperationException("Exception in the player logic has occurred.");
+                }
+
                 if (_state != GameManagerState.Running)
                 {
                     Thread.Sleep(IdleTime);
@@ -419,14 +428,17 @@ namespace ChessPlatform.GamePlay
                     task.ContinueWith(
                         t =>
                         {
+                            Trace.TraceError(
+                                "[{0}] Unhandled exception has occurred: {1}",
+                                MethodBase.GetCurrentMethod().GetQualifiedName(),
+                                t.Exception);
+
                             lock (_syncLock)
                             {
                                 _state = GameManagerState.UnhandledExceptionOccurred;
                             }
                         },
                         TaskContinuationOptions.OnlyOnFaulted);
-
-                    //// TODO [vmcl] Improve error handling (UnhandledExceptionOccurred)
 
                     RaisePlayerThinkingStartedAsync();
                     task.Start();
@@ -481,7 +493,7 @@ namespace ChessPlatform.GamePlay
 
         private void RaiseGameBoardChangedAsync()
         {
-            var handler = this.GameBoardChanged;
+            var handler = GameBoardChanged;
             if (handler == null)
             {
                 return;
@@ -492,13 +504,25 @@ namespace ChessPlatform.GamePlay
 
         private void RaisePlayerThinkingStartedAsync()
         {
-            var handler = this.PlayerThinkingStarted;
+            var handler = PlayerThinkingStarted;
             if (handler == null)
             {
                 return;
             }
 
             Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+        }
+
+        private void RaiseUnhandledExceptionOccurredAsync(Exception exception)
+        {
+            var handler = UnhandledExceptionOccurred;
+            if (handler == null)
+            {
+                return;
+            }
+
+            var eventArgs = new ThreadExceptionEventArgs(exception);
+            Task.Factory.StartNew(() => handler(this, eventArgs));
         }
 
         #endregion
@@ -518,9 +542,9 @@ namespace ChessPlatform.GamePlay
             public GetMoveState(GameManagerState state, [NotNull] GameBoard activeBoard)
             {
                 _cancellationTokenSource = new CancellationTokenSource();
-                this.State = state;
-                this.ActiveBoard = activeBoard.EnsureNotNull();
-                this.IsCancelled = new SyncValueContainer<bool>();
+                State = state;
+                ActiveBoard = activeBoard.EnsureNotNull();
+                IsCancelled = new SyncValueContainer<bool>();
             }
 
             #endregion
@@ -557,7 +581,7 @@ namespace ChessPlatform.GamePlay
 
             public void Cancel()
             {
-                this.IsCancelled.Value = true; // MUST be set before cancelling task via CTS
+                IsCancelled.Value = true; // MUST be set before cancelling task via CTS
 
                 _cancellationTokenSource.Cancel();
             }

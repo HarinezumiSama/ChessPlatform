@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Threading;
 using ChessPlatform.ComputerPlayers;
 
 namespace ChessPlatform.UI.Desktop
@@ -21,6 +22,21 @@ namespace ChessPlatform.UI.Desktop
             CultureInfo.InvariantCulture,
             "Chess Platform UI for Desktop {0}",
             ChessHelper.GetPlatformVersion(true));
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static void ProcessUnhandledException(Exception exception)
+        {
+            if (exception == null)
+            {
+                return;
+            }
+
+            var eventArgs = new UnhandledExceptionEventArgs(exception, false);
+            OnUnhandledException(AppDomain.CurrentDomain, eventArgs);
+        }
 
         #endregion
 
@@ -48,7 +64,21 @@ namespace ChessPlatform.UI.Desktop
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            var window = Current.Morph(obj => obj.MainWindow);
+            Action action = () => OnUnhandledExceptionInternal(args);
+
+            var dispatcher = Current?.Dispatcher;
+            if (dispatcher == null || dispatcher.CheckAccess())
+            {
+                action();
+                return;
+            }
+
+            dispatcher.Invoke(action, DispatcherPriority.Send);
+        }
+
+        private static void OnUnhandledExceptionInternal(UnhandledExceptionEventArgs args)
+        {
+            var window = Current?.MainWindow;
 
             var text = string.Format(
                 CultureInfo.InvariantCulture,
@@ -59,7 +89,9 @@ namespace ChessPlatform.UI.Desktop
                 Environment.NewLine,
                 args.ExceptionObject.ToStringSafely("<Unknown exception>"));
 
-            window.ShowErrorDialog(text, "Unhandled exception");
+            Trace.TraceError(text);
+
+            window?.ShowErrorDialog(text, "Unhandled exception");
 
             Process.GetCurrentProcess().Kill();
         }

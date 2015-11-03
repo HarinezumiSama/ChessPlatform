@@ -230,14 +230,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             Factotum.DisposeAndNull(ref _gameManager);
 
-            CreatePlayer(ref _whitePlayer, whitePlayerInfo, PieceColor.White);
-            CreatePlayer(ref _blackPlayer, blackPlayerInfo, PieceColor.Black);
+            RecreatePlayer(ref _whitePlayer, whitePlayerInfo, PieceColor.White);
+            RecreatePlayer(ref _blackPlayer, blackPlayerInfo, PieceColor.Black);
 
             ResetSelectionMode();
 
             _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
             _gameManager.GameBoardChanged += GameManager_GameBoardChanged;
             _gameManager.PlayerThinkingStarted += GameManager_PlayerThinkingStarted;
+            _gameManager.UnhandledExceptionOccurred += GameManager_UnhandledExceptionOccurred;
 
             RefreshBoardHistory();
             OnNewGameStarted();
@@ -536,7 +537,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        private void CreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
+        private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
         {
             var oldGuiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (oldGuiHumanChessPlayer != null)
@@ -596,6 +597,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #endregion
 
         #region Private Methods: Event Handlers
+
+        private static void GameManager_UnhandledExceptionOccurred(
+            object sender,
+            ThreadExceptionEventArgs eventArgs)
+        {
+            App.ProcessUnhandledException(eventArgs.Exception);
+        }
 
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
