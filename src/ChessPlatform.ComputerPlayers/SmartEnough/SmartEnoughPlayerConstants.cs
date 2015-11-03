@@ -7,7 +7,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        public const int MaxPlyDepthLowerLimit = 2;
+        public const int MaxPlyDepthLowerLimit = 1;
 
         public const int MaxPlyDepthUpperLimit = 100;
 
