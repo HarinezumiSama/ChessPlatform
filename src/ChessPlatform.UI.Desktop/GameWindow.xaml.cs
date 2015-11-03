@@ -9,6 +9,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shell;
 using ChessPlatform.GamePlay;
 using ChessPlatform.UI.Desktop.Converters;
 using ChessPlatform.UI.Desktop.ViewModels;
@@ -47,6 +48,7 @@ namespace ChessPlatform.UI.Desktop
 
             ViewModel.SubscribeToChangeOf(() => ViewModel.CurrentGameBoard, OnCurrentGameBoardChanged);
             ViewModel.SubscribeToChangeOf(() => ViewModel.IsReversedView, OnIsReversedViewChanged);
+            ViewModel.SubscribeToChangeOf(() => ViewModel.IsComputerPlayerActive, OnIsComputerPlayerActiveChanged);
         }
 
         #endregion
@@ -487,6 +489,21 @@ namespace ChessPlatform.UI.Desktop
         private void OnIsReversedViewChanged(object sender, EventArgs e)
         {
             InitializeControls(ViewModel.IsReversedView);
+        }
+
+        private void OnIsComputerPlayerActiveChanged(object sender, EventArgs e)
+        {
+            var isComputerPlayerActive = ViewModel.IsComputerPlayerActive;
+            if (isComputerPlayerActive)
+            {
+                TaskbarItemInfoInstance.ProgressValue = 0.5d;
+                TaskbarItemInfoInstance.ProgressState = TaskbarItemProgressState.Paused;
+            }
+            else
+            {
+                TaskbarItemInfoInstance.ProgressValue = 0;
+                TaskbarItemInfoInstance.ProgressState = TaskbarItemProgressState.None;
+            }
         }
 
         private void BoardSquare_MouseEnter(object sender, MouseEventArgs args)

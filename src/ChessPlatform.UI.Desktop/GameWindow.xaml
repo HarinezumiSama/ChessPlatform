@@ -26,6 +26,10 @@
                 Executed="ReversedBoardView_Executed" />
     </Window.CommandBindings>
 
+    <Window.TaskbarItemInfo>
+        <TaskbarItemInfo x:Name="TaskbarItemInfoInstance" />
+    </Window.TaskbarItemInfo>
+
     <Window.DataContext>
         <viewModels:GameWindowViewModel x:Name="ViewModel" />
     </Window.DataContext>
