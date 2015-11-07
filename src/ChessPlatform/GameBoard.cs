@@ -30,7 +30,10 @@ namespace ChessPlatform
         private readonly GameState _state;
         private readonly AutoDrawType _autoDrawType;
         private readonly CastlingOptions _castlingOptions;
+
+        [CanBeNull]
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
+
         private readonly ReadOnlyDictionary<GameMove, GameMoveInfo> _validMoves;
         private readonly int _halfMoveCountBy50MoveRule;
         private readonly int _fullMoveIndex;
@@ -296,6 +299,15 @@ namespace ChessPlatform
 
         public Piece this[Position position] => _gameBoardData[position];
 
+        public long ZobristKey => _gameBoardData.ZobristKey
+            ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
+            ^ (ShouldIncludeEnPassantHash()
+                ? ZobristHashHelper.GetEnPassantHash(
+                    _enPassantCaptureInfo,
+                    GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
+                : 0L)
+            ^ ZobristHashHelper.GetTurnHash(_activeColor);
+
         #endregion
 
         #region Internal Properties
@@ -408,7 +420,7 @@ namespace ChessPlatform
 
         public GameBoard MakeNullMove()
         {
-            if (!this.CanMakeNullMove)
+            if (!CanMakeNullMove)
             {
                 throw new InvalidOperationException(@"The null move is not allowed.");
             }
@@ -542,7 +554,7 @@ namespace ChessPlatform
 
             #endregion
 
-            return this.ValidMoves.ContainsKey(move) ? _gameBoardData.CheckCastlingMove(move) : null;
+            return ValidMoves.ContainsKey(move) ? _gameBoardData.CheckCastlingMove(move) : null;
         }
 
         public Position[] GetAttacks(Position targetPosition, PieceColor attackingColor)
@@ -553,12 +565,12 @@ namespace ChessPlatform
 
         public GameMove[] GetValidMovesBySource(Position sourcePosition)
         {
-            return this.ValidMoves.Keys.Where(move => move.From == sourcePosition).ToArray();
+            return ValidMoves.Keys.Where(move => move.From == sourcePosition).ToArray();
         }
 
         public GameMove[] GetValidMovesByDestination(Position destinationPosition)
         {
-            return this.ValidMoves.Keys.Where(move => move.To == destinationPosition).ToArray();
+            return ValidMoves.Keys.Where(move => move.To == destinationPosition).ToArray();
         }
 
         public AutoDrawType GetAutoDrawType()
@@ -1103,7 +1115,7 @@ namespace ChessPlatform
                 return;
             }
 
-            foreach (var pair in this.ValidMoves)
+            foreach (var pair in ValidMoves)
             {
                 var move = pair.Key;
                 var expectedIsPawnPromotion = _gameBoardData.IsPawnPromotion(move.From, move.To);
@@ -1253,7 +1265,7 @@ namespace ChessPlatform
                     ? new Dictionary<PackedGameBoard, int>()
                     : new Dictionary<PackedGameBoard, int>(_previousBoard._repetitions);
 
-                var packedGameBoard = this.Pack();
+                var packedGameBoard = Pack();
                 var thisRepetitionCount = repetitionMap.GetValueOrDefault(packedGameBoard) + 1;
                 repetitionMap[packedGameBoard] = thisRepetitionCount;
                 repetitions = repetitionMap.AsReadOnly();
@@ -1268,7 +1280,7 @@ namespace ChessPlatform
 
             if (autoDrawType == AutoDrawType.None && !state.IsGameFinished())
             {
-                if (this.FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
+                if (FullMoveCountBy50MoveRule >= ChessConstants.FullMoveCountBy50MoveRule)
                 {
                     autoDrawType = AutoDrawType.FiftyMoveRule;
                 }
@@ -1321,7 +1333,7 @@ namespace ChessPlatform
             string fen,
             out PieceColor activeColor,
             out CastlingOptions castlingOptions,
-            out EnPassantCaptureInfo enPassantCaptureTarget,
+            out EnPassantCaptureInfo enPassantCaptureInfo,
             out int halfMovesBy50MoveRule,
             out int fullMoveIndex)
         {
@@ -1361,7 +1373,7 @@ namespace ChessPlatform
                 }
             }
 
-            enPassantCaptureTarget = null;
+            enPassantCaptureInfo = null;
             var enPassantCaptureTargetSnippet = fenSnippets[3];
             if (enPassantCaptureTargetSnippet != ChessConstants.NoEnPassantCaptureFenSnippet)
             {
@@ -1380,7 +1392,7 @@ namespace ChessPlatform
                     throw new ArgumentException(InvalidFenMessage, nameof(fen));
                 }
 
-                enPassantCaptureTarget = new EnPassantCaptureInfo(
+                enPassantCaptureInfo = new EnPassantCaptureInfo(
                     capturePosition.Value,
                     new Position(false, capturePosition.Value.File, enPassantInfo.EndRank));
             }
@@ -1399,6 +1411,19 @@ namespace ChessPlatform
             }
         }
 
+        private bool ShouldIncludeEnPassantHash()
+        {
+            if (_enPassantCaptureInfo == null)
+            {
+                return false;
+            }
+
+            var result = ValidMoves.Any(
+                pair => pair.Value.IsEnPassantCapture && pair.Key.To == _enPassantCaptureInfo.CapturePosition);
+
+            return result;
+        }
+
         #endregion
 
         #region PerftData Class
@@ -1409,7 +1434,7 @@ namespace ChessPlatform
 
             public PerftData()
             {
-                this.DividedMoves = new Dictionary<GameMove, ulong>();
+                DividedMoves = new Dictionary<GameMove, ulong>();
             }
 
             #endregion
@@ -1482,11 +1507,11 @@ namespace ChessPlatform
 
                 #endregion
 
-                this.CaptureCount += other.CaptureCount;
-                this.CheckCount += other.CheckCount;
-                this.CheckmateCount += other.CheckmateCount;
-                this.EnPassantCaptureCount += other.EnPassantCaptureCount;
-                this.NodeCount += other.NodeCount;
+                CaptureCount += other.CaptureCount;
+                CheckCount += other.CheckCount;
+                CheckmateCount += other.CheckmateCount;
+                EnPassantCaptureCount += other.EnPassantCaptureCount;
+                NodeCount += other.NodeCount;
             }
 
             #endregion
@@ -1509,14 +1534,14 @@ namespace ChessPlatform
                 [NotNull] Bitboard[] pinLimitations,
                 Bitboard activePiecesExceptKingAndPawnsBitboard)
             {
-                this.GameBoardData = gameBoardData.EnsureNotNull();
-                this.ValidMoves = validMovesReference.EnsureNotNull();
-                this.EnPassantCaptureInfo = enPassantCaptureInfo;
-                this.ActiveColor = activeColor;
-                this.OppositeColor = activeColor.Invert();
-                this.CastlingOptions = castlingOptions;
-                this.PinLimitations = pinLimitations.EnsureNotNull();
-                this.ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
+                GameBoardData = gameBoardData.EnsureNotNull();
+                ValidMoves = validMovesReference.EnsureNotNull();
+                EnPassantCaptureInfo = enPassantCaptureInfo;
+                ActiveColor = activeColor;
+                OppositeColor = activeColor.Invert();
+                CastlingOptions = castlingOptions;
+                PinLimitations = pinLimitations.EnsureNotNull();
+                ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
             }
 
             #endregion

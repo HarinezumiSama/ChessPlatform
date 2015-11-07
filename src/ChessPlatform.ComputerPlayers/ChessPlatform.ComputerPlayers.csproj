@@ -49,7 +49,9 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
+    <Compile Include="IOpeningBook.cs" />
     <Compile Include="LocalHelper.cs" />
+    <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="SmartEnough\BoardHelper.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
     <Compile Include="SmartEnough\LocalConstants.cs" />
@@ -80,7 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Resources\OpeningBook.Performance.Polyglot.bin" />
     <None Include="Resources\OpeningBook.txt" />
+    <None Include="Resources\OpeningBook.Varied.Polyglot.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

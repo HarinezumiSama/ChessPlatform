@@ -67,6 +67,7 @@ namespace ChessPlatform.Internal
             _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboard.Everything;
 
             _entireColorBitboards = new Bitboard[ColorArrayLength];
+            ZobristKey = ComputeZobristKey();
         }
 
         private GameBoardData(GameBoardData other)
@@ -84,6 +85,7 @@ namespace ChessPlatform.Internal
             _pieces = other._pieces.Copy();
             _bitboards = other._bitboards.Copy();
             _entireColorBitboards = other._entireColorBitboards.Copy();
+            ZobristKey = other.ZobristKey;
         }
 
         #endregion
@@ -97,6 +99,12 @@ namespace ChessPlatform.Internal
             {
                 return _pieces[position.X88Value];
             }
+        }
+
+        public long ZobristKey
+        {
+            get;
+            private set;
         }
 
         #endregion
@@ -167,6 +175,7 @@ namespace ChessPlatform.Internal
             return bitboard.GetBitSetCount();
         }
 
+        [CanBeNull]
         public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] GameMove move)
         {
             #region Argument Check
@@ -663,6 +672,9 @@ namespace ChessPlatform.Internal
             {
                 _entireColorBitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
             }
+
+            ZobristKey ^= ZobristHashHelper.GetPieceHash(position, oldPiece)
+                ^ ZobristHashHelper.GetPieceHash(position, piece);
 
             return oldPiece;
         }
@@ -1335,6 +1347,20 @@ namespace ChessPlatform.Internal
                             actual));
                 }
             }
+        }
+
+        private long ComputeZobristKey()
+        {
+            var pieces = ChessHelper.AllPositions
+                .Select(position => new { Position = position, Piece = this[position] })
+                .Where(obj => obj.Piece != Piece.None)
+                .ToArray();
+
+            var result = pieces.Aggregate(
+                0L,
+                (accumulator, obj) => accumulator ^ ZobristHashHelper.GetPieceHash(obj.Position, obj.Piece));
+
+            return result;
         }
 
         private MovePieceData MovePieceInternal(GameMove move)

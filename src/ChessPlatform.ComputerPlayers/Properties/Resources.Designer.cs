@@ -74,5 +74,25 @@ namespace ChessPlatform.ComputerPlayers.Properties {
                 return ResourceManager.GetString("OpeningBook", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] OpeningBook_Performance_Polyglot {
+            get {
+                object obj = ResourceManager.GetObject("OpeningBook_Performance_Polyglot", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] OpeningBook_Varied_Polyglot {
+            get {
+                object obj = ResourceManager.GetObject("OpeningBook_Varied_Polyglot", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

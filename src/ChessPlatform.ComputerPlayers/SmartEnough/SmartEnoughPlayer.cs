@@ -26,7 +26,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private readonly Random _openingBookRandom;
         private readonly int _maxPlyDepth;
-        private readonly OpeningBook _openingBook;
+        private readonly IOpeningBook _openingBook;
         private readonly TimeSpan? _maxTimePerMove;
         private readonly bool _useMultipleProcessors;
 
@@ -67,7 +67,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             _openingBookRandom = new Random();
             _maxPlyDepth = parameters.MaxPlyDepth;
-            _openingBook = parameters.UseOpeningBook ? OpeningBook.Default : null;
+            _openingBook = parameters.UseOpeningBook ? PolyglotOpeningBook.Varied : null;
             _maxTimePerMove = parameters.MaxTimePerMove;
             _useMultipleProcessors = parameters.UseMultipleProcessors;
         }

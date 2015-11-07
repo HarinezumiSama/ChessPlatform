@@ -11,7 +11,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers
 {
-    public sealed class OpeningBook
+    public sealed class OpeningBook : IOpeningBook
     {
         #region Constants and Fields
 
@@ -101,7 +101,11 @@ namespace ChessPlatform.ComputerPlayers
             return moves == null ? NoMoves : moves.Copy();
         }
 
-        public GameMove[] FindPossibleMoves([NotNull] GameBoard board)
+        #endregion
+
+        #region IOpeningBook Members
+
+        public GameMove[] FindPossibleMoves(GameBoard board)
         {
             #region Argument Check
 
@@ -175,7 +179,7 @@ namespace ChessPlatform.ComputerPlayers
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.TraceInformation("[{0}] Initializing the opening book...", currentMethodName);
+            Trace.TraceInformation($"[{currentMethodName}] Initializing the opening book...");
 
             var stopwatch = Stopwatch.StartNew();
             using (var reader = new StringReader(Resources.OpeningBook))
@@ -186,9 +190,7 @@ namespace ChessPlatform.ComputerPlayers
             stopwatch.Stop();
 
             Trace.TraceInformation(
-                "[{0}] The opening book has been initialized in {1}.",
-                currentMethodName,
-                stopwatch.Elapsed);
+                $@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
 
             return openingBook;
         }

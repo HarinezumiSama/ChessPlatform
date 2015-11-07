@@ -48,14 +48,34 @@ namespace ChessPlatform.UI.Desktop
 
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
-            var titleFrame = new string('-', Title.Length);
+            var message = $@"STARTING :: {Title}";
+
+            var titleFrameTop = new string('=', message.Length);
+            var titleFrameBottom = new string('-', message.Length);
+
             Trace.WriteLine(string.Empty);
-            Trace.WriteLine($@"*-{titleFrame}-*");
-            Trace.WriteLine($@"| {Title} |");
-            Trace.WriteLine($@"*-{titleFrame}-*");
+            Trace.WriteLine($@"*-{titleFrameTop}-*");
+            Trace.WriteLine($@"| {message} |");
+            Trace.WriteLine($@"*-{titleFrameBottom}-*");
             Trace.WriteLine(string.Empty);
 
-            InitializeDefaultOpeningBookInBackground();
+            InitializeOpeningBooksInBackground();
+        }
+
+        protected override void OnExit(ExitEventArgs e)
+        {
+            var message = $@"EXITING :: {Title}";
+
+            var titleFrameTop = new string('-', message.Length);
+            var titleFrameBottom = new string('=', message.Length);
+
+            Trace.WriteLine(string.Empty);
+            Trace.WriteLine($@"*-{titleFrameTop}-*");
+            Trace.WriteLine($@"| {message} |");
+            Trace.WriteLine($@"*-{titleFrameBottom}-*");
+            Trace.WriteLine(string.Empty);
+
+            base.OnExit(e);
         }
 
         #endregion
@@ -81,26 +101,28 @@ namespace ChessPlatform.UI.Desktop
             var window = Current?.MainWindow;
 
             var text = string.Format(
-                CultureInfo.InvariantCulture,
-                "Unhandled exception has occurred (see below).{0}"
-                    + "The process will be terminated.{0}"
-                    + "{0}"
-                    + "{1}",
+                "Unhandled exception has occurred (see below).{0}The process will be terminated.{0}{0}{1}",
                 Environment.NewLine,
                 args.ExceptionObject.ToStringSafely("<Unknown exception>"));
 
             Trace.TraceError(text);
 
-            window?.ShowErrorDialog(text, "Unhandled exception");
+            window?.ShowErrorDialog(text, $"Unhandled Exception — {Title}");
 
             Process.GetCurrentProcess().Kill();
         }
 
-        private static void InitializeDefaultOpeningBookInBackground()
+        private static void InitializeOpeningBooksInBackground()
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            var task = new Task(OpeningBook.InitializeDefault);
+            var task = new Task(
+                () =>
+                {
+                    OpeningBook.InitializeDefault();
+                    PolyglotOpeningBook.Performance.EnsureNotNull();
+                    PolyglotOpeningBook.Varied.EnsureNotNull();
+                });
 
             task.ContinueWith(
                 t =>
