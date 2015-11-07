@@ -843,9 +843,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 if (score.Value >= beta.Value)
                 {
                     // Fail-hard beta-cutoff
-                    var betaScore = beta;
-                    _transpositionTable.SaveScore(board, plyDistance, betaScore);
-                    return betaScore;
+                    _transpositionTable.SaveScore(board, plyDistance, beta);
+                    return beta;
                 }
 
                 if (score.Value > alpha.Value)
