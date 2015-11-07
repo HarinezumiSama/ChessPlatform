@@ -3,17 +3,21 @@ using System.Diagnostics;
 using System.Linq;
 using ChessPlatform.GamePlay;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.ComputerPlayers
 {
-    internal static class LocalConstants
+    public static class EngineConstants
     {
         #region Constants and Fields
 
-        public static readonly int MateScoreAbs = InitializeMateScoreAbs();
+        public const int MaxPlyDepthLowerLimit = 1;
 
-        public static readonly int RootAlpha = checked(-MateScoreAbs - 1);
+        public const int MaxPlyDepthUpperLimit = 100;
 
-        public static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlpha);
+        internal static readonly int MateScoreAbs = InitializeMateScoreAbs();
+
+        internal static readonly int RootAlphaValue = checked(-MateScoreAbs - 1);
+
+        internal static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlphaValue);
 
         #endregion
 

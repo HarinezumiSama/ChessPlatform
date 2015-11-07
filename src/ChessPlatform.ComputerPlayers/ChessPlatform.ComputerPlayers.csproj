@@ -54,10 +54,9 @@
     <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="SmartEnough\BoardHelper.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
-    <Compile Include="SmartEnough\LocalConstants.cs" />
+    <Compile Include="EngineConstants.cs" />
     <Compile Include="SmartEnough\PrincipalVariationCache.cs" />
     <Compile Include="SmartEnough\SimpleTranspositionTable.cs" />
-    <Compile Include="SmartEnough\SmartEnoughPlayerConstants.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerParameters.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">

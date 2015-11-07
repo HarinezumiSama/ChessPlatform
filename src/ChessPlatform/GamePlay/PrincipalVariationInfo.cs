@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Omnifactotum.Annotations;
 
@@ -21,17 +20,25 @@ namespace ChessPlatform.GamePlay
         #region Constructors
 
         public PrincipalVariationInfo(int value)
+            : this(value, null)
+        {
+            // Nothing to do
+        }
+
+        private PrincipalVariationInfo(int value, int? localValue)
         {
             _movesInternal = new List<GameMove>();
             Value = value;
+            LocalValue = localValue;
             Moves = _movesInternal.AsReadOnly();
         }
 
         private PrincipalVariationInfo(
             int value,
+            int? localValue,
             [NotNull] GameMove move,
             [NotNull] ICollection<GameMove> successiveMoves)
-            : this(value)
+            : this(value, localValue)
         {
             #region Argument Check
 
@@ -51,8 +58,8 @@ namespace ChessPlatform.GamePlay
             _movesInternal.AddRange(successiveMoves);
         }
 
-        private PrincipalVariationInfo(int value, [NotNull] ICollection<GameMove> moves)
-            : this(value)
+        private PrincipalVariationInfo(int value, int? localValue, [NotNull] ICollection<GameMove> moves)
+            : this(value, localValue)
         {
             #region Argument Check
 
@@ -75,6 +82,11 @@ namespace ChessPlatform.GamePlay
             get;
         }
 
+        public int? LocalValue
+        {
+            get;
+        }
+
         [NotNull]
         public ReadOnlyCollection<GameMove> Moves
         {
@@ -84,31 +96,36 @@ namespace ChessPlatform.GamePlay
         [CanBeNull]
         public GameMove FirstMove => _movesInternal.FirstOrDefault();
 
+        public string LocalValueString => LocalValue.ToStringSafelyInvariant("null");
+
         #endregion
 
         #region Operators
 
         [DebuggerNonUserCode]
         [NotNull]
-        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo principalVariationInfo)
+        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo operand)
         {
             #region Argument Check
 
-            if (principalVariationInfo == null)
+            if (operand == null)
             {
-                throw new ArgumentNullException(nameof(principalVariationInfo));
+                throw new ArgumentNullException(nameof(operand));
             }
 
             #endregion
 
-            return new PrincipalVariationInfo(-principalVariationInfo.Value, principalVariationInfo._movesInternal);
+            return new PrincipalVariationInfo(
+                -operand.Value,
+                -operand.LocalValue,
+                operand._movesInternal);
         }
 
         [DebuggerNonUserCode]
         [NotNull]
         public static PrincipalVariationInfo operator |(
             [NotNull] GameMove move,
-            [NotNull] PrincipalVariationInfo principalVariationInfo)
+            [NotNull] PrincipalVariationInfo operand)
         {
             #region Argument Check
 
@@ -117,17 +134,18 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(move));
             }
 
-            if (principalVariationInfo == null)
+            if (operand == null)
             {
-                throw new ArgumentNullException(nameof(principalVariationInfo));
+                throw new ArgumentNullException(nameof(operand));
             }
 
             #endregion
 
             return new PrincipalVariationInfo(
-                principalVariationInfo.Value,
+                operand.Value,
+                operand.LocalValue,
                 move,
-                principalVariationInfo._movesInternal);
+                operand._movesInternal);
         }
 
         #endregion
@@ -137,11 +155,8 @@ namespace ChessPlatform.GamePlay
         [DebuggerNonUserCode]
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{ {0} : {1} }}",
-                Value,
-                _movesInternal.Count == 0 ? "x" : _movesInternal.Select(move => move.ToString()).Join(", "));
+            return $@"{{ {Value} : L({LocalValueString}) : {
+                (_movesInternal.Count == 0 ? "x" : _movesInternal.Select(move => move.ToString()).Join(", "))} }}";
         }
 
         [DebuggerNonUserCode]
@@ -158,8 +173,21 @@ namespace ChessPlatform.GamePlay
 
             var movesString = board.GetStandardAlgebraicNotation(_movesInternal);
 
-            var result = $@"{{ {Value} : {(movesString.IsNullOrEmpty() ? "x" : movesString)} }}";
+            var result =
+                $@"{{ {Value} : L({LocalValueString}) : {(movesString.IsNullOrEmpty() ? "x" : movesString)} }}";
+
             return result;
+        }
+
+        public PrincipalVariationInfo WithLocalValue(int localValue)
+        {
+            if (LocalValue.HasValue)
+            {
+                throw new InvalidOperationException(
+                    $@"The local value cannot be re-assigned for {ToString()}.");
+            }
+
+            return new PrincipalVariationInfo(Value, localValue, _movesInternal);
         }
 
         #endregion

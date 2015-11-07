@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using ChessPlatform.ComputerPlayers.SmartEnough;
+using ChessPlatform.ComputerPlayers;
 using Omnifactotum;
 using Omnifactotum.Validation;
 using Omnifactotum.Validation.Constraints;
@@ -16,8 +16,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private static readonly ValueRange<int> MaxPlyDepthRange =
             ValueRange.Create(
-                SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit,
-                SmartEnoughPlayerConstants.MaxPlyDepthUpperLimit);
+                EngineConstants.MaxPlyDepthLowerLimit,
+                EngineConstants.MaxPlyDepthUpperLimit);
 
         private static readonly ValueRange<TimeSpan> MaxTimePerMoveRange = ValueRange.Create(
             TimeSpan.FromSeconds(1),
@@ -34,7 +34,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public SmartEnoughPlayerCreationData()
         {
-            MaxPlyDepth = SmartEnoughPlayerConstants.MaxPlyDepthUpperLimit;
+            MaxPlyDepth = EngineConstants.MaxPlyDepthUpperLimit;
             UseOpeningBook = true;
             MaxTimePerMove = TimeSpan.FromSeconds(15);
             UseMultipleProcessors = true;

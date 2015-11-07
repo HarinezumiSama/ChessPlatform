@@ -86,7 +86,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(rootBoard));
             }
 
-            if (plyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
+            if (plyDepth < EngineConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(plyDepth),
@@ -94,7 +94,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
-                        SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit));
+                        EngineConstants.MaxPlyDepthLowerLimit));
             }
 
             #endregion
@@ -120,7 +120,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [DebuggerStepThrough]
             get
             {
-                return _boardHelper.MoveCount;
+                return _boardHelper.LocalMoveCount;
             }
         }
 
@@ -144,7 +144,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Trace.TraceInformation(
                 $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Result: {
                     result.ToStandardAlgebraicNotationString(_rootBoard)}, depth {_plyDepth}, time: {stopwatch.Elapsed
-                    }, FEN ""{_rootBoard.GetFen()}"".");
+                    }, {_boardHelper.LocalMoveCount} nodes, FEN ""{_rootBoard.GetFen()}"".");
 
             return result;
         }
@@ -691,7 +691,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             switch (board.State)
             {
                 case GameState.Checkmate:
-                    return -LocalConstants.MateScoreAbs + plyDistance;
+                    return -EngineConstants.MateScoreAbs + plyDistance;
 
                 case GameState.Stalemate:
                     return 0;
@@ -833,11 +833,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var bestScore = alpha;
 
             var orderedMoves = OrderMoves(board, plyDistance);
-            foreach (var move in orderedMoves)
+            for (var index = 0; index < orderedMoves.Length; index++)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
+                var move = orderedMoves[index];
                 var currentBoard = _boardHelper.MakeMove(board, move);
+
+                ////var doSpecificSearch = index > 0;
+                ////if (doSpecificSearch)
+                ////{
+                ////    //// TODO [vmcl] Fail-soft seems to be needed
+                ////    var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -(alpha + 1), -alpha);
+                ////    1`1`1`
+                ////}
+
                 var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (score.Value >= beta.Value)
@@ -873,15 +883,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var stopwatch = Stopwatch.StartNew();
             var currentBoard = _boardHelper.MakeMove(board, move);
+            var localScore = -EvaluatePositionScore(currentBoard, 1);
             var innerPrincipalVariationInfo =
-                -ComputeAlphaBeta(currentBoard, 1, LocalConstants.RootAlphaInfo, -LocalConstants.RootAlphaInfo);
+                -ComputeAlphaBeta(currentBoard, 1, EngineConstants.RootAlphaInfo, -EngineConstants.RootAlphaInfo);
             stopwatch.Stop();
 
-            var principalVariationInfo = move | innerPrincipalVariationInfo;
+            var principalVariationInfo = (move | innerPrincipalVariationInfo).WithLocalValue(localScore);
 
             Trace.TraceInformation(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
-                    }: {principalVariationInfo.Value}, PV: {{ {
+                    }: {principalVariationInfo.Value} : L({principalVariationInfo.LocalValueString}), PV: {{ {
                     board.GetStandardAlgebraicNotation(principalVariationInfo.Moves)} }}, time: {
                     stopwatch.Elapsed:g}");
 

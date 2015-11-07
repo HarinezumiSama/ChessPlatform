@@ -47,12 +47,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (parameters.MaxPlyDepth < SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit)
+            if (parameters.MaxPlyDepth < EngineConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(parameters.MaxPlyDepth),
                     parameters.MaxPlyDepth,
-                    $"The value must be at least {SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit}.");
+                    $"The value must be at least {EngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
             if (parameters.MaxTimePerMove.HasValue && parameters.MaxTimePerMove.Value <= TimeSpan.Zero)
@@ -215,44 +215,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Private Methods
 
-        private static BestMoveData FindMateMove(
-            [NotNull] GameBoard board,
-            [NotNull] BoardHelper boardHelper,
-            CancellationToken cancellationToken)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var mateMoves = board
-                .ValidMoves
-                .Keys
-                .Where(
-                    move =>
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var currentBoard = boardHelper.MakeMove(board, move);
-                        return currentBoard.State == GameState.Checkmate;
-                    })
-                .ToArray();
-
-            if (mateMoves.Length == 0)
-            {
-                return null;
-            }
-
-            var mateMove = mateMoves
-                .OrderBy(move => SmartEnoughPlayerMoveChooser.GetMaterialWeight(board[move.From].GetPieceType()))
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
-                .ThenBy(move => move.PromotionResult)
-                .First();
-
-            return new BestMoveData(
-                mateMove | new PrincipalVariationInfo(LocalConstants.MateScoreAbs),
-                board.ValidMoves.Count,
-                1);
-        }
-
         private void DoGetMoveInternal(
             [NotNull] GameBoard board,
             CancellationToken cancellationToken,
@@ -305,19 +267,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var boardHelper = new BoardHelper();
 
-            var mateMove = FindMateMove(board, boardHelper, cancellationToken);
-            if (mateMove != null)
-            {
-                bestMoveContainer.Value = mateMove;
-
-                Trace.TraceInformation(
-                    "[{0}] Immediate mate move: {1}.",
-                    currentMethodName,
-                    mateMove.PrincipalVariation.ToStandardAlgebraicNotationString(board));
-
-                return;
-            }
-
             PrincipalVariationInfo bestPrincipalVariationInfo = null;
             var totalNodeCount = 0L;
             PrincipalVariationCache principalVariationCache = null;
@@ -325,7 +274,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var useIterativeDeepening = _maxTimePerMove.HasValue;
 
             var startingPlyDepth = useIterativeDeepening
-                ? SmartEnoughPlayerConstants.MaxPlyDepthLowerLimit
+                ? EngineConstants.MaxPlyDepthLowerLimit
                 : _maxPlyDepth;
 
             for (var plyDepth = startingPlyDepth;
@@ -336,9 +285,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 Trace.WriteLine(string.Empty);
 
-                var description = useIterativeDeepening ? "Iterative deepening" : "Fixed depth";
-                Trace.TraceInformation(
-                    $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] {description}: {plyDepth}.");
+                if (useIterativeDeepening)
+                {
+                    Trace.TraceInformation(
+                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Iterative deepening: {plyDepth} of {
+                            _maxPlyDepth}.");
+                }
+                else
+                {
+                    Trace.TraceInformation(
+                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Fixed depth: {plyDepth}.");
+                }
+
+                boardHelper.ResetLocalMoveCount();
 
                 var moveChooser = new SmartEnoughPlayerMoveChooser(
                     board,
@@ -354,6 +313,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 principalVariationCache = moveChooser.PrincipalVariationCache;
 
                 bestMoveContainer.Value = new BestMoveData(bestPrincipalVariationInfo, totalNodeCount, plyDepth);
+
+                if (bestPrincipalVariationInfo.IsCheckmating())
+                {
+                    Trace.TraceInformation(
+                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {
+                            bestPrincipalVariationInfo}.");
+
+                    break;
+                }
             }
         }
 

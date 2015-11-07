@@ -11,13 +11,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private long _moveCount;
+        private long _localMoveCount;
+        private long _totalMoveCount;
 
         #endregion
 
         #region Public Properties
 
-        public long MoveCount => _moveCount;
+        public long LocalMoveCount => _localMoveCount;
+
+        public long TotalMoveCount => _totalMoveCount;
 
         #endregion
 
@@ -35,13 +38,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
+        public void ResetLocalMoveCount()
+        {
+            _localMoveCount = 0;
+        }
+
         #endregion
 
         #region Private Methods
 
         private GameBoard MakeMoveInternal([NotNull] GameBoard board, [CanBeNull] GameMove move)
         {
-            Interlocked.Increment(ref _moveCount);
+            Interlocked.Increment(ref _localMoveCount);
+            Interlocked.Increment(ref _totalMoveCount);
             return move == null ? board.MakeNullMove() : board.MakeMove(move);
         }
 

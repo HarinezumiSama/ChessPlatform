@@ -75,6 +75,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             return _cache
                 .OrderByDescending(pair => pair.Value.EnsureNotNull().Value)
+                .ThenByDescending(pair => pair.Value.LocalValue)
                 .ThenBy(pair => pair.Key.GetHashCode());
         }
 
