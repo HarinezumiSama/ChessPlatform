@@ -226,13 +226,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             Trace.TraceInformation($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
 
-            if (board.ValidMoves.Count == 1)
-            {
-                var onlyMove = board.ValidMoves.Keys.Single();
-                bestMoveContainer.Value = new BestMoveData(onlyMove | PrincipalVariationInfo.Zero, 0L, 1);
-                return;
-            }
-
             if (_openingBook != null)
             {
                 var openingMoves = _openingBook.FindPossibleMoves(board);
