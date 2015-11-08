@@ -19,6 +19,12 @@ namespace ChessPlatform.ComputerPlayers
 
         internal static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlphaValue);
 
+        internal static readonly PrincipalVariationInfo RootBetaInfo = -RootAlphaInfo;
+
+        internal static readonly int ScoreInfinite = checked(MateScoreAbs * 2);
+
+        internal static readonly PrincipalVariationInfo InfiniteInfo = new PrincipalVariationInfo(ScoreInfinite);
+
         #endregion
 
         #region Private Methods

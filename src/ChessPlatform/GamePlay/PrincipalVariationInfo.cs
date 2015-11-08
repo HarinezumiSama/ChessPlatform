@@ -115,10 +115,7 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(
-                -operand.Value,
-                -operand.LocalValue,
-                operand._movesInternal);
+            return new PrincipalVariationInfo(-operand.Value, -operand.LocalValue, operand._movesInternal);
         }
 
         [DebuggerNonUserCode]
@@ -141,11 +138,39 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(
-                operand.Value,
-                operand.LocalValue,
-                move,
-                operand._movesInternal);
+            return new PrincipalVariationInfo(operand.Value, operand.LocalValue, move, operand._movesInternal);
+        }
+
+        [DebuggerNonUserCode]
+        [NotNull]
+        public static PrincipalVariationInfo operator +([NotNull] PrincipalVariationInfo left, int right)
+        {
+            #region Argument Check
+
+            if (left == null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            #endregion
+
+            return new PrincipalVariationInfo(left.Value + right, left.LocalValue, left._movesInternal);
+        }
+
+        [DebuggerNonUserCode]
+        [NotNull]
+        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo left, int right)
+        {
+            #region Argument Check
+
+            if (left == null)
+            {
+                throw new ArgumentNullException(nameof(left));
+            }
+
+            #endregion
+
+            return new PrincipalVariationInfo(left.Value - right, left.LocalValue, left._movesInternal);
         }
 
         #endregion
