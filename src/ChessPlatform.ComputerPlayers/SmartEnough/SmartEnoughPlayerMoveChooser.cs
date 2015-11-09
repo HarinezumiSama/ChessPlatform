@@ -895,27 +895,26 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var beta = EngineConstants.RootBetaInfo;
             var delta = EngineConstants.ScoreInfinite;
 
-            //  Use of the Aspiration Window is temporary disabled since results are inconsistent
-            ////if (_plyDepth >= 5)
-            ////{
-            ////    const int InitialDelta = 25;
+            if (_plyDepth >= 5)
+            {
+                const int InitialDelta = 25;
 
-            ////    var previousPvi = _previousIterationPrincipalVariationCache?[move];
-            ////    if (previousPvi != null)
-            ////    {
-            ////        delta = InitialDelta;
-            ////        var alphaValue = Math.Max(previousPvi.Value - delta, EngineConstants.RootAlphaInfo.Value);
-            ////        var betaValue = Math.Min(previousPvi.Value + delta, EngineConstants.RootBetaInfo.Value);
+                var previousPvi = _previousIterationPrincipalVariationCache?[move];
+                if (previousPvi != null)
+                {
+                    delta = InitialDelta;
+                    var alphaValue = Math.Max(previousPvi.Value - delta, EngineConstants.RootAlphaInfo.Value);
+                    var betaValue = Math.Min(previousPvi.Value + delta, EngineConstants.RootBetaInfo.Value);
 
-            ////        alpha = new PrincipalVariationInfo(alphaValue);
-            ////        beta = new PrincipalVariationInfo(betaValue);
-            ////    }
-            ////}
+                    alpha = new PrincipalVariationInfo(alphaValue);
+                    beta = new PrincipalVariationInfo(betaValue);
+                }
+            }
 
             PrincipalVariationInfo innerPrincipalVariationInfo;
             while (true)
             {
-                innerPrincipalVariationInfo = -ComputeAlphaBeta(currentBoard, 1, alpha, beta);
+                innerPrincipalVariationInfo = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha);
                 if (innerPrincipalVariationInfo.Value <= alpha.Value)
                 {
                     var betaValue = (alpha.Value + beta.Value) / 2;
