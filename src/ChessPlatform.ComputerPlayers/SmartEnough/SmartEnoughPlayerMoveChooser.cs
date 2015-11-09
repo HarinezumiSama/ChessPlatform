@@ -986,7 +986,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
 
             var orderedVariationsString = orderedMovesByScore
-                .Select(pair => $@"  {pair.Value.ToStandardAlgebraicNotationString(board)}")
+                .Select(
+                    (pair, index) =>
+                        $@"  #{index + 1:D2}/{moveCount:D2} {pair.Value.ToStandardAlgebraicNotationString(board)}")
                 .Join(Environment.NewLine);
 
             var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
