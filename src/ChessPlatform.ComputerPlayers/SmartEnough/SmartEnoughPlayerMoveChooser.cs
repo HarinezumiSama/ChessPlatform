@@ -985,6 +985,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     .AsParallel()
                     .WithCancellation(_cancellationToken)
                     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
+                    .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                     .Select((move, index) => AnalyzeRootMoveInternal(board, move, index, moveCount))
                     .ToArray()
                 : orderedMoves
