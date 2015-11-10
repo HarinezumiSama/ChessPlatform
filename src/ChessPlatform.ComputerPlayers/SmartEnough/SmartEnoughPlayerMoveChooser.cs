@@ -59,6 +59,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly PrincipalVariationInfo _previousIterationBestVariation;
         private readonly CancellationToken _cancellationToken;
         private readonly bool _useMultipleProcessors;
+        private readonly KillerMoveStatistics _killerMoveStatistics;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardHelper _boardHelper;
         private readonly PrincipalVariationCache _previousIterationPrincipalVariationCache;
@@ -77,7 +78,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [CanBeNull] PrincipalVariationCache previousIterationPrincipalVariationCache,
             [CanBeNull] PrincipalVariationInfo previousIterationBestVariation,
             CancellationToken cancellationToken,
-            bool useMultipleProcessors)
+            bool useMultipleProcessors,
+            [NotNull] KillerMoveStatistics killerMoveStatistics)
         {
             #region Argument Check
 
@@ -97,6 +99,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         EngineConstants.MaxPlyDepthLowerLimit));
             }
 
+            if (killerMoveStatistics == null)
+            {
+                throw new ArgumentNullException(nameof(killerMoveStatistics));
+            }
+
             #endregion
 
             _rootBoard = rootBoard;
@@ -106,6 +113,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _previousIterationBestVariation = previousIterationBestVariation;
             _cancellationToken = cancellationToken;
             _useMultipleProcessors = useMultipleProcessors;
+            _killerMoveStatistics = killerMoveStatistics;
 
             _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
             PrincipalVariationCache = new PrincipalVariationCache(rootBoard);
@@ -857,6 +865,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     // Fail-soft beta-cutoff
                     bestScore = move | score;
                     _transpositionTable.SaveScore(board, plyDistance, bestScore);
+
+                    if (!board.ValidMoves[move].IsAnyCapture)
+                    {
+                        _killerMoveStatistics.RecordKiller(plyDistance, move);
+                    }
+
                     return bestScore;
                 }
 
@@ -991,12 +1005,29 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         $@"  #{index + 1:D2}/{moveCount:D2} {pair.Value.ToStandardAlgebraicNotationString(board)}")
                 .Join(Environment.NewLine);
 
+            var killers = _killerMoveStatistics.GetKillersData();
+            var killersString = killers
+                .Select(
+                    (data, i) =>
+                        data.Primary == null
+                            ? null
+                            : $@"  #{i + 1:D2}/{killers.Length:D2} {{ {data.Primary}, {
+                                data.Secondary.ToStringSafely("<none>")} }}")
+                .Where(s => !s.IsNullOrEmpty())
+                .Join(Environment.NewLine);
+
+            if (killersString.IsNullOrWhiteSpace())
+            {
+                killersString = "  (none)";
+            }
+
             var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
             Trace.TraceInformation(
                 $@"[{currentMethodName}] Best move {
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
                     Environment.NewLine}{Environment.NewLine}PVs ordered by score:{Environment.NewLine}{
-                    orderedVariationsString}{Environment.NewLine}");
+                    orderedVariationsString}{Environment.NewLine}{Environment.NewLine}Killer move stats:{
+                    Environment.NewLine}{killersString}{Environment.NewLine}");
 
             return bestVariation;
         }

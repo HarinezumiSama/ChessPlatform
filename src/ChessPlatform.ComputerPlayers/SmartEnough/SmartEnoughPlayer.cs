@@ -259,6 +259,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var boardHelper = new BoardHelper();
+            var killerMoveStatistics = new KillerMoveStatistics();
 
             PrincipalVariationInfo bestPrincipalVariationInfo = null;
             var totalNodeCount = 0L;
@@ -299,7 +300,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     principalVariationCache,
                     bestPrincipalVariationInfo,
                     cancellationToken,
-                    _useMultipleProcessors);
+                    _useMultipleProcessors,
+                    killerMoveStatistics);
 
                 bestPrincipalVariationInfo = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;

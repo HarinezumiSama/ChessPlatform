@@ -56,6 +56,8 @@
     <Compile Include="SmartEnough\BoardHelper.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
     <Compile Include="EngineConstants.cs" />
+    <Compile Include="SmartEnough\KillerMoveData.cs" />
+    <Compile Include="SmartEnough\KillerMoveStatistics.cs" />
     <Compile Include="SmartEnough\PrincipalVariationCache.cs" />
     <Compile Include="SmartEnough\SimpleTranspositionTable.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
