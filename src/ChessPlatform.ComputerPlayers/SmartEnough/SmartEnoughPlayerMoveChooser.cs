@@ -603,19 +603,37 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result / KingTropismRelativeFactor;
         }
 
+        //// ReSharper disable SuggestBaseTypeForParameter
+        private static void AddKillerMove(
+            [CanBeNull] GameMove killerMove,
+            [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
+            [NotNull] List<OrderedMove> resultList)
+        {
+            GameMoveInfo moveInfo;
+            if (killerMove == null || !remainingMoves.TryGetValue(killerMove, out moveInfo))
+            {
+                return;
+            }
+
+            resultList.Add(new OrderedMove(killerMove, moveInfo, false));
+            remainingMoves.Remove(killerMove);
+        }
+
+        //// ReSharper restore SuggestBaseTypeForParameter
+
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private GameMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
+        private OrderedMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
         {
             const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
 
-            var resultList = new List<GameMove>(board.ValidMoves.Count);
+            var resultList = new List<OrderedMove>(board.ValidMoves.Count);
 
-            var validMoves = board.ValidMoves.ToArray();
-
-            if (_previousIterationPrincipalVariationCache != null && plyDistance == 0)
+            if (plyDistance == 0 && _previousIterationPrincipalVariationCache != null)
             {
                 var movesOrderedByScore = _previousIterationPrincipalVariationCache.GetOrderedByScore();
-                resultList.AddRange(movesOrderedByScore.Select(pair => pair.Key));
+
+                resultList.AddRange(
+                    movesOrderedByScore.Select(pair => new OrderedMove(pair.Key, board.ValidMoves[pair.Key], true)));
 
                 if (resultList.Count != board.ValidMoves.Count)
                 {
@@ -625,43 +643,56 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return resultList.ToArray();
             }
 
+            var remainingMoves = new Dictionary<GameMove, GameMoveInfo>(board.ValidMoves);
+
             if (_previousIterationBestVariation != null
                 && plyDistance < _previousIterationBestVariation.Moves.Count)
             {
                 var principalVariationMove = _previousIterationBestVariation.Moves[plyDistance];
-                if (board.ValidMoves.ContainsKey(principalVariationMove))
+
+                GameMoveInfo moveInfo;
+                if (remainingMoves.TryGetValue(principalVariationMove, out moveInfo))
                 {
-                    resultList.Add(principalVariationMove);
-                    validMoves = validMoves.Where(pair => pair.Key != principalVariationMove).ToArray();
+                    resultList.Add(new OrderedMove(principalVariationMove, moveInfo, true));
+                    remainingMoves.Remove(principalVariationMove);
                 }
             }
 
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
             var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
 
-            var capturingMoves = validMoves
-                .Where(pair => pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderByDescending(move => GetMaterialWeight(board[move.To].GetPieceType()))
-                .ThenBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
-                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
+            var capturingMoves = remainingMoves
+                .Where(pair => pair.Value.IsAnyCapture)
+                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
+                .OrderByDescending(obj => GetMaterialWeight(board[obj.Move.To].GetPieceType()))
+                .ThenBy(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
+                .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
+                .ThenBy(obj => obj.Move.PromotionResult)
+                .ThenBy(obj => obj.Move.From.SquareIndex)
+                .ThenBy(obj => obj.Move.To.SquareIndex)
                 .ToArray();
 
             resultList.AddRange(capturingMoves);
+            capturingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
 
-            var nonCapturingMoves = validMoves
-                .Where(pair => !pair.Value.IsCapture)
-                .Select(pair => pair.Key)
-                .OrderBy(move => GetKingTropismDistance(move.To, opponentKingPosition))
-                ////.OrderByDescending(move => GetKingTropismScore(board, move.To, opponentKingPosition))
-                .ThenByDescending(move => GetMaterialWeight(board[move.From].GetPieceType()))
-                .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
-                .ThenBy(move => move.PromotionResult)
-                .ThenBy(move => move.From.SquareIndex)
-                .ThenBy(move => move.To.SquareIndex)
+            if (KillerMoveStatistics.DepthRange.Contains(plyDistance))
+            {
+                var killerMoveData = _killerMoveStatistics[plyDistance];
+
+                AddKillerMove(killerMoveData.Primary, remainingMoves, resultList);
+                AddKillerMove(killerMoveData.Secondary, remainingMoves, resultList);
+            }
+
+            var nonCapturingMoves = remainingMoves
+                .Where(pair => !pair.Value.IsAnyCapture)
+                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
+                .OrderBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
+                ////.OrderByDescending(obj => GetKingTropismScore(board, obj.Move.To, opponentKingPosition))
+                .ThenByDescending(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
+                .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
+                .ThenBy(obj => obj.Move.PromotionResult)
+                .ThenBy(obj => obj.Move.From.SquareIndex)
+                .ThenBy(obj => obj.Move.To.SquareIndex)
                 .ToArray();
 
             resultList.AddRange(nonCapturingMoves);
@@ -851,24 +882,30 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var bestScore = -EngineConstants.InfiniteInfo;
 
             var orderedMoves = OrderMoves(board, plyDistance);
-            for (var moveIndex = 0; moveIndex < orderedMoves.Length; moveIndex++)
+            ////var captureCount = orderedMoves.Count(obj => obj.MoveInfo.IsAnyCapture);
+            var moveCount = orderedMoves.Length;
+            for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                var move = orderedMoves[moveIndex];
-                var currentBoard = _boardHelper.MakeMove(board, move);
+                var orderedMove = orderedMoves[moveIndex];
+                var currentBoard = _boardHelper.MakeMove(board, orderedMove.Move);
 
                 var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (score.Value >= beta.Value)
                 {
                     // Fail-soft beta-cutoff
-                    bestScore = move | score;
+                    bestScore = orderedMove.Move | score;
                     _transpositionTable.SaveScore(board, plyDistance, bestScore);
 
-                    if (!board.ValidMoves[move].IsAnyCapture)
+                    if (!orderedMove.MoveInfo.IsAnyCapture && !orderedMove.IsPvMove)
                     {
-                        _killerMoveStatistics.RecordKiller(plyDistance, move);
+                        ////Trace.WriteLine(
+                        ////    $@"  * Recording killer move {plyDistance}:{orderedMove} (#{moveIndex + 1:D2}/{
+                        ////        moveCount:D2}, CC={captureCount:D2}, dist = {moveIndex - captureCount})");
+
+                        _killerMoveStatistics.RecordKiller(plyDistance, orderedMove.Move);
                     }
 
                     return bestScore;
@@ -876,7 +913,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 if (score.Value > bestScore.Value)
                 {
-                    bestScore = move | score;
+                    bestScore = orderedMove.Move | score;
                     if (score.Value > alpha.Value)
                     {
                         alpha = score;
@@ -986,10 +1023,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     .WithCancellation(_cancellationToken)
                     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                     .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                    .Select((move, index) => AnalyzeRootMoveInternal(board, move, index, moveCount))
+                    .Select(
+                        (orderedMove, index) => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount))
                     .ToArray()
                 : orderedMoves
-                    .Select((move, index) => AnalyzeRootMoveInternal(board, move, index, moveCount))
+                    .Select(
+                        (orderedMove, index) => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount))
                     .ToArray();
 
             foreach (var variationPair in variationPairs)

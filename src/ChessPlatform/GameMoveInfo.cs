@@ -1,18 +1,14 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {
     public struct GameMoveInfo
     {
-        #region Constants and Fields
-
-        private readonly GameMoveFlags _flags;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -21,22 +17,67 @@ namespace ChessPlatform
         /// </summary>
         internal GameMoveInfo(GameMoveFlags flags)
         {
-            _flags = flags;
+            Flags = flags;
         }
 
         #endregion
 
         #region Public Properties
 
-        public bool IsPawnPromotion => (_flags & GameMoveFlags.IsPawnPromotion) != 0;
+        public bool IsPawnPromotion
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & GameMoveFlags.IsPawnPromotion) != 0;
+            }
+        }
 
-        public bool IsAnyCapture => (_flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
+        public bool IsAnyCapture
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
+            }
+        }
 
-        public bool IsCapture => (_flags & GameMoveFlags.IsCapture) != 0;
+        public bool IsCapture
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & GameMoveFlags.IsCapture) != 0;
+            }
+        }
 
-        public bool IsEnPassantCapture => (_flags & GameMoveFlags.IsEnPassantCapture) != 0;
+        public bool IsEnPassantCapture
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & GameMoveFlags.IsEnPassantCapture) != 0;
+            }
+        }
 
-        public bool IsKingCastling => (_flags & GameMoveFlags.IsKingCastling) != 0;
+        public bool IsKingCastling
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & GameMoveFlags.IsKingCastling) != 0;
+            }
+        }
+
+        #endregion
+
+        #region Internal Properties
+
+        internal GameMoveFlags Flags
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get;
+        }
 
         #endregion
 
@@ -44,7 +85,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{{{0}}}", this.ToPropertyString());
+            return $@"{{ Flags = {Flags} }}";
         }
 
         #endregion

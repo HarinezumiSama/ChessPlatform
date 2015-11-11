@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
@@ -7,6 +9,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     internal sealed class KillerMoveStatistics
     {
         #region Constants and Fields
+
+        public const int MinDepth = 1;
+        public const int MaxDepth = EngineConstants.MaxPlyDepthUpperLimit;
+
+        public static readonly ValueRange<int> DepthRange = ValueRange.Create(MinDepth, MaxDepth);
 
         private readonly object _syncLock;
         private readonly KillerMoveData[] _datas;
@@ -18,7 +25,23 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public KillerMoveStatistics()
         {
             _syncLock = new object();
-            _datas = new KillerMoveData[EngineConstants.MaxPlyDepthUpperLimit];
+            _datas = new KillerMoveData[MaxDepth];
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public KillerMoveData this[int plyDepth]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                lock (_syncLock)
+                {
+                    return _datas[plyDepth - 1];
+                }
+            }
         }
 
         #endregion
@@ -29,12 +52,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             #region Argument Check
 
-            if (plyDepth < EngineConstants.MaxPlyDepthLowerLimit)
+            if (plyDepth < MinDepth || plyDepth > MaxDepth)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(plyDepth),
                     plyDepth,
-                    $@"The value cannot be less than {EngineConstants.MaxPlyDepthLowerLimit}.");
+                    $@"The value is out of the valid range ({MinDepth} .. {MaxDepth}).");
             }
 
             if (move == null)
@@ -46,7 +69,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             lock (_syncLock)
             {
-                _datas[plyDepth].RecordKiller(move);
+                _datas[plyDepth - 1].RecordKiller(move);
             }
         }
 
