@@ -372,10 +372,10 @@ namespace ChessPlatform
             var perftData = new PerftData();
             var includeDivideMap = flags.HasFlag(PerftFlags.IncludeDivideMap);
             var includeExtraCountTypes = flags.HasFlag(PerftFlags.IncludeExtraCountTypes);
-            var canUseParallelism = !flags.HasFlag(PerftFlags.DisableParallelism);
+            var enableParallelism = flags.HasFlag(PerftFlags.EnableParallelism);
 
             var stopwatch = Stopwatch.StartNew();
-            PerftInternal(this, depth, canUseParallelism, perftData, includeDivideMap, includeExtraCountTypes);
+            PerftInternal(this, depth, enableParallelism, perftData, includeDivideMap, includeExtraCountTypes);
             stopwatch.Stop();
 
             return new PerftResult(
@@ -894,7 +894,7 @@ namespace ChessPlatform
         private static void PerftInternal(
             GameBoard gameBoard,
             int depth,
-            bool canUseParallelism,
+            bool enableParallelism,
             PerftData perftData,
             bool includeDivideMap,
             bool includeExtraCountTypes)
@@ -969,7 +969,7 @@ namespace ChessPlatform
                 }
             }
 
-            if (canUseParallelism)
+            if (enableParallelism)
             {
                 var topDatas = moves
                     .AsParallel()

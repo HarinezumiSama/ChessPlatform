@@ -97,12 +97,16 @@ namespace ChessPlatform.Tests
 
         [Test]
         [TestCaseSource(typeof(TestPerftCases))]
-        public void TestPerft(PerftPosition perftPosition, ExpectedPerftResult expectedResult)
+        public void TestPerft(PerftPosition perftPosition, bool enableParallelism, ExpectedPerftResult expectedResult)
         {
             var fen = PerftPositionToFenMap[perftPosition];
             var gameBoard = new GameBoard(fen, PerformInternalBoardValidation);
 
-            var flags = PerftFlags.IncludeDivideMap; // | PerftFlags.DisableParallelism;
+            var flags = PerftFlags.IncludeDivideMap;
+            if (enableParallelism)
+            {
+                flags |= PerftFlags.EnableParallelism;
+            }
 
             var includeExtraCountTypes = expectedResult.CheckCount.HasValue || expectedResult.CheckmateCount.HasValue;
             if (includeExtraCountTypes)
@@ -162,7 +166,7 @@ namespace ChessPlatform.Tests
             for (var currentDepth = startDepth; currentDepth <= endDepth; currentDepth++)
             {
                 var board = new GameBoard(fen, PerformInternalBoardValidation);
-                const PerftFlags Flags = PerftFlags.IncludeDivideMap;
+                const PerftFlags Flags = PerftFlags.EnableParallelism | PerftFlags.IncludeDivideMap;
                 var perftResult = board.Perft(currentDepth, Flags);
 
                 string extraInfo = null;
@@ -185,8 +189,7 @@ namespace ChessPlatform.Tests
 
                 Console.WriteLine(
                     $@"[{MethodBase.GetCurrentMethod().GetQualifiedName()}] ({ChessHelper.GetPlatformVersion(true)
-                        }) {{ {
-                        fen} }} ({perftResult.Flags}) : {perftResult}{extraInfo}");
+                        }) {{ {fen} }} ({perftResult.Flags}) : {perftResult}{extraInfo}");
 
                 Console.WriteLine();
             }
@@ -376,8 +379,8 @@ bestmove h6d2 ponder c4c5
 
                 #endregion
 
-                this.Depth = depth;
-                this.NodeCount = nodeCount;
+                Depth = depth;
+                NodeCount = nodeCount;
             }
 
             #endregion
@@ -429,8 +432,8 @@ bestmove h6d2 ponder c4c5
                 resultBuilder.AppendFormat(
                     CultureInfo.InvariantCulture,
                     "{{ Depth = {0}, NodeCount = {1}",
-                    this.Depth,
-                    this.NodeCount);
+                    Depth,
+                    NodeCount);
 
                 WriteProperty(resultBuilder, obj => obj.CaptureCount);
                 WriteProperty(resultBuilder, obj => obj.EnPassantCaptureCount);
@@ -475,13 +478,17 @@ bestmove h6d2 ponder c4c5
         {
             #region Constructors
 
-            internal TestPerftCaseData(PerftPosition position, ExpectedPerftResult expectedResult)
-                : base(position, expectedResult)
+            internal TestPerftCaseData(
+                PerftPosition position,
+                [NotNull] ExpectedPerftResult expectedResult,
+                bool enableParallelism = true)
+                : base(position, enableParallelism, expectedResult)
             {
                 Assert.That(expectedResult, Is.Not.Null);
 
-                this.Position = position;
-                this.ExpectedResult = expectedResult;
+                Position = position;
+                ExpectedResult = expectedResult;
+                EnableParallelism = enableParallelism;
             }
 
             #endregion
@@ -494,6 +501,11 @@ bestmove h6d2 ponder c4c5
             }
 
             public ExpectedPerftResult ExpectedResult
+            {
+                get;
+            }
+
+            public bool EnableParallelism
             {
                 get;
             }
@@ -759,6 +771,16 @@ bestmove h6d2 ponder c4c5
                             CaptureCount = 2046173,
                             EnPassantCaptureCount = 6512
                         });
+
+                yield return
+                    new TestPerftCaseData(
+                        PerftPosition.Position4,
+                        new ExpectedPerftResult(5, 15833292UL)
+                        {
+                            CaptureCount = 2046173,
+                            EnPassantCaptureCount = 6512
+                        },
+                        false);
 
                 var mirroredPositions = new[] { PerftPosition.Position4, PerftPosition.MirroredPosition4 };
                 foreach (var position in mirroredPositions)

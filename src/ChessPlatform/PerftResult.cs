@@ -52,18 +52,18 @@ namespace ChessPlatform
 
             #endregion
 
-            this.Flags = flags;
-            this.Depth = depth;
-            this.Elapsed = elapsed;
-            this.NodeCount = nodeCount;
-            this.CaptureCount = captureCount;
-            this.EnPassantCaptureCount = enPassantCaptureCount;
-            this.DividedMoves = dividedMoves.AsReadOnly();
-            this.CheckCount = checkCount;
-            this.CheckmateCount = checkmateCount;
+            Flags = flags;
+            Depth = depth;
+            Elapsed = elapsed;
+            NodeCount = nodeCount;
+            CaptureCount = captureCount;
+            EnPassantCaptureCount = enPassantCaptureCount;
+            DividedMoves = dividedMoves.AsReadOnly();
+            CheckCount = checkCount;
+            CheckmateCount = checkmateCount;
 
             var totalSeconds = elapsed.TotalSeconds;
-            this.NodesPerSecond = checked((ulong)(totalSeconds.IsZero() ? 0 : nodeCount / totalSeconds));
+            NodesPerSecond = checked((ulong)(totalSeconds.IsZero() ? 0 : nodeCount / totalSeconds));
         }
 
         #endregion
@@ -73,7 +73,6 @@ namespace ChessPlatform
         public PerftFlags Flags
         {
             get;
-            private set;
         }
 
         public int Depth
@@ -94,31 +93,26 @@ namespace ChessPlatform
         public ulong CaptureCount
         {
             get;
-            private set;
         }
 
         public ulong EnPassantCaptureCount
         {
             get;
-            private set;
         }
 
         public ReadOnlyDictionary<GameMove, ulong> DividedMoves
         {
             get;
-            private set;
         }
 
         public ulong? CheckCount
         {
             get;
-            private set;
         }
 
         public ulong? CheckmateCount
         {
             get;
-            private set;
         }
 
         public ulong NodesPerSecond
@@ -135,10 +129,10 @@ namespace ChessPlatform
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{{Perft({0}) = {1} [{2}, {3} nps]}}",
-                this.Depth,
-                this.NodeCount,
-                this.Elapsed,
-                this.NodesPerSecond);
+                Depth,
+                NodeCount,
+                Elapsed,
+                NodesPerSecond);
         }
 
         #endregion
