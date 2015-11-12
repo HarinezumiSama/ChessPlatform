@@ -552,7 +552,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var cheapestAttackerMove = board
                 .ValidMoves
-                .Where(pair => pair.Key.To == position && pair.Value.IsCapture)
+                .Where(pair => pair.Key.To == position && pair.Value.IsRegularCapture)
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
@@ -802,21 +802,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var nonQuietMoves = board.ValidMoves
-                .Where(pair => pair.Value.IsCapture)
+                .Where(pair => pair.Value.IsRegularCapture)
                 .Select(pair => pair.Key)
                 .ToArray();
 
-            foreach (var captureMove in nonQuietMoves)
+            foreach (var nonQuietMove in nonQuietMoves)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
-                var seeScore = ComputeStaticExchangeEvaluationScore(board, captureMove.To, captureMove);
+                var seeScore = ComputeStaticExchangeEvaluationScore(board, nonQuietMove.To, nonQuietMove);
                 if (seeScore < 0)
                 {
                     continue;
                 }
 
-                var currentBoard = _boardHelper.MakeMove(board, captureMove);
+                var currentBoard = _boardHelper.MakeMove(board, nonQuietMove);
                 var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -alpha);
 
                 if (score >= beta)

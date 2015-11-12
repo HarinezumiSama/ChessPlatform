@@ -1128,8 +1128,8 @@ namespace ChessPlatform
                             move));
                 }
 
-                var expectedIsCapture = _gameBoardData[move.To] != Piece.None;
-                if (pair.Value.IsCapture != expectedIsCapture)
+                var expectedIsRegularCapture = _gameBoardData[move.To] != Piece.None;
+                if (pair.Value.IsRegularCapture != expectedIsRegularCapture)
                 {
                     throw new ChessPlatformException(
                         string.Format(

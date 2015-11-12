@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ChessPlatform.Internal;
@@ -42,7 +41,7 @@ namespace ChessPlatform
             }
         }
 
-        public bool IsCapture
+        public bool IsRegularCapture
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get

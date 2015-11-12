@@ -57,7 +57,7 @@ namespace ChessPlatform.Tests
                 Assert.That(
                     gameBoard[actualValidMove.To].GetColor(),
                     Is.EqualTo(
-                        pieceMoveInfo.IsCapture && !pieceMoveInfo.IsEnPassantCapture
+                        pieceMoveInfo.IsRegularCapture && !pieceMoveInfo.IsEnPassantCapture
                             ? gameBoard.ActiveColor.Invert()
                             : (PieceColor?)null));
 
