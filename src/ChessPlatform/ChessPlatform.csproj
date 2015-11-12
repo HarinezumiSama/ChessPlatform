@@ -60,7 +60,9 @@
     <Compile Include="CastlingType.cs" />
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
+    <Compile Include="GamePlay\CommonEngineConstants.cs" />
     <Compile Include="GamePlay\ChessPlayerBase.cs" />
+    <Compile Include="GamePlay\ChessPlayerFeedbackEventArgs.cs" />
     <Compile Include="GamePlay\GameManager.cs" />
     <Compile Include="GamePlay\GameManagerState.cs" />
     <Compile Include="GamePlay\GamePhase.cs" />
@@ -69,6 +71,7 @@
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="GamePlay\PrincipalVariationInfo.cs" />
+    <Compile Include="GamePlay\PrincipalVariationInfoExtensions.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />

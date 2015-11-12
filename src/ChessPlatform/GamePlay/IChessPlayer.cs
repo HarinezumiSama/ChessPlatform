@@ -7,6 +7,12 @@ namespace ChessPlatform.GamePlay
 {
     public interface IChessPlayer
     {
+        #region Events
+
+        event EventHandler<ChessPlayerFeedbackEventArgs> FeedbackProvided;
+
+        #endregion
+
         #region Properties
 
         PieceColor Color

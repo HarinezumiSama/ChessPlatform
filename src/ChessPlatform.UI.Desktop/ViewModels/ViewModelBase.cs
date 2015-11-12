@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Windows.Threading;
 using Omnifactotum.Annotations;
 using Omnifactotum.Validation;
 
@@ -16,6 +17,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private const string InvalidExpressionMessageAutoFormat =
             "Invalid expression (must be a getter of a property of the type '{0}'): {{ {1} }}.";
 
+        private readonly Dispatcher _dispatcher;
         private readonly Dictionary<string, List<EventHandler>> _propertyChangedSubscriptionsDictionary;
 
         #endregion
@@ -24,6 +26,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         protected ViewModelBase()
         {
+            _dispatcher = Dispatcher.CurrentDispatcher.EnsureNotNull();
             _propertyChangedSubscriptionsDictionary = new Dictionary<string, List<EventHandler>>();
         }
 
@@ -87,6 +90,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (handlers != null && handlers.Count != 0)
             {
                 handlers.ForEach(handler => handler(this, EventArgs.Empty));
+            }
+        }
+
+        protected void ExecuteOnDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            if (_dispatcher.CheckAccess())
+            {
+                action();
+            }
+            else
+            {
+                _dispatcher.Invoke(action, priority);
             }
         }
 

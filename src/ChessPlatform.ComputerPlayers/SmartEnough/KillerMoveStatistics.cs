@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -11,7 +12,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         #region Constants and Fields
 
         public const int MinDepth = 1;
-        public const int MaxDepth = EngineConstants.MaxPlyDepthUpperLimit;
+        public const int MaxDepth = CommonEngineConstants.MaxPlyDepthUpperLimit;
 
         public static readonly ValueRange<int> DepthRange = ValueRange.Create(MinDepth, MaxDepth);
 

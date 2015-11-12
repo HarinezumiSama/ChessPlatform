@@ -88,7 +88,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(rootBoard));
             }
 
-            if (plyDepth < EngineConstants.MaxPlyDepthLowerLimit)
+            if (plyDepth < CommonEngineConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(plyDepth),
@@ -96,7 +96,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "The value must be at least {0}.",
-                        EngineConstants.MaxPlyDepthLowerLimit));
+                        CommonEngineConstants.MaxPlyDepthLowerLimit));
             }
 
             if (killerMoveStatistics == null)
@@ -730,7 +730,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             switch (board.State)
             {
                 case GameState.Checkmate:
-                    return -EngineConstants.MateScoreAbs + plyDistance;
+                    return -CommonEngineConstants.MateScoreAbs + plyDistance;
 
                 case GameState.Stalemate:
                     return 0;
@@ -879,7 +879,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return score;
             }
 
-            var bestScore = -EngineConstants.InfiniteInfo;
+            var bestScore = -CommonEngineConstants.InfiniteInfo;
 
             var orderedMoves = OrderMoves(board, plyDistance);
             ////var captureCount = orderedMoves.Count(obj => obj.MoveInfo.IsAnyCapture);
@@ -942,9 +942,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var currentBoard = _boardHelper.MakeMove(board, move);
             var localScore = -EvaluatePositionScore(currentBoard, 1);
 
-            var alpha = EngineConstants.RootAlphaInfo;
-            var beta = EngineConstants.RootBetaInfo;
-            var delta = EngineConstants.ScoreInfinite;
+            var alpha = CommonEngineConstants.RootAlphaInfo;
+            var beta = CommonEngineConstants.RootBetaInfo;
+            var delta = CommonEngineConstants.ScoreInfinite;
 
             if (_plyDepth >= 5)
             {
@@ -954,8 +954,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 if (previousPvi != null)
                 {
                     delta = InitialDelta;
-                    var alphaValue = Math.Max(previousPvi.Value - delta, EngineConstants.RootAlphaInfo.Value);
-                    var betaValue = Math.Min(previousPvi.Value + delta, EngineConstants.RootBetaInfo.Value);
+                    var alphaValue = Math.Max(previousPvi.Value - delta, CommonEngineConstants.RootAlphaInfo.Value);
+                    var betaValue = Math.Min(previousPvi.Value + delta, CommonEngineConstants.RootBetaInfo.Value);
 
                     alpha = new PrincipalVariationInfo(alphaValue);
                     beta = new PrincipalVariationInfo(betaValue);
@@ -971,7 +971,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     var betaValue = (alpha.Value + beta.Value) / 2;
                     var alphaValue = Math.Max(
                         innerPrincipalVariationInfo.Value - delta,
-                        EngineConstants.RootAlphaValue);
+                        CommonEngineConstants.RootAlphaValue);
 
                     alpha = new PrincipalVariationInfo(alphaValue);
                     beta = new PrincipalVariationInfo(betaValue);
@@ -981,7 +981,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     var alphaValue = (alpha.Value + beta.Value) / 2;
                     var betaValue = Math.Min(
                         innerPrincipalVariationInfo.Value + delta,
-                        -EngineConstants.RootAlphaValue);
+                        -CommonEngineConstants.RootAlphaValue);
 
                     alpha = new PrincipalVariationInfo(alphaValue);
                     beta = new PrincipalVariationInfo(betaValue);
@@ -999,7 +999,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             Trace.TraceInformation(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
-                    }: {principalVariationInfo.Value} : L({principalVariationInfo.LocalValueString}), PV: {{ {
+                    }: {principalVariationInfo.ValueString} : L({principalVariationInfo.LocalValueString}), PV: {{ {
                     board.GetStandardAlgebraicNotation(principalVariationInfo.Moves)} }}, time: {
                     stopwatch.Elapsed:g}");
 
@@ -1051,8 +1051,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     (data, i) =>
                         data.Primary == null
                             ? null
-                            : $@"  #{i + 1:D2}/{killers.Length:D2} {{ {data.Primary}, {
-                                data.Secondary.ToStringSafely("<none>")} }}")
+                            : $@"  #{i + 1:D2} {{ {data.Primary}, {data.Secondary.ToStringSafely("<none>")} }}")
                 .Where(s => !s.IsNullOrEmpty())
                 .Join(Environment.NewLine);
 

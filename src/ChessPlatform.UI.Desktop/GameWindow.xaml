@@ -24,6 +24,8 @@
                 Executed="CopyHistoryToClipboard_Executed" CanExecute="CopyHistoryToClipboard_CanExecute" />
         <CommandBinding Command="commands:GameWindowCommands.ReversedBoardView"
                 Executed="ReversedBoardView_Executed" />
+        <CommandBinding Command="commands:GameWindowCommands.ShowPlayerFeedback"
+                Executed="ShowPlayerFeedback_Executed" />
     </Window.CommandBindings>
 
     <Window.TaskbarItemInfo>
@@ -66,6 +68,9 @@
             <MenuItem Header="_View">
                 <MenuItem Command="commands:GameWindowCommands.ReversedBoardView" IsChecked="{Binding IsReversedView}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="commands:GameWindowCommands.ShowPlayerFeedback"
+                        IsChecked="{Binding ShouldShowPlayerFeedback}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
         </Menu>
 
@@ -101,6 +106,11 @@
                             <ColumnDefinition Width="2*" />
                         </Grid.ColumnDefinitions>
 
+                        <Grid.Resources>
+                            <converters:BooleanToVisibilityConverter x:Key="FeedbackVisibilityConverter"
+                                    TrueValue="Visible" FalseValue="Hidden" />
+                        </Grid.Resources>
+
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Left" FontSize="12" />
@@ -109,15 +119,27 @@
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Right" FontSize="5" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                        <TextBlock Grid.Row="1" Grid.Column="0"
                                 Text="{Binding UpperPlayerPieceAdvantage}"
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                Text="{Binding UpperPlayerFeedback}"
+                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource FeedbackVisibilityConverter}}"
+                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top" TextAlignment="Left" FontSize="3" TextWrapping="Wrap" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0"
                                 Text="{Binding LowerPlayerPieceAdvantage}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Bottom" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="1"
+                                Text="{Binding LowerPlayerFeedback}"
+                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource FeedbackVisibilityConverter}}"
+                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Bottom" TextAlignment="Left" FontSize="3" TextWrapping="Wrap" />
 
                         <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"

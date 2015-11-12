@@ -660,6 +660,11 @@ namespace ChessPlatform.UI.Desktop
             ViewModel.IsReversedView = !ViewModel.IsReversedView;
         }
 
+        private void ShowPlayerFeedback_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ViewModel.ShouldShowPlayerFeedback = !ViewModel.ShouldShowPlayerFeedback;
+        }
+
         #endregion
     }
 }

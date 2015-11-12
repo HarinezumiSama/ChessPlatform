@@ -10,19 +10,19 @@ namespace ChessPlatform.UI.Desktop.Commands
 
         public static readonly RoutedUICommand NewGame = new RoutedUICommand(
             "_New Game...",
-            "NewGame",
+            nameof(NewGame),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.N, ModifierKeys.Control) });
 
         public static readonly RoutedUICommand Exit = new RoutedUICommand(
             "E_xit",
-            "Exit",
+            nameof(Exit),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.Q, ModifierKeys.Control) });
 
         public static readonly RoutedUICommand UndoLastMove = new RoutedUICommand(
             "_Undo Last Move...",
-            "UndoLastMove",
+            nameof(UndoLastMove),
             typeof(GameWindowCommands),
             new InputGestureCollection
             {
@@ -32,21 +32,27 @@ namespace ChessPlatform.UI.Desktop.Commands
 
         public static readonly RoutedUICommand CopyFenToClipboard = new RoutedUICommand(
             "_Copy FEN to Clipboard",
-            "CopyFenToClipboard",
+            nameof(CopyFenToClipboard),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Alt) });
 
         public static readonly RoutedUICommand CopyHistoryToClipboard = new RoutedUICommand(
             "Copy _History to Clipboard",
-            "CopyHistoryToClipboard",
+            nameof(CopyHistoryToClipboard),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift) });
 
         public static readonly RoutedUICommand ReversedBoardView = new RoutedUICommand(
             "_Reversed Board View",
-            "ReversedBoardView",
+            nameof(ReversedBoardView),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.R, ModifierKeys.Control) });
+
+        public static readonly RoutedUICommand ShowPlayerFeedback = new RoutedUICommand(
+            "Show Player _Feedback",
+            nameof(ShowPlayerFeedback),
+            typeof(GameWindowCommands),
+            new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control) });
 
         #endregion
     }

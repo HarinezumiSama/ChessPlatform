@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using ChessPlatform.GamePlay;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.GamePlay
 {
-    public static class EngineConstants
+    public static class CommonEngineConstants
     {
         #region Constants and Fields
 
@@ -13,17 +12,17 @@ namespace ChessPlatform.ComputerPlayers
 
         public const int MaxPlyDepthUpperLimit = 100;
 
-        internal static readonly int MateScoreAbs = InitializeMateScoreAbs();
+        public static readonly int MateScoreAbs = InitializeMateScoreAbs();
 
-        internal static readonly int RootAlphaValue = checked(-MateScoreAbs - 1);
+        public static readonly int RootAlphaValue = checked(-MateScoreAbs - 1);
 
-        internal static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlphaValue);
+        public static readonly PrincipalVariationInfo RootAlphaInfo = new PrincipalVariationInfo(RootAlphaValue);
 
-        internal static readonly PrincipalVariationInfo RootBetaInfo = -RootAlphaInfo;
+        public static readonly PrincipalVariationInfo RootBetaInfo = -RootAlphaInfo;
 
-        internal static readonly int ScoreInfinite = checked(MateScoreAbs * 2);
+        public static readonly int ScoreInfinite = checked(MateScoreAbs * 2);
 
-        internal static readonly PrincipalVariationInfo InfiniteInfo = new PrincipalVariationInfo(ScoreInfinite);
+        public static readonly PrincipalVariationInfo InfiniteInfo = new PrincipalVariationInfo(ScoreInfinite);
 
         #endregion
 

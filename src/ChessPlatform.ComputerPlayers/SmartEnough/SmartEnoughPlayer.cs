@@ -47,12 +47,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (parameters.MaxPlyDepth < EngineConstants.MaxPlyDepthLowerLimit)
+            if (parameters.MaxPlyDepth < CommonEngineConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(parameters.MaxPlyDepth),
                     parameters.MaxPlyDepth,
-                    $"The value must be at least {EngineConstants.MaxPlyDepthLowerLimit}.");
+                    $"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
             if (parameters.MaxTimePerMove.HasValue && parameters.MaxTimePerMove.Value <= TimeSpan.Zero)
@@ -135,6 +135,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     internalCancellationToken = linkedTokenSource.Token;
 
                     maxMoveTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
+                    Trace.TraceInformation($@"Adjusted max time for move: {maxMoveTime.Value}");
                 }
 
                 stopwatch = new Stopwatch();
@@ -268,7 +269,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var useIterativeDeepening = _maxTimePerMove.HasValue;
 
             var startingPlyDepth = useIterativeDeepening
-                ? EngineConstants.MaxPlyDepthLowerLimit
+                ? CommonEngineConstants.MaxPlyDepthLowerLimit
                 : _maxPlyDepth;
 
             for (var plyDepth = startingPlyDepth;
@@ -308,6 +309,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 principalVariationCache = moveChooser.PrincipalVariationCache;
 
                 bestMoveContainer.Value = new BestMoveData(bestPrincipalVariationInfo, totalNodeCount, plyDepth);
+
+                var feedbackEventArgs = new ChessPlayerFeedbackEventArgs(
+                    Color,
+                    board,
+                    plyDepth,
+                    bestPrincipalVariationInfo);
+
+                OnFeedbackProvided(feedbackEventArgs);
 
                 if (bestPrincipalVariationInfo.IsCheckmating())
                 {

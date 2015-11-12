@@ -23,6 +23,8 @@ namespace ChessPlatform.GamePlay
 
         #region IChessPlayer Members
 
+        public event EventHandler<ChessPlayerFeedbackEventArgs> FeedbackProvided;
+
         public PieceColor Color
         {
             get;
@@ -65,6 +67,11 @@ namespace ChessPlatform.GamePlay
         #endregion
 
         #region Protected Methods
+
+        protected void OnFeedbackProvided(ChessPlayerFeedbackEventArgs args)
+        {
+            FeedbackProvided?.Invoke(this, args);
+        }
 
         [NotNull]
         protected abstract PrincipalVariationInfo DoGetMove([NotNull] GetMoveRequest request);

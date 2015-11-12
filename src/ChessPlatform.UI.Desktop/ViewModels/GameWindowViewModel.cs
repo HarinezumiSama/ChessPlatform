@@ -29,6 +29,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private IChessPlayer _blackPlayer;
         private GameBoard[] _boardHistory;
         private bool _isReversedView;
+        private string _whitePlayerFeedback;
+        private string _blackPlayerFeedback;
+        private bool _shouldShowPlayerFeedback;
 
         #endregion
 
@@ -162,6 +165,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public bool ShouldShowPlayerFeedback
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _shouldShowPlayerFeedback;
+            }
+
+            set
+            {
+                if (value == _shouldShowPlayerFeedback)
+                {
+                    return;
+                }
+
+                _shouldShowPlayerFeedback = value;
+                RaisePropertyChanged(() => ShouldShowPlayerFeedback);
+            }
+        }
+
         public Brush UpperPlayerBrush => IsReversedView ? UIHelper.WhitePieceBrush : UIHelper.BlackPieceBrush;
 
         public Brush LowerPlayerBrush => IsReversedView ? UIHelper.BlackPieceBrush : UIHelper.WhitePieceBrush;
@@ -175,6 +198,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public string LowerPlayerPieceAdvantage
             => IsReversedView ? GetPlayerPieceAdvantage(PieceColor.Black) : GetPlayerPieceAdvantage(PieceColor.White);
+
+        public string UpperPlayerFeedback => IsReversedView ? _whitePlayerFeedback : _blackPlayerFeedback;
+
+        public string LowerPlayerFeedback => IsReversedView ? _blackPlayerFeedback : _whitePlayerFeedback;
 
         #endregion
 
@@ -539,6 +566,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
         {
+            if (player != null)
+            {
+                player.FeedbackProvided -= Player_FeedbackProvided;
+            }
+
             var oldGuiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (oldGuiHumanChessPlayer != null)
             {
@@ -546,7 +578,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 oldGuiHumanChessPlayer.MoveRequestCancelled -= GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
-            player = playerInfo.CreatePlayer(color);
+            player = playerInfo.CreatePlayer(color).EnsureNotNull();
+
+            player.FeedbackProvided += Player_FeedbackProvided;
 
             var newGuiHumanChessPlayer = player as GuiHumanChessPlayer;
             if (newGuiHumanChessPlayer != null)
@@ -564,6 +598,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void AffectPlayerInfo()
         {
+            ExecuteOnDispatcher(AffectPlayerInfoUnsafe, DispatcherPriority.Send);
+        }
+
+        private void AffectPlayerInfoUnsafe()
+        {
             RaisePropertyChanged(() => UpperPlayerBrush);
             RaisePropertyChanged(() => LowerPlayerBrush);
 
@@ -572,6 +611,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             RaisePropertyChanged(() => UpperPlayerPieceAdvantage);
             RaisePropertyChanged(() => LowerPlayerPieceAdvantage);
+
+            RaisePropertyChanged(() => UpperPlayerFeedback);
+            RaisePropertyChanged(() => LowerPlayerFeedback);
         }
 
         private void OnNewGameStarted()
@@ -591,6 +633,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnPlayerThinkingStarted()
         {
+            _whitePlayerFeedback = null;
+            _blackPlayerFeedback = null;
+            AffectPlayerInfo();
+
             RaisePropertyChanged(() => IsComputerPlayerActive);
         }
 
@@ -639,6 +685,24 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 CancellationToken.None,
                 TaskCreationOptions.None,
                 _taskScheduler);
+        }
+
+        private void Player_FeedbackProvided(object sender, ChessPlayerFeedbackEventArgs args)
+        {
+            var feedback =
+                $@"D={args.Depth}{Environment.NewLine}{args.PrincipalVariation.ValueString}{Environment.NewLine
+                    }PV: {args.Board.GetStandardAlgebraicNotation(args.PrincipalVariation.Moves)}";
+
+            if (args.Color == PieceColor.White)
+            {
+                _whitePlayerFeedback = feedback;
+            }
+            else
+            {
+                _blackPlayerFeedback = feedback;
+            }
+
+            AffectPlayerInfo();
         }
 
         private void OnIsReversedViewChanged(object sender, EventArgs e)

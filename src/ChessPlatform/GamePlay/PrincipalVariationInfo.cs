@@ -96,6 +96,11 @@ namespace ChessPlatform.GamePlay
         [CanBeNull]
         public GameMove FirstMove => _movesInternal.FirstOrDefault();
 
+        public string ValueString
+            => this.IsAnyMate()
+                ? $@"mate {this.GetMateMoveDistance().EnsureNotNull()}"
+                : $@"cp {Value}";
+
         public string LocalValueString => LocalValue.ToStringSafelyInvariant("null");
 
         #endregion
@@ -180,7 +185,7 @@ namespace ChessPlatform.GamePlay
         [DebuggerNonUserCode]
         public override string ToString()
         {
-            return $@"{{ {Value} : L({LocalValueString}) : {
+            return $@"{{ {ValueString} : L({LocalValueString}) : {
                 (_movesInternal.Count == 0 ? "x" : _movesInternal.Select(move => move.ToString()).Join(", "))} }}";
         }
 
@@ -199,7 +204,7 @@ namespace ChessPlatform.GamePlay
             var movesString = board.GetStandardAlgebraicNotation(_movesInternal);
 
             var result =
-                $@"{{ {Value} : L({LocalValueString}) : {(movesString.IsNullOrEmpty() ? "x" : movesString)} }}";
+                $@"{{ {ValueString} : L({LocalValueString}) : {(movesString.IsNullOrEmpty() ? "x" : movesString)} }}";
 
             return result;
         }

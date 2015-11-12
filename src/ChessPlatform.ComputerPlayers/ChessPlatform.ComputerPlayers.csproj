@@ -55,7 +55,6 @@
     <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="SmartEnough\BoardHelper.cs" />
     <Compile Include="SmartEnough\BoardCacheKey.cs" />
-    <Compile Include="EngineConstants.cs" />
     <Compile Include="SmartEnough\KillerMoveData.cs" />
     <Compile Include="SmartEnough\KillerMoveStatistics.cs" />
     <Compile Include="SmartEnough\OrderedMove.cs" />
