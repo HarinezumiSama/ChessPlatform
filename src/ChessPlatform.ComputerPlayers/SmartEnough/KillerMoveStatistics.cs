@@ -49,6 +49,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RecordKiller(int plyDepth, [NotNull] GameMove move)
         {
             #region Argument Check
@@ -74,6 +75,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public KillerMoveData[] GetKillersData()
         {
             lock (_syncLock)

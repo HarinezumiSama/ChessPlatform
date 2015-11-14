@@ -74,8 +74,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         public IOrderedEnumerable<KeyValuePair<GameMove, PrincipalVariationInfo>> GetOrderedByScore()
         {
             return _cache
-                .OrderByDescending(pair => pair.Value.EnsureNotNull().Value)
-                .ThenByDescending(pair => pair.Value.LocalValue)
+                .OrderByDescending(pair => pair.Value.EnsureNotNull().Value.Value)
+                .ThenByDescending(pair => pair.Value.LocalValue?.Value)
                 .ThenBy(pair => pair.Key.GetHashCode());
         }
 

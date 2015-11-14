@@ -115,7 +115,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _useMultipleProcessors = useMultipleProcessors;
             _killerMoveStatistics = killerMoveStatistics;
 
-            _transpositionTable = new SimpleTranspositionTable(0); // Disabled for now due to bug
+            _transpositionTable = null; // Disabled for now due to bug
             PrincipalVariationCache = new PrincipalVariationCache(rootBoard);
         }
 
@@ -725,26 +725,33 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             ////return result;
         }
 
-        private int EvaluatePositionScore([NotNull] GameBoard board, int plyDistance)
+        private EvaluationScore EvaluatePositionScore([NotNull] GameBoard board, int plyDistance)
         {
             switch (board.State)
             {
                 case GameState.Checkmate:
-                    return -CommonEngineConstants.MateScoreAbs + plyDistance;
+                    return EvaluationScore.CreateGettingCheckmatedScore(plyDistance);
 
                 case GameState.Stalemate:
-                    return 0;
+                    return EvaluationScore.Zero;
 
-                default:
+                case GameState.Default:
                     {
                         var autoDrawType = board.GetAutoDrawType();
                         if (autoDrawType != AutoDrawType.None)
                         {
-                            return 0;
+                            return EvaluationScore.Zero;
                         }
                     }
 
                     break;
+
+                case GameState.Check:
+                case GameState.DoubleCheck:
+                    break;
+
+                default:
+                    throw board.State.CreateEnumValueNotImplementedException();
             }
 
             var gamePhase = GetGamePhase(board);
@@ -753,7 +760,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var kingTropism = EvaluateKingTropism(board, board.ActiveColor)
                 - EvaluateKingTropism(board, board.ActiveColor.Invert());
 
-            var result = materialAndItsPosition + mobility + kingTropism;
+            var result = new EvaluationScore(materialAndItsPosition + mobility + kingTropism);
             return result;
         }
 
@@ -785,21 +792,22 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
-        private int Quiesce([NotNull] GameBoard board, int plyDistance, int alpha, int beta)
+        private EvaluationScore Quiesce(
+            [NotNull] GameBoard board,
+            int plyDistance,
+            EvaluationScore alpha,
+            EvaluationScore beta)
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
             var bestScore = EvaluatePositionScore(board, plyDistance);
-            if (bestScore >= beta)
+            if (bestScore.Value >= beta.Value)
             {
                 // Stand pat
                 return bestScore;
             }
 
-            if (bestScore > alpha)
-            {
-                alpha = bestScore;
-            }
+            var localAlpha = new EvaluationScore(Math.Max(alpha.Value, bestScore.Value));
 
             var nonQuietMoves = board.ValidMoves
                 .Where(pair => pair.Value.IsRegularCapture)
@@ -817,33 +825,34 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
 
                 var currentBoard = _boardHelper.MakeMove(board, nonQuietMove);
-                var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -alpha);
+                var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha);
 
-                if (score >= beta)
+                if (score.Value >= beta.Value)
                 {
                     // Fail-soft beta-cutoff
                     return score;
                 }
 
-                if (score > bestScore)
+                if (score.Value > bestScore.Value)
                 {
                     bestScore = score;
                 }
 
-                if (score > alpha)
+                if (score.Value > localAlpha.Value)
                 {
-                    alpha = score;
+                    localAlpha = score;
                 }
             }
 
             return bestScore;
         }
 
+        [NotNull]
         private PrincipalVariationInfo ComputeAlphaBeta(
             [NotNull] GameBoard board,
             int plyDistance,
-            PrincipalVariationInfo alpha,
-            PrincipalVariationInfo beta)
+            EvaluationScore alpha,
+            EvaluationScore beta)
         {
             #region Argument Check
 
@@ -859,7 +868,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             _cancellationToken.ThrowIfCancellationRequested();
 
-            var cachedScore = _transpositionTable.GetScore(board, plyDistance);
+            var cachedScore = _transpositionTable?.GetScore(board, plyDistance);
             if (cachedScore != null)
             {
                 return cachedScore;
@@ -873,57 +882,53 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
             {
-                var quiesceScore = Quiesce(board, plyDistance, alpha.Value, beta.Value);
-                var score = new PrincipalVariationInfo(quiesceScore);
-                _transpositionTable.SaveScore(board, plyDistance, score);
-                return score;
+                var quiesceScore = Quiesce(board, plyDistance, alpha, beta);
+                var result = new PrincipalVariationInfo(quiesceScore);
+                _transpositionTable?.SaveScore(board, plyDistance, result);
+                return result;
             }
 
-            var bestScore = -CommonEngineConstants.InfiniteInfo;
-
+            PrincipalVariationInfo best = null;
+            var localAlpha = alpha;
             var orderedMoves = OrderMoves(board, plyDistance);
-            ////var captureCount = orderedMoves.Count(obj => obj.MoveInfo.IsAnyCapture);
             var moveCount = orderedMoves.Length;
             for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
             {
                 _cancellationToken.ThrowIfCancellationRequested();
 
                 var orderedMove = orderedMoves[moveIndex];
-                var currentBoard = _boardHelper.MakeMove(board, orderedMove.Move);
+                var move = orderedMove.Move;
 
-                var score = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -alpha);
+                var currentBoard = _boardHelper.MakeMove(board, move);
+                var scoreInfo = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -localAlpha);
 
-                if (score.Value >= beta.Value)
+                if (scoreInfo.Value.Value >= beta.Value)
                 {
                     // Fail-soft beta-cutoff
-                    bestScore = orderedMove.Move | score;
-                    _transpositionTable.SaveScore(board, plyDistance, bestScore);
+                    best = move | scoreInfo;
+                    _transpositionTable?.SaveScore(board, plyDistance, best);
 
                     if (!orderedMove.MoveInfo.IsAnyCapture && !orderedMove.IsPvMove)
                     {
-                        ////Trace.WriteLine(
-                        ////    $@"  * Recording killer move {plyDistance}:{orderedMove} (#{moveIndex + 1:D2}/{
-                        ////        moveCount:D2}, CC={captureCount:D2}, dist = {moveIndex - captureCount})");
-
-                        _killerMoveStatistics.RecordKiller(plyDistance, orderedMove.Move);
+                        _killerMoveStatistics.RecordKiller(plyDistance, move);
                     }
 
-                    return bestScore;
+                    return best;
                 }
 
-                if (score.Value > bestScore.Value)
+                if (best == null || scoreInfo.Value.Value > best.Value.Value)
                 {
-                    bestScore = orderedMove.Move | score;
-                    if (score.Value > alpha.Value)
+                    best = move | scoreInfo;
+                    if (scoreInfo.Value.Value > localAlpha.Value)
                     {
-                        alpha = score;
+                        localAlpha = scoreInfo.Value;
                     }
                 }
             }
 
-            _transpositionTable.SaveScore(board, plyDistance, bestScore);
+            _transpositionTable?.SaveScore(board, plyDistance, best.EnsureNotNull());
 
-            return bestScore;
+            return best.EnsureNotNull();
         }
 
         private KeyValuePair<GameMove, PrincipalVariationInfo> AnalyzeRootMoveInternal(
@@ -935,6 +940,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _cancellationToken.ThrowIfCancellationRequested();
 
             const string CurrentMethodName = nameof(AnalyzeRootMoveInternal);
+            const int StartingDelta = 25;
 
             var moveOrderNumber = rootMoveIndex + 1;
 
@@ -942,23 +948,22 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var currentBoard = _boardHelper.MakeMove(board, move);
             var localScore = -EvaluatePositionScore(currentBoard, 1);
 
-            var alpha = CommonEngineConstants.RootAlphaInfo;
-            var beta = CommonEngineConstants.RootBetaInfo;
-            var delta = CommonEngineConstants.ScoreInfinite;
+            var alpha = EvaluationScore.NegativeInfinity;
+            var beta = EvaluationScore.PositiveInfinity;
+            var delta = EvaluationScore.PositiveInfinityValue;
 
             if (_plyDepth >= 5)
             {
-                const int InitialDelta = 25;
-
                 var previousPvi = _previousIterationPrincipalVariationCache?[move];
                 if (previousPvi != null)
                 {
-                    delta = InitialDelta;
-                    var alphaValue = Math.Max(previousPvi.Value - delta, CommonEngineConstants.RootAlphaInfo.Value);
-                    var betaValue = Math.Min(previousPvi.Value + delta, CommonEngineConstants.RootBetaInfo.Value);
+                    delta = StartingDelta;
 
-                    alpha = new PrincipalVariationInfo(alphaValue);
-                    beta = new PrincipalVariationInfo(betaValue);
+                    alpha = new EvaluationScore(
+                        Math.Max(previousPvi.Value.Value - delta, EvaluationScore.NegativeInfinityValue));
+
+                    beta = new EvaluationScore(
+                        Math.Min(previousPvi.Value.Value + delta, EvaluationScore.PositiveInfinityValue));
                 }
             }
 
@@ -966,25 +971,23 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             while (true)
             {
                 innerPrincipalVariationInfo = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha);
-                if (innerPrincipalVariationInfo.Value <= alpha.Value)
+                if (innerPrincipalVariationInfo.Value.Value <= alpha.Value)
                 {
-                    var betaValue = (alpha.Value + beta.Value) / 2;
-                    var alphaValue = Math.Max(
-                        innerPrincipalVariationInfo.Value - delta,
-                        CommonEngineConstants.RootAlphaValue);
+                    beta = new EvaluationScore((alpha.Value + beta.Value) / 2);
 
-                    alpha = new PrincipalVariationInfo(alphaValue);
-                    beta = new PrincipalVariationInfo(betaValue);
+                    alpha = new EvaluationScore(
+                        Math.Max(
+                            innerPrincipalVariationInfo.Value.Value - delta,
+                            EvaluationScore.NegativeInfinityValue));
                 }
-                else if (innerPrincipalVariationInfo.Value >= beta.Value)
+                else if (innerPrincipalVariationInfo.Value.Value >= beta.Value)
                 {
-                    var alphaValue = (alpha.Value + beta.Value) / 2;
-                    var betaValue = Math.Min(
-                        innerPrincipalVariationInfo.Value + delta,
-                        -CommonEngineConstants.RootAlphaValue);
+                    alpha = new EvaluationScore((alpha.Value + beta.Value) / 2);
 
-                    alpha = new PrincipalVariationInfo(alphaValue);
-                    beta = new PrincipalVariationInfo(betaValue);
+                    beta = new EvaluationScore(
+                        Math.Min(
+                            innerPrincipalVariationInfo.Value.Value + delta,
+                            EvaluationScore.PositiveInfinityValue));
                 }
                 else
                 {
@@ -1060,7 +1063,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 killersString = "  (none)";
             }
 
-            var scoreValue = bestVariation.Value.ToString(CultureInfo.InvariantCulture);
+            var scoreValue = bestVariation.Value.Value.ToString(CultureInfo.InvariantCulture);
+
             Trace.TraceInformation(
                 $@"[{currentMethodName}] Best move {
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{

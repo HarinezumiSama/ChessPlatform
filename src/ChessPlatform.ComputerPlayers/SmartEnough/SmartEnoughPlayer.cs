@@ -318,7 +318,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 OnFeedbackProvided(feedbackEventArgs);
 
-                if (bestPrincipalVariationInfo.IsCheckmating())
+                if (bestPrincipalVariationInfo.Value.IsCheckmating())
                 {
                     Trace.TraceInformation(
                         $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {

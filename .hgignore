@@ -17,3 +17,5 @@ glob:SolutionItems/*.pfx
 glob:published/
 glob:data.new/
 glob:*.GhostDoc.xml
+glob:*/.vs/*
+glob:*.sln.vsext.disable

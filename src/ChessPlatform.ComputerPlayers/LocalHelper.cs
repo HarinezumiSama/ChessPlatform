@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
-using ChessPlatform.GamePlay;
-using Omnifactotum.Annotations;
+using System.Runtime.CompilerServices;
 
 namespace ChessPlatform.ComputerPlayers
 {
@@ -9,6 +8,7 @@ namespace ChessPlatform.ComputerPlayers
     {
         #region Public Methods
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetTimestamp()
         {
             return DateTimeOffset.Now.ToFixedString();

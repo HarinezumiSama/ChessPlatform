@@ -105,6 +105,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return result;
         }
 
+        //// TODO [vmcl] Store EvaluationScore rather than PV
         public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] PrincipalVariationInfo info)
         {
             #region Argument Check

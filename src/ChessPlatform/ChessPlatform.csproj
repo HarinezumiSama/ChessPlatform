@@ -71,7 +71,8 @@
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="Bitboard.cs" />
     <Compile Include="GamePlay\PrincipalVariationInfo.cs" />
-    <Compile Include="GamePlay\PrincipalVariationInfoExtensions.cs" />
+    <Compile Include="GamePlay\EvaluationScore.cs" />
+    <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
