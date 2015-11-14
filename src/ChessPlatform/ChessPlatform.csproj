@@ -70,7 +70,7 @@
     <Compile Include="GamePlay\GetMoveRequest.cs" />
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="Bitboard.cs" />
-    <Compile Include="GamePlay\PrincipalVariationInfo.cs" />
+    <Compile Include="GamePlay\VariationLine.cs" />
     <Compile Include="GamePlay\EvaluationScore.cs" />
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />

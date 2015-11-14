@@ -8,11 +8,11 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.GamePlay
 {
-    public sealed class PrincipalVariationInfo
+    public sealed class VariationLine
     {
         #region Constants and Fields
 
-        public static readonly PrincipalVariationInfo Zero = new PrincipalVariationInfo(EvaluationScore.Zero);
+        public static readonly VariationLine Zero = new VariationLine(EvaluationScore.Zero);
 
         private readonly List<GameMove> _movesInternal;
 
@@ -21,13 +21,13 @@ namespace ChessPlatform.GamePlay
         #region Constructors
 
         [DebuggerNonUserCode]
-        public PrincipalVariationInfo(EvaluationScore value)
+        public VariationLine(EvaluationScore value)
             : this(value, null)
         {
             // Nothing to do
         }
 
-        private PrincipalVariationInfo(EvaluationScore value, EvaluationScore? localValue)
+        private VariationLine(EvaluationScore value, EvaluationScore? localValue)
         {
             _movesInternal = new List<GameMove>();
             Value = value;
@@ -35,7 +35,7 @@ namespace ChessPlatform.GamePlay
             Moves = _movesInternal.AsReadOnly();
         }
 
-        private PrincipalVariationInfo(
+        private VariationLine(
             EvaluationScore value,
             EvaluationScore? localValue,
             [NotNull] GameMove move,
@@ -60,7 +60,7 @@ namespace ChessPlatform.GamePlay
             _movesInternal.AddRange(successiveMoves);
         }
 
-        private PrincipalVariationInfo(
+        private VariationLine(
             EvaluationScore value,
             EvaluationScore? localValue,
             [NotNull] ICollection<GameMove> moves)
@@ -119,7 +119,7 @@ namespace ChessPlatform.GamePlay
         [DebuggerNonUserCode]
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo operand)
+        public static VariationLine operator -([NotNull] VariationLine operand)
         {
             #region Argument Check
 
@@ -130,15 +130,15 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(-operand.Value, -operand.LocalValue, operand._movesInternal);
+            return new VariationLine(-operand.Value, -operand.LocalValue, operand._movesInternal);
         }
 
         [DebuggerNonUserCode]
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static PrincipalVariationInfo operator |(
+        public static VariationLine operator |(
             [NotNull] GameMove move,
-            [NotNull] PrincipalVariationInfo operand)
+            [NotNull] VariationLine operand)
         {
             #region Argument Check
 
@@ -154,13 +154,13 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(operand.Value, operand.LocalValue, move, operand._movesInternal);
+            return new VariationLine(operand.Value, operand.LocalValue, move, operand._movesInternal);
         }
 
         [DebuggerNonUserCode]
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static PrincipalVariationInfo operator +([NotNull] PrincipalVariationInfo left, EvaluationScore right)
+        public static VariationLine operator +([NotNull] VariationLine left, EvaluationScore right)
         {
             #region Argument Check
 
@@ -171,13 +171,13 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(left.Value + right, left.LocalValue, left._movesInternal);
+            return new VariationLine(left.Value + right, left.LocalValue, left._movesInternal);
         }
 
         [DebuggerNonUserCode]
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static PrincipalVariationInfo operator -([NotNull] PrincipalVariationInfo left, EvaluationScore right)
+        public static VariationLine operator -([NotNull] VariationLine left, EvaluationScore right)
         {
             #region Argument Check
 
@@ -188,7 +188,7 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            return new PrincipalVariationInfo(left.Value - right, left.LocalValue, left._movesInternal);
+            return new VariationLine(left.Value - right, left.LocalValue, left._movesInternal);
         }
 
         #endregion
@@ -223,7 +223,7 @@ namespace ChessPlatform.GamePlay
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public PrincipalVariationInfo WithLocalValue(EvaluationScore localValue)
+        public VariationLine WithLocalValue(EvaluationScore localValue)
         {
             if (LocalValue.HasValue)
             {
@@ -231,7 +231,7 @@ namespace ChessPlatform.GamePlay
                     $@"The local value cannot be re-assigned for {ToString()}.");
             }
 
-            return new PrincipalVariationInfo(Value, localValue, _movesInternal);
+            return new VariationLine(Value, localValue, _movesInternal);
         }
 
         #endregion

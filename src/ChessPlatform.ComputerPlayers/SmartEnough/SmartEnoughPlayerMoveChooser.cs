@@ -56,13 +56,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
-        private readonly PrincipalVariationInfo _previousIterationBestVariation;
+        private readonly VariationLine _previousIterationBestLine;
         private readonly CancellationToken _cancellationToken;
         private readonly bool _useMultipleProcessors;
         private readonly KillerMoveStatistics _killerMoveStatistics;
         private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardHelper _boardHelper;
-        private readonly PrincipalVariationCache _previousIterationPrincipalVariationCache;
+        private readonly VariationLineCache _previousIterationVariationLineCache;
 
         #endregion
 
@@ -75,8 +75,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] GameBoard rootBoard,
             int plyDepth,
             [NotNull] BoardHelper boardHelper,
-            [CanBeNull] PrincipalVariationCache previousIterationPrincipalVariationCache,
-            [CanBeNull] PrincipalVariationInfo previousIterationBestVariation,
+            [CanBeNull] VariationLineCache previousIterationVariationLineCache,
+            [CanBeNull] VariationLine previousIterationBestLine,
             CancellationToken cancellationToken,
             bool useMultipleProcessors,
             [NotNull] KillerMoveStatistics killerMoveStatistics)
@@ -109,14 +109,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _rootBoard = rootBoard;
             _plyDepth = plyDepth;
             _boardHelper = boardHelper;
-            _previousIterationPrincipalVariationCache = previousIterationPrincipalVariationCache;
-            _previousIterationBestVariation = previousIterationBestVariation;
+            _previousIterationVariationLineCache = previousIterationVariationLineCache;
+            _previousIterationBestLine = previousIterationBestLine;
             _cancellationToken = cancellationToken;
             _useMultipleProcessors = useMultipleProcessors;
             _killerMoveStatistics = killerMoveStatistics;
 
             _transpositionTable = null; // Disabled for now due to bug
-            PrincipalVariationCache = new PrincipalVariationCache(rootBoard);
+            VariationLineCache = new VariationLineCache(rootBoard);
         }
 
         #endregion
@@ -132,7 +132,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
         }
 
-        public PrincipalVariationCache PrincipalVariationCache
+        public VariationLineCache VariationLineCache
         {
             get;
         }
@@ -141,7 +141,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public PrincipalVariationInfo GetBestMove()
+        public VariationLine GetBestMove()
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -628,9 +628,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var resultList = new List<OrderedMove>(board.ValidMoves.Count);
 
-            if (plyDistance == 0 && _previousIterationPrincipalVariationCache != null)
+            if (plyDistance == 0 && _previousIterationVariationLineCache != null)
             {
-                var movesOrderedByScore = _previousIterationPrincipalVariationCache.GetOrderedByScore();
+                var movesOrderedByScore = _previousIterationVariationLineCache.GetOrderedByScore();
 
                 resultList.AddRange(
                     movesOrderedByScore.Select(pair => new OrderedMove(pair.Key, board.ValidMoves[pair.Key], true)));
@@ -645,10 +645,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var remainingMoves = new Dictionary<GameMove, GameMoveInfo>(board.ValidMoves);
 
-            if (_previousIterationBestVariation != null
-                && plyDistance < _previousIterationBestVariation.Moves.Count)
+            if (_previousIterationBestLine != null
+                && plyDistance < _previousIterationBestLine.Moves.Count)
             {
-                var principalVariationMove = _previousIterationBestVariation.Moves[plyDistance];
+                var principalVariationMove = _previousIterationBestLine.Moves[plyDistance];
 
                 GameMoveInfo moveInfo;
                 if (remainingMoves.TryGetValue(principalVariationMove, out moveInfo))
@@ -848,7 +848,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         [NotNull]
-        private PrincipalVariationInfo ComputeAlphaBeta(
+        private VariationLine ComputeAlphaBeta(
             [NotNull] GameBoard board,
             int plyDistance,
             EvaluationScore alpha,
@@ -877,18 +877,18 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var autoDrawType = board.GetAutoDrawType();
             if (autoDrawType != AutoDrawType.None)
             {
-                return PrincipalVariationInfo.Zero;
+                return VariationLine.Zero;
             }
 
             if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
             {
                 var quiesceScore = Quiesce(board, plyDistance, alpha, beta);
-                var result = new PrincipalVariationInfo(quiesceScore);
+                var result = new VariationLine(quiesceScore);
                 _transpositionTable?.SaveScore(board, plyDistance, result);
                 return result;
             }
 
-            PrincipalVariationInfo best = null;
+            VariationLine best = null;
             var localAlpha = alpha;
             var orderedMoves = OrderMoves(board, plyDistance);
             var moveCount = orderedMoves.Length;
@@ -931,7 +931,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return best.EnsureNotNull();
         }
 
-        private KeyValuePair<GameMove, PrincipalVariationInfo> AnalyzeRootMoveInternal(
+        private VariationLine AnalyzeRootMoveInternal(
             GameBoard board,
             GameMove move,
             int rootMoveIndex,
@@ -954,7 +954,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (_plyDepth >= 5)
             {
-                var previousPvi = _previousIterationPrincipalVariationCache?[move];
+                var previousPvi = _previousIterationVariationLineCache?[move];
                 if (previousPvi != null)
                 {
                     delta = StartingDelta;
@@ -967,26 +967,26 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
             }
 
-            PrincipalVariationInfo innerPrincipalVariationInfo;
+            VariationLine innerVariationLine;
             while (true)
             {
-                innerPrincipalVariationInfo = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha);
-                if (innerPrincipalVariationInfo.Value.Value <= alpha.Value)
+                innerVariationLine = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha);
+                if (innerVariationLine.Value.Value <= alpha.Value)
                 {
                     beta = new EvaluationScore((alpha.Value + beta.Value) / 2);
 
                     alpha = new EvaluationScore(
                         Math.Max(
-                            innerPrincipalVariationInfo.Value.Value - delta,
+                            innerVariationLine.Value.Value - delta,
                             EvaluationScore.NegativeInfinityValue));
                 }
-                else if (innerPrincipalVariationInfo.Value.Value >= beta.Value)
+                else if (innerVariationLine.Value.Value >= beta.Value)
                 {
                     alpha = new EvaluationScore((alpha.Value + beta.Value) / 2);
 
                     beta = new EvaluationScore(
                         Math.Min(
-                            innerPrincipalVariationInfo.Value.Value + delta,
+                            innerVariationLine.Value.Value + delta,
                             EvaluationScore.PositiveInfinityValue));
                 }
                 else
@@ -997,19 +997,19 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 delta += delta / 2;
             }
 
-            var principalVariationInfo = (move | innerPrincipalVariationInfo).WithLocalValue(localScore);
+            var variationLine = (move | innerVariationLine).WithLocalValue(localScore);
             stopwatch.Stop();
 
             Trace.TraceInformation(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
-                    }: {principalVariationInfo.ValueString} : L({principalVariationInfo.LocalValueString}), PV: {{ {
-                    board.GetStandardAlgebraicNotation(principalVariationInfo.Moves)} }}, time: {
+                    }: {variationLine.ValueString} : L({variationLine.LocalValueString}), PV: {{ {
+                    board.GetStandardAlgebraicNotation(variationLine.Moves)} }}, time: {
                     stopwatch.Elapsed:g}");
 
-            return KeyValuePair.Create(move, principalVariationInfo);
+            return variationLine;
         }
 
-        private PrincipalVariationInfo ComputeAlphaBetaRoot(GameBoard board)
+        private VariationLine ComputeAlphaBetaRoot(GameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -1020,7 +1020,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            var variationPairs = _useMultipleProcessors
+            var variationLines = _useMultipleProcessors
                 ? orderedMoves
                     .AsParallel()
                     .WithCancellation(_cancellationToken)
@@ -1034,12 +1034,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         (orderedMove, index) => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount))
                     .ToArray();
 
-            foreach (var variationPair in variationPairs)
+            foreach (var variationLine in variationLines)
             {
-                PrincipalVariationCache[variationPair.Key] = variationPair.Value;
+                VariationLineCache[variationLine.FirstMove.EnsureNotNull()] = variationLine;
             }
 
-            var orderedMovesByScore = PrincipalVariationCache.GetOrderedByScore().ToArray();
+            var orderedMovesByScore = VariationLineCache.GetOrderedByScore().ToArray();
             var bestVariation = orderedMovesByScore.First().Value.EnsureNotNull();
 
             var orderedVariationsString = orderedMovesByScore
@@ -1066,16 +1066,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var scoreValue = bestVariation.Value.Value.ToString(CultureInfo.InvariantCulture);
 
             Trace.TraceInformation(
-                $@"[{currentMethodName}] Best move {
+                $@"{Environment.NewLine}[{currentMethodName}] Best move {
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
-                    Environment.NewLine}{Environment.NewLine}PVs ordered by score:{Environment.NewLine}{
+                    Environment.NewLine}{Environment.NewLine}Variation Lines ordered by score:{Environment.NewLine}{
                     orderedVariationsString}{Environment.NewLine}{Environment.NewLine}Killer move stats:{
                     Environment.NewLine}{killersString}{Environment.NewLine}");
 
             return bestVariation;
         }
 
-        private PrincipalVariationInfo GetBestMoveInternal()
+        private VariationLine GetBestMoveInternal()
         {
             _cancellationToken.ThrowIfCancellationRequested();
 

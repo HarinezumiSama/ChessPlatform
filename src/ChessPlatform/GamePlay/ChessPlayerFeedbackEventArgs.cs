@@ -12,7 +12,7 @@ namespace ChessPlatform.GamePlay
             PieceColor color,
             [NotNull] GameBoard board,
             int depth,
-            [NotNull] PrincipalVariationInfo principalVariation)
+            [NotNull] VariationLine variation)
         {
             #region Argument Check
 
@@ -29,9 +29,9 @@ namespace ChessPlatform.GamePlay
                     @"The value must be positive.");
             }
 
-            if (principalVariation == null)
+            if (variation == null)
             {
-                throw new ArgumentNullException(nameof(principalVariation));
+                throw new ArgumentNullException(nameof(variation));
             }
 
             #endregion
@@ -39,7 +39,7 @@ namespace ChessPlatform.GamePlay
             Color = color;
             Board = board;
             Depth = depth;
-            PrincipalVariation = principalVariation;
+            Variation = variation;
         }
 
         #endregion
@@ -63,7 +63,7 @@ namespace ChessPlatform.GamePlay
         }
 
         [NotNull]
-        public PrincipalVariationInfo PrincipalVariation
+        public VariationLine Variation
         {
             get;
         }

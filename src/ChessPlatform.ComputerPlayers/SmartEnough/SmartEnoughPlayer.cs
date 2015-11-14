@@ -98,7 +98,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Protected Methods
 
-        protected override PrincipalVariationInfo DoGetMove(GetMoveRequest request)
+        protected override VariationLine DoGetMove(GetMoveRequest request)
         {
             request.CancellationToken.ThrowIfCancellationRequested();
 
@@ -185,7 +185,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var bestMoveData = bestMoveContainer.Value;
-            var principalVariationInfo = bestMoveData?.PrincipalVariation;
+            var principalVariationInfo = bestMoveData?.Variation;
 
             var elapsedSeconds = stopwatch.Elapsed.TotalSeconds;
             var nodeCount = bestMoveData?.NodeCount ?? 0L;
@@ -254,7 +254,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         $@"[{currentMethodName}] From the opening moves [ {openingMovesString} ] chosen {
                             openingMoveString}. Further opening move variants: {furtherOpeningMovesString}.");
 
-                    bestMoveContainer.Value = new BestMoveData(openingMove | PrincipalVariationInfo.Zero, 1L, 1);
+                    bestMoveContainer.Value = new BestMoveData(openingMove | VariationLine.Zero, 1L, 1);
                     return;
                 }
             }
@@ -262,9 +262,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var boardHelper = new BoardHelper();
             var killerMoveStatistics = new KillerMoveStatistics();
 
-            PrincipalVariationInfo bestPrincipalVariationInfo = null;
+            VariationLine bestVariationLine = null;
             var totalNodeCount = 0L;
-            PrincipalVariationCache principalVariationCache = null;
+            VariationLineCache variationLineCache = null;
 
             var useIterativeDeepening = _maxTimePerMove.HasValue;
 
@@ -298,31 +298,31 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     board,
                     plyDepth,
                     boardHelper,
-                    principalVariationCache,
-                    bestPrincipalVariationInfo,
+                    variationLineCache,
+                    bestVariationLine,
                     cancellationToken,
                     _useMultipleProcessors,
                     killerMoveStatistics);
 
-                bestPrincipalVariationInfo = moveChooser.GetBestMove();
+                bestVariationLine = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;
-                principalVariationCache = moveChooser.PrincipalVariationCache;
+                variationLineCache = moveChooser.VariationLineCache;
 
-                bestMoveContainer.Value = new BestMoveData(bestPrincipalVariationInfo, totalNodeCount, plyDepth);
+                bestMoveContainer.Value = new BestMoveData(bestVariationLine, totalNodeCount, plyDepth);
 
                 var feedbackEventArgs = new ChessPlayerFeedbackEventArgs(
                     Color,
                     board,
                     plyDepth,
-                    bestPrincipalVariationInfo);
+                    bestVariationLine);
 
                 OnFeedbackProvided(feedbackEventArgs);
 
-                if (bestPrincipalVariationInfo.Value.IsCheckmating())
+                if (bestVariationLine.Value.IsCheckmating())
                 {
                     Trace.TraceInformation(
                         $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {
-                            bestPrincipalVariationInfo}.");
+                            bestVariationLine}.");
 
                     break;
                 }
@@ -337,9 +337,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         {
             #region Constructors
 
-            internal BestMoveData(PrincipalVariationInfo principalVariation, long nodeCount, int plyDepth)
+            internal BestMoveData(VariationLine variation, long nodeCount, int plyDepth)
             {
-                PrincipalVariation = principalVariation.EnsureNotNull();
+                Variation = variation.EnsureNotNull();
                 NodeCount = nodeCount;
                 PlyDepth = plyDepth;
             }
@@ -353,7 +353,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 get;
             }
 
-            public PrincipalVariationInfo PrincipalVariation
+            public VariationLine Variation
             {
                 get;
             }

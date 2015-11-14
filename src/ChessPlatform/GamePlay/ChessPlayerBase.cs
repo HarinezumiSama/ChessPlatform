@@ -32,7 +32,7 @@ namespace ChessPlatform.GamePlay
 
         public virtual string Name => GetType().FullName;
 
-        public Task<PrincipalVariationInfo> CreateGetMoveTask(GetMoveRequest request)
+        public Task<VariationLine> CreateGetMoveTask(GetMoveRequest request)
         {
             #region Argument Check
 
@@ -59,7 +59,7 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            var result = new Task<PrincipalVariationInfo>(() => DoGetMove(request), request.CancellationToken);
+            var result = new Task<VariationLine>(() => DoGetMove(request), request.CancellationToken);
             OnGetMoveTaskCreated(result, request.CancellationToken);
             return result;
         }
@@ -74,10 +74,10 @@ namespace ChessPlatform.GamePlay
         }
 
         [NotNull]
-        protected abstract PrincipalVariationInfo DoGetMove([NotNull] GetMoveRequest request);
+        protected abstract VariationLine DoGetMove([NotNull] GetMoveRequest request);
 
         protected virtual void OnGetMoveTaskCreated(
-            [NotNull] Task<PrincipalVariationInfo> getMoveTask,
+            [NotNull] Task<VariationLine> getMoveTask,
             CancellationToken cancellationToken)
         {
             // Nothing to do; for overriding only

@@ -58,7 +58,7 @@
     <Compile Include="SmartEnough\KillerMoveData.cs" />
     <Compile Include="SmartEnough\KillerMoveStatistics.cs" />
     <Compile Include="SmartEnough\OrderedMove.cs" />
-    <Compile Include="SmartEnough\PrincipalVariationCache.cs" />
+    <Compile Include="SmartEnough\VariationLineCache.cs" />
     <Compile Include="SmartEnough\SimpleTranspositionTable.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayerParameters.cs" />

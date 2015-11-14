@@ -12,7 +12,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
     {
         #region Constants and Fields
 
-        private readonly Dictionary<InternalKey, PrincipalVariationInfo> _scoreMap;
+        private readonly Dictionary<InternalKey, VariationLine> _scoreMap;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             this.MaximumItemCount = maximumItemCount;
-            _scoreMap = new Dictionary<InternalKey, PrincipalVariationInfo>(maximumItemCount);
+            _scoreMap = new Dictionary<InternalKey, VariationLine>(maximumItemCount);
 
             if (this.MaximumItemCount <= 0)
             {
@@ -80,7 +80,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public PrincipalVariationInfo GetScore([NotNull] GameBoard board, int plyDistance)
+        public VariationLine GetScore([NotNull] GameBoard board, int plyDistance)
         {
             #region Argument Check
 
@@ -95,7 +95,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var key = GetKey(board, plyDistance);
 
-            PrincipalVariationInfo result;
+            VariationLine result;
             if (!_scoreMap.TryGetValue(key, out result))
             {
                 return null;
@@ -106,7 +106,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         }
 
         //// TODO [vmcl] Store EvaluationScore rather than PV
-        public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] PrincipalVariationInfo info)
+        public void SaveScore([NotNull] GameBoard board, int plyDistance, [NotNull] VariationLine line)
         {
             #region Argument Check
 
@@ -115,9 +115,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (info == null)
+            if (line == null)
             {
-                throw new ArgumentNullException(nameof(info));
+                throw new ArgumentNullException(nameof(line));
             }
 
             #endregion
@@ -128,7 +128,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             }
 
             var key = GetKey(board, plyDistance);
-            _scoreMap.Add(key, info);
+            _scoreMap.Add(key, line);
 
             if (_scoreMap.Count >= this.MaximumItemCount)
             {

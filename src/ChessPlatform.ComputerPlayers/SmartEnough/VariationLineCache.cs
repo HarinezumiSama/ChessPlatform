@@ -6,17 +6,17 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.ComputerPlayers.SmartEnough
 {
-    internal sealed class PrincipalVariationCache
+    internal sealed class VariationLineCache
     {
         #region Constants and Fields
 
-        private readonly Dictionary<GameMove, PrincipalVariationInfo> _cache;
+        private readonly Dictionary<GameMove, VariationLine> _cache;
 
         #endregion
 
         #region Constants and Fields
 
-        public PrincipalVariationCache([NotNull] GameBoard board)
+        public VariationLineCache([NotNull] GameBoard board)
         {
             #region Argument Check
 
@@ -27,14 +27,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            _cache = board.ValidMoves.ToDictionary(pair => pair.Key, pair => (PrincipalVariationInfo)null);
+            _cache = board.ValidMoves.ToDictionary(pair => pair.Key, pair => (VariationLine)null);
         }
 
         #endregion
 
         #region Public Properties
 
-        public PrincipalVariationInfo this[[NotNull] GameMove move]
+        public VariationLine this[[NotNull] GameMove move]
         {
             get
             {
@@ -57,10 +57,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 #endregion
 
-                var oldScore = _cache[move];
-                if (oldScore != null)
+                var variationLine = _cache[move];
+                if (variationLine != null)
                 {
-                    throw new InvalidOperationException($@"Unable to overwrite the score for move {move}.");
+                    throw new InvalidOperationException($@"Unable to overwrite the variation line of move {move}.");
                 }
 
                 _cache[move] = value;
@@ -71,7 +71,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Public Methods
 
-        public IOrderedEnumerable<KeyValuePair<GameMove, PrincipalVariationInfo>> GetOrderedByScore()
+        public IOrderedEnumerable<KeyValuePair<GameMove, VariationLine>> GetOrderedByScore()
         {
             return _cache
                 .OrderByDescending(pair => pair.Value.EnsureNotNull().Value.Value)
