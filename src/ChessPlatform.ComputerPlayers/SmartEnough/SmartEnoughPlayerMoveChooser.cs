@@ -23,6 +23,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         ////private const int MidgameMaterialLimit = 5800;
         private const int EndgameMaterialLimit = 1470;
 
+        private static readonly EvaluationScore NullWindowOffset = new EvaluationScore(1);
+
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightInMiddlegameMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMaterialWeightInMiddlegameMap());
 
@@ -796,7 +798,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] GameBoard board,
             int plyDistance,
             EvaluationScore alpha,
-            EvaluationScore beta)
+            EvaluationScore beta,
+            bool isPrincipalVariation)
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
@@ -807,7 +810,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return bestScore;
             }
 
-            var localAlpha = new EvaluationScore(Math.Max(alpha.Value, bestScore.Value));
+            var localAlpha = alpha;
+            if (isPrincipalVariation && bestScore.Value > localAlpha.Value)
+            {
+                localAlpha = bestScore;
+            }
 
             var nonQuietMoves = board.ValidMoves
                 .Where(pair => pair.Value.IsRegularCapture)
@@ -825,7 +832,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 }
 
                 var currentBoard = _boardHelper.MakeMove(board, nonQuietMove);
-                var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha);
+                var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha, isPrincipalVariation);
 
                 if (score.Value >= beta.Value)
                 {
@@ -852,7 +859,8 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] GameBoard board,
             int plyDistance,
             EvaluationScore alpha,
-            EvaluationScore beta)
+            EvaluationScore beta,
+            bool isPrincipalVariation)
         {
             #region Argument Check
 
@@ -882,7 +890,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
             {
-                var quiesceScore = Quiesce(board, plyDistance, alpha, beta);
+                var quiesceScore = Quiesce(board, plyDistance, alpha, beta, isPrincipalVariation);
                 var result = new VariationLine(quiesceScore);
                 _transpositionTable?.SaveScore(board, plyDistance, result);
                 return result;
@@ -900,12 +908,32 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 var move = orderedMove.Move;
 
                 var currentBoard = _boardHelper.MakeMove(board, move);
-                var scoreInfo = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -localAlpha);
 
-                if (scoreInfo.Value.Value >= beta.Value)
+                var useNullWindow = !isPrincipalVariation || moveIndex > 0;
+
+                VariationLine variationLine = null;
+                if (useNullWindow)
+                {
+                    variationLine =
+                        -ComputeAlphaBeta(
+                            currentBoard,
+                            plyDistance + 1,
+                            -localAlpha - NullWindowOffset,
+                            -localAlpha,
+                            false);
+                }
+
+                if (isPrincipalVariation
+                    && (variationLine == null || moveIndex == 0
+                        || (variationLine.Value.Value > localAlpha.Value && variationLine.Value.Value < beta.Value)))
+                {
+                    variationLine = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -localAlpha, true);
+                }
+
+                if (variationLine.Value.Value >= beta.Value)
                 {
                     // Fail-soft beta-cutoff
-                    best = move | scoreInfo;
+                    best = move | variationLine;
                     _transpositionTable?.SaveScore(board, plyDistance, best);
 
                     if (!orderedMove.MoveInfo.IsAnyCapture && !orderedMove.IsPvMove)
@@ -916,12 +944,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     return best;
                 }
 
-                if (best == null || scoreInfo.Value.Value > best.Value.Value)
+                if (best == null || variationLine.Value.Value > best.Value.Value)
                 {
-                    best = move | scoreInfo;
-                    if (scoreInfo.Value.Value > localAlpha.Value)
+                    best = move | variationLine;
+                    if (variationLine.Value.Value > localAlpha.Value)
                     {
-                        localAlpha = scoreInfo.Value;
+                        localAlpha = variationLine.Value;
                     }
                 }
             }
@@ -959,18 +987,20 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 {
                     delta = StartingDelta;
 
+                    var previousValue = previousPvi.Value.Value;
+
                     alpha = new EvaluationScore(
-                        Math.Max(previousPvi.Value.Value - delta, EvaluationScore.NegativeInfinityValue));
+                        Math.Max(previousValue - delta, EvaluationScore.NegativeInfinityValue));
 
                     beta = new EvaluationScore(
-                        Math.Min(previousPvi.Value.Value + delta, EvaluationScore.PositiveInfinityValue));
+                        Math.Min(previousValue + delta, EvaluationScore.PositiveInfinityValue));
                 }
             }
 
             VariationLine innerVariationLine;
             while (true)
             {
-                innerVariationLine = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha);
+                innerVariationLine = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha, true);
                 if (innerVariationLine.Value.Value <= alpha.Value)
                 {
                     beta = new EvaluationScore((alpha.Value + beta.Value) / 2);
@@ -1065,7 +1095,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var scoreValue = bestVariation.Value.Value.ToString(CultureInfo.InvariantCulture);
 
-            Trace.TraceInformation(
+            Trace.WriteLine(
                 $@"{Environment.NewLine}[{currentMethodName}] Best move {
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
                     Environment.NewLine}{Environment.NewLine}Variation Lines ordered by score:{Environment.NewLine}{
