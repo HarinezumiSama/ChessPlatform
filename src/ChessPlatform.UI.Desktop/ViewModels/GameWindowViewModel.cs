@@ -690,7 +690,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void Player_FeedbackProvided(object sender, ChessPlayerFeedbackEventArgs args)
         {
             var feedback =
-                $@"D={args.Depth}{Environment.NewLine}{args.Variation.ValueString}{Environment.NewLine
+                $@"D={args.Depth}/{args.MaxDepth}{Environment.NewLine}{args.Variation.ValueString}{Environment.NewLine
                     }PV: {args.Board.GetStandardAlgebraicNotation(args.Variation.Moves)}";
 
             if (args.Color == PieceColor.White)

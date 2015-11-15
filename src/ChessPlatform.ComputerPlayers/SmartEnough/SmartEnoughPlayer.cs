@@ -314,6 +314,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     Color,
                     board,
                     plyDepth,
+                    _maxPlyDepth,
                     bestVariationLine);
 
                 OnFeedbackProvided(feedbackEventArgs);
