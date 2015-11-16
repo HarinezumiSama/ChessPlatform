@@ -39,6 +39,10 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Omnifactotum, Version=0.3.0.119, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
       <HintPath>..\packages\Omnifactotum.0.3.0.119\lib\net40-Client\Omnifactotum.dll</HintPath>
       <Private>True</Private>
@@ -60,6 +64,7 @@
     <Compile Include="CastlingType.cs" />
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
+    <Compile Include="GameDescription.cs" />
     <Compile Include="GamePlay\CommonEngineConstants.cs" />
     <Compile Include="GamePlay\ChessPlayerBase.cs" />
     <Compile Include="GamePlay\ChessPlayerFeedbackEventArgs.cs" />
@@ -80,6 +85,10 @@
     <Compile Include="Internal\GeneratedMoveTypesExtensions.cs" />
     <Compile Include="Internal\ZobristHashHelper.cs" />
     <Compile Include="PieceConstants.cs" />
+    <Compile Include="Serializers\FenGameSerializer.cs" />
+    <Compile Include="Serializers\GameSerializer.cs" />
+    <Compile Include="Serializers\GameSerializerExtensions.cs" />
+    <Compile Include="Serializers\PgnGameSerializer.cs" />
     <Compile Include="ShiftDirection.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
     <Compile Include="Utilities\PositionDictionary.cs" />
@@ -125,6 +134,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <CompileDependsOn>UpdateGlobalVersion;$(CompileDependsOn)</CompileDependsOn>
