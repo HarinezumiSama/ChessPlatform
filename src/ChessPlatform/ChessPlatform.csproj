@@ -88,6 +88,7 @@
     <Compile Include="Serializers\FenGameSerializer.cs" />
     <Compile Include="Serializers\GameSerializer.cs" />
     <Compile Include="Serializers\GameSerializerExtensions.cs" />
+    <Compile Include="Serializers\Internal\PgnGrammar.cs" />
     <Compile Include="Serializers\PgnGameSerializer.cs" />
     <Compile Include="ShiftDirection.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
