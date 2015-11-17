@@ -24,7 +24,15 @@ namespace ChessPlatform.Serializers
             var parser = new Parser(new PgnGrammar());
             var parseTree = parser.Parse(sourceText);
 
-            Trace.WriteLine($@"Parse status = {parseTree.Status}.");
+            if (parseTree.Status != ParseTreeStatus.Parsed)
+            {
+                var parserMessage = parseTree.ParserMessages.First();
+                var errorLocation = parserMessage.Location;
+
+                throw new ChessPlatformException(
+                    $@"Invalid PGN. Error at line {errorLocation.Line + 1}, column {errorLocation.Column + 1}: {
+                        parserMessage.Message}");
+            }
 
             throw new NotImplementedException();
         }
