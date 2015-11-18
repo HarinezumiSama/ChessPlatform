@@ -51,9 +51,8 @@ namespace ChessPlatform.Serializers.Internal
             tagSection.Rule = MakeStarRule(tagSection, tagPair);
             tagPair.Rule = "[" + tagName + "\"" + tagValue + "\"" + "]";
             movetextSection.Rule = elementSequence + gameTermination;
-            elementSequence.Rule = (element + elementSequence) | (recursiveVariation + elementSequence) | Empty;
-            ////elementSequence.Rule = MakeStarRule(elementSequence, element | recursiveVariation);
-            element.Rule = moveNumberIndication | sanMove | numericAnnotationGlyph;
+            elementSequence.Rule = MakeStarRule(elementSequence, element);
+            element.Rule = moveNumberIndication | sanMove | numericAnnotationGlyph | recursiveVariation;
             moveNumberIndication.Rule = moveNumber;
             recursiveVariation.Rule = "(" + elementSequence + ")";
             gameTermination.Rule = (BnfExpression)"1-0" | "0-1" | "1/2-1/2" | "*";
@@ -61,7 +60,7 @@ namespace ChessPlatform.Serializers.Internal
             NonGrammarTerminals.Add(singleLineComment);
             NonGrammarTerminals.Add(multiLineComment);
 
-            MarkPunctuation("[", "]", "\"", ".", "...");
+            MarkPunctuation("[", "]", "\"", ".", "...", "(", ")");
 
             Root = pgnDatabase;
         }
