@@ -17,7 +17,7 @@ namespace ChessPlatform.Serializers.Internal
 
         #region Constructors
 
-        internal PgnGrammar()
+        public PgnGrammar()
         {
             var pgnDatabase = new NonTerminal("PGN-database");
             var pgnGame = new NonTerminal("PGN-game");
@@ -30,7 +30,7 @@ namespace ChessPlatform.Serializers.Internal
             var element = new NonTerminal("element");
             var recursiveVariation = new NonTerminal("recursive-variation");
             var gameTermination = new NonTerminal("game-termination");
-            var moveNumber = new NumberLiteral("move-number", NumberOptions.IntOnly);
+            var moveNumber = new RegexBasedTerminal("move-number", @"\d+\.(\.\.)?");
 
             var moveNumberIndication = new NonTerminal("move-number-indication");
 
@@ -51,10 +51,10 @@ namespace ChessPlatform.Serializers.Internal
             tagSection.Rule = MakeStarRule(tagSection, tagPair);
             tagPair.Rule = "[" + tagName + "\"" + tagValue + "\"" + "]";
             movetextSection.Rule = elementSequence + gameTermination;
-            ////elementSequence.Rule = (element + elementSequence) | (recursiveVariation + elementSequence) | Empty;
-            elementSequence.Rule = MakeStarRule(elementSequence, element | recursiveVariation);
+            elementSequence.Rule = (element + elementSequence) | (recursiveVariation + elementSequence) | Empty;
+            ////elementSequence.Rule = MakeStarRule(elementSequence, element | recursiveVariation);
             element.Rule = moveNumberIndication | sanMove | numericAnnotationGlyph;
-            moveNumberIndication.Rule = moveNumber + "." + ((BnfExpression)"..").Q();
+            moveNumberIndication.Rule = moveNumber;
             recursiveVariation.Rule = "(" + elementSequence + ")";
             gameTermination.Rule = (BnfExpression)"1-0" | "0-1" | "1/2-1/2" | "*";
 
