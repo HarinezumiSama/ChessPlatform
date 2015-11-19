@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.Serializers.Internal.Pgn
 {
-    public sealed class GameTerminationAstNode : TextAstNodeBase
+    public sealed class NumericAnnotationGlyphAstNode : TextAstNodeBase
     {
     }
 }

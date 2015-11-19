@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using Irony.Ast;
 using Irony.Parsing;
 
 namespace ChessPlatform.Serializers.Internal.Pgn
 {
-    [DebuggerDisplay("{DebugText,nq}")]
-    public sealed class ElementSequenceAstNode : AstNodeBase
+    public sealed class RecursiveVariationAstNode : AstNodeBase
     {
         #region Public Properties
 
-        public ElementAstNode[] Elements
+        public ElementSequenceAstNode ElementSequence
         {
             get;
             private set;
@@ -19,17 +17,13 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 
         #endregion
 
-        #region Internal Properties
-
-        public string DebugText => $@"[{GetType().Name}] Elements.Length = {Elements?.Length}";
-
-        #endregion
-
         #region Protected Methods
 
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
-            Elements = GetChildren<ElementAstNode>(parseNode);
+            AssertChildCount(parseNode, 1);
+
+            ElementSequence = GetChildNode<ElementSequenceAstNode>(parseNode, 0);
         }
 
         #endregion

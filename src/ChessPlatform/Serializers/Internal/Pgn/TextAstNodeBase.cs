@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Irony.Ast;
 using Irony.Parsing;
 
 namespace ChessPlatform.Serializers.Internal.Pgn
 {
+    [DebuggerDisplay("[{GetType().Name,nq}] Text = {Text}")]
     public abstract class TextAstNodeBase : AstNodeBase
     {
         #region Protected Properties
@@ -21,7 +23,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 
         protected sealed override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
-            var tokenText = parseNode.Token.EnsureNotNull().Text.EnsureNotNull();
+            var tokenText = GetTokenText(parseNode);
             Text = ExtractText(tokenText);
         }
 

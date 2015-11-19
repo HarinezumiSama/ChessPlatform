@@ -6,15 +6,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     internal sealed class PgnGrammar : Grammar
     {
-        #region Constants and Fields
-
-        private const string FilePattern = "[abcdefgh]";
-        private const string RankPattern = "[12345678]";
-        private const string PiecePattern = "[KQRBNP]"; // Though not recommended, P may be used for pawn
-        private const string PromotionPattern = "[QRBN]";
-
-        #endregion
-
         #region Constructors
 
         public PgnGrammar()
@@ -33,18 +24,18 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             var movetextSection = new NonTerminal("movetext-section", typeof(MovetextSectionAstNode));
             var elementSequence = new NonTerminal("element-sequence", typeof(ElementSequenceAstNode));
             var element = new NonTerminal("element", typeof(ElementAstNode));
-            var recursiveVariation = new NonTerminal("recursive-variation") { Flags = TermFlags.NoAstNode };
-            var gameTermination = new NonTerminal("game-termination", typeof(GameTerminationAstNode));
+            var recursiveVariation = new NonTerminal("recursive-variation", typeof(RecursiveVariationAstNode));
+            var gameTermination = new RegexBasedTerminal("game-termination", @"(1\-0)|(0\-1)|(1\/2\-1\/2)|\*")
+            {
+                AstConfig = { NodeType = typeof(GameTerminationAstNode) }
+            };
 
-            var moveNumberIndication = new RegexBasedTerminal("move-number", @"\d+\.(\.\.)?")
+            var moveNumberIndication = new RegexBasedTerminal("move-number-indication", @"(\d+)\.(\.\.)?")
             {
                 AstConfig = { NodeType = typeof(MoveNumberIndicationAstNode) }
             };
 
-            var sanMove = new RegexBasedTerminal(
-                "SAN-move",
-                $@"(({PiecePattern}?{FilePattern}?{RankPattern}?[x]?({FilePattern}{RankPattern})(\={PromotionPattern
-                    })?)|(O-O(-O)?))[+#]?")
+            var sanMove = new RegexBasedTerminal("SAN-move", SanMoveHelper.SanMovePattern)
             {
                 AstConfig = { NodeType = typeof(SanMoveAstNode) }
             };
@@ -53,7 +44,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
                 "numeric-annotation-glyph",
                 @"(\$\d+)|[\?\!]{1,2}")
             {
-                Flags = TermFlags.NoAstNode
+                AstConfig = { NodeType = typeof(NumericAnnotationGlyphAstNode) }
             };
 
             var singleLineComment = new CommentTerminal("single-line-comment", ";", "\n", "\r")
@@ -74,7 +65,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             elementSequence.Rule = MakeStarRule(elementSequence, element);
             element.Rule = moveNumberIndication | sanMove | numericAnnotationGlyph | recursiveVariation;
             recursiveVariation.Rule = "(" + elementSequence + ")";
-            gameTermination.Rule = (BnfExpression)"1-0" | "0-1" | "1/2-1/2" | "*";
 
             NonGrammarTerminals.Add(singleLineComment);
             NonGrammarTerminals.Add(multiLineComment);

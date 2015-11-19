@@ -38,7 +38,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static void AssertChildCount([NotNull] ParseTreeNode parseNode, int expectedChildCount)
         {
-            var actualChildCount = parseNode.ChildNodes.Count;
+            var actualChildCount = parseNode.EnsureNotNull().ChildNodes.Count;
             if (actualChildCount != expectedChildCount)
             {
                 throw new InvalidOperationException(
@@ -52,7 +52,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         protected static TNode GetChildNode<TNode>([NotNull] ParseTreeNode parseNode, int index)
             where TNode : AstNodeBase
         {
-            var result = parseNode.ChildNodes[index].AstNode as TNode;
+            var result = parseNode.EnsureNotNull().ChildNodes[index].AstNode as TNode;
             if (result == null)
             {
                 throw new InvalidOperationException(
@@ -70,12 +70,18 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             where TNode : AstNodeBase
         {
             var result = parseNode
+                .EnsureNotNull()
                 .ChildNodes
                 .Select(obj => obj.EnsureNotNull().AstNode.EnsureNotNull())
                 .Cast<TNode>()
                 .ToArray();
 
             return result;
+        }
+
+        protected static string GetTokenText([NotNull] ParseTreeNode parseNode)
+        {
+            return parseNode.EnsureNotNull().Token.EnsureNotNull().Text.EnsureNotNull();
         }
 
         protected abstract void Initialize([NotNull] AstContext context, [NotNull] ParseTreeNode parseNode);

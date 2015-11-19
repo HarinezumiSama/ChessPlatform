@@ -589,6 +589,96 @@ namespace ChessPlatform
             return _packedGameBoard;
         }
 
+        [CanBeNull]
+        public GameMove ParseSanMove([NotNull] string sanMoveText)
+        {
+            #region Argument Check
+
+            if (string.IsNullOrWhiteSpace(sanMoveText))
+            {
+                throw new ArgumentException(
+                    @"The value can be neither empty nor whitespace-only string nor null.",
+                    nameof(sanMoveText));
+            }
+
+            #endregion
+
+            var match = SanMoveHelper.SanMoveRegex.Match(sanMoveText);
+            if (!match.Success)
+            {
+                throw new InvalidOperationException($@"Invalid SAN move format: '{sanMoveText}'.");
+            }
+
+            KeyValuePair<GameMove, GameMoveInfo>[] filteredPairs;
+
+            var moveNotation = match.Groups[SanMoveHelper.MoveNotationGroupName].Value;
+            switch (moveNotation)
+            {
+                case SanMoveHelper.ShortCastlingSymbol:
+                    filteredPairs = FindCastlingMoveInternal(true);
+                    break;
+
+                case SanMoveHelper.LongCastlingSymbol:
+                    filteredPairs = FindCastlingMoveInternal(false);
+                    break;
+
+                default:
+                    var movedPiece = match.Groups[SanMoveHelper.MovedPieceGroupName].Value;
+                    var fromFile = match.Groups[SanMoveHelper.FromFileGroupName].Value;
+                    var fromRank = match.Groups[SanMoveHelper.FromRankGroupName].Value;
+                    var isCapture = match.Groups[SanMoveHelper.CaptureSignGroupName].Value
+                        == SanMoveHelper.CaptureSymbol;
+                    var to = match.Groups[SanMoveHelper.ToGroupName].Value;
+                    var promotion = match.Groups[SanMoveHelper.PromotionGroupName].Value;
+                    var check = match.Groups[SanMoveHelper.CheckGroupName].Value;
+
+                    var sanMove = new SanMove
+                    {
+                        MovedPiece = movedPiece.IsNullOrEmpty()
+                            ? PieceType.Pawn
+                            : ChessConstants.FenCharToPieceTypeMap[movedPiece.Single()],
+                        FromFile = fromFile.IsNullOrEmpty() ? default(int?) : Position.GetFileIndex(fromFile.Single()),
+                        FromRank = fromRank.IsNullOrEmpty() ? default(int?) : Position.GetRankIndex(fromRank.Single()),
+                        IsCapture = isCapture,
+                        To = Position.FromAlgebraic(to),
+                        Promotion =
+                            promotion.IsNullOrEmpty()
+                                ? PieceType.None
+                                : ChessConstants.FenCharToPieceTypeMap[promotion.Single()],
+                        IsCheck = check == SanMoveHelper.CheckSymbol,
+                        IsCheckmate = check == SanMoveHelper.CheckmateSymbol
+                    };
+
+                    filteredPairs = ValidMoves
+                        .Where(
+                            pair =>
+                                pair.Key.To == sanMove.To
+                                    && this[pair.Key.From].GetPieceType() == sanMove.MovedPiece
+                                    && pair.Key.PromotionResult == sanMove.Promotion
+                                    && (!sanMove.FromFile.HasValue || pair.Key.From.File == sanMove.FromFile.Value)
+                                    && (!sanMove.FromRank.HasValue || pair.Key.From.Rank == sanMove.FromRank.Value)
+                                    && pair.Value.IsAnyCapture == sanMove.IsCapture)
+                        .ToArray();
+
+                    break;
+            }
+
+            switch (filteredPairs.Length)
+            {
+                case 0:
+                    throw new ChessPlatformException(
+                        $@"Invalid SAN move '{sanMoveText}' for the board '{GetFen()}'.");
+
+                case 1:
+                    return filteredPairs[0].Key;
+
+                default:
+                    throw new ChessPlatformException(
+                        $@"Ambiguous SAN move '{sanMoveText}' for the board '{GetFen()}': {filteredPairs.Length
+                            } options.");
+            }
+        }
+
         #endregion
 
         #region Private Methods
@@ -1424,6 +1514,19 @@ namespace ChessPlatform
             return result;
         }
 
+        [NotNull]
+        private KeyValuePair<GameMove, GameMoveInfo>[] FindCastlingMoveInternal(bool kingSide)
+        {
+            var castlingOptions = kingSide ? CastlingOptions.KingSideMask : CastlingOptions.QueenSideMask;
+
+            var result = ValidMoves
+                .Where(
+                    pair => pair.Value.IsKingCastling && (CheckCastlingMove(pair.Key).Option & castlingOptions) != 0)
+                .ToArray();
+
+            return result;
+        }
+
         #endregion
 
         #region PerftData Class
@@ -1593,6 +1696,61 @@ namespace ChessPlatform
             }
 
             #endregion
+        }
+
+        #endregion
+
+        #region SanMove Structure
+
+        internal struct SanMove
+        {
+            public PieceType MovedPiece
+            {
+                get;
+                set;
+            }
+
+            public int? FromFile
+            {
+                get;
+                set;
+            }
+
+            public int? FromRank
+            {
+                get;
+                set;
+            }
+
+            public bool IsCapture
+            {
+                get;
+                set;
+            }
+
+            public Position To
+            {
+                get;
+                set;
+            }
+
+            public PieceType Promotion
+            {
+                get;
+                set;
+            }
+
+            public bool IsCheck
+            {
+                get;
+                set;
+            }
+
+            public bool IsCheckmate
+            {
+                get;
+                set;
+            }
         }
 
         #endregion

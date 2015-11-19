@@ -35,12 +35,34 @@ namespace ChessPlatform.Serializers
             }
 
             var databaseNode = (parseTree.Root.EnsureNotNull().AstNode as DatabaseAstNode).EnsureNotNull();
-            foreach (var game in databaseNode.Games)
+            var games = databaseNode.Games.EnsureNotNull();
+
+            var resultList = new List<GameDescription>(games.Length);
+            foreach (var game in games)
             {
-                game.TagSection
+                var fen = game.TagSection.GetTagValue(TagNames.Fen);
+                var initialBoard = fen == null ? new GameBoard() : new GameBoard(fen, true);
+
+                var moves = new List<GameMove>(game.MovetextSection.ElementSequence.Elements.Length);
+                var currentBoard = initialBoard;
+                foreach (var element in game.MovetextSection.ElementSequence.Elements)
+                {
+                    if (!element.ElementType.HasValue || element.ElementType.Value != ElementType.SanMove)
+                    {
+                        continue;
+                    }
+
+                    var sanMoveText = element.SanMove.EnsureNotNull().Text.EnsureNotNull();
+                    var move = currentBoard.ParseSanMove(sanMoveText);
+                    moves.Add(move);
+                    currentBoard = currentBoard.MakeMove(move);
+                }
+
+                var gameDescription = new GameDescription(initialBoard, moves);
+                resultList.Add(gameDescription);
             }
 
-            throw new NotImplementedException();
+            return resultList.ToArray();
         }
 
         #endregion

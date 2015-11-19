@@ -210,12 +210,28 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetFileIndex(char file)
+        {
+            return checked(file - 'a');
+        }
+
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetRankIndex(char rank)
+        {
+            return checked(rank - '1');
+        }
+
+        [DebuggerNonUserCode]
         public static Position FromAlgebraic(string algebraicNotation)
         {
             var position = TryFromAlgebraic(algebraicNotation);
             if (!position.HasValue)
             {
-                throw new ArgumentException("Invalid algebraic notation.", nameof(algebraicNotation));
+                throw new ArgumentException(
+                    $@"Invalid algebraic notation '{algebraicNotation}'.",
+                    nameof(algebraicNotation));
             }
 
             return position.Value;
@@ -229,8 +245,8 @@ namespace ChessPlatform
                 return null;
             }
 
-            var file = char.ToLowerInvariant(algebraicNotation[0]) - 'a';
-            var rank = algebraicNotation[1] - '1';
+            var file = GetFileIndex(char.ToLowerInvariant(algebraicNotation[0]));
+            var rank = GetRankIndex(algebraicNotation[1]);
 
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
                 ? new Position(false, file, rank)
@@ -262,8 +278,8 @@ namespace ChessPlatform
 
         public static Position[] GenerateFile(char file)
         {
-            var fileValue = file - 'a';
-            return GenerateFile(Convert.ToByte(fileValue));
+            var fileIndex = GetFileIndex(file);
+            return GenerateFile(Convert.ToByte(fileIndex));
         }
 
         public static Position[] GenerateRank(int rank)
