@@ -491,6 +491,12 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             return nonPawnMaterialValue <= EndgameMaterialLimit ? GamePhase.Endgame : GamePhase.Middlegame;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsQuietMove(GameMoveInfo moveInfo)
+        {
+            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion;
+        }
+
         private static int EvaluateMaterialAndItsPositionByColor(
             [NotNull] GameBoard board,
             PieceColor color,
@@ -550,11 +556,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Position position)
         {
-            //// TODO [vmcl] Consider en passant capture
-
             var cheapestAttackerMove = board
                 .ValidMoves
-                .Where(pair => pair.Key.To == position && pair.Value.IsRegularCapture)
+                .Where(pair => pair.Key.To == position && pair.Value.IsAnyCapture)
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
@@ -816,8 +820,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 localAlpha = bestScore;
             }
 
-            var nonQuietMoves = board.ValidMoves
-                .Where(pair => pair.Value.IsRegularCapture)
+            var nonQuietMoves = board
+                .ValidMoves
+                .Where(pair => !IsQuietMove(pair.Value))
                 .Select(pair => pair.Key)
                 .ToArray();
 
@@ -936,7 +941,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     best = move | variationLine;
                     _transpositionTable?.SaveScore(board, plyDistance, best);
 
-                    if (!orderedMove.MoveInfo.IsAnyCapture && !orderedMove.IsPvMove)
+                    if (IsQuietMove(orderedMove.MoveInfo) && !orderedMove.IsPvMove)
                     {
                         _killerMoveStatistics.RecordKiller(plyDistance, move);
                     }
