@@ -589,7 +589,7 @@ namespace ChessPlatform
             return _packedGameBoard;
         }
 
-        [CanBeNull]
+        [NotNull]
         public GameMove ParseSanMove([NotNull] string sanMoveText)
         {
             #region Argument Check
