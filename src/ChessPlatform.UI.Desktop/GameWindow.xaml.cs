@@ -494,7 +494,7 @@ namespace ChessPlatform.UI.Desktop
         private void OnIsComputerPlayerActiveChanged(object sender, EventArgs e)
         {
             var isComputerPlayerActive = ViewModel.IsComputerPlayerActive;
-            if (isComputerPlayerActive)
+            if (isComputerPlayerActive && !ViewModel.GameManagerResult.HasValue)
             {
                 TaskbarItemInfoInstance.ProgressValue = 0.5d;
                 TaskbarItemInfoInstance.ProgressState = TaskbarItemProgressState.Paused;
