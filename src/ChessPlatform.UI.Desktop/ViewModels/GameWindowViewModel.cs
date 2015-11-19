@@ -618,6 +618,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnNewGameStarted()
         {
+            _whitePlayerFeedback = null;
+            _blackPlayerFeedback = null;
             AffectPlayerInfo();
         }
 
@@ -633,8 +635,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnPlayerThinkingStarted()
         {
-            _whitePlayerFeedback = null;
-            _blackPlayerFeedback = null;
+            var activeColor = GetActivePlayer()?.Color;
+
+            if (!activeColor.HasValue || activeColor.Value == PieceColor.White)
+            {
+                _whitePlayerFeedback = null;
+            }
+
+            if (!activeColor.HasValue || activeColor.Value == PieceColor.Black)
+            {
+                _blackPlayerFeedback = null;
+            }
+
             AffectPlayerInfo();
 
             RaisePropertyChanged(() => IsComputerPlayerActive);
