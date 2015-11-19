@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using ChessPlatform.Serializers.Internal;
+using ChessPlatform.Serializers.Internal.Pgn;
 using Irony.Parsing;
 
 namespace ChessPlatform.Serializers
@@ -32,6 +32,12 @@ namespace ChessPlatform.Serializers
                 throw new ChessPlatformException(
                     $@"Invalid PGN. Error at line {errorLocation.Line + 1}, column {errorLocation.Column + 1}: {
                         parserMessage.Message}");
+            }
+
+            var databaseNode = (parseTree.Root.EnsureNotNull().AstNode as DatabaseAstNode).EnsureNotNull();
+            foreach (var game in databaseNode.Games)
+            {
+                game.TagSection
             }
 
             throw new NotImplementedException();
