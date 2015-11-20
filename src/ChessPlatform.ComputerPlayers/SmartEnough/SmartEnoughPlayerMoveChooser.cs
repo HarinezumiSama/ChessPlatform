@@ -893,16 +893,25 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return VariationLine.Zero;
             }
 
+            // Mate distance pruning
+            var localAlpha = EvaluationScore.Max(alpha, EvaluationScore.CreateGettingCheckmatedScore(plyDistance));
+            var localBeta = EvaluationScore.Min(beta, EvaluationScore.CreateCheckmatingScore(plyDistance + 1));
+
+            if (localAlpha.Value >= localBeta.Value)
+            {
+                return new VariationLine(localAlpha);
+            }
+
             if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
             {
-                var quiesceScore = Quiesce(board, plyDistance, alpha, beta, isPrincipalVariation);
+                var quiesceScore = Quiesce(board, plyDistance, localAlpha, localBeta, isPrincipalVariation);
                 var result = new VariationLine(quiesceScore);
                 _transpositionTable?.SaveScore(board, plyDistance, result);
                 return result;
             }
 
             VariationLine best = null;
-            var localAlpha = alpha;
+
             var orderedMoves = OrderMoves(board, plyDistance);
             var moveCount = orderedMoves.Length;
             for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
@@ -930,12 +939,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 if (isPrincipalVariation
                     && (variationLine == null || moveIndex == 0
-                        || (variationLine.Value.Value > localAlpha.Value && variationLine.Value.Value < beta.Value)))
+                        || (variationLine.Value.Value > localAlpha.Value
+                            && variationLine.Value.Value < localBeta.Value)))
                 {
-                    variationLine = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -beta, -localAlpha, true);
+                    variationLine = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -localBeta, -localAlpha, true);
                 }
 
-                if (variationLine.Value.Value >= beta.Value)
+                if (variationLine.Value.Value >= localBeta.Value)
                 {
                     // Fail-soft beta-cutoff
                     best = move | variationLine;

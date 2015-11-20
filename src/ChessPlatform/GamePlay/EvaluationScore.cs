@@ -106,6 +106,20 @@ namespace ChessPlatform.GamePlay
             return new EvaluationScore(-MateValue + plyDistance);
         }
 
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EvaluationScore Max(EvaluationScore score1, EvaluationScore score2)
+        {
+            return score1.Value >= score2.Value ? score1 : score2;
+        }
+
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EvaluationScore Min(EvaluationScore score1, EvaluationScore score2)
+        {
+            return score1.Value <= score2.Value ? score1 : score2;
+        }
+
         public override string ToString()
         {
             return Value.ToString(CultureInfo.InvariantCulture);
