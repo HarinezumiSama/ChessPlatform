@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using ChessPlatform.GamePlay;
 using ChessPlatform.Utilities;
 using Omnifactotum;
@@ -59,7 +58,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
         private readonly VariationLine _previousIterationBestLine;
-        private readonly CancellationToken _cancellationToken;
+        private readonly GameControlInfo _gameControlInfo;
         private readonly bool _useMultipleProcessors;
         private readonly KillerMoveStatistics _killerMoveStatistics;
         private readonly SimpleTranspositionTable _transpositionTable;
@@ -79,7 +78,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             [NotNull] BoardHelper boardHelper,
             [CanBeNull] VariationLineCache previousIterationVariationLineCache,
             [CanBeNull] VariationLine previousIterationBestLine,
-            CancellationToken cancellationToken,
+            [NotNull] GameControlInfo gameControlInfo,
             bool useMultipleProcessors,
             [NotNull] KillerMoveStatistics killerMoveStatistics)
         {
@@ -101,6 +100,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         CommonEngineConstants.MaxPlyDepthLowerLimit));
             }
 
+            if (gameControlInfo == null)
+            {
+                throw new ArgumentNullException(nameof(gameControlInfo));
+            }
+
             if (killerMoveStatistics == null)
             {
                 throw new ArgumentNullException(nameof(killerMoveStatistics));
@@ -113,7 +117,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _boardHelper = boardHelper;
             _previousIterationVariationLineCache = previousIterationVariationLineCache;
             _previousIterationBestLine = previousIterationBestLine;
-            _cancellationToken = cancellationToken;
+            _gameControlInfo = gameControlInfo;
             _useMultipleProcessors = useMultipleProcessors;
             _killerMoveStatistics = killerMoveStatistics;
 
@@ -775,7 +779,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Position position,
             [CanBeNull] GameMove move)
         {
-            _cancellationToken.ThrowIfCancellationRequested();
+            _gameControlInfo.CheckInterruptions();
 
             var actualMove = move ?? GetCheapestAttackerMove(board, position);
             if (actualMove == null)
@@ -805,7 +809,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             EvaluationScore beta,
             bool isPrincipalVariation)
         {
-            _cancellationToken.ThrowIfCancellationRequested();
+            _gameControlInfo.CheckInterruptions();
 
             var bestScore = EvaluatePositionScore(board, plyDistance);
             if (bestScore.Value >= beta.Value)
@@ -828,7 +832,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             foreach (var nonQuietMove in nonQuietMoves)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
+                _gameControlInfo.CheckInterruptions();
 
                 var seeScore = ComputeStaticExchangeEvaluationScore(board, nonQuietMove.To, nonQuietMove);
                 if (seeScore < 0)
@@ -879,7 +883,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             #endregion
 
-            _cancellationToken.ThrowIfCancellationRequested();
+            _gameControlInfo.CheckInterruptions();
 
             var cachedScore = _transpositionTable?.GetScore(board, plyDistance);
             if (cachedScore != null)
@@ -916,7 +920,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var moveCount = orderedMoves.Length;
             for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
+                _gameControlInfo.CheckInterruptions();
 
                 var orderedMove = orderedMoves[moveIndex];
                 var move = orderedMove.Move;
@@ -980,7 +984,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             int rootMoveIndex,
             int moveCount)
         {
-            _cancellationToken.ThrowIfCancellationRequested();
+            _gameControlInfo.CheckInterruptions();
 
             const string CurrentMethodName = nameof(AnalyzeRootMoveInternal);
             const int StartingDelta = 25;
@@ -1068,7 +1072,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var variationLines = _useMultipleProcessors
                 ? orderedMoves
                     .AsParallel()
-                    .WithCancellation(_cancellationToken)
+                    .WithCancellation(_gameControlInfo.CancellationToken)
                     .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
                     .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                     .Select(
@@ -1122,7 +1126,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private VariationLine GetBestMoveInternal()
         {
-            _cancellationToken.ThrowIfCancellationRequested();
+            _gameControlInfo.CheckInterruptions();
 
             var result = ComputeAlphaBetaRoot(_rootBoard);
             return result.EnsureNotNull();

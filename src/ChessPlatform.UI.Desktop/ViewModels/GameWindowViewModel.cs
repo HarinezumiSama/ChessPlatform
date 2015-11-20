@@ -50,6 +50,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _selectionMode = GameWindowSelectionMode.Default;
             ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
 
+            _shouldShowPlayerFeedback = true;
+
             SquareViewModels = ChessHelper
                 .AllPositions
                 .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
@@ -203,6 +205,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public string LowerPlayerFeedback => IsReversedView ? _blackPlayerFeedback : _whitePlayerFeedback;
 
+        public bool CanRequestMoveNow => IsComputerPlayerActive && _gameManager.State == GameManagerState.Running;
+
         #endregion
 
         #region Internal Properties
@@ -281,6 +285,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionMode();
 
             _gameManager.Play();
+        }
+
+        public void RequestMoveNow()
+        {
+            if (CanRequestMoveNow)
+            {
+                _gameManager.RequestMoveNow();
+            }
         }
 
         public void MakeMove(GameMove move)
@@ -463,6 +475,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             CurrentGameBoard = currentGameBoard;
 
             RaisePropertyChanged(() => IsComputerPlayerActive);
+            RaisePropertyChanged(() => CanRequestMoveNow);
         }
 
         [NotNull]
@@ -650,6 +663,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             AffectPlayerInfo();
 
             RaisePropertyChanged(() => IsComputerPlayerActive);
+            RaisePropertyChanged(() => CanRequestMoveNow);
         }
 
         #endregion

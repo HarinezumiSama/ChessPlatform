@@ -12,7 +12,7 @@ namespace ChessPlatform.UI.Desktop.Commands
             "_New Game...",
             nameof(NewGame),
             typeof(GameWindowCommands),
-            new InputGestureCollection { new KeyGesture(Key.N, ModifierKeys.Control) });
+            new InputGestureCollection { new KeyGesture(Key.N, ModifierKeys.Control), new KeyGesture(Key.F2) });
 
         public static readonly RoutedUICommand Exit = new RoutedUICommand(
             "E_xit",
@@ -31,16 +31,16 @@ namespace ChessPlatform.UI.Desktop.Commands
             });
 
         public static readonly RoutedUICommand CopyFenToClipboard = new RoutedUICommand(
-            "_Copy FEN to Clipboard",
+            "Copy _FEN to Clipboard",
             nameof(CopyFenToClipboard),
             typeof(GameWindowCommands),
-            new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Alt) });
+            new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control | ModifierKeys.Alt) });
 
         public static readonly RoutedUICommand CopyHistoryToClipboard = new RoutedUICommand(
-            "Copy _History to Clipboard",
+            "Copy _PGN to Clipboard",
             nameof(CopyHistoryToClipboard),
             typeof(GameWindowCommands),
-            new InputGestureCollection { new KeyGesture(Key.C, ModifierKeys.Control | ModifierKeys.Shift) });
+            new InputGestureCollection { new KeyGesture(Key.P, ModifierKeys.Control | ModifierKeys.Alt) });
 
         public static readonly RoutedUICommand ReversedBoardView = new RoutedUICommand(
             "_Reversed Board View",
@@ -53,6 +53,12 @@ namespace ChessPlatform.UI.Desktop.Commands
             nameof(ShowPlayerFeedback),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control) });
+
+        public static readonly RoutedUICommand RequestMoveNow = new RoutedUICommand(
+            "_Move Now",
+            nameof(RequestMoveNow),
+            typeof(GameWindowCommands),
+            new InputGestureCollection { new KeyGesture(Key.M, ModifierKeys.Control), new KeyGesture(Key.F5) });
 
         #endregion
     }

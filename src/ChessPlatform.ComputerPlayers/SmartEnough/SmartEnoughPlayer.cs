@@ -34,9 +34,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         #region Constructors
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
-        /// </summary>
         public SmartEnoughPlayer(PieceColor color, [NotNull] SmartEnoughPlayerParameters parameters)
             : base(color)
         {
@@ -138,10 +135,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     Trace.TraceInformation($@"Adjusted max time for move: {maxMoveTime.Value}");
                 }
 
-                stopwatch = new Stopwatch();
+                var gameControlInfo = new GameControlInfo(request.GameControl, internalCancellationToken);
 
                 var task = new Task(
-                    () => DoGetMoveInternal(request.Board, internalCancellationToken, bestMoveContainer),
+                    () => DoGetMoveInternal(request.Board, gameControlInfo, bestMoveContainer),
                     internalCancellationToken);
 
                 if (maxMoveTime.HasValue)
@@ -149,11 +146,16 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     timeoutCancellationTokenSource.CancelAfter(maxMoveTime.Value);
                 }
 
-                stopwatch.Start();
+                stopwatch = Stopwatch.StartNew();
                 task.Start();
                 try
                 {
                     task.Wait(timeoutCancellationToken);
+                }
+                catch (AggregateException ex)
+                    when (ex.InnerException is MoveNowRequestedException)
+                {
+                    Trace.TraceWarning("Interrupting the search since the Move Now Request was received.");
                 }
                 catch (AggregateException ex)
                 {
@@ -218,10 +220,10 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
         private void DoGetMoveInternal(
             [NotNull] GameBoard board,
-            CancellationToken cancellationToken,
+            [NotNull] GameControlInfo gameControlInfo,
             SyncValueContainer<BestMoveData> bestMoveContainer)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            gameControlInfo.CheckInterruptions();
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
@@ -276,7 +278,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 plyDepth <= _maxPlyDepth;
                 plyDepth++)
             {
-                cancellationToken.ThrowIfCancellationRequested();
+                gameControlInfo.CheckInterruptions();
 
                 Trace.WriteLine(string.Empty);
 
@@ -300,7 +302,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     boardHelper,
                     variationLineCache,
                     bestVariationLine,
-                    cancellationToken,
+                    gameControlInfo,
                     _useMultipleProcessors,
                     killerMoveStatistics);
 
@@ -309,6 +311,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 variationLineCache = moveChooser.VariationLineCache;
 
                 bestMoveContainer.Value = new BestMoveData(bestVariationLine, totalNodeCount, plyDepth);
+                gameControlInfo.AllowMoveNow();
 
                 var feedbackEventArgs = new ChessPlayerFeedbackEventArgs(
                     Color,

@@ -25,6 +25,7 @@ namespace ChessPlatform.GamePlay
         private readonly Stack<GameBoard> _gameBoards;
         private readonly Thread _thread;
         private readonly SyncValueContainer<GetMoveState> _getMoveStateContainer;
+        private readonly GameControl _gameControl;
         private bool _shouldStop;
         private bool _isDisposed;
         private GameManagerState _state;
@@ -64,6 +65,7 @@ namespace ChessPlatform.GamePlay
             _gameBoards = new Stack<GameBoard>(gameBoard.GetHistory());
             _thread = new Thread(ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
             _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
+            _gameControl = new GameControl();
             _state = GameManagerState.Paused;
 
             _thread.Start();
@@ -187,16 +189,34 @@ namespace ChessPlatform.GamePlay
             }
         }
 
+        public void RequestMoveNow()
+        {
+            lock (_syncLock)
+            {
+                switch (_state)
+                {
+                    case GameManagerState.Running:
+                        _gameControl.RequestMoveNow();
+                        return;
+
+                    case GameManagerState.Paused:
+                    case GameManagerState.GameFinished:
+                    case GameManagerState.UnhandledExceptionOccurred:
+                        throw new ChessPlatformException($@"The game is not running (state: {_state}).");
+
+                    default:
+                        throw _state.CreateEnumValueNotImplementedException();
+                }
+            }
+        }
+
         public bool CanUndoLastMoves(int moveCount)
         {
             #region Argument Check
 
             if (moveCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(moveCount),
-                    moveCount,
-                    @"The value must be positive.");
+                throw new ArgumentOutOfRangeException(nameof(moveCount), moveCount, @"The value must be positive.");
             }
 
             #endregion
@@ -215,10 +235,7 @@ namespace ChessPlatform.GamePlay
 
             if (moveCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(
-                    nameof(moveCount),
-                    moveCount,
-                    @"The value must be positive.");
+                throw new ArgumentOutOfRangeException(nameof(moveCount), moveCount, @"The value must be positive.");
             }
 
             #endregion
@@ -389,7 +406,7 @@ namespace ChessPlatform.GamePlay
                     _getMoveStateContainer.Value = state;
 
                     var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
-                    var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken);
+                    var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken, _gameControl);
                     var task = activePlayer.CreateGetMoveTask(request);
 
                     task.ContinueWith(
@@ -454,9 +471,7 @@ namespace ChessPlatform.GamePlay
             switch (gameBoard.State)
             {
                 case GameState.Checkmate:
-                    _result = gameBoard.ActiveColor == PieceColor.White
-                        ? GameResult.BlackWon
-                        : GameResult.WhiteWon;
+                    _result = gameBoard.ActiveColor == PieceColor.White ? GameResult.BlackWon : GameResult.WhiteWon;
                     _state = GameManagerState.GameFinished;
                     return;
 

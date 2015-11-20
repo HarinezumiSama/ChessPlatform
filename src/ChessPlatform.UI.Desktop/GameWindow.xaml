@@ -26,6 +26,8 @@
                 Executed="ReversedBoardView_Executed" />
         <CommandBinding Command="commands:GameWindowCommands.ShowPlayerFeedback"
                 Executed="ShowPlayerFeedback_Executed" />
+        <CommandBinding Command="commands:GameWindowCommands.RequestMoveNow"
+                Executed="RequestMoveNow_Executed" CanExecute="RequestMoveNow_CanExecute" />
     </Window.CommandBindings>
 
     <Window.TaskbarItemInfo>
@@ -51,6 +53,8 @@
                 VerticalAlignment="Top" Focusable="False">
             <MenuItem Header="_Game">
                 <MenuItem Command="commands:GameWindowCommands.NewGame"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="commands:GameWindowCommands.RequestMoveNow"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
                 <MenuItem Command="commands:GameWindowCommands.Exit"

@@ -73,7 +73,9 @@ namespace ChessPlatform.Tests
             var player = new SmartEnoughPlayer(gameBoard.ActiveColor, playerParameters);
 
             var stopwatch = Stopwatch.StartNew();
-            var task = player.CreateGetMoveTask(new GetMoveRequest(gameBoard, CancellationToken.None));
+            var gameControlStub = new GameControl();
+            var task = player.CreateGetMoveTask(
+                new GetMoveRequest(gameBoard, CancellationToken.None, gameControlStub));
             task.Start();
             var principalVariationInfo = task.Result;
             stopwatch.Stop();

@@ -665,6 +665,16 @@ namespace ChessPlatform.UI.Desktop
             ViewModel.ShouldShowPlayerFeedback = !ViewModel.ShouldShowPlayerFeedback;
         }
 
+        private void RequestMoveNow_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            ViewModel.RequestMoveNow();
+        }
+
+        private void RequestMoveNow_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        {
+            e.CanExecute = ViewModel.CanRequestMoveNow;
+        }
+
         #endregion
     }
 }

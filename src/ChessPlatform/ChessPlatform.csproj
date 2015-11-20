@@ -65,9 +65,11 @@
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
     <Compile Include="GameDescription.cs" />
+    <Compile Include="GamePlay\MoveNowRequestedException.cs" />
     <Compile Include="GamePlay\CommonEngineConstants.cs" />
     <Compile Include="GamePlay\ChessPlayerBase.cs" />
     <Compile Include="GamePlay\ChessPlayerFeedbackEventArgs.cs" />
+    <Compile Include="GamePlay\GameControl.cs" />
     <Compile Include="GamePlay\GameManager.cs" />
     <Compile Include="GamePlay\GameManagerState.cs" />
     <Compile Include="GamePlay\GamePhase.cs" />
@@ -75,6 +77,7 @@
     <Compile Include="GamePlay\GetMoveRequest.cs" />
     <Compile Include="GamePlay\IChessPlayer.cs" />
     <Compile Include="Bitboard.cs" />
+    <Compile Include="GamePlay\IGameControl.cs" />
     <Compile Include="GamePlay\VariationLine.cs" />
     <Compile Include="GamePlay\EvaluationScore.cs" />
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
