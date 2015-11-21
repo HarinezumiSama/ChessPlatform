@@ -127,7 +127,7 @@ namespace ChessPlatform.ComputerPlayers
             var bookName = Factotum.GetPropertyName(streamDataGetter);
             var data = streamDataGetter.Compile().Invoke();
 
-            Trace.TraceInformation($"[{currentMethodName}] Initializing the opening book '{bookName}'...");
+            Trace.WriteLine($"[{currentMethodName}] Initializing the opening book '{bookName}'...");
 
             var stopwatch = Stopwatch.StartNew();
             using (var stream = new MemoryStream(data))
@@ -137,8 +137,7 @@ namespace ChessPlatform.ComputerPlayers
 
             stopwatch.Stop();
 
-            Trace.TraceInformation(
-                $@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
+            Trace.WriteLine($@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
 
             return openingBook;
         }

@@ -55,13 +55,14 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             PieceType.Knight
         };
 
+        private static readonly int PawnValueInMiddlegame = PieceTypeToMaterialWeightInMiddlegameMap[PieceType.Pawn];
+
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
         private readonly VariationLine _previousIterationBestLine;
         private readonly GameControlInfo _gameControlInfo;
         private readonly bool _useMultipleProcessors;
         private readonly KillerMoveStatistics _killerMoveStatistics;
-        private readonly SimpleTranspositionTable _transpositionTable;
         private readonly BoardHelper _boardHelper;
         private readonly VariationLineCache _previousIterationVariationLineCache;
 
@@ -121,7 +122,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             _useMultipleProcessors = useMultipleProcessors;
             _killerMoveStatistics = killerMoveStatistics;
 
-            _transpositionTable = null; // Disabled for now due to bug
             VariationLineCache = new VariationLineCache(rootBoard);
         }
 
@@ -155,20 +155,24 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var result = GetBestMoveInternal();
             stopwatch.Stop();
 
-            Trace.TraceInformation(
-                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Result: {
-                    result.ToStandardAlgebraicNotationString(_rootBoard)}, depth {_plyDepth}, time: {stopwatch.Elapsed
-                    }, {_boardHelper.LocalMoveCount} nodes, FEN ""{_rootBoard.GetFen()}"".");
+            Trace.WriteLine(
+                $@"{Environment.NewLine
+                    }[{currentMethodName}] {LocalHelper.GetTimestamp()}{Environment.NewLine
+                    }  Depth: {_plyDepth}{Environment.NewLine
+                    }  Result: {result.ToStandardAlgebraicNotationString(_rootBoard)}{Environment.NewLine
+                    }  Time: {stopwatch.Elapsed}{Environment.NewLine
+                    }  Nodes: {_boardHelper.LocalMoveCount}{Environment.NewLine
+                    }  FEN: {_rootBoard.GetFen()}{Environment.NewLine}");
 
             return result;
         }
 
         #endregion
 
-        #region Internal Methods
+        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int GetMaterialWeight(PieceType pieceType, GamePhase gamePhase = GamePhase.Middlegame)
+        private static int GetMaterialWeight(PieceType pieceType, GamePhase gamePhase = GamePhase.Middlegame)
         {
             var materialWeightMap = gamePhase == GamePhase.Endgame
                 ? PieceTypeToMaterialWeightInEndgameMap
@@ -176,10 +180,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             return materialWeightMap[pieceType];
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static Dictionary<PieceType, int> CreatePieceTypeToMaterialWeightInMiddlegameMap()
         {
@@ -867,9 +867,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
         private VariationLine ComputeAlphaBeta(
             [NotNull] GameBoard board,
             int plyDistance,
+            int maxDepth,
             EvaluationScore alpha,
             EvaluationScore beta,
-            bool isPrincipalVariation)
+            bool isPrincipalVariation,
+            bool skipHeuristicPruning)
         {
             #region Argument Check
 
@@ -884,12 +886,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             #endregion
 
             _gameControlInfo.CheckInterruptions();
-
-            var cachedScore = _transpositionTable?.GetScore(board, plyDistance);
-            if (cachedScore != null)
-            {
-                return cachedScore;
-            }
 
             var autoDrawType = board.GetAutoDrawType();
             if (autoDrawType != AutoDrawType.None)
@@ -906,11 +902,63 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return new VariationLine(localAlpha);
             }
 
-            if (plyDistance == _plyDepth || board.ValidMoves.Count == 0)
+            if (!skipHeuristicPruning)
+            {
+                var remainingDepth = maxDepth - plyDistance;
+
+                if (!isPrincipalVariation
+                    && remainingDepth >= 2
+                    && board.CanMakeNullMove
+                    && board.HasNonPawnMaterial(board.ActiveColor))
+                {
+                    var staticEvaluation = EvaluatePositionScore(board, plyDistance);
+                    if (staticEvaluation.Value >= localBeta.Value)
+                    {
+                        var depthReduction = (400 + 32 * remainingDepth) / 125
+                            + Math.Min((staticEvaluation.Value - localBeta.Value) / PawnValueInMiddlegame, 3);
+
+                        var nullMoveBoard = board.MakeNullMove();
+
+                        var nullMoveLine = ComputeAlphaBeta(
+                            nullMoveBoard,
+                            plyDistance,
+                            maxDepth - depthReduction,
+                            -localBeta,
+                            -localBeta + NullWindowOffset,
+                            false,
+                            true);
+
+                        var nullMoveScore = nullMoveLine.Value;
+
+                        if (nullMoveScore.Value >= localBeta.Value)
+                        {
+                            if (nullMoveScore.IsCheckmating())
+                            {
+                                nullMoveScore = localBeta;
+                            }
+
+                            var verificationLine = ComputeAlphaBeta(
+                                board,
+                                plyDistance,
+                                maxDepth - depthReduction,
+                                localBeta - NullWindowOffset,
+                                localBeta,
+                                false,
+                                true);
+
+                            if (verificationLine.Value.Value >= localBeta.Value)
+                            {
+                                return new VariationLine(nullMoveScore);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
             {
                 var quiesceScore = Quiesce(board, plyDistance, localAlpha, localBeta, isPrincipalVariation);
                 var result = new VariationLine(quiesceScore);
-                _transpositionTable?.SaveScore(board, plyDistance, result);
                 return result;
             }
 
@@ -936,9 +984,11 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         -ComputeAlphaBeta(
                             currentBoard,
                             plyDistance + 1,
+                            maxDepth,
                             -localAlpha - NullWindowOffset,
                             -localAlpha,
-                            false);
+                            false,
+                            skipHeuristicPruning);
                 }
 
                 if (isPrincipalVariation
@@ -946,14 +996,21 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                         || (variationLine.Value.Value > localAlpha.Value
                             && variationLine.Value.Value < localBeta.Value)))
                 {
-                    variationLine = -ComputeAlphaBeta(currentBoard, plyDistance + 1, -localBeta, -localAlpha, true);
+                    variationLine =
+                        -ComputeAlphaBeta(
+                            currentBoard,
+                            plyDistance + 1,
+                            maxDepth,
+                            -localBeta,
+                            -localAlpha,
+                            true,
+                            skipHeuristicPruning);
                 }
 
                 if (variationLine.Value.Value >= localBeta.Value)
                 {
                     // Fail-soft beta-cutoff
                     best = move | variationLine;
-                    _transpositionTable?.SaveScore(board, plyDistance, best);
 
                     if (IsQuietMove(orderedMove.MoveInfo) && !orderedMove.IsPvMove)
                     {
@@ -972,8 +1029,6 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     }
                 }
             }
-
-            _transpositionTable?.SaveScore(board, plyDistance, best.EnsureNotNull());
 
             return best.EnsureNotNull();
         }
@@ -1019,7 +1074,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             VariationLine innerVariationLine;
             while (true)
             {
-                innerVariationLine = -ComputeAlphaBeta(currentBoard, 1, -beta, -alpha, true);
+                innerVariationLine = -ComputeAlphaBeta(currentBoard, 1, _plyDepth, -beta, -alpha, true, false);
                 if (innerVariationLine.Value.Value <= alpha.Value)
                 {
                     beta = new EvaluationScore((alpha.Value + beta.Value) / 2);
@@ -1049,9 +1104,9 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var variationLine = (move | innerVariationLine).WithLocalValue(localScore);
             stopwatch.Stop();
 
-            Trace.TraceInformation(
+            Trace.WriteLine(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
-                    }: {variationLine.ValueString} : L({variationLine.LocalValueString}), PV: {{ {
+                    }: {variationLine.ValueString} : L({variationLine.LocalValueString}), line: {{ {
                     board.GetStandardAlgebraicNotation(variationLine.Moves)} }}, time: {
                     stopwatch.Elapsed:g}");
 

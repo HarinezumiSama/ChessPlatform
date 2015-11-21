@@ -106,10 +106,17 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             Trace.WriteLine(string.Empty);
             Trace.WriteLine(TraceSeparator);
 
-            Trace.TraceInformation(
-                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Color: {Color}, max depth: {
-                    _maxPlyDepth} plies, max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}, multi CPU: {
-                    _useMultipleProcessors}, FEN: ""{board.GetFen()}"".");
+            var useOpeningBook = _openingBook != null;
+
+            Trace.WriteLine(
+                $@"{Environment.NewLine
+                    }[{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
+                    }  Color: {Color}{Environment.NewLine
+                    }  Max depth: {_maxPlyDepth} plies{Environment.NewLine
+                    }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
+                    }  Multi CPU: {_useMultipleProcessors}{Environment.NewLine
+                    }  Opening book: {useOpeningBook}{Environment.NewLine
+                    }  FEN: {board.GetFen()}{Environment.NewLine}");
 
             var bestMoveContainer = new SyncValueContainer<BestMoveData>();
             Stopwatch stopwatch;
@@ -132,7 +139,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     internalCancellationToken = linkedTokenSource.Token;
 
                     maxMoveTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
-                    Trace.TraceInformation($@"Adjusted max time for move: {maxMoveTime.Value}");
+                    Trace.WriteLine($@"[{currentMethodName}] Adjusted max time for move: {maxMoveTime.Value}");
                 }
 
                 var gameControlInfo = new GameControlInfo(request.GameControl, internalCancellationToken);
@@ -153,13 +160,13 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                     task.Wait(timeoutCancellationToken);
                 }
                 catch (AggregateException ex)
-                    when (ex.InnerException is MoveNowRequestedException)
+                    when (ex.Flatten().InnerException is MoveNowRequestedException)
                 {
                     Trace.TraceWarning("Interrupting the search since the Move Now Request was received.");
                 }
                 catch (AggregateException ex)
                 {
-                    var operationCanceledException = ex.InnerException as OperationCanceledException;
+                    var operationCanceledException = ex.Flatten().InnerException as OperationCanceledException;
                     if (operationCanceledException != null)
                     {
                         if (operationCanceledException.CancellationToken == internalCancellationToken
@@ -196,11 +203,20 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 ? "?"
                 : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
 
-            Trace.TraceInformation(
-                $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Result: {
-                    principalVariationInfo?.ToStandardAlgebraicNotationString(request.Board) ?? "<not found>"
-                    }, depth {bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?"}, time: {
-                    stopwatch.Elapsed:g}, {nodeCount} nodes ({nps} NPS), FEN ""{board.GetFen()}"".");
+            var principalVariationString = principalVariationInfo?.ToStandardAlgebraicNotationString(request.Board)
+                ?? "<not found>";
+
+            var depthString = bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?";
+
+            Trace.WriteLine(
+                $@"{Environment.NewLine
+                    }[{currentMethodName}] END: {LocalHelper.GetTimestamp()}{Environment.NewLine
+                    }  Result: {principalVariationString}{Environment.NewLine
+                    }  Depth: {depthString}{Environment.NewLine
+                    }  Time: {stopwatch.Elapsed:g}{Environment.NewLine
+                    }  Nodes: {nodeCount}{Environment.NewLine
+                    }  NPS: {nps}{Environment.NewLine
+                    }  FEN: {board.GetFen()}{Environment.NewLine}");
 
             Trace.WriteLine(TraceSeparator);
             Trace.WriteLine(string.Empty);
@@ -227,7 +243,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.TraceInformation($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
+            Trace.WriteLine($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
 
             if (_openingBook != null)
             {
@@ -252,7 +268,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                             .Select(move => move.ToStandardAlgebraicNotation(boardAfterOpeningMove))
                             .Join(", ");
 
-                    Trace.TraceInformation(
+                    Trace.WriteLine(
                         $@"[{currentMethodName}] From the opening moves [ {openingMovesString} ] chosen {
                             openingMoveString}. Further opening move variants: {furtherOpeningMovesString}.");
 
@@ -268,31 +284,15 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             var totalNodeCount = 0L;
             VariationLineCache variationLineCache = null;
 
-            var useIterativeDeepening = _maxTimePerMove.HasValue;
-
-            var startingPlyDepth = useIterativeDeepening
-                ? CommonEngineConstants.MaxPlyDepthLowerLimit
-                : _maxPlyDepth;
-
-            for (var plyDepth = startingPlyDepth;
+            for (var plyDepth = CommonEngineConstants.MaxPlyDepthLowerLimit;
                 plyDepth <= _maxPlyDepth;
                 plyDepth++)
             {
                 gameControlInfo.CheckInterruptions();
 
-                Trace.WriteLine(string.Empty);
-
-                if (useIterativeDeepening)
-                {
-                    Trace.TraceInformation(
-                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Iterative deepening: {plyDepth} of {
-                            _maxPlyDepth}.");
-                }
-                else
-                {
-                    Trace.TraceInformation(
-                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Fixed depth: {plyDepth}.");
-                }
+                Trace.WriteLine(
+                    $@"{Environment.NewLine}[{currentMethodName} :: {LocalHelper.GetTimestamp()
+                        }] Iterative deepening: {plyDepth} of {_maxPlyDepth}.");
 
                 boardHelper.ResetLocalMoveCount();
 
@@ -324,7 +324,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
 
                 if (bestVariationLine.Value.IsCheckmating())
                 {
-                    Trace.TraceInformation(
+                    Trace.WriteLine(
                         $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {
                             bestVariationLine}.");
 

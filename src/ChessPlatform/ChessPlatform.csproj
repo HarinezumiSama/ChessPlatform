@@ -64,6 +64,7 @@
     <Compile Include="CastlingType.cs" />
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
+    <Compile Include="GameBoardExtensions.cs" />
     <Compile Include="GameDescription.cs" />
     <Compile Include="GamePlay\MoveNowRequestedException.cs" />
     <Compile Include="GamePlay\CommonEngineConstants.cs" />

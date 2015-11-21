@@ -179,7 +179,7 @@ namespace ChessPlatform.ComputerPlayers
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.TraceInformation($"[{currentMethodName}] Initializing the opening book...");
+            Trace.WriteLine($"[{currentMethodName}] Initializing the opening book...");
 
             var stopwatch = Stopwatch.StartNew();
             using (var reader = new StringReader(Resources.OpeningBook))
@@ -189,8 +189,7 @@ namespace ChessPlatform.ComputerPlayers
 
             stopwatch.Stop();
 
-            Trace.TraceInformation(
-                $@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
+            Trace.WriteLine($@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
 
             return openingBook;
         }
