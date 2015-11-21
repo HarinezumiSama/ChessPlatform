@@ -55,7 +55,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             PieceType.Knight
         };
 
-        private static readonly int PawnValueInMiddlegame = PieceTypeToMaterialWeightInMiddlegameMap[PieceType.Pawn];
+        ////private static readonly int PawnValueInMiddlegame = PieceTypeToMaterialWeightInMiddlegameMap[PieceType.Pawn];
 
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
@@ -871,6 +871,7 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
             EvaluationScore alpha,
             EvaluationScore beta,
             bool isPrincipalVariation,
+            //// ReSharper disable once UnusedParameter.Local
             bool skipHeuristicPruning)
         {
             #region Argument Check
@@ -902,58 +903,58 @@ namespace ChessPlatform.ComputerPlayers.SmartEnough
                 return new VariationLine(localAlpha);
             }
 
-            if (!skipHeuristicPruning)
-            {
-                var remainingDepth = maxDepth - plyDistance;
+            ////if (!skipHeuristicPruning)
+            ////{
+            ////    var remainingDepth = maxDepth - plyDistance;
 
-                if (!isPrincipalVariation
-                    && remainingDepth >= 2
-                    && board.CanMakeNullMove
-                    && board.HasNonPawnMaterial(board.ActiveColor))
-                {
-                    var staticEvaluation = EvaluatePositionScore(board, plyDistance);
-                    if (staticEvaluation.Value >= localBeta.Value)
-                    {
-                        var depthReduction = (400 + 32 * remainingDepth) / 125
-                            + Math.Min((staticEvaluation.Value - localBeta.Value) / PawnValueInMiddlegame, 3);
+            ////    if (!isPrincipalVariation
+            ////        && remainingDepth >= 2
+            ////        && board.CanMakeNullMove
+            ////        && board.HasNonPawnMaterial(board.ActiveColor))
+            ////    {
+            ////        var staticEvaluation = EvaluatePositionScore(board, plyDistance);
+            ////        if (staticEvaluation.Value >= localBeta.Value)
+            ////        {
+            ////            var depthReduction = (400 + 32 * remainingDepth) / 125
+            ////                + Math.Min((staticEvaluation.Value - localBeta.Value) / PawnValueInMiddlegame, 3);
 
-                        var nullMoveBoard = board.MakeNullMove();
+            ////            var nullMoveBoard = board.MakeNullMove();
 
-                        var nullMoveLine = ComputeAlphaBeta(
-                            nullMoveBoard,
-                            plyDistance,
-                            maxDepth - depthReduction,
-                            -localBeta,
-                            -localBeta + NullWindowOffset,
-                            false,
-                            true);
+            ////            var nullMoveLine = ComputeAlphaBeta(
+            ////                nullMoveBoard,
+            ////                plyDistance,
+            ////                maxDepth - depthReduction,
+            ////                -localBeta,
+            ////                -localBeta + NullWindowOffset,
+            ////                false,
+            ////                true);
 
-                        var nullMoveScore = nullMoveLine.Value;
+            ////            var nullMoveScore = nullMoveLine.Value;
 
-                        if (nullMoveScore.Value >= localBeta.Value)
-                        {
-                            if (nullMoveScore.IsCheckmating())
-                            {
-                                nullMoveScore = localBeta;
-                            }
+            ////            if (nullMoveScore.Value >= localBeta.Value)
+            ////            {
+            ////                if (nullMoveScore.IsCheckmating())
+            ////                {
+            ////                    nullMoveScore = localBeta;
+            ////                }
 
-                            var verificationLine = ComputeAlphaBeta(
-                                board,
-                                plyDistance,
-                                maxDepth - depthReduction,
-                                localBeta - NullWindowOffset,
-                                localBeta,
-                                false,
-                                true);
+            ////                var verificationLine = ComputeAlphaBeta(
+            ////                    board,
+            ////                    plyDistance,
+            ////                    maxDepth - depthReduction,
+            ////                    localBeta - NullWindowOffset,
+            ////                    localBeta,
+            ////                    false,
+            ////                    true);
 
-                            if (verificationLine.Value.Value >= localBeta.Value)
-                            {
-                                return new VariationLine(nullMoveScore);
-                            }
-                        }
-                    }
-                }
-            }
+            ////                if (verificationLine.Value.Value >= localBeta.Value)
+            ////                {
+            ////                    return new VariationLine(nullMoveScore);
+            ////                }
+            ////            }
+            ////        }
+            ////    }
+            ////}
 
             if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
             {
