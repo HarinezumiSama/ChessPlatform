@@ -339,6 +339,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var undoMoveCount = GetUndoMoveCount(gameManager);
             gameManager.UndoLastMoves(undoMoveCount);
+
+            _whitePlayerFeedback = _blackPlayerFeedback = null;
+            AffectPlayerInfo();
         }
 
         #endregion
