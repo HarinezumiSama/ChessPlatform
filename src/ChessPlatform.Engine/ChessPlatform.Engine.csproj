@@ -52,6 +52,8 @@
     </Compile>
     <Compile Include="IOpeningBook.cs" />
     <Compile Include="LocalHelper.cs" />
+    <Compile Include="MultiTaskControllerStopException.cs" />
+    <Compile Include="MultiTaskController.cs" />
     <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="BoardHelper.cs" />
     <Compile Include="BoardCacheKey.cs" />

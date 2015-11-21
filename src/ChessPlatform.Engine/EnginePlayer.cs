@@ -162,28 +162,33 @@ namespace ChessPlatform.Engine
                 catch (AggregateException ex)
                     when (ex.Flatten().InnerException is MoveNowRequestedException)
                 {
-                    Trace.TraceWarning("Interrupting the search since the Move Now Request was received.");
+                    Trace.WriteLine(
+                        $@"[{currentMethodName}] Interrupting the search since the Move Now request was received.");
                 }
                 catch (AggregateException ex)
+                    when (ex.Flatten().InnerException is OperationCanceledException)
                 {
-                    var operationCanceledException = ex.Flatten().InnerException as OperationCanceledException;
-                    if (operationCanceledException != null)
+                    var operationCanceledException = (OperationCanceledException)ex.Flatten().InnerException;
+                    if (operationCanceledException.CancellationToken == internalCancellationToken
+                        || operationCanceledException.CancellationToken == request.CancellationToken)
                     {
-                        if (operationCanceledException.CancellationToken == internalCancellationToken
-                            || operationCanceledException.CancellationToken == request.CancellationToken)
-                        {
-                            request.CancellationToken.ThrowIfCancellationRequested();
-                        }
+                        Trace.WriteLine($@"[{currentMethodName}] The search has been canceled by the caller.");
+                        request.CancellationToken.ThrowIfCancellationRequested();
                     }
 
                     throw;
                 }
                 catch (OperationCanceledException ex)
+                    when (ex.CancellationToken == timeoutCancellationToken)
                 {
-                    if (ex.CancellationToken != timeoutCancellationToken)
-                    {
-                        throw;
-                    }
+                    Trace.WriteLine(
+                        $@"[{currentMethodName
+                            }] Interrupting the search since maximum time per move has been reached.");
+                }
+                catch (OperationCanceledException)
+                {
+                    Trace.WriteLine($@"[{currentMethodName}] The search has been canceled by the caller.");
+                    throw;
                 }
 
                 stopwatch.Stop();

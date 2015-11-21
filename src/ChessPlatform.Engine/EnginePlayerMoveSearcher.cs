@@ -1125,19 +1125,17 @@ namespace ChessPlatform.Engine
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            var variationLines = _useMultipleProcessors
-                ? orderedMoves
-                    .AsParallel()
-                    .WithCancellation(_gameControlInfo.CancellationToken)
-                    .WithExecutionMode(ParallelExecutionMode.ForceParallelism)
-                    .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                    .Select(
-                        (orderedMove, index) => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount))
-                    .ToArray()
-                : orderedMoves
-                    .Select(
-                        (orderedMove, index) => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount))
-                    .ToArray();
+            var threadCount = _useMultipleProcessors ? Math.Max(Environment.ProcessorCount, 1) : 1;
+
+            var tasks = orderedMoves
+                .Select(
+                    (orderedMove, index) =>
+                        new Func<VariationLine>(
+                            () => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount)))
+                .ToArray();
+
+            var multiTaskController = new MultiTaskController<VariationLine>(_gameControlInfo, threadCount, tasks);
+            var variationLines = multiTaskController.GetResults();
 
             foreach (var variationLine in variationLines)
             {
