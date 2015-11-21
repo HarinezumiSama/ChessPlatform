@@ -159,9 +159,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ChessPlatform.ComputerPlayers\ChessPlatform.ComputerPlayers.csproj">
+    <ProjectReference Include="..\ChessPlatform.ComputerPlayers\ChessPlatform.Engine.csproj">
       <Project>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</Project>
-      <Name>ChessPlatform.ComputerPlayers</Name>
+      <Name>ChessPlatform.Engine</Name>
     </ProjectReference>
     <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj">
       <Project>{AA84E743-3651-4436-BD27-CDD81D525D3E}</Project>

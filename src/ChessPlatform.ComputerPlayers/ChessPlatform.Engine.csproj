@@ -8,8 +8,8 @@
     <ProjectGuid>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ChessPlatform.ComputerPlayers</RootNamespace>
-    <AssemblyName>ChessPlatform.ComputerPlayers</AssemblyName>
+    <RootNamespace>ChessPlatform.Engine</RootNamespace>
+    <AssemblyName>ChessPlatform.Engine</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

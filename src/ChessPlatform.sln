@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform", "ChessPlatform\ChessPlatform.csproj", "{AA84E743-3651-4436-BD27-CDD81D525D3E}"
 EndProject
@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Tests", "Ches
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.UI.Desktop", "ChessPlatform.UI.Desktop\ChessPlatform.UI.Desktop.csproj", "{3B22D149-6202-4B61-9ABB-C7A4EB5F2432}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.ComputerPlayers", "ChessPlatform.ComputerPlayers\ChessPlatform.ComputerPlayers.csproj", "{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Engine", "ChessPlatform.ComputerPlayers\ChessPlatform.Engine.csproj", "{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{52E075F0-EF73-4609-AF6E-82BA1B5144D1}"
 	ProjectSection(SolutionItems) = preProject
