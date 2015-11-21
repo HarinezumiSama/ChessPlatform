@@ -8,6 +8,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.GamePlay
 {
+    [DebuggerDisplay(@"{ToString(),nq}")]
     public sealed class VariationLine
     {
         #region Constants and Fields

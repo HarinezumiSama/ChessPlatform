@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace ChessPlatform.GamePlay
 {
+    [DebuggerDisplay(@"{ToString(),nq}")]
     public struct EvaluationScore
     {
         #region Constants and Fields
