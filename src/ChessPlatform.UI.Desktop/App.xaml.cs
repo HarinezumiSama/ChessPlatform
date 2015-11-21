@@ -119,8 +119,7 @@ namespace ChessPlatform.UI.Desktop
             var task = new Task(
                 () =>
                 {
-                    OpeningBook.InitializeDefault();
-                    PolyglotOpeningBook.Performance.EnsureNotNull();
+                    ////PolyglotOpeningBook.Performance.EnsureNotNull();
                     PolyglotOpeningBook.Varied.EnsureNotNull();
                 });
 

@@ -71,9 +71,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="OpeningBook.cs" />
     <Compile Include="SmartEnough\SmartEnoughPlayer.cs" />
-    <Compile Include="DummyPlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -85,7 +83,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="Resources\OpeningBook.Performance.Polyglot.bin" />
-    <None Include="Resources\OpeningBook.txt" />
     <None Include="Resources\OpeningBook.Varied.Polyglot.bin" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

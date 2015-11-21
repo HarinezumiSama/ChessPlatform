@@ -61,21 +61,6 @@ namespace ChessPlatform.ComputerPlayers.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to b1c3g8f6d2d4d7d6c1g5b8d7e2e4g7g6f2f4h7h6g5h4f6h5g1e2g6g5f4g5e7e6e2g3h5f4
-        ///b1c3g8f6d2d4d7d6e2e4g7g6f1c4f8g7f2f4c7c5d4c5d8a5c1d2a5c5d1e2e8g8e1c1c8g4g1f3b8d7
-        ///b1c3g8f6e2e4d7d6d2d4g7g6f1c4f8g7g1f3e8g8e4e5d6e5d4e5d8d1c3d1f6g4c1f4b8c6e5e6c8e6
-        ///b1c3g8f6g1f3g7g6d2d4d7d6e2e4f8g7f1e2e8g8h2h3c7c5d4c5d8a5e1g1a5c5c1e3c5a5f3d4a7a6
-        ///b1c3g8f6g1f3g7g6e2e4d7d6d2d4f8g7f1e2e8g8c1f4b8c6d4d5e7e5f4g5c6e7d1d2f6h5e1c1
-        ///b2b3e7e5c1b2b8c6c2c4g8f6b1c3d7d5c4d5f6d5g1f3d5c3b2c3f8d6d2d3e8g8e2e3d8e7f1e2c8d7
-        ///b2b3e7e5c1b2b8c6c2c4g8f6e2e3d7d5 [rest of string was truncated]&quot;;.
-        /// </summary>
-        internal static string OpeningBook {
-            get {
-                return ResourceManager.GetString("OpeningBook", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         internal static byte[] OpeningBook_Performance_Polyglot {
