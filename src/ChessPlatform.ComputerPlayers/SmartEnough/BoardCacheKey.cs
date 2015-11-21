@@ -2,7 +2,7 @@
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     internal sealed class BoardCacheKey : IEquatable<BoardCacheKey>
     {

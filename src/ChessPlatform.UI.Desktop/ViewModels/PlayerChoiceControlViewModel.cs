@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
-using ChessPlatform.ComputerPlayers.SmartEnough;
+using ChessPlatform.Engine.SmartEnough;
 using ChessPlatform.UI.Desktop.Controls;
 using Omnifactotum.Validation;
 using Omnifactotum.Validation.Constraints;

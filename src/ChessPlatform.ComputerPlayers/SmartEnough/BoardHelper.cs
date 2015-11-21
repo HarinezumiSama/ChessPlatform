@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     internal sealed class BoardHelper
     {

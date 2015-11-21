@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using ChessPlatform.ComputerPlayers;
 using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Validation;

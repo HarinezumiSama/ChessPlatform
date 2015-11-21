@@ -7,11 +7,11 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using ChessPlatform.ComputerPlayers.Properties;
+using ChessPlatform.Engine.Properties;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.Engine
 {
     public sealed class PolyglotOpeningBook : IOpeningBook
     {

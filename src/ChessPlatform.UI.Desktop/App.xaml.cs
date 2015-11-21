@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
-using ChessPlatform.ComputerPlayers;
+using ChessPlatform.Engine;
 
 namespace ChessPlatform.UI.Desktop
 {

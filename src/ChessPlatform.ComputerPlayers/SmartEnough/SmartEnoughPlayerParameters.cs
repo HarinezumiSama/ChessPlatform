@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     public sealed class SmartEnoughPlayerParameters
     {

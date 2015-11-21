@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ChessPlatform.ComputerPlayers.SmartEnough;
+using ChessPlatform.Engine.SmartEnough;
 using ChessPlatform.GamePlay;
 using NUnit.Framework;
 

@@ -10,7 +10,7 @@ using ChessPlatform.Utilities;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     internal sealed class SmartEnoughPlayerMoveChooser
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     internal sealed class VariationLineCache
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.Engine
 {
     internal static class LocalHelper
     {

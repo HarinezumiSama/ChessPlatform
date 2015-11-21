@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers.SmartEnough
+namespace ChessPlatform.Engine.SmartEnough
 {
     [DebuggerDisplay("[{GetType().Name,nq}] Primary = {Primary}, Secondary = {Secondary}")]
     internal struct KillerMoveData

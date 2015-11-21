@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.ComputerPlayers
+namespace ChessPlatform.Engine
 {
     public interface IOpeningBook
     {
