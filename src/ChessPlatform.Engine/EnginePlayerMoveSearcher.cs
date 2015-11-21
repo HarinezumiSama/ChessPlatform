@@ -12,7 +12,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
-    internal sealed class EnginePlayerMoveChooser
+    internal sealed class EnginePlayerMoveSearcher
     {
         #region Constants and Fields
 
@@ -71,9 +71,9 @@ namespace ChessPlatform.Engine
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="EnginePlayerMoveChooser"/> class.
+        ///     Initializes a new instance of the <see cref="EnginePlayerMoveSearcher"/> class.
         /// </summary>
-        internal EnginePlayerMoveChooser(
+        internal EnginePlayerMoveSearcher(
             [NotNull] GameBoard rootBoard,
             int plyDepth,
             [NotNull] BoardHelper boardHelper,

@@ -296,7 +296,7 @@ namespace ChessPlatform.Engine
 
                 boardHelper.ResetLocalMoveCount();
 
-                var moveChooser = new EnginePlayerMoveChooser(
+                var moveChooser = new EnginePlayerMoveSearcher(
                     board,
                     plyDepth,
                     boardHelper,

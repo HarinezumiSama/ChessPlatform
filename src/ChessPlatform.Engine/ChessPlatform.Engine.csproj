@@ -60,7 +60,7 @@
     <Compile Include="KillerMoveStatistics.cs" />
     <Compile Include="OrderedMove.cs" />
     <Compile Include="VariationLineCache.cs" />
-    <Compile Include="EnginePlayerMoveChooser.cs" />
+    <Compile Include="EnginePlayerMoveSearcher.cs" />
     <Compile Include="EnginePlayerParameters.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
