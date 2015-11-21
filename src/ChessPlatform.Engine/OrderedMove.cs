@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Engine.SmartEnough
+namespace ChessPlatform.Engine
 {
     [DebuggerDisplay("Move = {Move}, MoveInfo = {MoveInfo}, IsPvMove = {IsPvMove}")]
     internal struct OrderedMove

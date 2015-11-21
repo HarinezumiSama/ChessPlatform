@@ -53,15 +53,15 @@
     <Compile Include="IOpeningBook.cs" />
     <Compile Include="LocalHelper.cs" />
     <Compile Include="PolyglotOpeningBook.cs" />
-    <Compile Include="SmartEnough\BoardHelper.cs" />
-    <Compile Include="SmartEnough\BoardCacheKey.cs" />
-    <Compile Include="SmartEnough\GameControlInfo.cs" />
-    <Compile Include="SmartEnough\KillerMoveData.cs" />
-    <Compile Include="SmartEnough\KillerMoveStatistics.cs" />
-    <Compile Include="SmartEnough\OrderedMove.cs" />
-    <Compile Include="SmartEnough\VariationLineCache.cs" />
-    <Compile Include="SmartEnough\SmartEnoughPlayerMoveChooser.cs" />
-    <Compile Include="SmartEnough\SmartEnoughPlayerParameters.cs" />
+    <Compile Include="BoardHelper.cs" />
+    <Compile Include="BoardCacheKey.cs" />
+    <Compile Include="GameControlInfo.cs" />
+    <Compile Include="KillerMoveData.cs" />
+    <Compile Include="KillerMoveStatistics.cs" />
+    <Compile Include="OrderedMove.cs" />
+    <Compile Include="VariationLineCache.cs" />
+    <Compile Include="EnginePlayerMoveChooser.cs" />
+    <Compile Include="EnginePlayerParameters.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -71,7 +71,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="SmartEnough\SmartEnoughPlayer.cs" />
+    <Compile Include="EnginePlayer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

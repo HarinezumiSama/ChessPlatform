@@ -10,9 +10,9 @@ using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Engine.SmartEnough
+namespace ChessPlatform.Engine
 {
-    public sealed class SmartEnoughPlayer : ChessPlayerBase
+    public sealed class EnginePlayer : ChessPlayerBase
     {
         #region Constants and Fields
 
@@ -20,7 +20,7 @@ namespace ChessPlatform.Engine.SmartEnough
             CultureInfo.InvariantCulture,
             "{0}:{1}",
             typeof(ChessPlayerBase).Assembly.GetName().Name,
-            typeof(SmartEnoughPlayer).GetQualifiedName());
+            typeof(EnginePlayer).GetQualifiedName());
 
         private static readonly string TraceSeparator = new string('-', 120);
 
@@ -34,7 +34,7 @@ namespace ChessPlatform.Engine.SmartEnough
 
         #region Constructors
 
-        public SmartEnoughPlayer(PieceColor color, [NotNull] SmartEnoughPlayerParameters parameters)
+        public EnginePlayer(PieceColor color, [NotNull] EnginePlayerParameters parameters)
             : base(color)
         {
             #region Argument Check
@@ -296,7 +296,7 @@ namespace ChessPlatform.Engine.SmartEnough
 
                 boardHelper.ResetLocalMoveCount();
 
-                var moveChooser = new SmartEnoughPlayerMoveChooser(
+                var moveChooser = new EnginePlayerMoveChooser(
                     board,
                     plyDepth,
                     boardHelper,

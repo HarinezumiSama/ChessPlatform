@@ -5,7 +5,7 @@ using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Engine.SmartEnough
+namespace ChessPlatform.Engine
 {
     internal sealed class KillerMoveStatistics
     {

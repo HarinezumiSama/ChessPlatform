@@ -10,9 +10,9 @@ using ChessPlatform.Utilities;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Engine.SmartEnough
+namespace ChessPlatform.Engine
 {
-    internal sealed class SmartEnoughPlayerMoveChooser
+    internal sealed class EnginePlayerMoveChooser
     {
         #region Constants and Fields
 
@@ -71,9 +71,9 @@ namespace ChessPlatform.Engine.SmartEnough
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="SmartEnoughPlayerMoveChooser"/> class.
+        ///     Initializes a new instance of the <see cref="EnginePlayerMoveChooser"/> class.
         /// </summary>
-        internal SmartEnoughPlayerMoveChooser(
+        internal EnginePlayerMoveChooser(
             [NotNull] GameBoard rootBoard,
             int plyDepth,
             [NotNull] BoardHelper boardHelper,

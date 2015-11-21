@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
-using ChessPlatform.Engine.SmartEnough;
+using ChessPlatform.Engine;
 using ChessPlatform.UI.Desktop.Controls;
 using Omnifactotum.Validation;
 using Omnifactotum.Validation.Constraints;
@@ -29,12 +29,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                         ViewModelHelper.CreateGuiHumanChessPlayerInfo(),
                         string.Format(CultureInfo.InvariantCulture, "Human ({0})", Environment.UserName)),
                     new ControlItem<IPlayerInfo>(
-                        new PlayerInfo<SmartEnoughPlayer, SmartEnoughPlayerCreationData>(
+                        new PlayerInfo<EnginePlayer, SmartEnoughPlayerCreationData>(
                             new SmartEnoughPlayerCreationData(),
                             (color, data) =>
-                                new SmartEnoughPlayer(
+                                new EnginePlayer(
                                     color,
-                                    new SmartEnoughPlayerParameters
+                                    new EnginePlayerParameters
                                     {
                                         UseOpeningBook = data.UseOpeningBook,
                                         MaxPlyDepth = data.MaxPlyDepth.EnsureNotNull(),
@@ -44,7 +44,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Computer ({0})",
-                            typeof(SmartEnoughPlayer).GetQualifiedName()))
+                            typeof(EnginePlayer).GetQualifiedName()))
                 };
 
             PlayerControlItems = CollectionViewSource.GetDefaultView(playerTypesInternal);

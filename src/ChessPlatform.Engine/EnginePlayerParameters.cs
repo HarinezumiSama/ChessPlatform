@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
 
-namespace ChessPlatform.Engine.SmartEnough
+namespace ChessPlatform.Engine
 {
-    public sealed class SmartEnoughPlayerParameters
+    public sealed class EnginePlayerParameters
     {
         #region Public Properties
 

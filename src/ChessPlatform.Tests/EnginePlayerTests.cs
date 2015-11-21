@@ -4,14 +4,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using ChessPlatform.Engine.SmartEnough;
+using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
 using NUnit.Framework;
 
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class SmartEnoughPlayerTests
+    public sealed class EnginePlayerTests
     {
         #region Tests
 
@@ -62,7 +62,7 @@ namespace ChessPlatform.Tests
 
             var gameBoard = new GameBoard(fen);
 
-            var playerParameters = new SmartEnoughPlayerParameters
+            var playerParameters = new EnginePlayerParameters
             {
                 MaxPlyDepth = maxPlyDepth,
                 UseOpeningBook = false,
@@ -70,7 +70,7 @@ namespace ChessPlatform.Tests
                 UseMultipleProcessors = false
             };
 
-            var player = new SmartEnoughPlayer(gameBoard.ActiveColor, playerParameters);
+            var player = new EnginePlayer(gameBoard.ActiveColor, playerParameters);
 
             var stopwatch = Stopwatch.StartNew();
             var gameControlStub = new GameControl();
