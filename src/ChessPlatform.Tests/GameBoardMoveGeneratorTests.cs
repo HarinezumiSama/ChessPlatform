@@ -108,7 +108,7 @@ namespace ChessPlatform.Tests
                 flags |= PerftFlags.EnableParallelism;
             }
 
-            var includeExtraCountTypes = expectedResult.CheckCount.HasValue || expectedResult.CheckmateCount.HasValue;
+            var includeExtraCountTypes = expectedResult.CheckmateCount.HasValue;
             if (includeExtraCountTypes)
             {
                 flags |= PerftFlags.IncludeExtraCountTypes;

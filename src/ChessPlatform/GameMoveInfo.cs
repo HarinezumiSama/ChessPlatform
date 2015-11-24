@@ -68,6 +68,15 @@ namespace ChessPlatform
             }
         }
 
+        public bool GivesCheck
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return (Flags & GameMoveFlags.GivesCheck) != 0;
+            }
+        }
+
         #endregion
 
         #region Internal Properties

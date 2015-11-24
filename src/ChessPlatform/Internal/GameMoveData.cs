@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Omnifactotum.Annotations;
 
@@ -8,19 +7,12 @@ namespace ChessPlatform.Internal
 {
     internal struct GameMoveData
     {
-        #region Constants and Fields
-
-        private readonly GameMove _move;
-        private readonly GameMoveInfo _moveInfo;
-
-        #endregion
-
         #region Constructors
 
         internal GameMoveData([NotNull] GameMove move, GameMoveInfo moveInfo)
         {
-            _move = move;
-            _moveInfo = moveInfo;
+            Move = move;
+            MoveInfo = moveInfo;
         }
 
         #endregion
@@ -30,19 +22,13 @@ namespace ChessPlatform.Internal
         public GameMove Move
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _move;
-            }
+            get;
         }
 
         public GameMoveInfo MoveInfo
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _moveInfo;
-            }
+            get;
         }
 
         #endregion
@@ -51,11 +37,7 @@ namespace ChessPlatform.Internal
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{0} : {1}",
-                this.Move,
-                this.MoveInfo);
+            return $@"{Move} : {MoveInfo}";
         }
 
         #endregion

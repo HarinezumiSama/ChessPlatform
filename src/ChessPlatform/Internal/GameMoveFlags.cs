@@ -10,6 +10,7 @@ namespace ChessPlatform.Internal
         IsPawnPromotion = 0x01,
         IsCapture = 0x02,
         IsEnPassantCapture = 0x04,
-        IsKingCastling = 0x08
+        IsKingCastling = 0x08,
+        GivesCheck = 0x10
     }
 }
