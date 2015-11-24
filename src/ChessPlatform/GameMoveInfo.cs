@@ -11,7 +11,7 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GameMoveInfo"/> class
+        ///     Initializes a new instance of the <see cref="GameMoveInfo"/> structure
         ///     using the specified flags.
         /// </summary>
         internal GameMoveInfo(GameMoveFlags flags)

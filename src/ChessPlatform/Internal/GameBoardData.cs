@@ -1025,10 +1025,10 @@ namespace ChessPlatform.Internal
                 var moveInfo = new GameMoveInfo(moveFlags);
                 if (isPawnPromotion)
                 {
-                    var promotions = move.MakeAllPromotions();
-                    foreach (var promotion in promotions)
+                    var promotionMoves = move.MakeAllPromotions();
+                    foreach (var promotionMove in promotionMoves)
                     {
-                        resultMoves.Add(new GameMoveData(promotion, moveInfo));
+                        resultMoves.Add(new GameMoveData(promotionMove, moveInfo));
                     }
                 }
                 else
