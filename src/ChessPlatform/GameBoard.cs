@@ -43,6 +43,7 @@ namespace ChessPlatform
         private readonly bool _validateAfterMove;
         private readonly GameBoard _previousBoard;
         private readonly ReadOnlyDictionary<PackedGameBoard, int> _repetitions;
+        private readonly long _zobristKey;
 
         private PackedGameBoard _packedGameBoard;
 
@@ -83,7 +84,8 @@ namespace ChessPlatform
                 out _state,
                 out _autoDrawType,
                 out _resultString,
-                out _repetitions);
+                out _repetitions,
+                out _zobristKey);
         }
 
         /// <summary>
@@ -131,7 +133,8 @@ namespace ChessPlatform
                 out _state,
                 out _autoDrawType,
                 out _resultString,
-                out _repetitions);
+                out _repetitions,
+                out _zobristKey);
         }
 
         /// <summary>
@@ -188,7 +191,8 @@ namespace ChessPlatform
                 out _state,
                 out _autoDrawType,
                 out _resultString,
-                out _repetitions);
+                out _repetitions,
+                out _zobristKey);
         }
 
         #endregion
@@ -299,14 +303,7 @@ namespace ChessPlatform
 
         public Piece this[Position position] => _gameBoardData[position];
 
-        public long ZobristKey => _gameBoardData.ZobristKey
-            ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
-            ^ (ShouldIncludeEnPassantHash()
-                ? ZobristHashHelper.GetEnPassantHash(
-                    _enPassantCaptureInfo,
-                    GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
-                : 0L)
-            ^ ZobristHashHelper.GetTurnHash(_activeColor);
+        public long ZobristKey => _zobristKey;
 
         #endregion
 
@@ -1335,7 +1332,8 @@ namespace ChessPlatform
             out GameState state,
             out AutoDrawType autoDrawType,
             out string resultString,
-            out ReadOnlyDictionary<PackedGameBoard, int> repetitions)
+            out ReadOnlyDictionary<PackedGameBoard, int> repetitions,
+            out long zobristKey)
         {
             Validate(forceValidation);
 
@@ -1367,6 +1365,15 @@ namespace ChessPlatform
             Dictionary<GameMove, GameMoveInfo> validMoveMap;
             InitializeValidMovesAndState(out validMoveMap, out state);
             validMoves = validMoveMap.AsReadOnly();
+
+            zobristKey = _gameBoardData.ZobristKey
+                ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
+                ^ (ShouldIncludeEnPassantHash()
+                    ? ZobristHashHelper.GetEnPassantHash(
+                        _enPassantCaptureInfo,
+                        GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
+                    : 0L)
+                ^ ZobristHashHelper.GetTurnHash(_activeColor);
 
             if (autoDrawType == AutoDrawType.None && !state.IsGameFinished())
             {
