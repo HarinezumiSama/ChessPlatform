@@ -42,10 +42,8 @@ namespace ChessPlatform
         private readonly string _resultString;
         private readonly bool _validateAfterMove;
         private readonly GameBoard _previousBoard;
-        private readonly ReadOnlyDictionary<PackedGameBoard, int> _repetitions;
+        private readonly ReadOnlyDictionary<long, int> _repetitions;
         private readonly long _zobristKey;
-
-        private PackedGameBoard _packedGameBoard;
 
         #endregion
 
@@ -575,17 +573,6 @@ namespace ChessPlatform
             return _autoDrawType;
         }
 
-        public PackedGameBoard Pack()
-        {
-            // ReSharper disable once ConvertIfStatementToNullCoalescingExpression
-            if (_packedGameBoard == null)
-            {
-                _packedGameBoard = new PackedGameBoard(this);
-            }
-
-            return _packedGameBoard;
-        }
-
         [NotNull]
         public GameMove ParseSanMove([NotNull] string sanMoveText)
         {
@@ -674,6 +661,25 @@ namespace ChessPlatform
                         $@"Ambiguous SAN move '{sanMoveText}' for the board '{GetFen()}': {filteredPairs.Length
                             } options.");
             }
+        }
+
+        public bool IsSamePosition([NotNull] GameBoard otherBoard)
+        {
+            #region Argument Check
+
+            if (otherBoard == null)
+            {
+                throw new ArgumentNullException(nameof(otherBoard));
+            }
+
+            #endregion
+
+            return ReferenceEquals(this, otherBoard) ||
+                (_zobristKey == otherBoard._zobristKey
+                    && _castlingOptions == otherBoard._castlingOptions
+                    && _activeColor == otherBoard._activeColor
+                    && _enPassantCaptureInfo == otherBoard._enPassantCaptureInfo
+                    && _gameBoardData.IsSamePosition(otherBoard._gameBoardData));
         }
 
         #endregion
@@ -1122,6 +1128,21 @@ namespace ChessPlatform
             }
         }
 
+        private static bool ShouldIncludeEnPassantHash(
+            [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
+            [NotNull] ReadOnlyDictionary<GameMove, GameMoveInfo> validMoves)
+        {
+            if (enPassantCaptureInfo == null)
+            {
+                return false;
+            }
+
+            var result = validMoves.Any(
+                pair => pair.Value.IsEnPassantCapture && pair.Key.To == enPassantCaptureInfo.CapturePosition);
+
+            return result;
+        }
+
         private void Validate(bool forceValidation)
         {
             if (!forceValidation && !_validateAfterMove)
@@ -1332,10 +1353,23 @@ namespace ChessPlatform
             out GameState state,
             out AutoDrawType autoDrawType,
             out string resultString,
-            out ReadOnlyDictionary<PackedGameBoard, int> repetitions,
+            out ReadOnlyDictionary<long, int> repetitions,
             out long zobristKey)
         {
             Validate(forceValidation);
+
+            Dictionary<GameMove, GameMoveInfo> validMoveMap;
+            InitializeValidMovesAndState(out validMoveMap, out state);
+            validMoves = validMoveMap.AsReadOnly();
+
+            zobristKey = _gameBoardData.ZobristKey
+                ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
+                ^ (ShouldIncludeEnPassantHash(_enPassantCaptureInfo, validMoves)
+                    ? ZobristHashHelper.GetEnPassantHash(
+                        _enPassantCaptureInfo,
+                        GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
+                    : 0L)
+                ^ ZobristHashHelper.GetTurnHash(_activeColor);
 
             if (_previousBoard != null && _previousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
             {
@@ -1350,30 +1384,22 @@ namespace ChessPlatform
                 }
 
                 var repetitionMap = _previousBoard == null
-                    ? new Dictionary<PackedGameBoard, int>()
-                    : new Dictionary<PackedGameBoard, int>(_previousBoard._repetitions);
+                    ? new Dictionary<long, int>()
+                    : new Dictionary<long, int>(_previousBoard._repetitions);
 
-                var packedGameBoard = Pack();
-                var thisRepetitionCount = repetitionMap.GetValueOrDefault(packedGameBoard) + 1;
-                repetitionMap[packedGameBoard] = thisRepetitionCount;
+                var thisRepetitionCount = repetitionMap.GetValueOrDefault(zobristKey) + 1;
+                repetitionMap[zobristKey] = thisRepetitionCount;
                 repetitions = repetitionMap.AsReadOnly();
 
-                var isThreefoldRepetition = thisRepetitionCount >= ThreefoldCount;
+                var isThreefoldRepetition = false;
+                if (thisRepetitionCount >= ThreefoldCount)
+                {
+                    var exactRepetitionCount = GetHistory().Where(IsSamePosition).Count();
+                    isThreefoldRepetition = exactRepetitionCount >= ThreefoldCount;
+                }
+
                 autoDrawType = isThreefoldRepetition ? AutoDrawType.ThreefoldRepetition : AutoDrawType.None;
             }
-
-            Dictionary<GameMove, GameMoveInfo> validMoveMap;
-            InitializeValidMovesAndState(out validMoveMap, out state);
-            validMoves = validMoveMap.AsReadOnly();
-
-            zobristKey = _gameBoardData.ZobristKey
-                ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
-                ^ (ShouldIncludeEnPassantHash()
-                    ? ZobristHashHelper.GetEnPassantHash(
-                        _enPassantCaptureInfo,
-                        GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
-                    : 0L)
-                ^ ZobristHashHelper.GetTurnHash(_activeColor);
 
             if (autoDrawType == AutoDrawType.None && !state.IsGameFinished())
             {
@@ -1506,19 +1532,6 @@ namespace ChessPlatform
             {
                 throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
-        }
-
-        private bool ShouldIncludeEnPassantHash()
-        {
-            if (_enPassantCaptureInfo == null)
-            {
-                return false;
-            }
-
-            var result = ValidMoves.Any(
-                pair => pair.Value.IsEnPassantCapture && pair.Key.To == _enPassantCaptureInfo.CapturePosition);
-
-            return result;
         }
 
         [NotNull]

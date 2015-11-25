@@ -133,7 +133,6 @@
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="Internal\MovePieceData.cs" />
     <Compile Include="Internal\GameMoveFlags.cs" />
-    <Compile Include="PackedGameBoard.cs" />
     <Compile Include="PerftFlags.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />

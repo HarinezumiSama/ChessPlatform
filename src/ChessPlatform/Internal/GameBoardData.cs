@@ -131,6 +131,34 @@ namespace ChessPlatform.Internal
             return new GameBoardData(this);
         }
 
+        public bool IsSamePosition([NotNull] GameBoardData otherBoardData)
+        {
+            #region Argument Check
+
+            if (otherBoardData == null)
+            {
+                throw new ArgumentNullException(nameof(otherBoardData));
+            }
+
+            #endregion
+
+            var length = _bitboards.Length;
+            if (length != otherBoardData._bitboards.Length)
+            {
+                return false;
+            }
+
+            for (var index = 0; index < length; index++)
+            {
+                if (_bitboards[index] != otherBoardData._bitboards[index])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public PieceInfo GetPieceInfo(Position position)
         {

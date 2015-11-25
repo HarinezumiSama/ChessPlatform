@@ -56,7 +56,6 @@
     <Compile Include="MultiTaskController.cs" />
     <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="BoardHelper.cs" />
-    <Compile Include="BoardCacheKey.cs" />
     <Compile Include="GameControlInfo.cs" />
     <Compile Include="KillerMoveData.cs" />
     <Compile Include="KillerMoveStatistics.cs" />
