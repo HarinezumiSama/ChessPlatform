@@ -98,16 +98,16 @@ namespace ChessPlatform.UI.Desktop
 
         private static void OnUnhandledExceptionInternal(UnhandledExceptionEventArgs args)
         {
-            var window = Current?.MainWindow;
 
             var text = string.Format(
-                "Unhandled exception has occurred (see below).{0}The process will be terminated.{0}{0}{1}",
+                @"Unhandled exception has occurred (see below).{0}The process will be terminated.{0}{0}{1}",
                 Environment.NewLine,
-                args.ExceptionObject.ToStringSafely("<Unknown exception>"));
+                args.ExceptionObject?.ToStringSafely() ?? "<Unknown exception>");
 
             Trace.TraceError(text);
 
-            window?.ShowErrorDialog(text, $"Unhandled Exception — {Title}");
+            var window = Current?.MainWindow;
+            window?.ShowErrorDialog(text, $@"Unhandled Exception — {Title}");
 
             Process.GetCurrentProcess().Kill();
         }

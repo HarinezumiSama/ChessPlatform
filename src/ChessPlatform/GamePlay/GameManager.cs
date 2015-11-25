@@ -338,6 +338,8 @@ namespace ChessPlatform.GamePlay
 
         private void ExecuteGame()
         {
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
             try
             {
                 ExecuteGameInternal();
@@ -346,11 +348,11 @@ namespace ChessPlatform.GamePlay
                 getMoveState?.Cancel();
             }
             catch (Exception ex)
+                when (!ex.IsFatal())
             {
                 Trace.TraceError(
-                    "[{0}] Unhandled exception has occurred: {1}",
-                    MethodBase.GetCurrentMethod().GetQualifiedName(),
-                    ex);
+                    $@"{Environment.NewLine}[{currentMethodName}] Unhandled exception has occurred: {ex}{
+                        Environment.NewLine}");
 
                 lock (_syncLock)
                 {
@@ -514,7 +516,7 @@ namespace ChessPlatform.GamePlay
                 return;
             }
 
-            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+            AsyncFactotum.ExecuteAsync(() => handler(this, EventArgs.Empty));
         }
 
         private void RaisePlayerThinkingStartedAsync()
@@ -525,7 +527,7 @@ namespace ChessPlatform.GamePlay
                 return;
             }
 
-            Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
+            AsyncFactotum.ExecuteAsync(() => handler(this, EventArgs.Empty));
         }
 
         private void RaiseUnhandledExceptionOccurredAsync(Exception exception)
@@ -537,7 +539,7 @@ namespace ChessPlatform.GamePlay
             }
 
             var eventArgs = new ThreadExceptionEventArgs(exception);
-            Task.Factory.StartNew(() => handler(this, eventArgs));
+            AsyncFactotum.ExecuteAsync(() => handler(this, eventArgs));
         }
 
         #endregion
