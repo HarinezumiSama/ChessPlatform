@@ -127,6 +127,11 @@ namespace ChessPlatform.Engine
             lock (_syncLock)
             {
                 _state = InternalState.Finished;
+
+                if (_exceptions.Count != 0)
+                {
+                    throw new AggregateException(_exceptions);
+                }
             }
 
             if (_taskSlots.Any(slot => !slot.IsCompleted))
