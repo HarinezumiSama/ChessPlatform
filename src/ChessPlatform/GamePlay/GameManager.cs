@@ -16,7 +16,7 @@ namespace ChessPlatform.GamePlay
         #region Constants and Fields
 
         private static readonly TimeSpan ThreadStopTimeout = TimeSpan.FromSeconds(5);
-        private static readonly TimeSpan IdleTime = TimeSpan.FromMilliseconds(50);
+        private static readonly TimeSpan IdleTime = TimeSpan.FromMilliseconds(10);
         private static readonly TimeSpan MoveWaitingIdleTime = TimeSpan.FromMilliseconds(10);
 
         private readonly object _syncLock = new object();
@@ -26,6 +26,8 @@ namespace ChessPlatform.GamePlay
         private readonly Thread _thread;
         private readonly SyncValueContainer<GetMoveState> _getMoveStateContainer;
         private readonly GameControl _gameControl;
+        private readonly Stopwatch _whiteTotalStopwatch;
+        private readonly Stopwatch _blackTotalStopwatch;
         private bool _shouldStop;
         private bool _isDisposed;
         private GameManagerState _state;
@@ -67,6 +69,8 @@ namespace ChessPlatform.GamePlay
             _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
             _gameControl = new GameControl();
             _state = GameManagerState.Paused;
+            _whiteTotalStopwatch = new Stopwatch();
+            _blackTotalStopwatch = new Stopwatch();
 
             _thread.Start();
         }
@@ -111,6 +115,10 @@ namespace ChessPlatform.GamePlay
                 return _black;
             }
         }
+
+        public TimeSpan WhiteTotalElapsed => _whiteTotalStopwatch.Elapsed;
+
+        public TimeSpan BlackTotalElapsed => _blackTotalStopwatch.Elapsed;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public PieceColor ActiveColor
@@ -365,6 +373,8 @@ namespace ChessPlatform.GamePlay
 
         private void ExecuteGameInternal()
         {
+            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
+
             while (!_shouldStop && !_isDisposed)
             {
                 if (_state == GameManagerState.UnhandledExceptionOccurred)
@@ -407,7 +417,8 @@ namespace ChessPlatform.GamePlay
                     var state = new GetMoveState(_state, originalActiveBoard);
                     _getMoveStateContainer.Value = state;
 
-                    var activePlayer = originalActiveBoard.ActiveColor == PieceColor.White ? _white : _black;
+                    var activeColor = originalActiveBoard.ActiveColor;
+                    var activePlayer = activeColor == PieceColor.White ? _white : _black;
                     var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken, _gameControl);
                     var task = activePlayer.CreateGetMoveTask(request);
 
@@ -448,16 +459,21 @@ namespace ChessPlatform.GamePlay
                         t =>
                         {
                             Trace.TraceError(
-                                "[{0}] Unhandled exception has occurred: {1}",
-                                MethodBase.GetCurrentMethod().GetQualifiedName(),
-                                t.Exception);
+                                $@"{Environment.NewLine}{Environment.NewLine}[{currentMethodName
+                                    }] Unhandled exception has occurred: {t.Exception}{Environment.NewLine}{
+                                    Environment.NewLine}");
 
                             lock (_syncLock)
                             {
+                                _whiteTotalStopwatch.Stop();
+                                _blackTotalStopwatch.Stop();
                                 _state = GameManagerState.UnhandledExceptionOccurred;
                             }
                         },
                         TaskContinuationOptions.OnlyOnFaulted);
+
+                    var totalStopwatch = activeColor == PieceColor.White ? _whiteTotalStopwatch : _blackTotalStopwatch;
+                    totalStopwatch.Start();
 
                     RaisePlayerThinkingStartedAsync();
                     task.Start();
@@ -465,8 +481,11 @@ namespace ChessPlatform.GamePlay
             }
         }
 
-        private void AffectStatesInternal(GameManagerState? desiredState)
+        private void AffectStatesInternal(GameManagerState desiredState)
         {
+            _whiteTotalStopwatch.Stop();
+            _blackTotalStopwatch.Stop();
+
             var gameBoard = GetActiveBoard();
 
             _autoDrawType = AutoDrawType.None;
@@ -496,13 +515,10 @@ namespace ChessPlatform.GamePlay
                     break;
             }
 
-            if (desiredState.HasValue)
-            {
-                _state = desiredState.Value;
-            }
+            _state = desiredState;
         }
 
-        private void AffectStates(GameManagerState? desiredState)
+        private void AffectStates(GameManagerState desiredState)
         {
             AffectStatesInternal(desiredState);
             RaiseGameBoardChangedAsync();

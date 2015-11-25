@@ -26,6 +26,8 @@
                 Executed="ReversedBoardView_Executed" />
         <CommandBinding Command="commands:GameWindowCommands.ShowPlayerFeedback"
                 Executed="ShowPlayerFeedback_Executed" />
+        <CommandBinding Command="commands:GameWindowCommands.ShowPlayersTimers"
+                Executed="ShowPlayersTimers_Executed" />
         <CommandBinding Command="commands:GameWindowCommands.RequestMoveNow"
                 Executed="RequestMoveNow_Executed" CanExecute="RequestMoveNow_CanExecute" />
     </Window.CommandBindings>
@@ -72,8 +74,12 @@
             <MenuItem Header="_View">
                 <MenuItem Command="commands:GameWindowCommands.ReversedBoardView" IsChecked="{Binding IsReversedView}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <Separator />
                 <MenuItem Command="commands:GameWindowCommands.ShowPlayerFeedback"
                         IsChecked="{Binding ShouldShowPlayerFeedback}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="commands:GameWindowCommands.ShowPlayersTimers"
+                        IsChecked="{Binding ShouldShowPlayersTimers}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
         </Menu>
@@ -100,8 +106,10 @@
                             VerticalAlignment="Stretch">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -111,11 +119,12 @@
                         </Grid.ColumnDefinitions>
 
                         <Grid.Resources>
-                            <converters:BooleanToVisibilityConverter x:Key="FeedbackVisibilityConverter"
+                            <converters:BooleanToVisibilityConverter x:Key="ShowItemVisibilityConverter"
                                     TrueValue="Visible" FalseValue="Hidden" />
                         </Grid.Resources>
 
-                        <TextBlock Grid.Row="0" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
+                        <TextBlock Grid.Row="0" Grid.Column="0" Grid.RowSpan="2"
+                                Text="{x:Static local:UIHelper.KingSymbol}"
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Left" FontSize="12" />
 
@@ -123,35 +132,42 @@
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Right" FontSize="5" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="0"
-                                Text="{Binding UpperPlayerPieceAdvantage}"
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding UpperPlayerTotalElapsed}"
+                                Visibility="{Binding ShouldShowPlayersTimers,Converter={StaticResource ShowItemVisibilityConverter}}"
+                                Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Right" FontSize="4" />
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding UpperPlayerPieceAdvantage}"
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="1" Grid.Column="1"
-                                Text="{Binding UpperPlayerFeedback}"
-                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource FeedbackVisibilityConverter}}"
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding UpperPlayerFeedback}"
+                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource ShowItemVisibilityConverter}}"
                                 Foreground="{Binding UpperPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Top" TextAlignment="Left" FontSize="3" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="0"
-                                Text="{Binding LowerPlayerPieceAdvantage}"
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="{Binding LowerPlayerPieceAdvantage}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Bottom" TextAlignment="Left" FontSize="7" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="2" Grid.Column="1"
-                                Text="{Binding LowerPlayerFeedback}"
-                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource FeedbackVisibilityConverter}}"
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LowerPlayerFeedback}"
+                                Visibility="{Binding ShouldShowPlayerFeedback,Converter={StaticResource ShowItemVisibilityConverter}}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Bottom" TextAlignment="Left" FontSize="3" TextWrapping="Wrap" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="0" Text="{x:Static local:UIHelper.KingSymbol}"
+                        <TextBlock Grid.Row="4" Grid.Column="0" Grid.RowSpan="2"
+                                Text="{x:Static local:UIHelper.KingSymbol}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Left" FontSize="12" />
 
-                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding LowerPlayerTitle}"
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding LowerPlayerTitle}"
                                 Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
                                 VerticalAlignment="Center" TextAlignment="Right" FontSize="5" />
+
+                        <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding LowerPlayerTotalElapsed}"
+                                Visibility="{Binding ShouldShowPlayersTimers,Converter={StaticResource ShowItemVisibilityConverter}}"
+                                Foreground="{Binding LowerPlayerBrush}" HorizontalAlignment="Stretch"
+                                VerticalAlignment="Center" TextAlignment="Right" FontSize="4" />
                     </Grid>
                 </Border>
 

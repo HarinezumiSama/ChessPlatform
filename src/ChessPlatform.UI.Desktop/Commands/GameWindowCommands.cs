@@ -54,6 +54,12 @@ namespace ChessPlatform.UI.Desktop.Commands
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.F, ModifierKeys.Control) });
 
+        public static readonly RoutedUICommand ShowPlayersTimers = new RoutedUICommand(
+            "Show _Timers",
+            nameof(ShowPlayersTimers),
+            typeof(GameWindowCommands),
+            new InputGestureCollection { new KeyGesture(Key.T, ModifierKeys.Control) });
+
         public static readonly RoutedUICommand RequestMoveNow = new RoutedUICommand(
             "_Move Now",
             nameof(RequestMoveNow),

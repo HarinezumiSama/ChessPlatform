@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private readonly TaskScheduler _taskScheduler;
         private readonly Dispatcher _dispatcher;
         private readonly HashSet<Position> _validMoveTargetPositionsInternal;
+        private readonly Timer _timeUpdateTimer;
         private GameBoard _currentGameBoard;
         private GameWindowSelectionMode _selectionMode;
         private Position? _currentTargetPosition;
@@ -32,6 +34,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private string _whitePlayerFeedback;
         private string _blackPlayerFeedback;
         private bool _shouldShowPlayerFeedback;
+        private string _whiteTotalElapsedString;
+        private string _blackTotalElapsedString;
+        private bool _shouldShowPlayersTimers;
 
         #endregion
 
@@ -51,6 +56,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
 
             _shouldShowPlayerFeedback = true;
+            _shouldShowPlayersTimers = true;
+
+            _timeUpdateTimer = new Timer(
+                OnUpdatePlayersTimes,
+                null,
+                Timeout.InfiniteTimeSpan,
+                Timeout.InfiniteTimeSpan);
 
             SquareViewModels = ChessHelper
                 .AllPositions
@@ -187,6 +199,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        public bool ShouldShowPlayersTimers
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _shouldShowPlayersTimers;
+            }
+
+            set
+            {
+                if (value == _shouldShowPlayersTimers)
+                {
+                    return;
+                }
+
+                _shouldShowPlayersTimers = value;
+                RaisePropertyChanged(() => ShouldShowPlayersTimers);
+            }
+        }
+
         public Brush UpperPlayerBrush => IsReversedView ? UIHelper.WhitePieceBrush : UIHelper.BlackPieceBrush;
 
         public Brush LowerPlayerBrush => IsReversedView ? UIHelper.BlackPieceBrush : UIHelper.WhitePieceBrush;
@@ -206,6 +238,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string LowerPlayerFeedback => IsReversedView ? _blackPlayerFeedback : _whitePlayerFeedback;
 
         public bool CanRequestMoveNow => IsComputerPlayerActive && _gameManager.State == GameManagerState.Running;
+
+        public string UpperPlayerTotalElapsed => IsReversedView ? _whiteTotalElapsedString : _blackTotalElapsedString;
+
+        public string LowerPlayerTotalElapsed => IsReversedView ? _blackTotalElapsedString : _whiteTotalElapsedString;
 
         #endregion
 
@@ -284,6 +320,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             ResetSelectionMode();
 
+            _timeUpdateTimer.Change(0, 50);
             _gameManager.Play();
         }
 
@@ -630,6 +667,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             RaisePropertyChanged(() => UpperPlayerFeedback);
             RaisePropertyChanged(() => LowerPlayerFeedback);
+
+            RaisePropertyChanged(() => UpperPlayerTotalElapsed);
+            RaisePropertyChanged(() => LowerPlayerTotalElapsed);
         }
 
         private void OnNewGameStarted()
@@ -679,6 +719,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             App.ProcessUnhandledException(eventArgs.Exception);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string FormatElapsedTime(TimeSpan elapsedTime)
+            => elapsedTime.ToString(@"d'.'hh':'mm':'ss'.'f");
 
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
@@ -742,6 +786,34 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
             AffectPlayerInfo();
+        }
+
+        private void OnUpdatePlayersTimes(object state)
+        {
+            var gameManager = _gameManager;
+            if (gameManager == null)
+            {
+                _whiteTotalElapsedString = null;
+                _blackTotalElapsedString = null;
+                return;
+            }
+
+            var whiteTotalElapsedString = FormatElapsedTime(gameManager.WhiteTotalElapsed);
+            var blackTotalElapsedString = FormatElapsedTime(gameManager.BlackTotalElapsed);
+
+            var oldWhiteTotalElapsedString = Interlocked.Exchange(
+                ref _whiteTotalElapsedString,
+                whiteTotalElapsedString);
+
+            var oldBlackTotalElapsedString = Interlocked.Exchange(
+                ref _blackTotalElapsedString,
+                blackTotalElapsedString);
+
+            if (oldWhiteTotalElapsedString != _whiteTotalElapsedString
+                || oldBlackTotalElapsedString != _blackTotalElapsedString)
+            {
+                AffectPlayerInfo();
+            }
         }
 
         #endregion
