@@ -22,6 +22,8 @@ namespace ChessPlatform.Engine
         ////private const int MidgameMaterialLimit = 5800;
         private const int EndgameMaterialLimit = 1470;
 
+        private const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
+
         private static readonly EvaluationScore NullWindowOffset = new EvaluationScore(1);
 
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightInMiddlegameMap =
@@ -498,7 +500,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsQuietMove(GameMoveInfo moveInfo)
         {
-            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion;
+            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion & !moveInfo.GivesCheck;
         }
 
         private static int EvaluateMaterialAndItsPositionByColor(
@@ -539,6 +541,7 @@ namespace ChessPlatform.Engine
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase gamePhase)
         {
             var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
@@ -548,6 +551,7 @@ namespace ChessPlatform.Engine
         }
 
         // ReSharper disable once UnusedMember.Local
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EvaluateBoardMobility([NotNull] GameBoard board)
         {
             var result = board
@@ -571,6 +575,7 @@ namespace ChessPlatform.Engine
             return cheapestAttackerMove;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
         {
             //// Using Manhattan-Distance
@@ -614,6 +619,7 @@ namespace ChessPlatform.Engine
         }
 
         //// ReSharper disable SuggestBaseTypeForParameter
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddKillerMove(
             [CanBeNull] GameMove killerMove,
             [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
@@ -629,13 +635,17 @@ namespace ChessPlatform.Engine
             remainingMoves.Remove(killerMove);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static PieceType GetResultingMovedPieceType([NotNull] GameBoard board, [NotNull] GameMove move)
+        {
+            return move.PromotionResult == PieceType.None ? board[move.From].GetPieceType() : move.PromotionResult;
+        }
+
         //// ReSharper restore SuggestBaseTypeForParameter
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private OrderedMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
         {
-            const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
-
             var resultList = new List<OrderedMove>(board.ValidMoves.Count);
 
             if (plyDistance == 0 && _previousIterationVariationLineCache != null)
@@ -671,19 +681,28 @@ namespace ChessPlatform.Engine
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
             var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
 
-            var capturingMoves = remainingMoves
-                .Where(pair => pair.Value.IsAnyCapture)
+            var checkingMoves = remainingMoves
+                .Where(pair => pair.Value.GivesCheck)
+                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
+                .OrderByDescending(obj => GetMaterialWeight(GetResultingMovedPieceType(board, obj.Move)))
+                .ThenBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
+                .ThenBy(obj => obj.Move.GetHashCode())
+                .ToArray();
+
+            resultList.AddRange(checkingMoves);
+            checkingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+
+            var capturingAndPromotionMoves = remainingMoves
+                .Where(pair => pair.Value.IsAnyCapture | pair.Value.IsPawnPromotion)
                 .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
                 .OrderByDescending(obj => GetMaterialWeight(board[obj.Move.To].GetPieceType()))
                 .ThenBy(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
                 .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
-                .ThenBy(obj => obj.Move.PromotionResult)
-                .ThenBy(obj => obj.Move.From.SquareIndex)
-                .ThenBy(obj => obj.Move.To.SquareIndex)
+                .ThenBy(obj => obj.Move.GetHashCode())
                 .ToArray();
 
-            resultList.AddRange(capturingMoves);
-            capturingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+            resultList.AddRange(capturingAndPromotionMoves);
+            capturingAndPromotionMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
 
             if (KillerMoveStatistics.DepthRange.Contains(plyDistance))
             {
@@ -693,19 +712,16 @@ namespace ChessPlatform.Engine
                 AddKillerMove(killerMoveData.Secondary, remainingMoves, resultList);
             }
 
-            var nonCapturingMoves = remainingMoves
-                .Where(pair => !pair.Value.IsAnyCapture)
+            var otherMoves = remainingMoves
                 .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
                 .OrderBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
                 ////.OrderByDescending(obj => GetKingTropismScore(board, obj.Move.To, opponentKingPosition))
                 .ThenByDescending(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
                 .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
-                .ThenBy(obj => obj.Move.PromotionResult)
-                .ThenBy(obj => obj.Move.From.SquareIndex)
-                .ThenBy(obj => obj.Move.To.SquareIndex)
+                .ThenBy(obj => obj.Move.GetHashCode())
                 .ToArray();
 
-            resultList.AddRange(nonCapturingMoves);
+            resultList.AddRange(otherMoves);
 
             if (resultList.Count != board.ValidMoves.Count)
             {
@@ -811,7 +827,9 @@ namespace ChessPlatform.Engine
         {
             _gameControlInfo.CheckInterruptions();
 
-            var bestScore = EvaluatePositionScore(board, plyDistance);
+            var bestScore = /*board.State.IsCheck()
+                ? EvaluationScore.NegativeInfinity
+                :*/ EvaluatePositionScore(board, plyDistance);
             if (bestScore.Value >= beta.Value)
             {
                 // Stand pat
@@ -824,23 +842,54 @@ namespace ChessPlatform.Engine
                 localAlpha = bestScore;
             }
 
-            var nonQuietMoves = board
-                .ValidMoves
+            var remainingMoves = board.ValidMoves
                 .Where(pair => !IsQuietMove(pair.Value))
-                .Select(pair => pair.Key)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+
+            var nonQuietMoves = new List<OrderedMove>(remainingMoves.Count);
+
+            var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
+            var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
+
+            var checkingMoves = remainingMoves
+                .Where(pair => pair.Value.GivesCheck)
+                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
+                .OrderByDescending(obj => GetMaterialWeight(GetResultingMovedPieceType(board, obj.Move)))
+                .ThenBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
+                .ThenBy(obj => obj.Move.GetHashCode())
                 .ToArray();
+
+            nonQuietMoves.AddRange(checkingMoves);
+            checkingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+
+            var capturingAndPromotionMoves = remainingMoves
+                .Where(pair => pair.Value.IsAnyCapture | pair.Value.IsPawnPromotion)
+                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
+                .OrderByDescending(obj => GetMaterialWeight(board[obj.Move.To].GetPieceType()))
+                .ThenBy(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
+                .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
+                .ThenBy(obj => obj.Move.GetHashCode())
+                .ToArray();
+
+            nonQuietMoves.AddRange(capturingAndPromotionMoves);
+            capturingAndPromotionMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+
+            if (remainingMoves.Count != 0)
+            {
+                throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
+            }
 
             foreach (var nonQuietMove in nonQuietMoves)
             {
                 _gameControlInfo.CheckInterruptions();
 
-                var seeScore = ComputeStaticExchangeEvaluationScore(board, nonQuietMove.To, nonQuietMove);
+                var seeScore = ComputeStaticExchangeEvaluationScore(board, nonQuietMove.Move.To, nonQuietMove.Move);
                 if (seeScore < 0)
                 {
                     continue;
                 }
 
-                var currentBoard = _boardHelper.MakeMove(board, nonQuietMove);
+                var currentBoard = _boardHelper.MakeMove(board, nonQuietMove.Move);
                 var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha, isPrincipalVariation);
 
                 if (score.Value >= beta.Value)
