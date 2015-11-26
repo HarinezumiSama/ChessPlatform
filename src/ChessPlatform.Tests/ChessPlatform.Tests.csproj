@@ -75,6 +75,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="EnginePlayerTests.cs" />
+    <Compile Include="TranspositionTableEntryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
