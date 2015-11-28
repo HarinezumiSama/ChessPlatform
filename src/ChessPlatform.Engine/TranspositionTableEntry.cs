@@ -24,8 +24,7 @@ namespace ChessPlatform.Engine
             EvaluationScore score,
             EvaluationScore localScore,
             ScoreBound bound,
-            int depth,
-            int version)
+            int depth)
         {
             Key = key;
 
@@ -39,7 +38,7 @@ namespace ChessPlatform.Engine
             _localScoreValue = localScore.Value;
             Bound = bound;
             Depth = depth;
-            Version = version;
+            Version = 0;
         }
 
         #endregion
@@ -82,7 +81,7 @@ namespace ChessPlatform.Engine
             private set;
         }
 
-        public int Version
+        public uint Version
         {
             get;
             internal set;

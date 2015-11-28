@@ -29,39 +29,37 @@ namespace ChessPlatform.Tests
             const long Key = 0x12345678ABCDEF01L;
             const ScoreBound Bound = ScoreBound.Exact;
             const int Depth = CommonEngineConstants.MaxPlyDepthUpperLimit;
-            const int Version = 87654321;
 
             var bestMove = GameMove.FromStringNotation("b2b1q");
             var score = EvaluationScore.Mate;
             var localScore = new EvaluationScore(-789);
 
-            var entry = new TranspositionTableEntry(Key, bestMove, score, localScore, Bound, Depth, Version);
+            var entry = new TranspositionTableEntry(Key, bestMove, score, localScore, Bound, Depth);
             Assert.That(entry.Key, Is.EqualTo(Key));
             Assert.That(entry.BestMove, Is.EqualTo(bestMove));
             Assert.That(entry.Score, Is.EqualTo(score));
             Assert.That(entry.LocalScore, Is.EqualTo(localScore));
             Assert.That(entry.Bound, Is.EqualTo(Bound));
             Assert.That(entry.Depth, Is.EqualTo(Depth));
-            Assert.That(entry.Version, Is.EqualTo(Version));
+            Assert.That(entry.Version, Is.EqualTo(0));
         }
 
         [Test]
         public void TestTranspositionTable()
         {
-            var transpositionTable = new TranspositionTable();
+            var transpositionTable = new TranspositionTable(0);
             Assert.That(transpositionTable.Version, Is.Not.EqualTo(0));
 
             const long Key = 0x12345678ABCDEF01L;
             const long OtherKey = 0x987654321L;
             const ScoreBound Bound = ScoreBound.Exact;
             const int Depth = CommonEngineConstants.MaxPlyDepthUpperLimit;
-            const int Version = 87654321;
 
             var bestMove = GameMove.FromStringNotation("b2b1q");
             var score = EvaluationScore.Mate;
             var localScore = new EvaluationScore(-789);
 
-            var entry = new TranspositionTableEntry(Key, bestMove, score, localScore, Bound, Depth, Version);
+            var entry = new TranspositionTableEntry(Key, bestMove, score, localScore, Bound, Depth);
 
             transpositionTable.Save(ref entry);
             Assert.That(entry.Version, Is.EqualTo(transpositionTable.Version));

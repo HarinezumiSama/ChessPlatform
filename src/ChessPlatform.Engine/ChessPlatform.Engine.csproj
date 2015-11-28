@@ -64,6 +64,7 @@
     <Compile Include="TranspositionTable.cs" />
     <Compile Include="TranspositionTableBucket.cs" />
     <Compile Include="TranspositionTableEntry.cs" />
+    <Compile Include="TranspositionTableHelper.cs" />
     <Compile Include="VariationLineCache.cs" />
     <Compile Include="EnginePlayerMoveSearcher.cs" />
     <Compile Include="EnginePlayerParameters.cs" />

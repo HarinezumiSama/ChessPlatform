@@ -27,9 +27,10 @@
                 SelectedObject="{Binding SelectedPlayerControlItem.Value.CreationData,UpdateSourceTrigger=PropertyChanged}"
                 AutoGenerateProperties="True"
                 UpdateTextBoxSourceOnEnterKey="True"
-                MinHeight="100"
+                MinHeight="140"
                 ShowSearchBox="False"
                 ShowSortOptions="False" ShowSummary="False" ShowTitle="False" IsCategorized="False"
-                Visibility="{Binding Path=SelectedPlayerControlItem.Value.CreationData,Converter={StaticResource PlayerDataPropertyGridVisibilityConverter}}" />
+                Visibility="{Binding Path=SelectedPlayerControlItem.Value.CreationData,Converter={StaticResource PlayerDataPropertyGridVisibilityConverter}}"
+                NameColumnWidth="200" />
     </Grid>
 </UserControl>

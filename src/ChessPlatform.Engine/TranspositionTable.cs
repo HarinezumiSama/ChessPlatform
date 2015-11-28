@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -10,13 +11,14 @@ namespace ChessPlatform.Engine
     {
         #region Constants and Fields
 
-        public const int DefaultSizeInMB = 16;
+        public const int DefaultSizeInMegaBytes = 16;
+        private const int MegaByte = 1 << 20;
 
         internal static readonly int BucketSizeInBytes = Marshal.SizeOf<TranspositionTableBucket>();
 
         private readonly object _syncLock;
         private TranspositionTableBucket[] _buckets;
-        private int _version;
+        private uint _version;
         private long _probeCount;
         private long _hitCount;
 
@@ -24,11 +26,12 @@ namespace ChessPlatform.Engine
 
         #region Constructors
 
-        public TranspositionTable()
+        public TranspositionTable(int sizeInMegaBytes)
         {
             _syncLock = new object();
             _version = 1;
-            Resize(DefaultSizeInMB);
+
+            Resize(sizeInMegaBytes);
         }
 
         #endregion
@@ -43,7 +46,7 @@ namespace ChessPlatform.Engine
 
         #region Internal Properties
 
-        internal int Version => _version;
+        internal uint Version => _version;
 
         internal int BucketCount => _buckets?.Length ?? 0;
 
@@ -74,27 +77,34 @@ namespace ChessPlatform.Engine
             }
         }
 
-        public void Resize(int sizeInMB)
+        public void Resize(int sizeInMegaBytes)
         {
             #region Argument Check
 
-            if (sizeInMB <= 0)
+            if (sizeInMegaBytes < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    nameof(sizeInMB),
-                    sizeInMB,
-                    @"The value must be positive.");
+                    nameof(sizeInMegaBytes),
+                    sizeInMegaBytes,
+                    @"The value cannot be negative.");
             }
 
             #endregion
 
-            var rawCount = sizeInMB * 1024 * 1024 / BucketSizeInBytes;
+            if (sizeInMegaBytes == 0)
+            {
+                sizeInMegaBytes = DefaultSizeInMegaBytes;
+            }
+
+            var rawCount = sizeInMegaBytes * MegaByte / BucketSizeInBytes;
             var count = 1 << ((int)Math.Truncate(Math.Log(rawCount, 2)));
 
             lock (_syncLock)
             {
                 _buckets = new TranspositionTableBucket[count].EnsureNotNull();
             }
+
+            Trace.WriteLine($@"[{nameof(TranspositionTable)}] New bucket count: {count}.");
         }
 
         public TranspositionTableEntry? Probe(long key)

@@ -31,6 +31,18 @@ namespace ChessPlatform.Engine
             set;
         }
 
+        public bool UseTranspositionTable
+        {
+            get;
+            set;
+        }
+
+        public int TranspositionTableSizeInMegaBytes
+        {
+            get;
+            set;
+        }
+
         #endregion
     }
 }

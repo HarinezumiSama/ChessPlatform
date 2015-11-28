@@ -30,6 +30,9 @@ namespace ChessPlatform.Engine
         private readonly TimeSpan? _maxTimePerMove;
         private readonly bool _useMultipleProcessors;
 
+        [CanBeNull]
+        private readonly TranspositionTable _transpositionTable;
+
         #endregion
 
         #region Constructors
@@ -67,6 +70,10 @@ namespace ChessPlatform.Engine
             _openingBook = parameters.UseOpeningBook ? PolyglotOpeningBook.Varied : null;
             _maxTimePerMove = parameters.MaxTimePerMove;
             _useMultipleProcessors = parameters.UseMultipleProcessors;
+
+            _transpositionTable = parameters.UseTranspositionTable
+                ? new TranspositionTable(parameters.TranspositionTableSizeInMegaBytes)
+                : null;
         }
 
         #endregion
@@ -110,7 +117,7 @@ namespace ChessPlatform.Engine
 
             Trace.WriteLine(
                 $@"{Environment.NewLine
-                    }[{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
+                    }*** [{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
                     }  Color: {Color}{Environment.NewLine
                     }  Max depth: {_maxPlyDepth} plies{Environment.NewLine
                     }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
@@ -215,13 +222,31 @@ namespace ChessPlatform.Engine
 
             Trace.WriteLine(
                 $@"{Environment.NewLine
-                    }[{currentMethodName}] END: {LocalHelper.GetTimestamp()}{Environment.NewLine
+                    }*** [{currentMethodName}] END: {LocalHelper.GetTimestamp()}{Environment.NewLine
                     }  Result: {principalVariationString}{Environment.NewLine
                     }  Depth: {depthString}{Environment.NewLine
                     }  Time: {stopwatch.Elapsed:g}{Environment.NewLine
                     }  Nodes: {nodeCount}{Environment.NewLine
                     }  NPS: {nps}{Environment.NewLine
                     }  FEN: {board.GetFen()}{Environment.NewLine}");
+
+            if (_transpositionTable != null)
+            {
+                var bucketCount = _transpositionTable.BucketCount;
+                var probeCount = _transpositionTable.ProbeCount;
+                var hitCount = _transpositionTable.HitCount;
+
+                var hitRatio = probeCount == 0
+                    ? "n/a"
+                    : ((decimal)hitCount / probeCount * 100).ToString("###.#", CultureInfo.InvariantCulture) + "%";
+
+                Trace.WriteLine(
+                    $@"{Environment.NewLine}TT statistics:{Environment.NewLine
+                        }  {nameof(TranspositionTable.BucketCount)}: {bucketCount}{Environment.NewLine
+                        }  {nameof(TranspositionTable.ProbeCount)}: {probeCount}{Environment.NewLine
+                        }  {nameof(TranspositionTable.HitCount)}: {hitCount}{Environment.NewLine
+                        }  Hit Ratio: {hitRatio}{Environment.NewLine}");
+            }
 
             Trace.WriteLine(TraceSeparator);
             Trace.WriteLine(string.Empty);
@@ -305,6 +330,7 @@ namespace ChessPlatform.Engine
                     board,
                     plyDepth,
                     boardHelper,
+                    _transpositionTable,
                     variationLineCache,
                     bestVariationLine,
                     gameControlInfo,

@@ -27,6 +27,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private bool _useOpeningBook;
         private TimeSpan? _maxTimePerMove;
         private bool _useMultipleProcessors;
+        private bool _useTranspositionTable;
+        private int _transpositionTableSizeInMegaBytes;
 
         #endregion
 
@@ -38,56 +40,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             UseOpeningBook = true;
             MaxTimePerMove = TimeSpan.FromSeconds(15);
             UseMultipleProcessors = true;
+            UseTranspositionTable = true;
+            TranspositionTableSizeInMegaBytes = 128;
         }
 
         #endregion
 
         #region Public Properties
 
-        [DisplayName(@"Max Ply Depth")]
-        [MemberConstraint(typeof(MaxPlyDepthConstraint))]
-        public int? MaxPlyDepth
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return _maxPlyDepth;
-            }
-
-            set
-            {
-                if (value == _maxPlyDepth)
-                {
-                    return;
-                }
-
-                _maxPlyDepth = value;
-                RaisePropertyChanged(() => MaxPlyDepth);
-            }
-        }
-
-        [DisplayName(@"Use Opening Book")]
-        public bool UseOpeningBook
-        {
-            [DebuggerStepThrough]
-            get
-            {
-                return _useOpeningBook;
-            }
-
-            set
-            {
-                if (value == _useOpeningBook)
-                {
-                    return;
-                }
-
-                _useOpeningBook = value;
-                RaisePropertyChanged(() => UseOpeningBook);
-            }
-        }
-
-        [DisplayName(@"Max Time per Move")]
+        [DisplayName(@"1. Max Time per Move")]
         [MemberConstraint(typeof(MaxTimePerMoveConstraint))]
         public TimeSpan? MaxTimePerMove
         {
@@ -109,7 +70,50 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        [DisplayName(@"Use Multiple CPUs")]
+        [DisplayName(@"2. Max Ply Depth")]
+        [MemberConstraint(typeof(MaxPlyDepthConstraint))]
+        public int? MaxPlyDepth
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _maxPlyDepth;
+            }
+
+            set
+            {
+                if (value == _maxPlyDepth)
+                {
+                    return;
+                }
+
+                _maxPlyDepth = value;
+                RaisePropertyChanged(() => MaxPlyDepth);
+            }
+        }
+
+        [DisplayName(@"3. Use Opening Book")]
+        public bool UseOpeningBook
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _useOpeningBook;
+            }
+
+            set
+            {
+                if (value == _useOpeningBook)
+                {
+                    return;
+                }
+
+                _useOpeningBook = value;
+                RaisePropertyChanged(() => UseOpeningBook);
+            }
+        }
+
+        [DisplayName(@"4. Use Multiple CPUs")]
         public bool UseMultipleProcessors
         {
             [DebuggerStepThrough]
@@ -130,14 +134,55 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
+        [DisplayName(@"5. Use Transposition Table")]
+        public bool UseTranspositionTable
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _useTranspositionTable;
+            }
+
+            set
+            {
+                if (value == _useTranspositionTable)
+                {
+                    return;
+                }
+
+                _useTranspositionTable = value;
+                RaisePropertyChanged(() => UseTranspositionTable);
+            }
+        }
+
+        [DisplayName(@"6. TT Size in MB (if used)")]
+        [MemberConstraint(typeof(TranspositionTableSizeConstraint))]
+        public int TranspositionTableSizeInMegaBytes
+        {
+            [DebuggerStepThrough]
+            get
+            {
+                return _transpositionTableSizeInMegaBytes;
+            }
+
+            set
+            {
+                if (value == _transpositionTableSizeInMegaBytes)
+                {
+                    return;
+                }
+
+                _transpositionTableSizeInMegaBytes = value;
+                RaisePropertyChanged(() => TranspositionTableSizeInMegaBytes);
+            }
+        }
+
         #endregion
 
         #region MaxPlyDepthConstraint Class
 
         private sealed class MaxPlyDepthConstraint : TypedMemberConstraintBase<int?>
         {
-            #region Protected Methods
-
             protected override void ValidateTypedValue(
                 ObjectValidatorContext validatorContext,
                 MemberConstraintValidationContext memberContext,
@@ -162,8 +207,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                             MaxPlyDepthRange.Upper));
                 }
             }
-
-            #endregion
         }
 
         #endregion
@@ -172,8 +215,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private sealed class MaxTimePerMoveConstraint : TypedMemberConstraintBase<TimeSpan?>
         {
-            #region Protected Methods
-
             protected override void ValidateTypedValue(
                 ObjectValidatorContext validatorContext,
                 MemberConstraintValidationContext memberContext,
@@ -192,8 +233,24 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                             MaxTimePerMoveRange.Upper));
                 }
             }
+        }
 
-            #endregion
+        #endregion
+
+        #region TranspositionTableSizeConstraint Class
+
+        private sealed class TranspositionTableSizeConstraint : TypedMemberConstraintBase<int>
+        {
+            protected override void ValidateTypedValue(
+                ObjectValidatorContext validatorContext,
+                MemberConstraintValidationContext memberContext,
+                int value)
+            {
+                if (value < 0)
+                {
+                    AddError(validatorContext, memberContext, @"The value cannot be negative.");
+                }
+            }
         }
 
         #endregion

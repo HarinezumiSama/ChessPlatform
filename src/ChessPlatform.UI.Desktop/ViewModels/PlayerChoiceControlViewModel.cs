@@ -39,7 +39,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                                         UseOpeningBook = data.UseOpeningBook,
                                         MaxPlyDepth = data.MaxPlyDepth.EnsureNotNull(),
                                         MaxTimePerMove = data.MaxTimePerMove,
-                                        UseMultipleProcessors = data.UseMultipleProcessors
+                                        UseMultipleProcessors = data.UseMultipleProcessors,
+                                        UseTranspositionTable = data.UseTranspositionTable,
+                                        TranspositionTableSizeInMegaBytes = data.TranspositionTableSizeInMegaBytes
                                     })),
                         string.Format(
                             CultureInfo.InvariantCulture,

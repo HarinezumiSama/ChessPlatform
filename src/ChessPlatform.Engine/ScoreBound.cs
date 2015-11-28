@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.Engine
 {
+    [Flags]
     internal enum ScoreBound
     {
         None = 0x00,

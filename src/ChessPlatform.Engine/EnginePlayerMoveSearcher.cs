@@ -22,6 +22,8 @@ namespace ChessPlatform.Engine
         ////private const int MidgameMaterialLimit = 5800;
         private const int EndgameMaterialLimit = 1470;
 
+        private const int QuiesceDepth = -1;
+
         private static readonly EvaluationScore NullWindowOffset = new EvaluationScore(1);
 
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMaterialWeightInMiddlegameMap =
@@ -59,12 +61,16 @@ namespace ChessPlatform.Engine
 
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
+        private readonly BoardHelper _boardHelper;
+
+        [CanBeNull]
+        private readonly TranspositionTable _transpositionTable;
+
+        private readonly VariationLineCache _previousIterationVariationLineCache;
         private readonly VariationLine _previousIterationBestLine;
         private readonly GameControlInfo _gameControlInfo;
         private readonly bool _useMultipleProcessors;
         private readonly KillerMoveStatistics _killerMoveStatistics;
-        private readonly BoardHelper _boardHelper;
-        private readonly VariationLineCache _previousIterationVariationLineCache;
 
         #endregion
 
@@ -77,6 +83,7 @@ namespace ChessPlatform.Engine
             [NotNull] GameBoard rootBoard,
             int plyDepth,
             [NotNull] BoardHelper boardHelper,
+            [CanBeNull] TranspositionTable transpositionTable,
             [CanBeNull] VariationLineCache previousIterationVariationLineCache,
             [CanBeNull] VariationLine previousIterationBestLine,
             [NotNull] GameControlInfo gameControlInfo,
@@ -116,6 +123,7 @@ namespace ChessPlatform.Engine
             _rootBoard = rootBoard;
             _plyDepth = plyDepth;
             _boardHelper = boardHelper;
+            _transpositionTable = transpositionTable;
             _previousIterationVariationLineCache = previousIterationVariationLineCache;
             _previousIterationBestLine = previousIterationBestLine;
             _gameControlInfo = gameControlInfo;
@@ -811,10 +819,51 @@ namespace ChessPlatform.Engine
         {
             _gameControlInfo.CheckInterruptions();
 
-            var bestScore = EvaluatePositionScore(board, plyDistance);
+            EvaluationScore bestScore;
+            EvaluationScore localScore;
+
+            var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
+            if (entryProbe.HasValue)
+            {
+                var ttScore = entryProbe.Value.Score.ConvertValueFromTT(plyDistance);
+                var bound = entryProbe.Value.Bound;
+
+                if (!isPrincipalVariation && entryProbe.Value.Depth >= 0
+                    && (bound & (ttScore.Value >= beta.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
+                {
+                    return ttScore;
+                }
+
+                localScore = entryProbe.Value.LocalScore;
+                bestScore = localScore;
+
+                if ((bound & (ttScore.Value > bestScore.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
+                {
+                    bestScore = ttScore;
+                }
+            }
+            else
+            {
+                localScore = EvaluatePositionScore(board, plyDistance);
+                bestScore = localScore;
+            }
+
+            // Stand pat if local evaluation is at least beta
             if (bestScore.Value >= beta.Value)
             {
-                // Stand pat
+                if (!entryProbe.HasValue && _transpositionTable != null)
+                {
+                    var entry = new TranspositionTableEntry(
+                        board.ZobristKey,
+                        null,
+                        bestScore.ConvertValueForTT(plyDistance),
+                        localScore,
+                        ScoreBound.Lower,
+                        QuiesceDepth);
+
+                    _transpositionTable.Save(ref entry);
+                }
+
                 return bestScore;
             }
 
@@ -829,28 +878,40 @@ namespace ChessPlatform.Engine
                 .Where(pair => !IsQuietMove(pair.Value))
                 .ToArray();
 
-            foreach (var nonQuietMovePair in nonQuietMovePairs)
+            GameMove bestMove = null;
+            foreach (var movePair in nonQuietMovePairs)
             {
                 _gameControlInfo.CheckInterruptions();
 
-                if (nonQuietMovePair.Value.IsAnyCapture)
+                if (movePair.Value.IsAnyCapture)
                 {
-                    var seeScore = ComputeStaticExchangeEvaluationScore(
-                        board,
-                        nonQuietMovePair.Key.To,
-                        nonQuietMovePair.Key);
+                    var seeScore = ComputeStaticExchangeEvaluationScore(board, movePair.Key.To, movePair.Key);
                     if (seeScore < 0)
                     {
                         continue;
                     }
                 }
 
-                var currentBoard = _boardHelper.MakeMove(board, nonQuietMovePair.Key);
+                var currentBoard = _boardHelper.MakeMove(board, movePair.Key);
                 var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha, isPrincipalVariation);
 
                 if (score.Value >= beta.Value)
                 {
                     // Fail-soft beta-cutoff
+
+                    if (_transpositionTable != null)
+                    {
+                        var entry = new TranspositionTableEntry(
+                            board.ZobristKey,
+                            movePair.Key,
+                            score.ConvertValueForTT(plyDistance),
+                            localScore,
+                            ScoreBound.Lower,
+                            QuiesceDepth);
+
+                        _transpositionTable.Save(ref entry);
+                    }
+
                     return score;
                 }
 
@@ -862,7 +923,25 @@ namespace ChessPlatform.Engine
                 if (score.Value > localAlpha.Value)
                 {
                     localAlpha = score;
+
+                    if (isPrincipalVariation)
+                    {
+                        bestMove = movePair.Key;
+                    }
                 }
+            }
+
+            if (_transpositionTable != null)
+            {
+                var entry = new TranspositionTableEntry(
+                    board.ZobristKey,
+                    bestMove,
+                    bestScore.ConvertValueForTT(plyDistance),
+                    localScore,
+                    isPrincipalVariation && bestScore.Value > alpha.Value ? ScoreBound.Exact : ScoreBound.Upper,
+                    QuiesceDepth);
+
+                _transpositionTable.Save(ref entry);
             }
 
             return bestScore;
