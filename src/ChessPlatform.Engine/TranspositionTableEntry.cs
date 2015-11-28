@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
@@ -10,8 +9,6 @@ namespace ChessPlatform.Engine
     internal struct TranspositionTableEntry
     {
         #region Constants and Fields
-
-        public static readonly int SizeInBytes = Marshal.SizeOf<TranspositionTableEntry>();
 
         private readonly ushort _bestMoveEncoded;
         private readonly int _scoreValue;
