@@ -824,23 +824,28 @@ namespace ChessPlatform.Engine
                 localAlpha = bestScore;
             }
 
-            var nonQuietMoves = board
+            var nonQuietMovePairs = board
                 .ValidMoves
                 .Where(pair => !IsQuietMove(pair.Value))
-                .Select(pair => pair.Key)
                 .ToArray();
 
-            foreach (var nonQuietMove in nonQuietMoves)
+            foreach (var nonQuietMovePair in nonQuietMovePairs)
             {
                 _gameControlInfo.CheckInterruptions();
 
-                var seeScore = ComputeStaticExchangeEvaluationScore(board, nonQuietMove.To, nonQuietMove);
-                if (seeScore < 0)
+                if (nonQuietMovePair.Value.IsAnyCapture)
                 {
-                    continue;
+                    var seeScore = ComputeStaticExchangeEvaluationScore(
+                        board,
+                        nonQuietMovePair.Key.To,
+                        nonQuietMovePair.Key);
+                    if (seeScore < 0)
+                    {
+                        continue;
+                    }
                 }
 
-                var currentBoard = _boardHelper.MakeMove(board, nonQuietMove);
+                var currentBoard = _boardHelper.MakeMove(board, nonQuietMovePair.Key);
                 var score = -Quiesce(currentBoard, plyDistance + 1, -beta, -localAlpha, isPrincipalVariation);
 
                 if (score.Value >= beta.Value)
