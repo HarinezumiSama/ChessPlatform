@@ -41,7 +41,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             MaxTimePerMove = TimeSpan.FromSeconds(15);
             UseMultipleProcessors = true;
             UseTranspositionTable = true;
-            TranspositionTableSizeInMegaBytes = 128;
+            TranspositionTableSizeInMegaBytes = 1024;
         }
 
         #endregion

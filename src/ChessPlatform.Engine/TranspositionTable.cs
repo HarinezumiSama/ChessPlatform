@@ -104,7 +104,9 @@ namespace ChessPlatform.Engine
                 _buckets = new TranspositionTableBucket[count].EnsureNotNull();
             }
 
-            Trace.WriteLine($@"[{nameof(TranspositionTable)}] New bucket count: {count}.");
+            Trace.WriteLine(
+                $@"[{nameof(TranspositionTable)}.{nameof(Resize)}] Requested size: {sizeInMegaBytes
+                    } MB. Bucket count: {count}.");
         }
 
         public TranspositionTableEntry? Probe(long key)

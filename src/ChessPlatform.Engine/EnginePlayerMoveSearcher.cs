@@ -987,12 +987,39 @@ namespace ChessPlatform.Engine
                 return new VariationLine(localAlpha);
             }
 
+            EvaluationScore localScore;
+
+            var remainingDepth = maxDepth - plyDistance;
+            var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
+
+            if (!isPrincipalVariation && entryProbe.HasValue && entryProbe.Value.Depth >= remainingDepth)
+            {
+                var ttScore = entryProbe.Value.Score.ConvertValueFromTT(plyDistance);
+                var bound = entryProbe.Value.Bound;
+                localScore = entryProbe.Value.LocalScore;
+
+                if ((bound & (ttScore.Value >= beta.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
+                {
+                    return new VariationLine(ttScore);
+                }
+            }
+            else
+            {
+                localScore = EvaluatePositionScore(board, plyDistance);
+            }
+
+            if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
+            {
+                var quiesceScore = Quiesce(board, plyDistance, localAlpha, localBeta, isPrincipalVariation);
+                var result = new VariationLine(quiesceScore);
+                return result;
+            }
+
             ////if (!skipHeuristicPruning)
             ////{
-            ////    var remainingDepth = maxDepth - plyDistance;
-
             ////    if (!isPrincipalVariation
             ////        && remainingDepth >= 2
+            ////        && localScore.Value >= localBeta.Value
             ////        && board.CanMakeNullMove
             ////        && board.HasNonPawnMaterial(board.ActiveColor))
             ////    {
@@ -1040,17 +1067,11 @@ namespace ChessPlatform.Engine
             ////    }
             ////}
 
-            if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
-            {
-                var quiesceScore = Quiesce(board, plyDistance, localAlpha, localBeta, isPrincipalVariation);
-                var result = new VariationLine(quiesceScore);
-                return result;
-            }
-
             VariationLine best = null;
 
             var orderedMoves = OrderMoves(board, plyDistance);
             var moveCount = orderedMoves.Length;
+            GameMove bestMove = null;
             for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
             {
                 _gameControlInfo.CheckInterruptions();
@@ -1102,7 +1123,7 @@ namespace ChessPlatform.Engine
                         _killerMoveStatistics.RecordKiller(plyDistance, move);
                     }
 
-                    return best;
+                    break;
                 }
 
                 if (best == null || variationLine.Value.Value > best.Value.Value)
@@ -1111,11 +1132,29 @@ namespace ChessPlatform.Engine
                     if (variationLine.Value.Value > localAlpha.Value)
                     {
                         localAlpha = variationLine.Value;
+                        bestMove = move;
                     }
                 }
             }
 
-            return best.EnsureNotNull();
+            best = best.EnsureNotNull();
+
+            if (_transpositionTable != null)
+            {
+                var ttEntry = new TranspositionTableEntry(
+                    board.ZobristKey,
+                    bestMove,
+                    best.Value.ConvertValueForTT(plyDistance),
+                    localScore,
+                    best.Value.Value >= localBeta.Value
+                        ? ScoreBound.Lower
+                        : (isPrincipalVariation && bestMove != null ? ScoreBound.Exact : ScoreBound.Upper),
+                    remainingDepth);
+
+                _transpositionTable.Save(ref ttEntry);
+            }
+
+            return best;
         }
 
         private VariationLine AnalyzeRootMoveInternal(

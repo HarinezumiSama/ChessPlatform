@@ -297,7 +297,7 @@ namespace ChessPlatform
             }
         }
 
-        public bool CanMakeNullMove => !_state.IsAnyCheck();
+        public bool CanMakeNullMove => _state == GameState.Default;
 
         public Piece this[Position position] => _gameBoardData[position];
 
