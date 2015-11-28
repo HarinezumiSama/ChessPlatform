@@ -676,6 +676,18 @@ namespace ChessPlatform.Engine
                 }
             }
 
+            var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
+            var ttBestMove = entryProbe?.BestMove;
+            if (ttBestMove != null)
+            {
+                GameMoveInfo moveInfo;
+                if (remainingMoves.TryGetValue(ttBestMove, out moveInfo))
+                {
+                    resultList.Add(new OrderedMove(ttBestMove, moveInfo, false));
+                    remainingMoves.Remove(ttBestMove);
+                }
+            }
+
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
             var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
 
