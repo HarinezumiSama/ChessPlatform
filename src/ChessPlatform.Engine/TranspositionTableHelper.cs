@@ -2,16 +2,23 @@
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ChessPlatform.GamePlay;
+using Omnifactotum;
 
 namespace ChessPlatform.Engine
 {
-    internal static class TranspositionTableHelper
+    public static class TranspositionTableHelper
     {
-        #region Public Methods
+        #region Constants and Fields
+
+        public static readonly ValueRange<int> SizeInMegaBytesRange = ValueRange.Create(1, 128 * 1024);
+
+        #endregion
+
+        #region Internal Methods
 
         //// ReSharper disable once InconsistentNaming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EvaluationScore ConvertValueForTT(this EvaluationScore score, int plyDistance)
+        internal static EvaluationScore ConvertValueForTT(this EvaluationScore score, int plyDistance)
         {
             return score.IsCheckmating()
                 ? new EvaluationScore(score.Value + plyDistance)
@@ -20,7 +27,7 @@ namespace ChessPlatform.Engine
 
         //// ReSharper disable once InconsistentNaming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EvaluationScore ConvertValueFromTT(this EvaluationScore score, int plyDistance)
+        internal static EvaluationScore ConvertValueFromTT(this EvaluationScore score, int plyDistance)
         {
             return score.IsCheckmating()
                 ? new EvaluationScore(score.Value - plyDistance)

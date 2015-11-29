@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,8 +12,7 @@ namespace ChessPlatform.Engine
     {
         #region Constants and Fields
 
-        public const int DefaultSizeInMegaBytes = 16;
-        private const int MegaByte = 1 << 20;
+        private const long MegaByte = 1L << 20;
 
         internal static readonly int BucketSizeInBytes = Marshal.SizeOf<TranspositionTableBucket>();
 
@@ -81,20 +81,16 @@ namespace ChessPlatform.Engine
         {
             #region Argument Check
 
-            if (sizeInMegaBytes < 0)
+            if (!TranspositionTableHelper.SizeInMegaBytesRange.Contains(sizeInMegaBytes))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(sizeInMegaBytes),
                     sizeInMegaBytes,
-                    @"The value cannot be negative.");
+                    $@"The value is out of the valid range ({TranspositionTableHelper.SizeInMegaBytesRange.Lower} .. {
+                        TranspositionTableHelper.SizeInMegaBytesRange.Upper}).");
             }
 
             #endregion
-
-            if (sizeInMegaBytes == 0)
-            {
-                sizeInMegaBytes = DefaultSizeInMegaBytes;
-            }
 
             var rawCount = sizeInMegaBytes * MegaByte / BucketSizeInBytes;
             var count = 1 << ((int)Math.Truncate(Math.Log(rawCount, 2)));

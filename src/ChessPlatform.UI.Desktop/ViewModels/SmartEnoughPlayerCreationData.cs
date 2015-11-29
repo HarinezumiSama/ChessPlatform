@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
 using Omnifactotum;
 using Omnifactotum.Validation;
@@ -28,7 +29,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private TimeSpan? _maxTimePerMove;
         private bool _useMultipleProcessors;
         private bool _useTranspositionTable;
-        private int _transpositionTableSizeInMegaBytes;
+        private int? _transpositionTableSizeInMegaBytes;
 
         #endregion
 
@@ -157,7 +158,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         [DisplayName(@"6. TT Size in MB (if used)")]
         [MemberConstraint(typeof(TranspositionTableSizeConstraint))]
-        public int TranspositionTableSizeInMegaBytes
+        public int? TranspositionTableSizeInMegaBytes
         {
             [DebuggerStepThrough]
             get
@@ -239,16 +240,27 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region TranspositionTableSizeConstraint Class
 
-        private sealed class TranspositionTableSizeConstraint : TypedMemberConstraintBase<int>
+        private sealed class TranspositionTableSizeConstraint : TypedMemberConstraintBase<int?>
         {
             protected override void ValidateTypedValue(
                 ObjectValidatorContext validatorContext,
                 MemberConstraintValidationContext memberContext,
-                int value)
+                int? value)
             {
-                if (value < 0)
+                if (!value.HasValue)
                 {
-                    AddError(validatorContext, memberContext, @"The value cannot be negative.");
+                    AddError(validatorContext, memberContext, "The value is not specified.");
+                    return;
+                }
+
+                if (!TranspositionTableHelper.SizeInMegaBytesRange.Contains(value.Value))
+                {
+                    AddError(
+                        validatorContext,
+                        memberContext,
+                        $@"The value is out of the valid range ({TranspositionTableHelper.SizeInMegaBytesRange.Lower
+                            } .. {
+                            TranspositionTableHelper.SizeInMegaBytesRange.Upper}).");
                 }
             }
         }

@@ -22,12 +22,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             PlayerColor = playerColor;
 
-            var playerTypesInternal =
+            var playerControlItemsInternal =
                 new[]
                 {
                     new ControlItem<IPlayerInfo>(
                         ViewModelHelper.CreateGuiHumanChessPlayerInfo(),
-                        string.Format(CultureInfo.InvariantCulture, "Human ({0})", Environment.UserName)),
+                        $"Human ({Environment.UserName})"),
                     new ControlItem<IPlayerInfo>(
                         new PlayerInfo<EnginePlayer, SmartEnoughPlayerCreationData>(
                             new SmartEnoughPlayerCreationData(),
@@ -41,15 +41,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                                         MaxTimePerMove = data.MaxTimePerMove,
                                         UseMultipleProcessors = data.UseMultipleProcessors,
                                         UseTranspositionTable = data.UseTranspositionTable,
-                                        TranspositionTableSizeInMegaBytes = data.TranspositionTableSizeInMegaBytes
+                                        TranspositionTableSizeInMegaBytes =
+                                            data.TranspositionTableSizeInMegaBytes.EnsureNotNull()
                                     })),
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Computer ({0})",
-                            typeof(EnginePlayer).GetQualifiedName()))
+                        $"Computer ({typeof(EnginePlayer).GetQualifiedName()})")
                 };
 
-            PlayerControlItems = CollectionViewSource.GetDefaultView(playerTypesInternal);
+            PlayerControlItems = CollectionViewSource.GetDefaultView(playerControlItemsInternal);
             PlayerControlItems.CurrentChanged += PlayerTypes_CurrentChanged;
 
             RaiseSelectedPlayerControlItemChanged();
