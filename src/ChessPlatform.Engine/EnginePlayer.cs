@@ -238,7 +238,7 @@ namespace ChessPlatform.Engine
 
                 var hitRatio = probeCount == 0
                     ? "n/a"
-                    : ((decimal)hitCount / probeCount * 100).ToString("###.#", CultureInfo.InvariantCulture) + "%";
+                    : ((decimal)hitCount / probeCount * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
                 Trace.WriteLine(
                     $@"{Environment.NewLine}TT statistics:{Environment.NewLine
