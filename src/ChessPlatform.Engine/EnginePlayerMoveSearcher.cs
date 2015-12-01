@@ -169,7 +169,7 @@ namespace ChessPlatform.Engine
                     }  Depth: {_plyDepth}{Environment.NewLine
                     }  Result: {result.ToStandardAlgebraicNotationString(_rootBoard)}{Environment.NewLine
                     }  Time: {stopwatch.Elapsed}{Environment.NewLine
-                    }  Nodes: {_boardHelper.LocalMoveCount}{Environment.NewLine
+                    }  Nodes: {_boardHelper.LocalMoveCount:#,##0}{Environment.NewLine
                     }  FEN: {_rootBoard.GetFen()}{Environment.NewLine}");
 
             return result;

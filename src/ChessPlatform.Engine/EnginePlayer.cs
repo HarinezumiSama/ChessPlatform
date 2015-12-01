@@ -213,7 +213,7 @@ namespace ChessPlatform.Engine
 
             var nps = elapsedSeconds.IsZero()
                 ? "?"
-                : Convert.ToInt64(nodeCount / elapsedSeconds).ToString(CultureInfo.InvariantCulture);
+                : Convert.ToInt64(nodeCount / elapsedSeconds).ToString("#,##0", CultureInfo.InvariantCulture);
 
             var principalVariationString = principalVariationInfo?.ToStandardAlgebraicNotationString(request.Board)
                 ?? "<not found>";
@@ -226,7 +226,7 @@ namespace ChessPlatform.Engine
                     }  Result: {principalVariationString}{Environment.NewLine
                     }  Depth: {depthString}{Environment.NewLine
                     }  Time: {stopwatch.Elapsed:g}{Environment.NewLine
-                    }  Nodes: {nodeCount}{Environment.NewLine
+                    }  Nodes: {nodeCount:#,##0}{Environment.NewLine
                     }  NPS: {nps}{Environment.NewLine
                     }  FEN: {board.GetFen()}{Environment.NewLine}");
 
@@ -236,16 +236,14 @@ namespace ChessPlatform.Engine
                 var probeCount = _transpositionTable.ProbeCount;
                 var hitCount = _transpositionTable.HitCount;
 
-                var hitRatio = probeCount == 0
-                    ? "n/a"
-                    : ((decimal)hitCount / probeCount * 100).ToString("0.0", CultureInfo.InvariantCulture) + "%";
+                var hitRatio = probeCount == 0 ? 0 : (decimal)hitCount / probeCount * 100;
 
                 Trace.WriteLine(
                     $@"{Environment.NewLine}TT statistics:{Environment.NewLine
-                        }  {nameof(TranspositionTable.BucketCount)}: {bucketCount}{Environment.NewLine
-                        }  {nameof(TranspositionTable.ProbeCount)}: {probeCount}{Environment.NewLine
-                        }  {nameof(TranspositionTable.HitCount)}: {hitCount}{Environment.NewLine
-                        }  Hit Ratio: {hitRatio}{Environment.NewLine}");
+                        }  {nameof(TranspositionTable.BucketCount)}: {bucketCount:#,##0}{Environment.NewLine
+                        }  {nameof(TranspositionTable.ProbeCount)}: {probeCount:#,##0}{Environment.NewLine
+                        }  {nameof(TranspositionTable.HitCount)}: {hitCount:#,##0}{Environment.NewLine
+                        }  Hit Ratio: {hitRatio:0.0}%{Environment.NewLine}");
             }
 
             Trace.WriteLine(TraceSeparator);
