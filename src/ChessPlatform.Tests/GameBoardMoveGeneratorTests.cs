@@ -146,7 +146,7 @@ namespace ChessPlatform.Tests
             Console.WriteLine(
                 @"[{0}] ({1}) {2} {{ {3} }} ({4}) : {5}{6}",
                 MethodBase.GetCurrentMethod().GetQualifiedName(),
-                ChessHelper.GetPlatformVersion(true),
+                ChessHelper.PlatformVersion,
                 perftPosition.GetName(),
                 fen,
                 actualResult.Flags,
@@ -188,7 +188,7 @@ namespace ChessPlatform.Tests
                 }
 
                 Console.WriteLine(
-                    $@"[{MethodBase.GetCurrentMethod().GetQualifiedName()}] ({ChessHelper.GetPlatformVersion(true)
+                    $@"[{MethodBase.GetCurrentMethod().GetQualifiedName()}] ({ChessHelper.PlatformVersion
                         }) {{ {fen} }} ({perftResult.Flags}) : {perftResult}{extraInfo}");
 
                 Console.WriteLine();

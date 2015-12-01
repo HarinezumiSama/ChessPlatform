@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using NUnit.Framework;
 
 namespace ChessPlatform.Tests
@@ -11,17 +10,11 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
-        [TestCase(false)]
-        [TestCase(true)]
-        public void TestGetPlatformVersion(bool fullVersion)
+        public void TestGetPlatformVersion()
         {
-            var platformVersion = ChessHelper.GetPlatformVersion(fullVersion);
+            var platformVersion = ChessHelper.PlatformVersion;
 
-            Console.WriteLine(
-                @"[{0}] {1} -> '{2}'",
-                MethodBase.GetCurrentMethod().GetQualifiedName(),
-                fullVersion,
-                platformVersion);
+            Console.WriteLine($@"[{nameof(TestGetPlatformVersion)}] -> '{platformVersion}'");
 
             Assert.That(platformVersion, Is.Not.Null);
             Assert.That(platformVersion, Is.Not.Empty);

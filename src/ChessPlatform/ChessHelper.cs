@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using ChessPlatform.Annotations;
 using ChessPlatform.Internal;
 using Omnifactotum;
 using Omnifactotum.Annotations;
@@ -18,6 +17,11 @@ namespace ChessPlatform
         #region Constants and Fields
 
         public const double DefaultZeroTolerance = 1E-7d;
+
+        public static readonly string PlatformVersion = typeof(ChessHelper)
+            .Assembly
+            .GetSingleCustomAttribute<AssemblyInformationalVersionAttribute>(false)
+            .InformationalVersion;
 
         public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
@@ -186,12 +190,6 @@ namespace ChessPlatform
                         position => GetKnightMovePositionsNonCached(position).AsReadOnly())
                     .AsReadOnly();
 
-        private static readonly Assembly PlatformAssembly = typeof(ChessHelper).Assembly;
-        private static readonly Version PlatformVersion = PlatformAssembly.GetName().Version;
-
-        private static readonly string PlatformRevisionId =
-            PlatformAssembly.GetSingleCustomAttribute<RevisionIdAttribute>(false).RevisionId.EnsureNotNull();
-
         private static readonly Regex ValidFenRegex = new Regex(
             string.Format(
                 CultureInfo.InvariantCulture,
@@ -202,18 +200,6 @@ namespace ChessPlatform
         #endregion
 
         #region Public Methods
-
-        public static string GetPlatformVersion(bool fullVersion)
-        {
-            var resultBuilder = new StringBuilder(PlatformVersion.ToString());
-
-            if (fullVersion)
-            {
-                resultBuilder.AppendFormat(CultureInfo.InvariantCulture, " (rev. {0})", PlatformRevisionId);
-            }
-
-            return resultBuilder.ToString();
-        }
 
         public static ReadOnlyCollection<Position> GetKnightMovePositions(Position position)
         {

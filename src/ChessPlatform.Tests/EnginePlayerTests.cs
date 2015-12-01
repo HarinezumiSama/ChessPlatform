@@ -84,7 +84,7 @@ namespace ChessPlatform.Tests
                 @"[{0} @ {1}] ({2}) Time {3}, PV {{{4}}}, max ply depth {5}.",
                 currentMethodName,
                 DateTimeOffset.Now.ToFixedString(),
-                ChessHelper.GetPlatformVersion(true),
+                ChessHelper.PlatformVersion,
                 stopwatch.Elapsed,
                 principalVariationInfo,
                 player.MaxPlyDepth);

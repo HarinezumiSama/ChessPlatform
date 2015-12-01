@@ -18,10 +18,7 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
-        public static readonly string Title = string.Format(
-            CultureInfo.InvariantCulture,
-            "Chess Platform UI for Desktop {0}",
-            ChessHelper.GetPlatformVersion(true));
+        public static readonly string Title = $@"Chess Platform UI for Desktop {ChessHelper.PlatformVersion}";
 
         #endregion
 
