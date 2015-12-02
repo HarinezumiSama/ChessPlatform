@@ -193,14 +193,18 @@
       <Output TaskParameter="Lines" PropertyName="BranchName" />
     </ReadLinesFromFile>
     <Message Importance="high" Text="* Revision number: '$(Revision)' (raw '$(RevisionRaw)'). Branch: '$(BranchName)'" />
-    <PropertyGroup>
-      <GlobalVersion>$(BaseVersion).0.$(Revision)</GlobalVersion>
-    </PropertyGroup>
     <Message Importance="high" Text="* Reading HG revision ID from '$(RevisionIdFile)'..." />
     <ReadLinesFromFile File="$(RevisionIdFile)">
       <Output TaskParameter="Lines" PropertyName="RevisionId" />
     </ReadLinesFromFile>
     <Message Importance="high" Text="* Revision ID: '$(RevisionId)'" />
+    <PropertyGroup>
+      <GlobalVersion>$(BaseVersion).0.$(Revision)</GlobalVersion>
+      <UncommitedChange />
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(RevisionRaw)' != '$(Revision)' ">
+      <UncommitedChange> [UNCOMMITED]</UncommitedChange>
+    </PropertyGroup>
     <ItemGroup>
       <AssemblyVersion Include="global::System.Reflection.AssemblyVersion">
         <_Parameter1>$(GlobalVersion)</_Parameter1>
@@ -209,7 +213,7 @@
         <_Parameter1>$(GlobalVersion)</_Parameter1>
       </AssemblyFileVersion>
       <AssemblyInformationalVersion Include="global::System.Reflection.AssemblyInformationalVersion">
-        <_Parameter1>$(GlobalVersion) ($(BranchName) :: $(Configuration) :: rev. $(RevisionId))</_Parameter1>
+        <_Parameter1>$(GlobalVersion)$(UncommitedChange) ($(BranchName) :: $(Configuration) :: rev. $(RevisionId))</_Parameter1>
       </AssemblyInformationalVersion>
     </ItemGroup>
     <WriteCodeFragment Language="C#" OutputFile="$(ProjectDir)\..\Solution Items\Version\Generated.GlobalVersion.cs" AssemblyAttributes="@(AssemblyVersion);@(AssemblyFileVersion);@(AssemblyInformationalVersion)" />
