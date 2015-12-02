@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ChessPlatform.GamePlay;
@@ -670,6 +671,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             RaisePropertyChanged(() => UpperPlayerTotalElapsed);
             RaisePropertyChanged(() => LowerPlayerTotalElapsed);
+
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void OnNewGameStarted()

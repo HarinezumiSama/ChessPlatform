@@ -167,6 +167,32 @@
       <Name>ChessPlatform</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\MoveNow.Menu.png" />
+    <Resource Include="Resources\MoveNow.Toolbar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\NewGame.Menu.png" />
+    <Resource Include="Resources\NewGame.Toolbar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\UndoLastMove.Menu.png" />
+    <Resource Include="Resources\UndoLastMove.Toolbar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ShowTimers.Menu.png" />
+    <Resource Include="Resources\ShowTimers.Toolbar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ShowPlayerFeedback.Menu.png" />
+    <Resource Include="Resources\ShowPlayerFeedback.Toolbar.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Exit.Menu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\ReversedBoardView.Toolbar.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -12,23 +12,38 @@
         <converters:BooleanToVisibilityConverter x:Key="IsComputerPlayerActiveConverter" />
         <converters:KeyGestureConverter x:Key="KeyGestureConverter" />
         <system:Boolean x:Key="DebugShowGridLines">False</system:Boolean>
+
+        <Style TargetType="Image" x:Key="NavigationItemImageStyle">
+            <Setter Property="Opacity" Value="1" />
+            <Setter Property="Effect" Value="{x:Null}" />
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.5" />
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <BlurEffect KernelType="Gaussian" Radius="5" RenderingBias="Quality" />
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <Window.CommandBindings>
-        <CommandBinding Command="commands:GameWindowCommands.Exit" Executed="Exit_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.NewGame" Executed="NewGame_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.UndoLastMove" Executed="UndoLastMove_Executed"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.Exit}" Executed="Exit_Executed" />
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.NewGame}" Executed="NewGame_Executed" />
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.UndoLastMove}" Executed="UndoLastMove_Executed"
                 CanExecute="UndoLastMove_CanExecute" />
-        <CommandBinding Command="commands:GameWindowCommands.CopyFenToClipboard"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.CopyFenToClipboard}"
                 Executed="CopyFenToClipboard_Executed" CanExecute="CopyFenToClipboard_CanExecute" />
-        <CommandBinding Command="commands:GameWindowCommands.CopyHistoryToClipboard"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.CopyHistoryToClipboard}"
                 Executed="CopyHistoryToClipboard_Executed" CanExecute="CopyHistoryToClipboard_CanExecute" />
-        <CommandBinding Command="commands:GameWindowCommands.ReversedBoardView"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.ReversedBoardView}"
                 Executed="ReversedBoardView_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.ShowPlayerFeedback"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.ShowPlayerFeedback}"
                 Executed="ShowPlayerFeedback_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.ShowPlayersTimers"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.ShowPlayersTimers}"
                 Executed="ShowPlayersTimers_Executed" />
-        <CommandBinding Command="commands:GameWindowCommands.RequestMoveNow"
+        <CommandBinding Command="{x:Static commands:GameWindowCommands.RequestMoveNow}"
                 Executed="RequestMoveNow_Executed" CanExecute="RequestMoveNow_CanExecute" />
     </Window.CommandBindings>
 
@@ -44,6 +59,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -53,41 +69,103 @@
 
         <Menu Name="MainMenu" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
                 VerticalAlignment="Top" Focusable="False">
+            <Menu.Resources>
+                <Style TargetType="Image" BasedOn="{StaticResource NavigationItemImageStyle}" />
+            </Menu.Resources>
+
             <MenuItem Header="_Game">
-                <MenuItem Command="commands:GameWindowCommands.NewGame"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
-                <MenuItem Command="commands:GameWindowCommands.RequestMoveNow"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="{x:Static commands:GameWindowCommands.NewGame}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                    <MenuItem.Icon>
+                        <Image
+                                Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/NewGame.Menu.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Command="{x:Static commands:GameWindowCommands.RequestMoveNow}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                    <MenuItem.Icon>
+                        <Image
+                                Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/MoveNow.Menu.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
-                <MenuItem Command="commands:GameWindowCommands.Exit"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="{x:Static commands:GameWindowCommands.Exit}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                    <MenuItem.Icon>
+                        <Image
+                                Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/Exit.Menu.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
             </MenuItem>
             <MenuItem Header="_History">
-                <MenuItem Command="commands:GameWindowCommands.UndoLastMove"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="{x:Static commands:GameWindowCommands.UndoLastMove}"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                    <MenuItem.Icon>
+                        <Image
+                                Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/UndoLastMove.Menu.png" />
+                    </MenuItem.Icon>
+                </MenuItem>
                 <Separator />
-                <MenuItem Command="commands:GameWindowCommands.CopyFenToClipboard"
+                <MenuItem Command="{x:Static commands:GameWindowCommands.CopyFenToClipboard}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
-                <MenuItem Command="commands:GameWindowCommands.CopyHistoryToClipboard"
+                <MenuItem Command="{x:Static commands:GameWindowCommands.CopyHistoryToClipboard}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
             <MenuItem Header="_View">
-                <MenuItem Command="commands:GameWindowCommands.ReversedBoardView" IsChecked="{Binding IsReversedView}"
+                <MenuItem Command="{x:Static commands:GameWindowCommands.ShowPlayerFeedback}"
+                        IsChecked="{Binding ShouldShowPlayerFeedback}" IsCheckable="True"
+                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                <MenuItem Command="{x:Static commands:GameWindowCommands.ShowPlayersTimers}"
+                        IsChecked="{Binding ShouldShowPlayersTimers}" IsCheckable="True"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
                 <Separator />
-                <MenuItem Command="commands:GameWindowCommands.ShowPlayerFeedback"
-                        IsChecked="{Binding ShouldShowPlayerFeedback}"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
-                <MenuItem Command="commands:GameWindowCommands.ShowPlayersTimers"
-                        IsChecked="{Binding ShouldShowPlayersTimers}"
+                <MenuItem Command="{x:Static commands:GameWindowCommands.ReversedBoardView}"
+                        IsChecked="{Binding IsReversedView}"
                         InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
             </MenuItem>
         </Menu>
 
-        <Label Name="StatusLabel" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontWeight="Bold"
+        <ToolBar Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch">
+            <ToolBar.Resources>
+                <Style TargetType="Image" BasedOn="{StaticResource NavigationItemImageStyle}" />
+            </ToolBar.Resources>
+            <Button Command="{x:Static commands:GameWindowCommands.NewGame}" ToolTip="New Game...">
+                <Image Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/NewGame.Toolbar.png" />
+            </Button>
+            <Button Command="{x:Static commands:GameWindowCommands.RequestMoveNow}" ToolTip="Move Now">
+                <Image Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/MoveNow.Toolbar.png" />
+            </Button>
+            <Separator />
+            <Button Command="{x:Static commands:GameWindowCommands.UndoLastMove}" ToolTip="Undo Last Move...">
+                <Image
+                        Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/UndoLastMove.Toolbar.png" />
+            </Button>
+            <Separator />
+            <ToggleButton Command="{x:Static commands:GameWindowCommands.ShowPlayerFeedback}"
+                    ToolTip="Show Player Feedback"
+                    IsChecked="{Binding Path=ShouldShowPlayerFeedback, Mode=OneWay}">
+                <Image
+                        Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/ShowPlayerFeedback.Toolbar.png" />
+            </ToggleButton>
+            <ToggleButton Command="{x:Static commands:GameWindowCommands.ShowPlayersTimers}" ToolTip="Show Timers"
+                    IsChecked="{Binding Path=ShouldShowPlayersTimers, Mode=OneWay}">
+                <Image
+                        Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/ShowTimers.Toolbar.png" />
+            </ToggleButton>
+            <Separator />
+            <ToggleButton Command="{x:Static commands:GameWindowCommands.ReversedBoardView}"
+                    ToolTip="Reversed Board View"
+                    IsChecked="{Binding Path=IsReversedView, Mode=OneWay}">
+                <Image
+                        Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/ReversedBoardView.Toolbar.png" />
+            </ToggleButton>
+        </ToolBar>
+
+        <Label Name="StatusLabel" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" FontWeight="Bold"
                 Foreground="DarkMagenta" />
 
-        <Viewbox Name="BoardViewbox" Grid.Row="2" Grid.Column="0" Margin="0" HorizontalAlignment="Stretch"
+        <Viewbox Name="BoardViewbox" Grid.Row="3" Grid.Column="0" Margin="0" HorizontalAlignment="Stretch"
                 VerticalAlignment="Top" Stretch="Uniform" StretchDirection="Both">
             <Grid ShowGridLines="{StaticResource DebugShowGridLines}">
                 <Grid.RowDefinitions>
@@ -198,7 +276,7 @@
             </Grid>
         </Viewbox>
 
-        <ScrollViewer Grid.Row="2" Grid.Column="1" VerticalScrollBarVisibility="Auto"
+        <ScrollViewer Grid.Row="3" Grid.Column="1" VerticalScrollBarVisibility="Auto"
                 HorizontalScrollBarVisibility="Auto" Focusable="False">
             <TextBlock Text="{Binding MoveHistory, Mode=OneWay}" Margin="5,0,5,0" Focusable="False"
                     HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextAlignment="Left"
