@@ -308,6 +308,8 @@ namespace ChessPlatform.Engine
             var boardHelper = new BoardHelper();
             var killerMoveStatistics = new KillerMoveStatistics();
 
+            _transpositionTable?.NotifyNewSearch();
+
             VariationLine bestVariationLine = null;
             var totalNodeCount = 0L;
             VariationLineCache variationLineCache = null;

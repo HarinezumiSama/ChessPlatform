@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,6 +7,8 @@ using System.Threading;
 
 namespace ChessPlatform.Engine
 {
+    using static TranspositionTableHelper;
+
     internal sealed class TranspositionTable
     {
         #region Constants and Fields
@@ -29,7 +30,7 @@ namespace ChessPlatform.Engine
         public TranspositionTable(int sizeInMegaBytes)
         {
             _syncLock = new object();
-            _version = 1;
+            ResetVersionUnsafe();
 
             Resize(sizeInMegaBytes);
         }
@@ -58,7 +59,7 @@ namespace ChessPlatform.Engine
         {
             lock (_syncLock)
             {
-                _buckets.Initialize();
+                ClearUnsafe();
             }
         }
 
@@ -81,13 +82,13 @@ namespace ChessPlatform.Engine
         {
             #region Argument Check
 
-            if (!TranspositionTableHelper.SizeInMegaBytesRange.Contains(sizeInMegaBytes))
+            if (!SizeInMegaBytesRange.Contains(sizeInMegaBytes))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(sizeInMegaBytes),
                     sizeInMegaBytes,
-                    $@"The value is out of the valid range ({TranspositionTableHelper.SizeInMegaBytesRange.Lower} .. {
-                        TranspositionTableHelper.SizeInMegaBytesRange.Upper}).");
+                    $@"The value is out of the valid range ({SizeInMegaBytesRange.Lower:#,##0} .. {
+                        SizeInMegaBytesRange.Upper:#,##0}).");
             }
 
             #endregion
@@ -97,12 +98,16 @@ namespace ChessPlatform.Engine
 
             lock (_syncLock)
             {
-                _buckets = new TranspositionTableBucket[count].EnsureNotNull();
+                Array.Resize(ref _buckets, count);
+                _buckets.EnsureNotNull();
+
+                ClearUnsafe();
+                ResetVersionUnsafe();
             }
 
             Trace.WriteLine(
-                $@"[{nameof(TranspositionTable)}.{nameof(Resize)}] Requested size: {sizeInMegaBytes
-                    } MB. Bucket count: {count}.");
+                $@"[{nameof(TranspositionTable)}.{nameof(Resize)}] Requested size: {
+                    sizeInMegaBytes:#,##0} MB. Bucket count: {count:#,##0}.");
         }
 
         public TranspositionTableEntry? Probe(long key)
@@ -152,6 +157,18 @@ namespace ChessPlatform.Engine
         {
             var mask = _buckets.Length - 1;
             return key & mask;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ResetVersionUnsafe()
+        {
+            _version = 1;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ClearUnsafe()
+        {
+            _buckets.Initialize();
         }
 
         #endregion
