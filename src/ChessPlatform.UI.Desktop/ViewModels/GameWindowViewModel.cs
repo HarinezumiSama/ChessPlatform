@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -386,6 +387,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Private Methods: Regular
 
+        //// ReSharper disable once UnusedMember.Local
+        private static void ExecuteGarbageCollection()
+        {
+            GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, true, true);
+        }
+
         private static string GetPlayerTitle(IChessPlayer player)
         {
             var isHumanPlayer = player is GuiHumanChessPlayer;
@@ -618,30 +626,44 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
+        private void DestroyPlayer(ref IChessPlayer player)
         {
             if (player != null)
             {
                 player.FeedbackProvided -= Player_FeedbackProvided;
             }
 
-            var oldGuiHumanChessPlayer = player as GuiHumanChessPlayer;
-            if (oldGuiHumanChessPlayer != null)
+            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
+            if (guiHumanChessPlayer != null)
             {
-                oldGuiHumanChessPlayer.MoveRequested -= GuiHumanChessPlayer_MoveRequested;
-                oldGuiHumanChessPlayer.MoveRequestCancelled -= GuiHumanChessPlayer_MoveRequestCancelled;
+                guiHumanChessPlayer.MoveRequested -= GuiHumanChessPlayer_MoveRequested;
+                guiHumanChessPlayer.MoveRequestCancelled -= GuiHumanChessPlayer_MoveRequestCancelled;
             }
 
-            player = playerInfo.CreatePlayer(color).EnsureNotNull();
+            player = null;
+            ////ExecuteGarbageCollection();
+        }
+
+        private IChessPlayer CreatePlayer([NotNull] IPlayerInfo playerInfo, PieceColor color)
+        {
+            var player = playerInfo.CreatePlayer(color).EnsureNotNull();
 
             player.FeedbackProvided += Player_FeedbackProvided;
 
-            var newGuiHumanChessPlayer = player as GuiHumanChessPlayer;
-            if (newGuiHumanChessPlayer != null)
+            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
+            if (guiHumanChessPlayer != null)
             {
-                newGuiHumanChessPlayer.MoveRequested += GuiHumanChessPlayer_MoveRequested;
-                newGuiHumanChessPlayer.MoveRequestCancelled += GuiHumanChessPlayer_MoveRequestCancelled;
+                guiHumanChessPlayer.MoveRequested += GuiHumanChessPlayer_MoveRequested;
+                guiHumanChessPlayer.MoveRequestCancelled += GuiHumanChessPlayer_MoveRequestCancelled;
             }
+
+            return player;
+        }
+
+        private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
+        {
+            DestroyPlayer(ref player);
+            player = CreatePlayer(playerInfo, color);
         }
 
         [CanBeNull]
