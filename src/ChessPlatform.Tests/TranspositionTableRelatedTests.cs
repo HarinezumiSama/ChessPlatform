@@ -47,7 +47,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestTranspositionTable()
         {
-            var transpositionTable = new TranspositionTable(0);
+            var transpositionTable = new TranspositionTable(TranspositionTableHelper.SizeInMegaBytesRange.Lower);
             Assert.That(transpositionTable.Version, Is.Not.EqualTo(0));
 
             const long Key = 0x12345678ABCDEF01L;
