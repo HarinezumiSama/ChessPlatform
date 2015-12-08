@@ -493,6 +493,7 @@ namespace ChessPlatform.Engine
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static GamePhase GetGamePhase([NotNull] GameBoard board)
         {
             var nonPawnMaterialValue = GetNonPawnMaterialValue(board, PieceColor.White)
@@ -545,6 +546,7 @@ namespace ChessPlatform.Engine
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase gamePhase)
         {
             var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
@@ -554,6 +556,7 @@ namespace ChessPlatform.Engine
         }
 
         // ReSharper disable once UnusedMember.Local
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EvaluateBoardMobility([NotNull] GameBoard board)
         {
             var result = board
@@ -564,9 +567,10 @@ namespace ChessPlatform.Engine
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Position position)
         {
-            var cheapestAttackerMove = board
+            var result = board
                 .ValidMoves
                 .Where(pair => pair.Key.To == position && pair.Value.IsAnyCapture)
                 .Select(pair => pair.Key)
@@ -574,9 +578,10 @@ namespace ChessPlatform.Engine
                 .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
                 .FirstOrDefault();
 
-            return cheapestAttackerMove;
+            return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
         {
             //// Using Manhattan-Distance
@@ -620,6 +625,7 @@ namespace ChessPlatform.Engine
         }
 
         //// ReSharper disable SuggestBaseTypeForParameter
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddKillerMove(
             [CanBeNull] GameMove killerMove,
             [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
