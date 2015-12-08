@@ -25,6 +25,8 @@ namespace ChessPlatform.GamePlay
 
         #region Constructors
 
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public EvaluationScore(int value)
         {
             Value = value;
@@ -37,6 +39,7 @@ namespace ChessPlatform.GamePlay
         public int Value
         {
             [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
@@ -121,6 +124,7 @@ namespace ChessPlatform.GamePlay
             return score1.Value <= score2.Value ? score1 : score2;
         }
 
+        [DebuggerNonUserCode]
         public override string ToString()
         {
             return Value.ToString(CultureInfo.InvariantCulture);
