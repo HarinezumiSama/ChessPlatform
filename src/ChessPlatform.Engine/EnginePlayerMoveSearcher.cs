@@ -57,8 +57,6 @@ namespace ChessPlatform.Engine
             PieceType.Knight
         };
 
-        ////private static readonly int PawnValueInMiddlegame = PieceTypeToMaterialWeightInMiddlegameMap[PieceType.Pawn];
-
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
         private readonly BoardHelper _boardHelper;
@@ -967,7 +965,6 @@ namespace ChessPlatform.Engine
             EvaluationScore alpha,
             EvaluationScore beta,
             bool isPrincipalVariation,
-            //// ReSharper disable once UnusedParameter.Local
             bool skipHeuristicPruning)
         {
             #region Argument Check
@@ -1001,23 +998,30 @@ namespace ChessPlatform.Engine
 
             EvaluationScore localScore;
 
-            var remainingDepth = maxDepth - plyDistance;
-            var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
+            var remainingDepth = Math.Max(0, maxDepth - plyDistance);
 
-            if (!isPrincipalVariation && entryProbe.HasValue && entryProbe.Value.Depth >= remainingDepth)
+            if (isPrincipalVariation)
             {
-                var ttScore = entryProbe.Value.Score.ConvertValueFromTT(plyDistance);
-                var bound = entryProbe.Value.Bound;
-                localScore = entryProbe.Value.LocalScore;
-
-                if ((bound & (ttScore.Value >= beta.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
-                {
-                    return new VariationLine(ttScore);
-                }
+                localScore = EvaluatePositionScore(board, plyDistance);
             }
             else
             {
-                localScore = EvaluatePositionScore(board, plyDistance);
+                var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
+                if (entryProbe.HasValue && entryProbe.Value.Depth >= remainingDepth)
+                {
+                    var ttScore = entryProbe.Value.Score.ConvertValueFromTT(plyDistance);
+                    var bound = entryProbe.Value.Bound;
+                    localScore = entryProbe.Value.LocalScore;
+
+                    if ((bound & (ttScore.Value >= beta.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
+                    {
+                        return new VariationLine(ttScore);
+                    }
+                }
+                else
+                {
+                    localScore = EvaluatePositionScore(board, plyDistance);
+                }
             }
 
             if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
@@ -1027,57 +1031,58 @@ namespace ChessPlatform.Engine
                 return result;
             }
 
-            ////if (!skipHeuristicPruning)
-            ////{
-            ////    if (!isPrincipalVariation
-            ////        && remainingDepth >= 2
-            ////        && localScore.Value >= localBeta.Value
-            ////        && board.CanMakeNullMove
-            ////        && board.HasNonPawnMaterial(board.ActiveColor))
-            ////    {
-            ////        var staticEvaluation = EvaluatePositionScore(board, plyDistance);
-            ////        if (staticEvaluation.Value >= localBeta.Value)
-            ////        {
-            ////            var depthReduction = (400 + 32 * remainingDepth) / 125
-            ////                + Math.Min((staticEvaluation.Value - localBeta.Value) / PawnValueInMiddlegame, 3);
+            if (!skipHeuristicPruning && !board.State.IsAnyCheck())
+            {
+                if (!isPrincipalVariation
+                    && remainingDepth >= 2
+                    && localScore.Value >= localBeta.Value
+                    && board.CanMakeNullMove
+                    && board.HasNonPawnMaterial(board.ActiveColor))
+                {
+                    //// TODO [vmcl] IDEA (board.HasNonPawnMaterial): Check also that non-pawn pieces have at least one legal move (to avoid zugzwang more thoroughly)
 
-            ////            var nullMoveBoard = board.MakeNullMove();
+                    var staticEvaluation = EvaluatePositionScore(board, plyDistance);
+                    if (staticEvaluation.Value >= localBeta.Value)
+                    {
+                        var depthReduction = remainingDepth > 6 ? 4 : 3;
 
-            ////            var nullMoveLine = ComputeAlphaBeta(
-            ////                nullMoveBoard,
-            ////                plyDistance,
-            ////                maxDepth - depthReduction,
-            ////                -localBeta,
-            ////                -localBeta + NullWindowOffset,
-            ////                false,
-            ////                true);
+                        var nullMoveBoard = board.MakeNullMove();
 
-            ////            var nullMoveScore = nullMoveLine.Value;
+                        var nullMoveLine = -ComputeAlphaBeta(
+                            nullMoveBoard,
+                            plyDistance + 1,
+                            maxDepth - depthReduction,
+                            -localBeta,
+                            -localBeta + NullWindowOffset,
+                            false,
+                            true);
 
-            ////            if (nullMoveScore.Value >= localBeta.Value)
-            ////            {
-            ////                if (nullMoveScore.IsCheckmating())
-            ////                {
-            ////                    nullMoveScore = localBeta;
-            ////                }
+                        var nullMoveScore = nullMoveLine.Value;
 
-            ////                var verificationLine = ComputeAlphaBeta(
-            ////                    board,
-            ////                    plyDistance,
-            ////                    maxDepth - depthReduction,
-            ////                    localBeta - NullWindowOffset,
-            ////                    localBeta,
-            ////                    false,
-            ////                    true);
+                        if (nullMoveScore.Value >= localBeta.Value)
+                        {
+                            if (nullMoveScore.IsCheckmating())
+                            {
+                                nullMoveScore = localBeta;
+                            }
 
-            ////                if (verificationLine.Value.Value >= localBeta.Value)
-            ////                {
-            ////                    return new VariationLine(nullMoveScore);
-            ////                }
-            ////            }
-            ////        }
-            ////    }
-            ////}
+                            var verificationLine = ComputeAlphaBeta(
+                                board,
+                                plyDistance,
+                                maxDepth - depthReduction,
+                                localBeta - NullWindowOffset,
+                                localBeta,
+                                false,
+                                true);
+
+                            if (verificationLine.Value.Value >= localBeta.Value)
+                            {
+                                return new VariationLine(nullMoveScore);
+                            }
+                        }
+                    }
+                }
+            }
 
             VariationLine best = null;
 
