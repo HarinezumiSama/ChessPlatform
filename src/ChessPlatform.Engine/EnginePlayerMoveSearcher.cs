@@ -1036,7 +1036,7 @@ namespace ChessPlatform.Engine
                     {
                         var depthReduction = remainingDepth > 6 ? 4 : 3;
 
-                        var nullMoveBoard = board.MakeNullMove();
+                        var nullMoveBoard = _boardHelper.MakeNullMove(board);
 
                         var nullMoveLine = -ComputeAlphaBeta(
                             nullMoveBoard,
