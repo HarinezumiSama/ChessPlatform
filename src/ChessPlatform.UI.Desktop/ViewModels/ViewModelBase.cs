@@ -79,7 +79,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             var propertyName = GetPropertyName(propertyGetterExpression);
 
-            var propertyChanged = this.PropertyChanged;
+            var propertyChanged = PropertyChanged;
             if (propertyChanged != null)
             {
                 var eventArgs = new PropertyChangedEventArgs(propertyName);

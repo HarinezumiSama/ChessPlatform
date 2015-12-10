@@ -38,6 +38,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private bool _shouldShowPlayerFeedback;
         private string _whiteTotalElapsedString;
         private string _blackTotalElapsedString;
+        private string _whiteLastMoveElapsedString;
+        private string _blackLastMoveElapsedString;
         private bool _shouldShowPlayersTimers;
 
         #endregion
@@ -244,6 +246,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string UpperPlayerTotalElapsed => IsReversedView ? _whiteTotalElapsedString : _blackTotalElapsedString;
 
         public string LowerPlayerTotalElapsed => IsReversedView ? _blackTotalElapsedString : _whiteTotalElapsedString;
+
+        public string UpperPlayerLastMoveElapsed
+            => IsReversedView ? _whiteLastMoveElapsedString : _blackLastMoveElapsedString;
+
+        public string LowerPlayerLastMoveElapsed
+            => IsReversedView ? _blackLastMoveElapsedString : _whiteLastMoveElapsedString;
 
         #endregion
 
@@ -694,6 +702,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaisePropertyChanged(() => UpperPlayerTotalElapsed);
             RaisePropertyChanged(() => LowerPlayerTotalElapsed);
 
+            RaisePropertyChanged(() => UpperPlayerLastMoveElapsed);
+            RaisePropertyChanged(() => LowerPlayerLastMoveElapsed);
+
             CommandManager.InvalidateRequerySuggested();
         }
 
@@ -746,8 +757,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string FormatElapsedTime(TimeSpan elapsedTime)
-            => elapsedTime.ToString(@"d'.'hh':'mm':'ss'.'f");
+        private static string FormatLastMoveElapsedTime(TimeSpan elapsedTime)
+            => $@"{(int)elapsedTime.TotalHours}:{elapsedTime:mm':'ss'.'f}";
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string FormatTotalElapsedTime(TimeSpan elapsedTime)
+            => elapsedTime.ToString(@"d'.'hh':'mm':'ss");
 
         private void GuiHumanChessPlayer_MoveRequested(object sender, EventArgs eventArgs)
         {
@@ -820,11 +835,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             {
                 _whiteTotalElapsedString = null;
                 _blackTotalElapsedString = null;
+                _whiteLastMoveElapsedString = null;
+                _blackLastMoveElapsedString = null;
                 return;
             }
 
-            var whiteTotalElapsedString = FormatElapsedTime(gameManager.WhiteTotalElapsed);
-            var blackTotalElapsedString = FormatElapsedTime(gameManager.BlackTotalElapsed);
+            var whiteTotalElapsedString = FormatTotalElapsedTime(gameManager.WhiteTotalElapsed);
+            var blackTotalElapsedString = FormatTotalElapsedTime(gameManager.BlackTotalElapsed);
+
+            var whiteLastMoveElapsedString = FormatLastMoveElapsedTime(gameManager.WhiteLastMoveElapsed);
+            var blackLastMoveElapsedString = FormatLastMoveElapsedTime(gameManager.BlackLastMoveElapsed);
 
             var oldWhiteTotalElapsedString = Interlocked.Exchange(
                 ref _whiteTotalElapsedString,
@@ -834,8 +854,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 ref _blackTotalElapsedString,
                 blackTotalElapsedString);
 
+            var oldWhiteLastMoveElapsedString = Interlocked.Exchange(
+                ref _whiteLastMoveElapsedString,
+                whiteLastMoveElapsedString);
+
+            var oldBlackLastMoveElapsedString = Interlocked.Exchange(
+                ref _blackLastMoveElapsedString,
+                blackLastMoveElapsedString);
+
             if (oldWhiteTotalElapsedString != _whiteTotalElapsedString
-                || oldBlackTotalElapsedString != _blackTotalElapsedString)
+                || oldBlackTotalElapsedString != _blackTotalElapsedString
+                || oldWhiteLastMoveElapsedString != _whiteLastMoveElapsedString
+                || oldBlackLastMoveElapsedString != _blackLastMoveElapsedString)
             {
                 AffectPlayerInfo();
             }

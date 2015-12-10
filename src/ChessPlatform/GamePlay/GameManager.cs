@@ -28,6 +28,8 @@ namespace ChessPlatform.GamePlay
         private readonly GameControl _gameControl;
         private readonly Stopwatch _whiteTotalStopwatch;
         private readonly Stopwatch _blackTotalStopwatch;
+        private readonly Stopwatch _whiteLastMoveStopwatch;
+        private readonly Stopwatch _blackLastMoveStopwatch;
         private bool _shouldStop;
         private bool _isDisposed;
         private GameManagerState _state;
@@ -71,6 +73,8 @@ namespace ChessPlatform.GamePlay
             _state = GameManagerState.Paused;
             _whiteTotalStopwatch = new Stopwatch();
             _blackTotalStopwatch = new Stopwatch();
+            _whiteLastMoveStopwatch = new Stopwatch();
+            _blackLastMoveStopwatch = new Stopwatch();
 
             _thread.Start();
         }
@@ -119,6 +123,10 @@ namespace ChessPlatform.GamePlay
         public TimeSpan WhiteTotalElapsed => _whiteTotalStopwatch.Elapsed;
 
         public TimeSpan BlackTotalElapsed => _blackTotalStopwatch.Elapsed;
+
+        public TimeSpan WhiteLastMoveElapsed => _whiteLastMoveStopwatch.Elapsed;
+
+        public TimeSpan BlackLastMoveElapsed => _blackLastMoveStopwatch.Elapsed;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public PieceColor ActiveColor
@@ -467,13 +475,29 @@ namespace ChessPlatform.GamePlay
                             {
                                 _whiteTotalStopwatch.Stop();
                                 _blackTotalStopwatch.Stop();
+                                _whiteLastMoveStopwatch.Stop();
+                                _blackLastMoveStopwatch.Stop();
+
                                 _state = GameManagerState.UnhandledExceptionOccurred;
                             }
                         },
                         TaskContinuationOptions.OnlyOnFaulted);
 
-                    var totalStopwatch = activeColor == PieceColor.White ? _whiteTotalStopwatch : _blackTotalStopwatch;
+                    Stopwatch totalStopwatch;
+                    Stopwatch lastMoveStopwatch;
+                    if (activeColor == PieceColor.White)
+                    {
+                        totalStopwatch = _whiteTotalStopwatch;
+                        lastMoveStopwatch = _whiteLastMoveStopwatch;
+                    }
+                    else
+                    {
+                        totalStopwatch = _blackTotalStopwatch;
+                        lastMoveStopwatch = _blackLastMoveStopwatch;
+                    }
+
                     totalStopwatch.Start();
+                    lastMoveStopwatch.Restart();
 
                     RaisePlayerThinkingStartedAsync();
                     task.Start();
@@ -485,6 +509,8 @@ namespace ChessPlatform.GamePlay
         {
             _whiteTotalStopwatch.Stop();
             _blackTotalStopwatch.Stop();
+            _whiteLastMoveStopwatch.Stop();
+            _blackLastMoveStopwatch.Stop();
 
             var gameBoard = GetActiveBoard();
 
