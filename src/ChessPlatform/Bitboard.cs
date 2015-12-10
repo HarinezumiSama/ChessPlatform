@@ -150,6 +150,7 @@ namespace ChessPlatform
 
         public bool IsNone
         {
+            [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -159,6 +160,7 @@ namespace ChessPlatform
 
         public bool IsAny
         {
+            [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {

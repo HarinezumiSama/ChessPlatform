@@ -67,16 +67,19 @@ namespace ChessPlatform
 
         public Position From
         {
+            [DebuggerStepThrough]
             get;
         }
 
         public Position To
         {
+            [DebuggerStepThrough]
             get;
         }
 
         public PieceType PromotionResult
         {
+            [DebuggerStepThrough]
             get;
         }
 

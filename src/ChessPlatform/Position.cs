@@ -123,6 +123,7 @@ namespace ChessPlatform
         public char FileChar
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DebuggerStepThrough]
             get
             {
                 return (char)('a' + File);
@@ -132,6 +133,7 @@ namespace ChessPlatform
         public char RankChar
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            [DebuggerStepThrough]
             get
             {
                 return (char)('1' + Rank);
