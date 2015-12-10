@@ -65,7 +65,6 @@ namespace ChessPlatform.Engine
         private readonly TranspositionTable _transpositionTable;
 
         private readonly VariationLineCache _previousIterationVariationLineCache;
-        private readonly VariationLine _previousIterationBestLine;
         private readonly GameControlInfo _gameControlInfo;
         private readonly bool _useMultipleProcessors;
         private readonly KillerMoveStatistics _killerMoveStatistics;
@@ -83,7 +82,6 @@ namespace ChessPlatform.Engine
             [NotNull] BoardHelper boardHelper,
             [CanBeNull] TranspositionTable transpositionTable,
             [CanBeNull] VariationLineCache previousIterationVariationLineCache,
-            [CanBeNull] VariationLine previousIterationBestLine,
             [NotNull] GameControlInfo gameControlInfo,
             bool useMultipleProcessors,
             [NotNull] KillerMoveStatistics killerMoveStatistics)
@@ -123,7 +121,6 @@ namespace ChessPlatform.Engine
             _boardHelper = boardHelper;
             _transpositionTable = transpositionTable;
             _previousIterationVariationLineCache = previousIterationVariationLineCache;
-            _previousIterationBestLine = previousIterationBestLine;
             _gameControlInfo = gameControlInfo;
             _useMultipleProcessors = useMultipleProcessors;
             _killerMoveStatistics = killerMoveStatistics;
@@ -666,19 +663,6 @@ namespace ChessPlatform.Engine
             }
 
             var remainingMoves = new Dictionary<GameMove, GameMoveInfo>(board.ValidMoves);
-
-            if (_previousIterationBestLine != null
-                && plyDistance < _previousIterationBestLine.Moves.Count)
-            {
-                var principalVariationMove = _previousIterationBestLine.Moves[plyDistance];
-
-                GameMoveInfo moveInfo;
-                if (remainingMoves.TryGetValue(principalVariationMove, out moveInfo))
-                {
-                    resultList.Add(new OrderedMove(principalVariationMove, moveInfo, true));
-                    remainingMoves.Remove(principalVariationMove);
-                }
-            }
 
             var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
             var ttBestMove = entryProbe?.BestMove;

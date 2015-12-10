@@ -310,7 +310,6 @@ namespace ChessPlatform.Engine
 
             _transpositionTable?.NotifyNewSearch();
 
-            VariationLine bestVariationLine = null;
             var totalNodeCount = 0L;
             VariationLineCache variationLineCache = null;
 
@@ -332,12 +331,11 @@ namespace ChessPlatform.Engine
                     boardHelper,
                     _transpositionTable,
                     variationLineCache,
-                    bestVariationLine,
                     gameControlInfo,
                     _useMultipleProcessors,
                     killerMoveStatistics);
 
-                bestVariationLine = moveChooser.GetBestMove();
+                var bestVariationLine = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;
                 variationLineCache = moveChooser.VariationLineCache;
 
