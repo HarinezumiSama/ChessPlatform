@@ -796,8 +796,7 @@ namespace ChessPlatform.Engine
             }
 
             var currentBoard = _boardHelper.MakeMove(board, actualMove);
-            var gamePhase = GetGamePhase(board);
-            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType(), gamePhase);
+            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType());
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
 
