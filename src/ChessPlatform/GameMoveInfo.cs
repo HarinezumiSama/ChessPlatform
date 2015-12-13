@@ -25,6 +25,7 @@ namespace ChessPlatform
 
         public bool IsPawnPromotion
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -34,6 +35,7 @@ namespace ChessPlatform
 
         public bool IsAnyCapture
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -43,6 +45,7 @@ namespace ChessPlatform
 
         public bool IsRegularCapture
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -52,6 +55,7 @@ namespace ChessPlatform
 
         public bool IsEnPassantCapture
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -61,6 +65,7 @@ namespace ChessPlatform
 
         public bool IsKingCastling
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
@@ -68,12 +73,9 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region Internal Properties
-
-        internal GameMoveFlags Flags
+        public GameMoveFlags Flags
         {
+            [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }

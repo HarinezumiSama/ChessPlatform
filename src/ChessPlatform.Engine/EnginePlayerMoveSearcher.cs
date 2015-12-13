@@ -67,7 +67,7 @@ namespace ChessPlatform.Engine
         private readonly VariationLineCache _previousIterationVariationLineCache;
         private readonly GameControlInfo _gameControlInfo;
         private readonly bool _useMultipleProcessors;
-        private readonly KillerMoveStatistics _killerMoveStatistics;
+        private readonly MoveHistoryStatistics _moveHistoryStatistics;
 
         #endregion
 
@@ -84,7 +84,7 @@ namespace ChessPlatform.Engine
             [CanBeNull] VariationLineCache previousIterationVariationLineCache,
             [NotNull] GameControlInfo gameControlInfo,
             bool useMultipleProcessors,
-            [NotNull] KillerMoveStatistics killerMoveStatistics)
+            [NotNull] MoveHistoryStatistics moveHistoryStatistics)
         {
             #region Argument Check
 
@@ -109,9 +109,9 @@ namespace ChessPlatform.Engine
                 throw new ArgumentNullException(nameof(gameControlInfo));
             }
 
-            if (killerMoveStatistics == null)
+            if (moveHistoryStatistics == null)
             {
-                throw new ArgumentNullException(nameof(killerMoveStatistics));
+                throw new ArgumentNullException(nameof(moveHistoryStatistics));
             }
 
             #endregion
@@ -123,7 +123,7 @@ namespace ChessPlatform.Engine
             _previousIterationVariationLineCache = previousIterationVariationLineCache;
             _gameControlInfo = gameControlInfo;
             _useMultipleProcessors = useMultipleProcessors;
-            _killerMoveStatistics = killerMoveStatistics;
+            _moveHistoryStatistics = moveHistoryStatistics;
 
             VariationLineCache = new VariationLineCache(rootBoard);
         }
@@ -188,7 +188,7 @@ namespace ChessPlatform.Engine
         {
             return new Dictionary<PieceType, int>
             {
-                { PieceType.King, 20000 },
+                { PieceType.King, 1 },
                 { PieceType.Queen, 900 },
                 { PieceType.Rook, 500 },
                 { PieceType.Bishop, 325 },
@@ -202,7 +202,7 @@ namespace ChessPlatform.Engine
         {
             return new Dictionary<PieceType, int>
             {
-                { PieceType.King, 20000 },
+                { PieceType.King, 1 },
                 { PieceType.Queen, 915 },
                 { PieceType.Rook, 505 },
                 { PieceType.Bishop, 335 },
@@ -499,12 +499,6 @@ namespace ChessPlatform.Engine
             return nonPawnMaterialValue <= EndgameMaterialLimit ? GamePhase.Endgame : GamePhase.Middlegame;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsQuietMove(GameMoveInfo moveInfo)
-        {
-            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion;
-        }
-
         private static int EvaluateMaterialAndItsPositionByColor(
             [NotNull] GameBoard board,
             PieceColor color,
@@ -621,27 +615,26 @@ namespace ChessPlatform.Engine
             return result / KingTropismRelativeFactor;
         }
 
-        //// ReSharper disable SuggestBaseTypeForParameter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void AddKillerMove(
-            [CanBeNull] GameMove killerMove,
-            [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
-            [NotNull] List<OrderedMove> resultList)
+        private int GetCaptureOrPromotionValue(
+            [NotNull] GameBoard board,
+            [NotNull] GameMove move,
+            GameMoveInfo moveInfo)
         {
-            GameMoveInfo moveInfo;
-            if (killerMove == null || !remainingMoves.TryGetValue(killerMove, out moveInfo))
+            var result = moveInfo.IsAnyCapture ? ComputeStaticExchangeEvaluationScore(board, move.To, move) : 0;
+
+            if (moveInfo.IsPawnPromotion)
             {
-                return;
+                result += GetMaterialWeight(move.PromotionResult) - GetMaterialWeight(PieceType.Pawn);
             }
 
-            resultList.Add(new OrderedMove(killerMove, moveInfo, false));
-            remainingMoves.Remove(killerMove);
+            return result;
         }
 
         //// ReSharper restore SuggestBaseTypeForParameter
 
         // ReSharper disable once ReturnTypeCanBeEnumerable.Local
-        private OrderedMove[] OrderMoves([NotNull] GameBoard board, int plyDistance)
+        private OrderedMove[] GetOrderedMoves([NotNull] GameBoard board, int plyDistance)
         {
             const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";
 
@@ -651,8 +644,11 @@ namespace ChessPlatform.Engine
             {
                 var movesOrderedByScore = _previousIterationVariationLineCache.GetOrderedByScore();
 
-                resultList.AddRange(
-                    movesOrderedByScore.Select(pair => new OrderedMove(pair.Key, board.ValidMoves[pair.Key], true)));
+                var orderedMoves = movesOrderedByScore
+                    .Select(pair => new OrderedMove(pair.Key, board.ValidMoves[pair.Key]))
+                    .ToArray();
+
+                resultList.AddRange(orderedMoves);
 
                 if (resultList.Count != board.ValidMoves.Count)
                 {
@@ -671,7 +667,7 @@ namespace ChessPlatform.Engine
                 GameMoveInfo moveInfo;
                 if (remainingMoves.TryGetValue(ttBestMove, out moveInfo))
                 {
-                    resultList.Add(new OrderedMove(ttBestMove, moveInfo, false));
+                    resultList.Add(new OrderedMove(ttBestMove, moveInfo));
                     remainingMoves.Remove(ttBestMove);
                 }
             }
@@ -679,43 +675,63 @@ namespace ChessPlatform.Engine
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
             var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
 
-            var capturingMoves = remainingMoves
-                .Where(pair => pair.Value.IsAnyCapture)
-                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
-                .OrderByDescending(obj => GetMaterialWeight(board[obj.Move.To].GetPieceType()))
-                .ThenBy(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
-                .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
-                .ThenBy(obj => obj.Move.PromotionResult)
-                .ThenBy(obj => obj.Move.From.SquareIndex)
-                .ThenBy(obj => obj.Move.To.SquareIndex)
+            var allCaptureOrPromotionDatas = remainingMoves
+                .Where(pair => !LocalHelper.IsQuietMove(pair.Value))
+                .Select(
+                    pair =>
+                        new
+                        {
+                            Move = pair.Key,
+                            MoveInfo = pair.Value,
+                            Value = GetCaptureOrPromotionValue(board, pair.Key, pair.Value)
+                        })
                 .ToArray();
 
-            resultList.AddRange(capturingMoves);
-            capturingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
-
-            if (KillerMoveStatistics.DepthRange.Contains(plyDistance))
-            {
-                var killerMoveData = _killerMoveStatistics[plyDistance];
-
-                AddKillerMove(killerMoveData.Primary, remainingMoves, resultList);
-                AddKillerMove(killerMoveData.Secondary, remainingMoves, resultList);
-            }
-
-            var nonCapturingMoves = remainingMoves
-                .Where(pair => !pair.Value.IsAnyCapture)
-                .Select(pair => new OrderedMove(pair.Key, pair.Value, false))
-                .OrderBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
-                ////.OrderByDescending(obj => GetKingTropismScore(board, obj.Move.To, opponentKingPosition))
-                .ThenByDescending(obj => GetMaterialWeight(board[obj.Move.From].GetPieceType()))
-                .ThenByDescending(obj => GetMaterialWeight(obj.Move.PromotionResult))
-                .ThenBy(obj => obj.Move.PromotionResult)
+            var goodCaptureOrPromotionMoves = allCaptureOrPromotionDatas
+                .Where(obj => obj.Value >= 0)
+                .OrderByDescending(obj => obj.Value)
                 .ThenBy(obj => obj.Move.From.SquareIndex)
                 .ThenBy(obj => obj.Move.To.SquareIndex)
+                .Select(obj => new OrderedMove(obj.Move, obj.MoveInfo))
+                .ToArray();
+
+            resultList.AddRange(goodCaptureOrPromotionMoves);
+            goodCaptureOrPromotionMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+
+            _moveHistoryStatistics.AddKillerMoves(plyDistance, remainingMoves, resultList);
+
+            var nonCapturingMoves = remainingMoves
+                .Where(pair => LocalHelper.IsQuietMove(pair.Value))
+                .Select(
+                    pair =>
+                        new
+                        {
+                            Move = pair.Key,
+                            MoveInfo = pair.Value,
+                            Value = _moveHistoryStatistics.GetHistoryValue(board, pair.Key)
+                        })
+                .OrderByDescending(obj => obj.Value)
+                .ThenBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
+                .ThenBy(obj => obj.Move.From.SquareIndex)
+                .ThenBy(obj => obj.Move.To.SquareIndex)
+                .Select(obj => new OrderedMove(obj.Move, obj.MoveInfo))
                 .ToArray();
 
             resultList.AddRange(nonCapturingMoves);
+            nonCapturingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
 
-            if (resultList.Count != board.ValidMoves.Count)
+            var badCapturingMoves = allCaptureOrPromotionDatas
+                .Where(obj => obj.Value < 0 && remainingMoves.ContainsKey(obj.Move))
+                .OrderByDescending(obj => obj.Value)
+                .ThenBy(obj => obj.Move.From.SquareIndex)
+                .ThenBy(obj => obj.Move.To.SquareIndex)
+                .Select(obj => new OrderedMove(obj.Move, obj.MoveInfo))
+                .ToArray();
+
+            resultList.AddRange(badCapturingMoves);
+            badCapturingMoves.DoForEach(obj => remainingMoves.Remove(obj.Move));
+
+            if (resultList.Count != board.ValidMoves.Count || remainingMoves.Count != 0)
             {
                 throw new InvalidOperationException(InternalLogicErrorInMoveOrdering);
             }
@@ -796,13 +812,14 @@ namespace ChessPlatform.Engine
             }
 
             var currentBoard = _boardHelper.MakeMove(board, actualMove);
-            var weight = GetMaterialWeight(currentBoard.LastCapturedPiece.GetPieceType());
+            var lastCapturedPieceType = currentBoard.LastCapturedPiece.GetPieceType();
+            var weight = GetMaterialWeight(lastCapturedPieceType);
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
 
             if (move == null && result < 0)
             {
-                // If it's not the root move, then the side to move has an option to stand pat
+                // If it's not the analyzed move, then the side to move has an option to stand pat
                 result = 0;
             }
 
@@ -874,7 +891,7 @@ namespace ChessPlatform.Engine
 
             var nonQuietMovePairs = board
                 .ValidMoves
-                .Where(pair => !IsQuietMove(pair.Value))
+                .Where(pair => !LocalHelper.IsQuietMove(pair.Value))
                 .ToArray();
 
             GameMove bestMove = null;
@@ -1004,7 +1021,14 @@ namespace ChessPlatform.Engine
 
                     if ((bound & (ttScore.Value >= beta.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
                     {
-                        return new VariationLine(ttScore);
+                        var move = entryProbe.Value.BestMove;
+
+                        if (move != null && ttScore.Value >= beta.Value)
+                        {
+                            _moveHistoryStatistics.RecordCutOffMove(board, move, plyDistance, remainingDepth, null);
+                        }
+
+                        return move == null ? new VariationLine(ttScore) : move | new VariationLine(ttScore);
                     }
                 }
                 else
@@ -1075,9 +1099,10 @@ namespace ChessPlatform.Engine
 
             VariationLine best = null;
 
-            var orderedMoves = OrderMoves(board, plyDistance);
+            var orderedMoves = GetOrderedMoves(board, plyDistance);
             var moveCount = orderedMoves.Length;
             GameMove bestMove = null;
+            var processedQuietMoves = new List<GameMove>(moveCount);
             for (var moveIndex = 0; moveIndex < moveCount; moveIndex++)
             {
                 _gameControlInfo.CheckInterruptions();
@@ -1124,10 +1149,12 @@ namespace ChessPlatform.Engine
                     // Fail-soft beta-cutoff
                     best = move | variationLine;
 
-                    if (IsQuietMove(orderedMove.MoveInfo) && !orderedMove.IsPvMove)
-                    {
-                        _killerMoveStatistics.RecordKiller(plyDistance, move);
-                    }
+                    _moveHistoryStatistics.RecordCutOffMove(
+                        board,
+                        move,
+                        plyDistance,
+                        remainingDepth,
+                        processedQuietMoves);
 
                     break;
                 }
@@ -1140,6 +1167,11 @@ namespace ChessPlatform.Engine
                         localAlpha = variationLine.Value;
                         bestMove = move;
                     }
+                }
+
+                if (LocalHelper.IsQuietMove(orderedMove.MoveInfo))
+                {
+                    processedQuietMoves.Add(move);
                 }
             }
 
@@ -1243,11 +1275,12 @@ namespace ChessPlatform.Engine
             return variationLine;
         }
 
+        //// TODO [vmcl] Work on names (ComputeAlphaBetaRoot)
         private VariationLine ComputeAlphaBetaRoot(GameBoard board)
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            var orderedMoves = OrderMoves(board, 0);
+            var orderedMoves = GetOrderedMoves(board, 0);
             var moveCount = orderedMoves.Length;
             if (moveCount == 0)
             {
@@ -1280,20 +1313,8 @@ namespace ChessPlatform.Engine
                         $@"  #{index + 1:D2}/{moveCount:D2} {pair.Value.ToStandardAlgebraicNotationString(board)}")
                 .Join(Environment.NewLine);
 
-            var killers = _killerMoveStatistics.GetKillersData();
-            var killersString = killers
-                .Select(
-                    (data, i) =>
-                        data.Primary == null
-                            ? null
-                            : $@"  #{i + 1:D2} {{ {data.Primary}, {data.Secondary.ToStringSafely("<none>")} }}")
-                .Where(s => !s.IsNullOrEmpty())
-                .Join(Environment.NewLine);
-
-            if (killersString.IsNullOrWhiteSpace())
-            {
-                killersString = "  (none)";
-            }
+            var killersInfoString = _moveHistoryStatistics.GetAllKillersInfoString();
+            var historyInfoString = _moveHistoryStatistics.GetAllHistoryInfoString();
 
             var scoreValue = bestVariation.Value.Value.ToString(CultureInfo.InvariantCulture);
 
@@ -1302,7 +1323,8 @@ namespace ChessPlatform.Engine
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
                     Environment.NewLine}{Environment.NewLine}Variation Lines ordered by score:{Environment.NewLine}{
                     orderedVariationsString}{Environment.NewLine}{Environment.NewLine}Killer move stats:{
-                    Environment.NewLine}{killersString}{Environment.NewLine}");
+                    Environment.NewLine}{killersInfoString}{Environment.NewLine}{Environment.NewLine}History stats:{
+                    Environment.NewLine}{historyInfoString}{Environment.NewLine}");
 
             return bestVariation;
         }

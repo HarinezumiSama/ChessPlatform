@@ -58,7 +58,7 @@
     <Compile Include="BoardHelper.cs" />
     <Compile Include="GameControlInfo.cs" />
     <Compile Include="KillerMoveData.cs" />
-    <Compile Include="KillerMoveStatistics.cs" />
+    <Compile Include="MoveHistoryStatistics.cs" />
     <Compile Include="OrderedMove.cs" />
     <Compile Include="ScoreBound.cs" />
     <Compile Include="TranspositionTable.cs" />

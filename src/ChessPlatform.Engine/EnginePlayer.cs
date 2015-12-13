@@ -306,7 +306,7 @@ namespace ChessPlatform.Engine
             }
 
             var boardHelper = new BoardHelper();
-            var killerMoveStatistics = new KillerMoveStatistics();
+            var moveHistoryStatistics = new MoveHistoryStatistics();
 
             _transpositionTable?.NotifyNewSearch();
 
@@ -333,7 +333,7 @@ namespace ChessPlatform.Engine
                     variationLineCache,
                     gameControlInfo,
                     _useMultipleProcessors,
-                    killerMoveStatistics);
+                    moveHistoryStatistics);
 
                 var bestVariationLine = moveChooser.GetBestMove();
                 totalNodeCount += moveChooser.NodeCount;

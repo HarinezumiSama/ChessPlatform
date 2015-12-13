@@ -14,6 +14,12 @@ namespace ChessPlatform.Engine
             return DateTimeOffset.Now.ToFixedString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsQuietMove(GameMoveInfo moveInfo)
+        {
+            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion;
+        }
+
         #endregion
     }
 }

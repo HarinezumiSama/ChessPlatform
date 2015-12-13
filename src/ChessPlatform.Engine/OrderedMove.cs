@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
-    [DebuggerDisplay("Move = {Move}, MoveInfo = {MoveInfo}, IsPvMove = {IsPvMove}")]
     internal struct OrderedMove
     {
         #region Constructors
 
-        public OrderedMove([NotNull] GameMove move, GameMoveInfo moveInfo, bool isPvMove)
+        public OrderedMove([NotNull] GameMove move, GameMoveInfo moveInfo)
         {
             Move = move;
             MoveInfo = moveInfo;
-            IsPvMove = isPvMove;
         }
 
         #endregion
@@ -24,17 +23,25 @@ namespace ChessPlatform.Engine
         [NotNull]
         public GameMove Move
         {
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
         public GameMoveInfo MoveInfo
         {
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
 
-        public bool IsPvMove
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
         {
-            get;
+            return $@"{{ {Move} {MoveInfo.Flags} }}";
         }
 
         #endregion

@@ -4,11 +4,11 @@ using System.Linq;
 namespace ChessPlatform.Internal
 {
     [Flags]
-    internal enum GameMoveFlags
+    public enum GameMoveFlags
     {
         None = 0,
         IsPawnPromotion = 0x01,
-        IsCapture = 0x02,
+        IsCapture = 0x02, //// TODO [vmcl] Rename GameMoveFlags.IsCapture to IsRegularCapture
         IsEnPassantCapture = 0x04,
         IsKingCastling = 0x08
     }
