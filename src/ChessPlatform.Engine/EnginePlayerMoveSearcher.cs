@@ -155,7 +155,7 @@ namespace ChessPlatform.Engine
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
             var stopwatch = Stopwatch.StartNew();
-            var result = GetBestMoveInternal();
+            var result = GetBestMoveInternal(_rootBoard);
             stopwatch.Stop();
 
             Trace.WriteLine(
@@ -1195,7 +1195,7 @@ namespace ChessPlatform.Engine
             return best;
         }
 
-        private VariationLine AnalyzeRootMoveInternal(
+        private VariationLine ComputeAlphaBetaRoot(
             GameBoard board,
             GameMove move,
             int rootMoveIndex,
@@ -1203,7 +1203,7 @@ namespace ChessPlatform.Engine
         {
             _gameControlInfo.CheckInterruptions();
 
-            const string CurrentMethodName = nameof(AnalyzeRootMoveInternal);
+            const string CurrentMethodName = nameof(ComputeAlphaBetaRoot);
             const int StartingDelta = 25;
 
             var moveOrderNumber = rootMoveIndex + 1;
@@ -1275,9 +1275,10 @@ namespace ChessPlatform.Engine
             return variationLine;
         }
 
-        //// TODO [vmcl] Work on names (ComputeAlphaBetaRoot)
-        private VariationLine ComputeAlphaBetaRoot(GameBoard board)
+        private VariationLine GetBestMoveInternal(GameBoard board)
         {
+            _gameControlInfo.CheckInterruptions();
+
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
             var orderedMoves = GetOrderedMoves(board, 0);
@@ -1293,7 +1294,7 @@ namespace ChessPlatform.Engine
                 .Select(
                     (orderedMove, index) =>
                         new Func<VariationLine>(
-                            () => AnalyzeRootMoveInternal(board, orderedMove.Move, index, moveCount)))
+                            () => ComputeAlphaBetaRoot(board, orderedMove.Move, index, moveCount)))
                 .ToArray();
 
             var multiTaskController = new MultiTaskController<VariationLine>(_gameControlInfo, threadCount, tasks);
@@ -1327,14 +1328,6 @@ namespace ChessPlatform.Engine
                     Environment.NewLine}{historyInfoString}{Environment.NewLine}");
 
             return bestVariation;
-        }
-
-        private VariationLine GetBestMoveInternal()
-        {
-            _gameControlInfo.CheckInterruptions();
-
-            var result = ComputeAlphaBetaRoot(_rootBoard);
-            return result.EnsureNotNull();
         }
 
         #endregion
