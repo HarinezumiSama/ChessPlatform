@@ -1288,7 +1288,7 @@ namespace ChessPlatform.Engine
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            var threadCount = _useMultipleProcessors ? Math.Max(Environment.ProcessorCount, 1) : 1;
+            var threadCount = _useMultipleProcessors ? Math.Max(Environment.ProcessorCount - 1, 1) : 1;
 
             var tasks = orderedMoves
                 .Select(
