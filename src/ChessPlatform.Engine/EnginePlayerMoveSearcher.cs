@@ -1125,7 +1125,7 @@ namespace ChessPlatform.Engine
                             -localAlpha - NullWindowOffset,
                             -localAlpha,
                             false,
-                            skipHeuristicPruning);
+                            false);
                 }
 
                 if (isPrincipalVariation
@@ -1141,7 +1141,7 @@ namespace ChessPlatform.Engine
                             -localBeta,
                             -localAlpha,
                             true,
-                            skipHeuristicPruning);
+                            false);
                 }
 
                 if (variationLine.Value.Value >= localBeta.Value)
