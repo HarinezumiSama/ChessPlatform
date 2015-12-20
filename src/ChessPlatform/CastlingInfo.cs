@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace ChessPlatform
@@ -9,7 +10,8 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CastlingInfo"/> class.
+        ///     Initializes a new instance of the <see cref="CastlingInfo"/> class
+        ///     using the specified parameters.
         /// </summary>
         internal CastlingInfo(
             CastlingType castlingType,
@@ -43,12 +45,14 @@ namespace ChessPlatform
 
             #endregion
 
-            this.CastlingType = castlingType;
-            this.Option = castlingType.ToOption();
-            this.KingMove = kingMove;
-            this.RookMove = rookMove;
-            this.EmptySquares = emptySquares.AsReadOnly();
-            this.PassedPosition = new Position((byte)((kingMove.From.X88Value + kingMove.To.X88Value) / 2));
+            CastlingType = castlingType;
+            Side = castlingType.GetSide();
+            Option = castlingType.ToOption();
+            KingMove = kingMove;
+            RookMove = rookMove;
+            EmptySquares = emptySquares.AsReadOnly();
+            PassedPosition = new Position((byte)((kingMove.From.X88Value + kingMove.To.X88Value) / 2));
+            Color = Option.IsAnySet(CastlingOptions.WhiteMask) ? PieceColor.White : PieceColor.Black;
         }
 
         #endregion
@@ -57,38 +61,59 @@ namespace ChessPlatform
 
         public CastlingType CastlingType
         {
+            [DebuggerStepThrough]
             get;
-            private set;
+        }
+
+        public CastlingSide Side
+        {
+            [DebuggerStepThrough]
+            get;
         }
 
         public CastlingOptions Option
         {
+            [DebuggerStepThrough]
             get;
-            private set;
         }
 
         public GameMove KingMove
         {
+            [DebuggerStepThrough]
             get;
-            private set;
         }
 
         public GameMove RookMove
         {
+            [DebuggerStepThrough]
             get;
-            private set;
         }
 
         public ReadOnlyCollection<Position> EmptySquares
         {
+            [DebuggerStepThrough]
             get;
-            private set;
         }
 
         public Position PassedPosition
         {
+            [DebuggerStepThrough]
             get;
-            private set;
+        }
+
+        public PieceColor Color
+        {
+            [DebuggerStepThrough]
+            get;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public override string ToString()
+        {
+            return $@"[{GetType().GetQualifiedName()}] {Color} {Side}: {KingMove}";
         }
 
         #endregion

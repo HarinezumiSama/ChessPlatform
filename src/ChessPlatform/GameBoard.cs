@@ -1210,7 +1210,29 @@ namespace ChessPlatform
 
             if ((allPawnsBitboard & ChessHelper.InvalidPawnPositionsBitboard).IsAny)
             {
-                throw new ChessPlatformException("One or more pawn are located at the invalid rank.");
+                throw new ChessPlatformException("One or more pawns are located at the invalid rank.");
+            }
+
+            if (_castlingOptions != CastlingOptions.None)
+            {
+                foreach (var castlingInfo in ChessHelper.CastlingOptionToInfoMap.Values)
+                {
+                    if (!_castlingOptions.IsAnySet(castlingInfo.Option))
+                    {
+                        continue;
+                    }
+
+                    var color = castlingInfo.Color;
+                    var king = PieceType.King.ToPiece(color);
+                    var rook = PieceType.Rook.ToPiece(color);
+
+                    if (_gameBoardData[castlingInfo.KingMove.From] != king
+                        || _gameBoardData[castlingInfo.RookMove.From] != rook)
+                    {
+                        throw new ChessPlatformException(
+                            $@"Invalid position. {color} cannot castle {castlingInfo.Side}.");
+                    }
+                }
             }
 
             //// TODO [vmcl] (*) Other verifications
