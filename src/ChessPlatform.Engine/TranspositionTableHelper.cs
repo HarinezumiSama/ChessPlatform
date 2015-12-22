@@ -10,7 +10,7 @@ namespace ChessPlatform.Engine
     {
         #region Constants and Fields
 
-        public static readonly ValueRange<int> SizeInMegaBytesRange = ValueRange.Create(1, 128 * 1024);
+        public static readonly ValueRange<int> SizeInMegaBytesRange = ValueRange.Create(1, 127 * 1024);
 
         #endregion
 

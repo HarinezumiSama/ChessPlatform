@@ -93,8 +93,8 @@ namespace ChessPlatform.Engine
 
             #endregion
 
-            var rawCount = sizeInMegaBytes * MegaByte / BucketSizeInBytes;
-            var count = 1 << ((int)Math.Truncate(Math.Log(rawCount, 2)));
+            var rawCount = checked(Convert.ToInt32(sizeInMegaBytes * MegaByte / BucketSizeInBytes));
+            var count = PrimeNumberHelper.FindPrimeNotGreaterThanSpecified(rawCount);
 
             lock (_syncLock)
             {
@@ -155,8 +155,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private long GetIndexUnsafe(long key)
         {
-            var mask = _buckets.Length - 1;
-            return key & mask;
+            return unchecked((long)(((ulong)key) % (ulong)_buckets.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
