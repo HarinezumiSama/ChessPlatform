@@ -15,12 +15,18 @@ namespace ChessPlatform.Tests
         #region Tests
 
         [Test]
+        public void TestTranspositionTableEntrySize()
+        {
+            GetAndAssertStructureSize<TranspositionTableEntry>(40);
+        }
+
+        [Test]
         public void TestTranspositionTableBucketSize()
         {
-            var size = Marshal.SizeOf<TranspositionTableBucket>();
-            Console.WriteLine($@"{nameof(TranspositionTableBucket)} size: {size} bytes.");
-            Assert.That(size, Is.EqualTo(64));
-            Assert.That(TranspositionTable.BucketSizeInBytes, Is.EqualTo(size));
+            const int ExpectedSize = 64;
+
+            GetAndAssertStructureSize<TranspositionTableBucket>(ExpectedSize);
+            Assert.That(TranspositionTable.BucketSizeInBytes, Is.EqualTo(ExpectedSize));
         }
 
         [Test]
@@ -84,6 +90,18 @@ namespace ChessPlatform.Tests
             Assert.That(transpositionTable.ProbeCount, Is.EqualTo(2));
             Assert.That(transpositionTable.HitCount, Is.EqualTo(1));
             Assert.That(foundEntry2.HasValue, Is.False);
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private static void GetAndAssertStructureSize<T>(int expectedSize)
+            where T : struct
+        {
+            var size = Marshal.SizeOf<T>();
+            Console.WriteLine($@"{typeof(T).GetQualifiedName()} size: {size} bytes.");
+            Assert.That(size, Is.EqualTo(expectedSize));
         }
 
         #endregion
