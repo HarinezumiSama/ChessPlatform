@@ -4,12 +4,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using ChessPlatform.GamePlay;
 
 namespace ChessPlatform.Engine
 {
     using static TranspositionTableHelper;
 
-    internal sealed class TranspositionTable
+    internal sealed class TranspositionTable : IDisposable
     {
         #region Constants and Fields
 
@@ -17,11 +18,13 @@ namespace ChessPlatform.Engine
 
         internal static readonly int BucketSizeInBytes = Marshal.SizeOf<TranspositionTableBucket>();
 
-        private readonly object _syncLock;
+        private readonly ReaderWriterLockSlim _lockSlim;
+        private bool _isDisposed;
         private TranspositionTableBucket[] _buckets;
         private uint _version;
         private long _probeCount;
         private long _hitCount;
+        private long _saveCount;
 
         #endregion
 
@@ -29,7 +32,7 @@ namespace ChessPlatform.Engine
 
         public TranspositionTable(int sizeInMegaBytes)
         {
-            _syncLock = new object();
+            _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             ResetVersionUnsafe();
 
             Resize(sizeInMegaBytes);
@@ -42,6 +45,8 @@ namespace ChessPlatform.Engine
         public long ProbeCount => _probeCount;
 
         public long HitCount => _hitCount;
+
+        public long SaveCount => _saveCount;
 
         #endregion
 
@@ -57,15 +62,25 @@ namespace ChessPlatform.Engine
 
         public void Clear()
         {
-            lock (_syncLock)
+            EnsureNotDisposed();
+
+            _lockSlim.EnterWriteLock();
+            try
             {
                 ClearUnsafe();
+            }
+            finally
+            {
+                _lockSlim.ExitWriteLock();
             }
         }
 
         public void NotifyNewSearch()
         {
-            lock (_syncLock)
+            EnsureNotDisposed();
+
+            _lockSlim.EnterWriteLock();
+            try
             {
                 unchecked
                 {
@@ -75,6 +90,14 @@ namespace ChessPlatform.Engine
                         _version = 1;
                     }
                 }
+
+                _probeCount = 0;
+                _hitCount = 0;
+                _saveCount = 0;
+            }
+            finally
+            {
+                _lockSlim.ExitWriteLock();
             }
         }
 
@@ -93,16 +116,23 @@ namespace ChessPlatform.Engine
 
             #endregion
 
+            EnsureNotDisposed();
+
             var rawCount = checked(Convert.ToInt32(sizeInMegaBytes * MegaByte / BucketSizeInBytes));
             var count = PrimeNumberHelper.FindPrimeNotGreaterThanSpecified(rawCount);
 
-            lock (_syncLock)
+            _lockSlim.EnterWriteLock();
+            try
             {
                 Array.Resize(ref _buckets, count);
                 _buckets.EnsureNotNull();
 
                 ClearUnsafe();
                 ResetVersionUnsafe();
+            }
+            finally
+            {
+                _lockSlim.ExitWriteLock();
             }
 
             Trace.WriteLine(
@@ -112,45 +142,143 @@ namespace ChessPlatform.Engine
 
         public TranspositionTableEntry? Probe(long key)
         {
+            EnsureNotDisposed();
+
             Interlocked.Increment(ref _probeCount);
 
-            TranspositionTableEntry entry;
-            lock (_syncLock)
+            TranspositionTableEntry entry1;
+            TranspositionTableEntry entry2;
+
+            _lockSlim.EnterReadLock();
+            try
             {
                 var index = GetIndexUnsafe(key);
-                entry = _buckets[index].Entry;
+                entry1 = _buckets[index].Entry1;
+                entry2 = _buckets[index].Entry2;
             }
-
-            if (entry.Version == 0 || entry.Key != key)
+            finally
             {
-                return default(TranspositionTableEntry?);
+                _lockSlim.ExitReadLock();
             }
 
-            Interlocked.Increment(ref _hitCount);
-            return entry;
+            var match1 = entry1.Version != 0 && entry1.Key == key;
+            var match2 = entry2.Version != 0 && entry2.Key == key;
+
+            if (match1)
+            {
+                Interlocked.Increment(ref _hitCount);
+
+                return match2
+                    ? (entry1.Depth == entry2.Depth
+                        ? (entry1.Version > entry2.Version ? entry1 : entry2)
+                        : (entry1.Depth > entry2.Depth ? entry1 : entry2))
+                    : entry1;
+            }
+
+            if (match2)
+            {
+                Interlocked.Increment(ref _hitCount);
+                return entry2;
+            }
+
+            return default(TranspositionTableEntry?);
         }
 
         public void Save(ref TranspositionTableEntry entry)
         {
-            var key = entry.Key;
-            lock (_syncLock)
+            if (entry.Score.Value.Abs() > EvaluationScore.MateValue)
             {
-                var index = GetIndexUnsafe(key);
+                throw new ArgumentException(
+                    $@"The entry contains invalid score: {entry.Score.Value:#,##0}.",
+                    nameof(entry));
+            }
 
-                var oldEntry = _buckets[index].Entry;
-                if (oldEntry.Version != 0 && oldEntry.Key == key && oldEntry.Depth > entry.Depth)
+            EnsureNotDisposed();
+
+            var key = entry.Key;
+
+            _lockSlim.EnterUpgradeableReadLock();
+            try
+            {
+                bool shouldOvewriteEntry1;
+
+                var index = GetIndexUnsafe(key);
+                var oldEntry1 = _buckets[index].Entry1;
+                var oldEntry2 = _buckets[index].Entry2;
+
+                if (oldEntry1.Version == 0 || oldEntry1.Key == key)
                 {
-                    return;
+                    shouldOvewriteEntry1 = true;
+                }
+                else if (oldEntry2.Version == 0 || oldEntry2.Key == key)
+                {
+                    shouldOvewriteEntry1 = false;
+                }
+                else if ((oldEntry1.Version == _version || oldEntry1.Bound == ScoreBound.Exact)
+                    == (oldEntry2.Version == _version || oldEntry2.Bound == ScoreBound.Exact))
+                {
+                    shouldOvewriteEntry1 = oldEntry1.Depth < oldEntry2.Depth;
+                }
+                else
+                {
+                    shouldOvewriteEntry1 = oldEntry1.Version != _version && oldEntry1.Bound != ScoreBound.Exact;
                 }
 
-                entry.Version = _version;
-                _buckets[index].Entry = entry;
+                _lockSlim.EnterWriteLock();
+                try
+                {
+                    entry.Version = _version;
+                    if (shouldOvewriteEntry1)
+                    {
+                        _buckets[index].Entry1 = entry;
+                    }
+                    else
+                    {
+                        _buckets[index].Entry2 = entry;
+                    }
+                }
+                finally
+                {
+                    _lockSlim.ExitWriteLock();
+                }
             }
+            finally
+            {
+                _lockSlim.ExitUpgradeableReadLock();
+            }
+
+            Interlocked.Increment(ref _saveCount);
+        }
+
+        #endregion
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            _isDisposed = true;
+
+            _lockSlim.Dispose();
+            Array.Resize(ref _buckets, 0);
+            _buckets = null;
         }
 
         #endregion
 
         #region Private Methods
+
+        private void EnsureNotDisposed()
+        {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(GetType().GetFullName());
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private long GetIndexUnsafe(long key)

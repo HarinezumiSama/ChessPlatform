@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using ChessPlatform.GamePlay;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal struct TranspositionTableEntry
     {
         #region Constants and Fields

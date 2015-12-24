@@ -395,7 +395,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Private Methods: Regular
 
-        //// ReSharper disable once UnusedMember.Local
         private static void ExecuteGarbageCollection()
         {
             GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
@@ -639,6 +638,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (player != null)
             {
                 player.FeedbackProvided -= Player_FeedbackProvided;
+                player.Dispose();
             }
 
             var guiHumanChessPlayer = player as GuiHumanChessPlayer;
@@ -649,7 +649,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             player = null;
-            ////ExecuteGarbageCollection();
+            ExecuteGarbageCollection();
         }
 
         private IChessPlayer CreatePlayer([NotNull] IPlayerInfo playerInfo, PieceColor color)

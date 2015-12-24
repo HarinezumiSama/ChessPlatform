@@ -5,7 +5,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.GamePlay
 {
-    public interface IChessPlayer
+    public interface IChessPlayer : IDisposable
     {
         #region Events
 

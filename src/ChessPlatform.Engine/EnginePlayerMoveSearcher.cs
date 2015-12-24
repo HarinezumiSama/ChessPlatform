@@ -759,12 +759,12 @@ namespace ChessPlatform.Engine
             ////return result;
         }
 
-        private EvaluationScore EvaluatePositionScore([NotNull] GameBoard board, int plyDistance)
+        private EvaluationScore EvaluatePositionScore([NotNull] GameBoard board)
         {
             switch (board.State)
             {
                 case GameState.Checkmate:
-                    return EvaluationScore.CreateGettingCheckmatedScore(plyDistance);
+                    return -EvaluationScore.Mate;
 
                 case GameState.Stalemate:
                     return EvaluationScore.Zero;
@@ -851,7 +851,7 @@ namespace ChessPlatform.Engine
                 }
 
                 localScore = entryProbe.Value.LocalScore;
-                bestScore = localScore;
+                bestScore = localScore.ToRelative(plyDistance);
 
                 if ((bound & (ttScore.Value > bestScore.Value ? ScoreBound.Lower : ScoreBound.Upper)) != 0)
                 {
@@ -860,8 +860,8 @@ namespace ChessPlatform.Engine
             }
             else
             {
-                localScore = EvaluatePositionScore(board, plyDistance);
-                bestScore = localScore;
+                localScore = EvaluatePositionScore(board);
+                bestScore = localScore.ToRelative(plyDistance);
             }
 
             // Stand pat if local evaluation is at least beta
@@ -939,11 +939,7 @@ namespace ChessPlatform.Engine
                 if (score.Value > localAlpha.Value)
                 {
                     localAlpha = score;
-
-                    if (isPrincipalVariation)
-                    {
-                        bestMove = movePair.Key;
-                    }
+                    bestMove = movePair.Key;
                 }
             }
 
@@ -967,7 +963,7 @@ namespace ChessPlatform.Engine
         private VariationLine ComputeAlphaBeta(
             [NotNull] GameBoard board,
             int plyDistance,
-            int maxDepth,
+            int requestedMaxDepth,
             EvaluationScore alpha,
             EvaluationScore beta,
             bool isPrincipalVariation,
@@ -1003,29 +999,31 @@ namespace ChessPlatform.Engine
                 return new VariationLine(localAlpha);
             }
 
+            var defaultRemainingDepth = Math.Max(0, requestedMaxDepth - plyDistance);
+
             var depthExtension = 0;
             if (totalDepthExtension < MaxDepthExtension)
             {
-                if (board.State.IsCheck())
+                if (defaultRemainingDepth <= 0 && board.State.IsCheck())
                 {
                     depthExtension++;
                 }
             }
 
             var innerTotalDepthExtension = totalDepthExtension + depthExtension;
-            var correctedMaxDepth = maxDepth + depthExtension;
+            var maxDepth = requestedMaxDepth + depthExtension;
 
-            var remainingDepth = Math.Max(0, correctedMaxDepth - plyDistance);
+            var correctedRemainingDepth = Math.Max(0, maxDepth - plyDistance);
 
             EvaluationScore localScore;
             if (isPrincipalVariation)
             {
-                localScore = EvaluatePositionScore(board, plyDistance);
+                localScore = EvaluatePositionScore(board);
             }
             else
             {
                 var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
-                if (entryProbe.HasValue && entryProbe.Value.Depth >= remainingDepth)
+                if (entryProbe.HasValue && entryProbe.Value.Depth >= correctedRemainingDepth)
                 {
                     var ttScore = entryProbe.Value.Score.ConvertValueFromTT(plyDistance);
                     var bound = entryProbe.Value.Bound;
@@ -1037,7 +1035,12 @@ namespace ChessPlatform.Engine
 
                         if (move != null && ttScore.Value >= beta.Value)
                         {
-                            _moveHistoryStatistics.RecordCutOffMove(board, move, plyDistance, remainingDepth, null);
+                            _moveHistoryStatistics.RecordCutOffMove(
+                                board,
+                                move,
+                                plyDistance,
+                                correctedRemainingDepth,
+                                null);
                         }
 
                         return move == null ? new VariationLine(ttScore) : move | new VariationLine(ttScore);
@@ -1045,11 +1048,11 @@ namespace ChessPlatform.Engine
                 }
                 else
                 {
-                    localScore = EvaluatePositionScore(board, plyDistance);
+                    localScore = EvaluatePositionScore(board);
                 }
             }
 
-            if (plyDistance >= correctedMaxDepth || board.ValidMoves.Count == 0)
+            if (plyDistance >= maxDepth || board.ValidMoves.Count == 0)
             {
                 var quiesceScore = Quiesce(board, plyDistance, localAlpha, localBeta, isPrincipalVariation);
                 var result = new VariationLine(quiesceScore);
@@ -1059,24 +1062,24 @@ namespace ChessPlatform.Engine
             if (!skipHeuristicPruning && !board.State.IsAnyCheck())
             {
                 if (!isPrincipalVariation
-                    && remainingDepth >= 2
+                    && correctedRemainingDepth >= 2
                     && localScore.Value >= localBeta.Value
                     && board.CanMakeNullMove
                     && board.HasNonPawnMaterial(board.ActiveColor))
                 {
                     //// TODO [vmcl] IDEA (board.HasNonPawnMaterial): Check also that non-pawn pieces have at least one legal move (to avoid zugzwang more thoroughly)
 
-                    var staticEvaluation = EvaluatePositionScore(board, plyDistance);
+                    var staticEvaluation = EvaluatePositionScore(board);
                     if (staticEvaluation.Value >= localBeta.Value)
                     {
-                        var depthReduction = remainingDepth > 6 ? 4 : 3;
+                        var depthReduction = correctedRemainingDepth > 6 ? 4 : 3;
 
                         var nullMoveBoard = _boardHelper.MakeNullMove(board);
 
                         var nullMoveLine = -ComputeAlphaBeta(
                             nullMoveBoard,
                             plyDistance + 1,
-                            correctedMaxDepth - depthReduction,
+                            maxDepth - depthReduction,
                             -localBeta,
                             -localBeta + NullWindowOffset,
                             false,
@@ -1095,7 +1098,7 @@ namespace ChessPlatform.Engine
                             var verificationLine = ComputeAlphaBeta(
                                 board,
                                 plyDistance,
-                                correctedMaxDepth - depthReduction,
+                                maxDepth - depthReduction,
                                 localBeta - NullWindowOffset,
                                 localBeta,
                                 false,
@@ -1135,7 +1138,7 @@ namespace ChessPlatform.Engine
                         -ComputeAlphaBeta(
                             currentBoard,
                             plyDistance + 1,
-                            correctedMaxDepth,
+                            maxDepth,
                             -localAlpha - NullWindowOffset,
                             -localAlpha,
                             false,
@@ -1152,7 +1155,7 @@ namespace ChessPlatform.Engine
                         -ComputeAlphaBeta(
                             currentBoard,
                             plyDistance + 1,
-                            correctedMaxDepth,
+                            maxDepth,
                             -localBeta,
                             -localAlpha,
                             true,
@@ -1169,7 +1172,7 @@ namespace ChessPlatform.Engine
                         board,
                         move,
                         plyDistance,
-                        remainingDepth,
+                        correctedRemainingDepth,
                         processedQuietMoves);
 
                     break;
@@ -1178,6 +1181,7 @@ namespace ChessPlatform.Engine
                 if (best == null || variationLine.Value.Value > best.Value.Value)
                 {
                     best = move | variationLine;
+
                     if (variationLine.Value.Value > localAlpha.Value)
                     {
                         localAlpha = variationLine.Value;
@@ -1197,13 +1201,13 @@ namespace ChessPlatform.Engine
             {
                 var ttEntry = new TranspositionTableEntry(
                     board.ZobristKey,
-                    bestMove,
+                    best.FirstMove,
                     best.Value.ConvertValueForTT(plyDistance),
                     localScore,
                     best.Value.Value >= localBeta.Value
                         ? ScoreBound.Lower
                         : (isPrincipalVariation && bestMove != null ? ScoreBound.Exact : ScoreBound.Upper),
-                    remainingDepth);
+                    correctedRemainingDepth);
 
                 _transpositionTable.Save(ref ttEntry);
             }
@@ -1226,7 +1230,7 @@ namespace ChessPlatform.Engine
 
             var stopwatch = Stopwatch.StartNew();
             var currentBoard = _boardHelper.MakeMove(board, move);
-            var localScore = -EvaluatePositionScore(currentBoard, 1);
+            var localScore = -EvaluatePositionScore(currentBoard);
 
             var alpha = EvaluationScore.NegativeInfinity;
             var beta = EvaluationScore.PositiveInfinity;

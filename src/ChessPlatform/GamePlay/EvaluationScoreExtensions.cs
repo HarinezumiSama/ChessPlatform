@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -51,6 +52,22 @@ namespace ChessPlatform.GamePlay
 
             var mateMoveDistance = (plyDistance + 1) / 2;
             return evaluationScore.Value > 0 ? mateMoveDistance : -mateMoveDistance;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EvaluationScore ToLocal(this EvaluationScore score, int plyDistance)
+        {
+            return score.IsCheckmating()
+                ? new EvaluationScore(score.Value + plyDistance)
+                : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value - plyDistance) : score);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static EvaluationScore ToRelative(this EvaluationScore score, int plyDistance)
+        {
+            return score.IsCheckmating()
+                ? new EvaluationScore(score.Value - plyDistance)
+                : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value + plyDistance) : score);
         }
 
         #endregion

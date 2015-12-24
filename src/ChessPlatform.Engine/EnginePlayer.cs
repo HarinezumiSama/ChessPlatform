@@ -235,12 +235,14 @@ namespace ChessPlatform.Engine
                 var bucketCount = _transpositionTable.BucketCount;
                 var probeCount = _transpositionTable.ProbeCount;
                 var hitCount = _transpositionTable.HitCount;
+                var saveCount = _transpositionTable.SaveCount;
 
                 var hitRatio = probeCount == 0 ? 0 : (decimal)hitCount / probeCount * 100;
 
                 Trace.WriteLine(
                     $@"{Environment.NewLine}TT statistics:{Environment.NewLine
                         }  {nameof(TranspositionTable.BucketCount)}: {bucketCount:#,##0}{Environment.NewLine
+                        }  {nameof(TranspositionTable.SaveCount)}: {saveCount:#,##0}{Environment.NewLine
                         }  {nameof(TranspositionTable.ProbeCount)}: {probeCount:#,##0}{Environment.NewLine
                         }  {nameof(TranspositionTable.HitCount)}: {hitCount:#,##0}{Environment.NewLine
                         }  Hit Ratio: {hitRatio:0.0}%{Environment.NewLine}");
@@ -256,6 +258,13 @@ namespace ChessPlatform.Engine
             }
 
             return principalVariationInfo;
+        }
+
+        protected override void Dispose(bool explicitDisposing)
+        {
+            base.Dispose(explicitDisposing);
+
+            _transpositionTable?.Dispose();
         }
 
         #endregion

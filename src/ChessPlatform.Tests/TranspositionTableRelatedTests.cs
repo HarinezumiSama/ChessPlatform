@@ -17,7 +17,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestTranspositionTableEntrySize()
         {
-            GetAndAssertStructureSize<TranspositionTableEntry>(40);
+            GetAndAssertStructureSize<TranspositionTableEntry>(30);
         }
 
         [Test]
@@ -48,6 +48,42 @@ namespace ChessPlatform.Tests
             Assert.That(entry.Bound, Is.EqualTo(Bound));
             Assert.That(entry.Depth, Is.EqualTo(Depth));
             Assert.That(entry.Version, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void TestTranspositionTableBucketConstruction()
+        {
+            var entry1 = new TranspositionTableEntry(
+                0x1234567890A,
+                GameMove.FromStringNotation("a1b1"),
+                EvaluationScore.Mate,
+                EvaluationScore.Zero,
+                ScoreBound.Exact,
+                3);
+
+            var entry2 = new TranspositionTableEntry(
+                0xABCDEF9876,
+                GameMove.FromStringNotation("g7g8q"),
+                new EvaluationScore(1001),
+                new EvaluationScore(997),
+                ScoreBound.Lower,
+                11);
+
+            Assert.That(entry1.Key, Is.Not.EqualTo(entry2.Key));
+            Assert.That(entry1.BestMove, Is.Not.EqualTo(entry2.BestMove));
+            Assert.That(entry1.Score, Is.Not.EqualTo(entry2.Score));
+            Assert.That(entry1.LocalScore, Is.Not.EqualTo(entry2.LocalScore));
+            Assert.That(entry1.Bound, Is.Not.EqualTo(entry2.Bound));
+            Assert.That(entry1.Depth, Is.Not.EqualTo(entry2.Depth));
+
+            var bucket = new TranspositionTableBucket
+            {
+                Entry1 = entry1,
+                Entry2 = entry2
+            };
+
+            Assert.That(bucket.Entry1, Is.EqualTo(entry1));
+            Assert.That(bucket.Entry2, Is.EqualTo(entry2));
         }
 
         [Test]

@@ -75,8 +75,8 @@ namespace ChessPlatform.Engine
                 return;
             }
 
-            var moveInfo = board.ValidMoves[move];
-            if (!LocalHelper.IsQuietMove(moveInfo))
+            GameMoveInfo moveInfo;
+            if (!board.ValidMoves.TryGetValue(move, out moveInfo) || !LocalHelper.IsQuietMove(moveInfo))
             {
                 return;
             }
@@ -89,7 +89,7 @@ namespace ChessPlatform.Engine
 
                 UpdateHistoryTableUnsafe(board, move, moveBonus);
 
-                if (previousQueitMoves == null)
+                if (previousQueitMoves == null || previousQueitMoves.Count == 0)
                 {
                     return;
                 }
@@ -193,7 +193,7 @@ namespace ChessPlatform.Engine
                 .OrderByDescending(t => t.Item3)
                 .ThenBy(t => t.Item2.SquareIndex)
                 .ThenBy(t => (int)t.Item1)
-                .Select(t => $@"  {t.Item1} : {t.Item2} = {t.Item3}")
+                .Select(t => $@"  {t.Item1.GetDescription()} : {t.Item2} = {t.Item3}")
                 .Join(Environment.NewLine);
 
             if (result.IsNullOrWhiteSpace())

@@ -30,6 +30,19 @@ namespace ChessPlatform.GamePlay
 
         private VariationLine(EvaluationScore value, EvaluationScore? localValue)
         {
+            #region Argument Check
+
+            if (value.Value.Abs() > EvaluationScore.MateValue)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value.Value,
+                    $@"The score value is out of the valid range [{-EvaluationScore.MateValue:#,##0} .. {
+                        EvaluationScore.MateValue:#,##0}].");
+            }
+
+            #endregion
+
             _movesInternal = new List<GameMove>();
             Value = value;
             LocalValue = localValue;

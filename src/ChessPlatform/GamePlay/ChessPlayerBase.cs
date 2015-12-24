@@ -19,6 +19,11 @@ namespace ChessPlatform.GamePlay
             Color = color.EnsureDefined();
         }
 
+        ~ChessPlayerBase()
+        {
+            Dispose(false);
+        }
+
         #endregion
 
         #region IChessPlayer Members
@@ -81,6 +86,21 @@ namespace ChessPlatform.GamePlay
             CancellationToken cancellationToken)
         {
             // Nothing to do; for overriding only
+        }
+
+        protected virtual void Dispose(bool explicitDisposing)
+        {
+            // Nothing to do
+        }
+
+        #endregion
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         #endregion

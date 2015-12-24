@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ChessPlatform.GamePlay;
@@ -20,18 +21,14 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static EvaluationScore ConvertValueForTT(this EvaluationScore score, int plyDistance)
         {
-            return score.IsCheckmating()
-                ? new EvaluationScore(score.Value + plyDistance)
-                : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value - plyDistance) : score);
+            return score.ToLocal(plyDistance);
         }
 
         //// ReSharper disable once InconsistentNaming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static EvaluationScore ConvertValueFromTT(this EvaluationScore score, int plyDistance)
         {
-            return score.IsCheckmating()
-                ? new EvaluationScore(score.Value - plyDistance)
-                : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value + plyDistance) : score);
+            return score.ToRelative(plyDistance);
         }
 
         #endregion
