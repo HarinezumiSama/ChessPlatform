@@ -540,7 +540,7 @@ namespace ChessPlatform.Internal
 
             var enemies = GetBitboard(color.Invert());
             var captures = directTargets & enemies;
-            PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
+            PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsRegularCapture);
 
             var nonEmptySquares = ~emptySquares;
 
@@ -611,7 +611,7 @@ namespace ChessPlatform.Internal
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
                 {
                     var captures = movesOnTarget & enemies;
-                    PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsCapture);
+                    PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsRegularCapture);
                 }
 
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
@@ -1090,14 +1090,14 @@ namespace ChessPlatform.Internal
             }
 
             var nonPromotionCaptures = captures & ~rank8;
-            PopulatePawnMoves(resultMoves, nonPromotionCaptures, (int)captureDirection, GameMoveFlags.IsCapture);
+            PopulatePawnMoves(resultMoves, nonPromotionCaptures, (int)captureDirection, GameMoveFlags.IsRegularCapture);
 
             var promotionCaptures = captures & rank8;
             PopulatePawnMoves(
                 resultMoves,
                 promotionCaptures,
                 (int)captureDirection,
-                GameMoveFlags.IsCapture | GameMoveFlags.IsPawnPromotion);
+                GameMoveFlags.IsRegularCapture | GameMoveFlags.IsPawnPromotion);
         }
 
         private static void PopulateSimpleMoves(
@@ -1610,7 +1610,7 @@ namespace ChessPlatform.Internal
                             if (shouldGenerateCaptures)
                             {
                                 var move = new GameMove(sourcePosition, current.GetFirstPosition());
-                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsCapture)));
+                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsRegularCapture)));
                             }
                         }
 

@@ -857,7 +857,7 @@ namespace ChessPlatform
                     continue;
                 }
 
-                var moveFlags = GameMoveFlags.IsCapture;
+                var moveFlags = GameMoveFlags.IsRegularCapture;
                 if (gameBoardData.IsPawnPromotion(capturingSourcePosition, checkAttackPosition))
                 {
                     moveFlags |= GameMoveFlags.IsPawnPromotion;
@@ -869,7 +869,7 @@ namespace ChessPlatform
                     addMoveData.EnPassantCaptureInfo))
                 {
                     moveFlags |= GameMoveFlags.IsEnPassantCapture;
-                    moveFlags &= ~GameMoveFlags.IsCapture;
+                    moveFlags &= ~GameMoveFlags.IsRegularCapture;
                 }
 
                 AddMove(addMoveData, capturingSourcePosition, checkAttackPosition, moveFlags);

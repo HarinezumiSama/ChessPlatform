@@ -6,8 +6,6 @@ using Omnifactotum;
 
 namespace ChessPlatform
 {
-    //// TODO [vmcl] Count also: captures, promotions, checks etc.
-
     [CLSCompliant(false)]
     public sealed class PerftResult
     {

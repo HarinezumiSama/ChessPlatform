@@ -39,7 +39,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (Flags & (GameMoveFlags.IsCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
+                return (Flags & (GameMoveFlags.IsRegularCapture | GameMoveFlags.IsEnPassantCapture)) != 0;
             }
         }
 
@@ -49,7 +49,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (Flags & GameMoveFlags.IsCapture) != 0;
+                return (Flags & GameMoveFlags.IsRegularCapture) != 0;
             }
         }
 
