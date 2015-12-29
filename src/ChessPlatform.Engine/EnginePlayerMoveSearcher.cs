@@ -10,6 +10,10 @@ using ChessPlatform.Utilities;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
+//// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
+//// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
+//// ReSharper disable once ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
+
 namespace ChessPlatform.Engine
 {
     internal sealed class EnginePlayerMoveSearcher
@@ -25,6 +29,63 @@ namespace ChessPlatform.Engine
         private const int QuiesceDepth = -1;
 
         private const int MaxDepthExtension = 6;
+
+        //// ReSharper disable once RedundantExplicitArraySize - Used to ensure consistency
+        private static readonly int[] MiddlegameExtraPawnPenalties = new int[ChessConstants.FileCount]
+        {
+            45,
+            25,
+            25,
+            25,
+            25,
+            25,
+            25,
+            45
+        };
+
+        //// ReSharper disable once RedundantExplicitArraySize - Used to ensure consistency
+        private static readonly int[] EndgameExtraPawnPenalties = new int[ChessConstants.FileCount]
+        {
+            65,
+            35,
+            35,
+            35,
+            35,
+            35,
+            35,
+            65
+        };
+
+        //// ReSharper disable once RedundantExplicitArraySize - Used to ensure consistency
+        private static readonly int[] MiddlegameIsolatedPawnPenalties = new int[ChessConstants.FileCount]
+        {
+            10,
+            15,
+            15,
+            25,
+            25,
+            15,
+            15,
+            10
+        };
+
+        //// ReSharper disable once RedundantExplicitArraySize - Used to ensure consistency
+        private static readonly int[] EndgameIsolatedPawnPenalties = new int[ChessConstants.FileCount]
+        {
+            20,
+            30,
+            30,
+            50,
+            50,
+            30,
+            30,
+            20
+        };
+
+        private static readonly Bitboard[] AdjacentFiles = Enumerable
+            .Range(0, ChessConstants.FileCount)
+            .Select(GetAdjacentFilesBitboard)
+            .ToArray();
 
         private static readonly EvaluationScore NullWindowOffset = new EvaluationScore(1);
 
@@ -175,6 +236,18 @@ namespace ChessPlatform.Engine
         #endregion
 
         #region Private Methods
+
+        private static Bitboard GetAdjacentFilesBitboard(int index)
+        {
+            var leftIndex = index - 1;
+            var left = ChessConstants.FileRange.Contains(leftIndex) ? Bitboards.Files[leftIndex] : Bitboard.None;
+
+            var rightIndex = index + 1;
+            var right = ChessConstants.FileRange.Contains(rightIndex) ? Bitboards.Files[rightIndex] : Bitboard.None;
+
+            var result = left | right;
+            return result;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetMaterialWeight(PieceType pieceType, GamePhase gamePhase = GamePhase.Middlegame)
@@ -479,8 +552,6 @@ namespace ChessPlatform.Engine
         {
             var result = 0;
 
-            //// ReSharper disable once ForCanBeConvertedToForeach - For optimization (hopefully)
-            //// ReSharper disable once LoopCanBeConvertedToQuery - For optimization (hopefully)
             for (var index = 0; index < PhaseDeterminationPieceTypes.Length; index++)
             {
                 var pieceType = PhaseDeterminationPieceTypes[index];
@@ -499,6 +570,56 @@ namespace ChessPlatform.Engine
                 + GetNonPawnMaterialValue(board, PieceColor.Black);
 
             return nonPawnMaterialValue <= EndgameMaterialLimit ? GamePhase.Endgame : GamePhase.Middlegame;
+        }
+
+        private static int EvaluatePawnStructureByColor(GameBoard board, PieceColor color, GamePhase gamePhase)
+        {
+            var pawnPiece = PieceType.Pawn.ToPiece(color);
+            var pawns = board.GetBitboard(pawnPiece);
+            if (pawns.IsNone)
+            {
+                return 0;
+            }
+
+            int[] extraPawnPenalties;
+            int[] isolatedPawnPenalties;
+            if (gamePhase == GamePhase.Endgame)
+            {
+                extraPawnPenalties = EndgameExtraPawnPenalties;
+                isolatedPawnPenalties = EndgameIsolatedPawnPenalties;
+            }
+            else
+            {
+                extraPawnPenalties = MiddlegameExtraPawnPenalties;
+                isolatedPawnPenalties = MiddlegameIsolatedPawnPenalties;
+            }
+
+            var result = 0;
+            for (var fileIndex = 0; fileIndex < ChessConstants.FileCount; fileIndex++)
+            {
+                var file = Bitboards.Files[fileIndex];
+                var pawnsOnFile = pawns & file;
+                if (pawnsOnFile.IsNone)
+                {
+                    continue;
+                }
+
+                var count = pawnsOnFile.GetBitSetCount();
+
+                //// Extra pawns on files (double/triple/etc)
+                var extraCount = Math.Max(0, count - 1);
+                result -= extraCount * extraPawnPenalties[fileIndex];
+
+                var adjacentFiles = AdjacentFiles[fileIndex];
+                var adjacentFilesPawns = pawns & adjacentFiles;
+                if (adjacentFilesPawns.IsNone)
+                {
+                    //// Isolated pawns on file
+                    result -= count * isolatedPawnPenalties[fileIndex];
+                }
+            }
+
+            return result;
         }
 
         private static int EvaluateMaterialAndItsPositionByColor(
@@ -535,6 +656,9 @@ namespace ChessPlatform.Engine
                     result += positionScore;
                 }
             }
+
+            var pawnStructureScore = EvaluatePawnStructureByColor(board, color, gamePhase);
+            result += pawnStructureScore;
 
             return result;
         }
@@ -633,7 +757,6 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        // ReSharper disable once ReturnTypeCanBeEnumerable.Local
         private OrderedMove[] GetOrderedMoves([NotNull] GameBoard board, int plyDistance)
         {
             const string InternalLogicErrorInMoveOrdering = "Internal logic error in move ordering procedure.";

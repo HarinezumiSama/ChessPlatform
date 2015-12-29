@@ -8,6 +8,7 @@ using Omnifactotum;
 
 namespace ChessPlatform
 {
+    [DebuggerDisplay("{ToString(),nq}")]
     public struct Bitboard : IEquatable<Bitboard>
     {
         #region Constants and Fields
