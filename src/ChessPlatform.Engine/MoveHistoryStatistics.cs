@@ -7,6 +7,8 @@ using Omnifactotum;
 using Omnifactotum.Annotations;
 
 //// ReSharper disable SuggestBaseTypeForParameter - For optimization
+//// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
+//// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
 
 namespace ChessPlatform.Engine
 {

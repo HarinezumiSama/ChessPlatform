@@ -17,7 +17,7 @@ namespace ChessPlatform.Engine
     {
         #region Constants and Fields
 
-        private static readonly GameMove[] NoMoves = new GameMove[0];
+        private static readonly OpeningGameMove[] NoMoves = new OpeningGameMove[0];
 
         private static readonly Lazy<PolyglotOpeningBook> PerformanceInstance = Lazy.Create(
             () => InitializeBook(() => Resources.OpeningBook_Performance_Polyglot),
@@ -96,7 +96,7 @@ namespace ChessPlatform.Engine
 
         #region IOpeningBook Members
 
-        public GameMove[] FindPossibleMoves(GameBoard board)
+        public OpeningGameMove[] FindPossibleMoves(GameBoard board)
         {
             #region Argument Check
 
@@ -109,7 +109,14 @@ namespace ChessPlatform.Engine
 
             var key = board.ZobristKey;
             var entries = _entryMap.GetValueOrDefault(key);
-            var result = entries?.Select(obj => obj.Move).Where(board.ValidMoves.ContainsKey).ToArray() ?? NoMoves;
+
+            var result = entries?
+                .Select(obj => new OpeningGameMove(obj.Move, obj.Weight, obj.Learn))
+                .Where(obj => board.ValidMoves.ContainsKey(obj.Move))
+                .OrderByDescending(obj => obj.Weight)
+                .ToArray()
+                ?? NoMoves;
+
             return result;
         }
 
@@ -168,18 +175,12 @@ namespace ChessPlatform.Engine
             private BookEntry(ulong key, ushort rawMove, ushort weight, uint learn)
             {
                 Key = (long)key;
-                RawMove = rawMove;
                 Move = ParseMove(rawMove);
                 Weight = weight;
                 Learn = learn;
             }
 
             public long Key
-            {
-                get;
-            }
-
-            public ushort RawMove
             {
                 get;
             }

@@ -54,6 +54,8 @@
     <Compile Include="LocalHelper.cs" />
     <Compile Include="MultiTaskControllerStopException.cs" />
     <Compile Include="MultiTaskController.cs" />
+    <Compile Include="OpeningGameMove.cs" />
+    <Compile Include="OpeningGameMoveExtensions.cs" />
     <Compile Include="PolyglotOpeningBook.cs" />
     <Compile Include="BoardHelper.cs" />
     <Compile Include="GameControlInfo.cs" />

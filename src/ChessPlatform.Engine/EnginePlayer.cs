@@ -116,7 +116,8 @@ namespace ChessPlatform.Engine
                     }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
                     }  Multi CPU: {_useMultipleProcessors}{Environment.NewLine
                     }  Opening book: {useOpeningBook}{Environment.NewLine
-                    }  FEN: {board.GetFen()}{Environment.NewLine}");
+                    }  FEN: {board.GetFen()}{Environment.NewLine
+                    }  Key: {board.ZobristKey:X16}{Environment.NewLine}");
 
             var bestMoveContainer = new SyncValueContainer<BestMoveData>();
             Stopwatch stopwatch;
@@ -221,7 +222,8 @@ namespace ChessPlatform.Engine
                     }  Time: {stopwatch.Elapsed:g}{Environment.NewLine
                     }  Nodes: {nodeCount:#,##0}{Environment.NewLine
                     }  NPS: {nps}{Environment.NewLine
-                    }  FEN: {board.GetFen()}{Environment.NewLine}");
+                    }  FEN: {board.GetFen()}{Environment.NewLine
+                    }  Key: {board.ZobristKey:X16}{Environment.NewLine}");
 
             if (_transpositionTable != null)
             {
@@ -281,16 +283,16 @@ namespace ChessPlatform.Engine
                 if (openingMoves.Length != 0)
                 {
                     var index = _openingBookRandom.Next(openingMoves.Length);
-                    var openingMove = openingMoves[index];
+                    var selectedOpeningMove = openingMoves[index];
 
-                    var boardAfterOpeningMove = board.MakeMove(openingMove);
+                    var boardAfterOpeningMove = board.MakeMove(selectedOpeningMove.Move);
                     var furtherOpeningMoves = _openingBook.FindPossibleMoves(boardAfterOpeningMove);
 
                     var openingMovesString = openingMoves
                         .Select(move => move.ToStandardAlgebraicNotation(board))
                         .Join(", ");
 
-                    var openingMoveString = openingMove.ToStandardAlgebraicNotation(board);
+                    var selectedOpeningMoveString = selectedOpeningMove.ToStandardAlgebraicNotation(board);
 
                     var furtherOpeningMovesString = furtherOpeningMoves.Length == 0
                         ? "n/a"
@@ -299,10 +301,11 @@ namespace ChessPlatform.Engine
                             .Join(", ");
 
                     Trace.WriteLine(
-                        $@"[{currentMethodName}] From the opening moves [ {openingMovesString} ] chosen {
-                            openingMoveString}. Further opening move variants: {furtherOpeningMovesString}.");
+                        $@"[{currentMethodName}] {selectedOpeningMoveString
+                            } was randomly chosen from the known opening moves [ {openingMovesString
+                            } ]. Further known opening move variants: {furtherOpeningMovesString}.");
 
-                    bestMoveContainer.Value = new BestMoveData(openingMove | VariationLine.Zero, 1L, 1);
+                    bestMoveContainer.Value = new BestMoveData(selectedOpeningMove.Move | VariationLine.Zero, 1L, 1);
                     return;
                 }
             }

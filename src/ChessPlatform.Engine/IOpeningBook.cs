@@ -9,7 +9,7 @@ namespace ChessPlatform.Engine
         #region Methods
 
         [NotNull]
-        GameMove[] FindPossibleMoves([NotNull] GameBoard board);
+        OpeningGameMove[] FindPossibleMoves([NotNull] GameBoard board);
 
         #endregion
     }
