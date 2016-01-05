@@ -1,20 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 
 namespace ChessPlatform
 {
     public struct PieceInfo
     {
-        #region Constants and Fields
-
-        private readonly Piece _piece;
-        private readonly PieceType _pieceType;
-        private readonly PieceColor? _color;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -22,9 +13,9 @@ namespace ChessPlatform
         /// </summary>
         public PieceInfo(Piece piece)
         {
-            _piece = piece;
-            _pieceType = piece.GetPieceType();
-            _color = piece.GetColor();
+            Piece = piece;
+            PieceType = piece.GetPieceType();
+            Color = piece.GetColor();
         }
 
         #endregion
@@ -34,28 +25,19 @@ namespace ChessPlatform
         public Piece Piece
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _piece;
-            }
+            get;
         }
 
         public PieceType PieceType
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _pieceType;
-            }
+            get;
         }
 
         public PieceColor? Color
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _color;
-            }
+            get;
         }
 
         #endregion
@@ -64,12 +46,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{{0}, {1}, {2}}}",
-                this.Piece.GetName(),
-                this.PieceType.GetName(),
-                this.Color.ToStringSafely("null"));
+            return $@"{{{Piece.GetName()}, {PieceType.GetName()}, {Color?.ToString() ?? "null"}}}";
         }
 
         #endregion

@@ -161,10 +161,7 @@ namespace ChessPlatform.Engine
                 throw new ArgumentOutOfRangeException(
                     nameof(plyDepth),
                     plyDepth,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The value must be at least {0}.",
-                        CommonEngineConstants.MaxPlyDepthLowerLimit));
+                    $@"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
             if (gameControlInfo == null)

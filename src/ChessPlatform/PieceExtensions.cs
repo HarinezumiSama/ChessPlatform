@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -57,7 +56,7 @@ namespace ChessPlatform
                 return "Empty Square";
             }
 
-            return string.Format(CultureInfo.InvariantCulture, "{0} {1}", color.Value, pieceType);
+            return $@"{color.Value} {pieceType}";
         }
 
         #endregion

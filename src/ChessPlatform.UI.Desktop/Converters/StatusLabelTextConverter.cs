@@ -35,12 +35,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             if (!targetType.IsAssignableFrom(typeof(string)))
             {
-                throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Invalid target type ({0}).",
-                        targetType.GetFullName()),
-                    nameof(targetType));
+                throw new ArgumentException($@"Invalid target type ({targetType.GetFullName()}).", nameof(targetType));
             }
 
             #endregion
@@ -51,15 +46,10 @@ namespace ChessPlatform.UI.Desktop.Converters
                 return string.Empty;
             }
 
-            var result = string.Format(
-                culture,
-                "Move: {0}. Turn: {1}. State: {2}. Valid moves: {3}. Result: {4}. Auto draw: {5}",
-                gameBoard.FullMoveIndex,
-                gameBoard.ActiveColor,
-                gameBoard.State,
-                gameBoard.ValidMoves.Count,
-                gameBoard.ResultString,
-                gameBoard.GetAutoDrawType());
+            var result =
+                $@"Move: {gameBoard.FullMoveIndex}. Turn: {gameBoard.ActiveColor}. State: {gameBoard.State
+                    }. Valid moves: {gameBoard.ValidMoves.Count}. Result: {gameBoard.ResultString}. Auto draw: {
+                    gameBoard.GetAutoDrawType()}";
 
             return result;
         }

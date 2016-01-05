@@ -192,7 +192,6 @@ namespace ChessPlatform
 
         private static readonly Regex ValidFenRegex = new Regex(
             string.Format(
-                CultureInfo.InvariantCulture,
                 @"^ \s* {0}/{0}/{0}/{0}/{0}/{0}/{0}/{0} \s+ (?:w|b) \s+ (?:[KkQq]+|\-) \s+ (?:[a-h][1-8]|\-) \s+ \d+ \s+ \d+ \s* $",
                 FenRankRegexSnippet),
             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
@@ -368,9 +367,7 @@ namespace ChessPlatform
             PieceType result;
             if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out result))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "Invalid FEN character ({0}).", fenChar),
-                    nameof(fenChar));
+                throw new ArgumentException($@"Invalid FEN character ({fenChar}).", nameof(fenChar));
             }
 
             return result;

@@ -6,13 +6,6 @@ namespace ChessPlatform.Internal
 {
     internal struct DoublePushData
     {
-        #region Constants and Fields
-
-        private readonly Position _destinationPosition;
-        private readonly Bitboard _emptyPositions;
-
-        #endregion
-
         #region Constructors
 
         internal DoublePushData(Position destinationPosition, Bitboard emptyPositions)
@@ -26,8 +19,8 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            _destinationPosition = destinationPosition;
-            _emptyPositions = emptyPositions;
+            DestinationPosition = destinationPosition;
+            EmptyPositions = emptyPositions;
         }
 
         #endregion
@@ -37,19 +30,13 @@ namespace ChessPlatform.Internal
         public Position DestinationPosition
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _destinationPosition;
-            }
+            get;
         }
 
         public Bitboard EmptyPositions
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _emptyPositions;
-            }
+            get;
         }
 
         #endregion

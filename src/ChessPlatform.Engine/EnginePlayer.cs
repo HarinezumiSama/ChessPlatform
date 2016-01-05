@@ -16,16 +16,12 @@ namespace ChessPlatform.Engine
     {
         #region Constants and Fields
 
-        private static readonly string PlayerName = string.Format(
-            CultureInfo.InvariantCulture,
-            "{0}:{1}",
-            typeof(ChessPlayerBase).Assembly.GetName().Name,
-            typeof(EnginePlayer).GetQualifiedName());
+        private static readonly string PlayerName =
+            $@"{typeof(ChessPlayerBase).Assembly.GetName().Name}:{typeof(EnginePlayer).GetQualifiedName()}";
 
         private static readonly string TraceSeparator = new string('-', 120);
 
         private readonly Random _openingBookRandom;
-        private readonly int _maxPlyDepth;
         private readonly IOpeningBook _openingBook;
         private readonly TimeSpan? _maxTimePerMove;
         private readonly bool _useMultipleProcessors;
@@ -66,7 +62,7 @@ namespace ChessPlatform.Engine
             #endregion
 
             _openingBookRandom = new Random();
-            _maxPlyDepth = parameters.MaxPlyDepth;
+            MaxPlyDepth = parameters.MaxPlyDepth;
             _openingBook = parameters.UseOpeningBook ? PolyglotOpeningBook.Varied : null;
             _maxTimePerMove = parameters.MaxTimePerMove;
             _useMultipleProcessors = parameters.UseMultipleProcessors;
@@ -92,10 +88,7 @@ namespace ChessPlatform.Engine
         public int MaxPlyDepth
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _maxPlyDepth;
-            }
+            get;
         }
 
         #endregion
@@ -119,7 +112,7 @@ namespace ChessPlatform.Engine
                 $@"{Environment.NewLine
                     }*** [{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
                     }  Color: {Color}{Environment.NewLine
-                    }  Max depth: {_maxPlyDepth} plies{Environment.NewLine
+                    }  Max depth: {MaxPlyDepth} plies{Environment.NewLine
                     }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
                     }  Multi CPU: {_useMultipleProcessors}{Environment.NewLine
                     }  Opening book: {useOpeningBook}{Environment.NewLine
@@ -323,14 +316,14 @@ namespace ChessPlatform.Engine
             VariationLineCache variationLineCache = null;
 
             for (var plyDepth = CommonEngineConstants.MaxPlyDepthLowerLimit;
-                plyDepth <= _maxPlyDepth;
+                plyDepth <= MaxPlyDepth;
                 plyDepth++)
             {
                 gameControlInfo.CheckInterruptions();
 
                 Trace.WriteLine(
                     $@"{Environment.NewLine}[{currentMethodName} :: {LocalHelper.GetTimestamp()
-                        }] Iterative deepening: {plyDepth} of {_maxPlyDepth}.");
+                        }] Iterative deepening: {plyDepth} of {MaxPlyDepth}.");
 
                 boardHelper.ResetLocalMoveCount();
 
@@ -355,7 +348,7 @@ namespace ChessPlatform.Engine
                     Color,
                     board,
                     plyDepth,
-                    _maxPlyDepth,
+                    MaxPlyDepth,
                     bestVariationLine);
 
                 OnFeedbackProvided(feedbackEventArgs);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -10,8 +9,6 @@ namespace ChessPlatform
     public struct Position : IEquatable<Position>
     {
         #region Constants and Fields
-
-        private readonly int _x88Value;
 
         #endregion
 
@@ -35,7 +32,7 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         internal Position(int x88Value)
         {
-            _x88Value = x88Value;
+            X88Value = x88Value;
         }
 
         /// <summary>
@@ -53,10 +50,7 @@ namespace ChessPlatform
                     throw new ArgumentOutOfRangeException(
                         nameof(file),
                         file,
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            @"The value is out of the valid range {0}.",
-                            ChessConstants.FileRange));
+                        $@"The value is out of the valid range {ChessConstants.FileRange}.");
                 }
 
                 if ((rank & ~0x07) != 0)
@@ -64,16 +58,13 @@ namespace ChessPlatform
                     throw new ArgumentOutOfRangeException(
                         nameof(rank),
                         rank,
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            @"The value is out of the valid range {0}.",
-                            ChessConstants.FileRange));
+                        $@"The value is out of the valid range {ChessConstants.FileRange}.");
                 }
             }
 
             #endregion
 
-            _x88Value = (byte)((rank << 4) | file);
+            X88Value = (byte)((rank << 4) | file);
         }
 
         #endregion
@@ -86,7 +77,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _x88Value & 0x07;
+                return X88Value & 0x07;
             }
         }
 
@@ -96,7 +87,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _x88Value >> 4;
+                return X88Value >> 4;
             }
         }
 
@@ -148,10 +139,7 @@ namespace ChessPlatform
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _x88Value;
-            }
+            get;
         }
 
         #endregion
@@ -184,7 +172,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Position left, Position right)
         {
-            return left._x88Value == right._x88Value;
+            return left.X88Value == right.X88Value;
         }
 
         [DebuggerNonUserCode]
@@ -198,11 +186,7 @@ namespace ChessPlatform
                 throw new ArgumentOutOfRangeException(
                     nameof(squareIndex),
                     squareIndex,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range ({0} .. {1}).",
-                        0,
-                        ChessConstants.SquareCount - 1));
+                    $@"The value is out of the valid range ({0} .. {ChessConstants.SquareCount - 1}).");
             }
 
             #endregion
@@ -264,10 +248,7 @@ namespace ChessPlatform
                 throw new ArgumentOutOfRangeException(
                     nameof(file),
                     file,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range {0}.",
-                        ChessConstants.FileRange));
+                    $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
 
             #endregion
@@ -293,10 +274,7 @@ namespace ChessPlatform
                 throw new ArgumentOutOfRangeException(
                     nameof(rank),
                     rank,
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The value is out of the valid range {0}.",
-                        ChessConstants.FileRange));
+                    $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
 
             #endregion
@@ -333,7 +311,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return _x88Value;
+            return X88Value;
         }
 
         #endregion

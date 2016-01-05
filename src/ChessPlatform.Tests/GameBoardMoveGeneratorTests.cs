@@ -132,15 +132,12 @@ namespace ChessPlatform.Tests
                 var divideResult = actualResult
                     .DividedMoves
                     .OrderBy(pair => pair.Key.ToString())
-                    .Select(pair => string.Format(CultureInfo.InvariantCulture, "  {0} -> {1}", pair.Key, pair.Value))
+                    .Select(pair => $@"  {pair.Key} -> {pair.Value}")
                     .Join(Environment.NewLine);
 
-                extraInfo = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0}Divide ({1}):{0}{2}",
-                    Environment.NewLine,
-                    actualResult.DividedMoves.Count,
-                    divideResult);
+                extraInfo =
+                    $@"{Environment.NewLine}Divide ({actualResult.DividedMoves.Count}):{Environment.NewLine}{
+                        divideResult}";
             }
 
             Console.WriteLine(
@@ -175,16 +172,12 @@ namespace ChessPlatform.Tests
                     var divideResult = perftResult
                         .DividedMoves
                         .OrderBy(pair => pair.Key.ToString())
-                        .Select(
-                            pair => string.Format(CultureInfo.InvariantCulture, "  {0} -> {1}", pair.Key, pair.Value))
+                        .Select(pair => $@"  {pair.Key} -> {pair.Value}")
                         .Join(Environment.NewLine);
 
-                    extraInfo = string.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0}Divide ({1}):{0}{2}",
-                        Environment.NewLine,
-                        perftResult.DividedMoves.Count,
-                        divideResult);
+                    extraInfo =
+                        $@"{Environment.NewLine}Divide ({perftResult.DividedMoves.Count}):{Environment.NewLine}{
+                            divideResult}";
                 }
 
                 Console.WriteLine(

@@ -11,7 +11,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
         public RatioDoubleConverter(double ratio)
         {
-            this.Ratio = ratio;
+            Ratio = ratio;
         }
 
         public RatioDoubleConverter()
@@ -41,7 +41,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new ArgumentException("Invalid argument(s).");
             }
 
-            return ((double)value) * this.Ratio;
+            return ((double)value) * Ratio;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -51,12 +51,12 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new ArgumentException("Invalid argument(s).");
             }
 
-            if (this.Ratio.IsZero())
+            if (Ratio.IsZero())
             {
                 throw new InvalidOperationException("Unable to convert back since the ratio is zero.");
             }
 
-            return ((double)value) / this.Ratio;
+            return ((double)value) / Ratio;
         }
 
         #endregion

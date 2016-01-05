@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 using Omnifactotum.Annotations;
@@ -31,12 +30,7 @@ namespace ChessPlatform.Tests
                     continue;
                 }
 
-                var errorMessage = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Assertion has failed after the move '{0}' at the index {1}.",
-                    move,
-                    index);
-
+                var errorMessage = $@"Assertion has failed after the move '{move}' at the index {index}.";
                 makeAssertion(currentBoard, errorMessage);
             }
 

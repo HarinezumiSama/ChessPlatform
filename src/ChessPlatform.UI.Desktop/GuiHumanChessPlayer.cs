@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,11 +49,7 @@ namespace ChessPlatform.UI.Desktop
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{ {0} : {1} }}",
-                GetType().GetQualifiedName(),
-                this.Color.GetName());
+            return $@"{{ {GetType().GetQualifiedName()} : {Color.GetName()} }}";
         }
 
         #endregion
@@ -135,7 +130,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void RaiseMoveRequestedAsync()
         {
-            var handler = this.MoveRequested;
+            var handler = MoveRequested;
             if (handler == null)
             {
                 return;
@@ -146,7 +141,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void RaiseMoveRequestCancelledAsync()
         {
-            var handler = this.MoveRequestCancelled;
+            var handler = MoveRequestCancelled;
             if (handler == null)
             {
                 return;

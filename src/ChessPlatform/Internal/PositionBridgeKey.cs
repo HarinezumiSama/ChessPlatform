@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using Omnifactotum;
 
@@ -10,8 +9,6 @@ namespace ChessPlatform.Internal
     {
         #region Constants and Fields
 
-        private readonly Position _first;
-        private readonly Position _second;
         private readonly int _hashCode;
 
         #endregion
@@ -34,10 +31,10 @@ namespace ChessPlatform.Internal
                 Factotum.Exchange(ref first, ref second);
             }
 
-            _first = first;
-            _second = second;
+            First = first;
+            Second = second;
 
-            _hashCode = (_first.X88Value << 8) | second.X88Value;
+            _hashCode = (First.X88Value << 8) | second.X88Value;
         }
 
         #endregion
@@ -47,19 +44,13 @@ namespace ChessPlatform.Internal
         public Position First
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _first;
-            }
+            get;
         }
 
         public Position Second
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _second;
-            }
+            get;
         }
 
         #endregion
@@ -78,7 +69,7 @@ namespace ChessPlatform.Internal
 
         public override string ToString()
         {
-            return string.Format(CultureInfo.InvariantCulture, "{{{0}:{1}}}", _first, _second);
+            return $@"{{{First}:{Second}}}";
         }
 
         #endregion
@@ -87,7 +78,7 @@ namespace ChessPlatform.Internal
 
         public bool Equals(PositionBridgeKey other)
         {
-            return other._first == _first && other._second == _second;
+            return other.First == First && other.Second == Second;
         }
 
         #endregion

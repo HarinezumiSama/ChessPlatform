@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
@@ -200,12 +199,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     AddError(
                         validatorContext,
                         memberContext,
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            @"The specified max ply depth ({0}) is out of the valid range ({1} .. {2}).",
-                            value,
-                            MaxPlyDepthRange.Lower,
-                            MaxPlyDepthRange.Upper));
+                        $@"The specified max ply depth ({value}) is out of the valid range {MaxPlyDepthRange}.");
                 }
             }
         }
@@ -226,12 +220,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     AddError(
                         validatorContext,
                         memberContext,
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            @"The value {0} is out of the valid range ({1} .. {2}).",
-                            value,
-                            MaxTimePerMoveRange.Lower,
-                            MaxTimePerMoveRange.Upper));
+                        $@"The value {value} is out of the valid range {MaxTimePerMoveRange}.");
                 }
             }
         }

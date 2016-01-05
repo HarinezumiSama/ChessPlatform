@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -95,16 +94,16 @@ namespace ChessPlatform.UI.Desktop
 
         private static void OnUnhandledExceptionInternal(UnhandledExceptionEventArgs args)
         {
+            var errorDetails = args?.ExceptionObject?.ToString() ?? "<Unknown exception>";
 
-            var text = string.Format(
-                @"Unhandled exception has occurred (see below).{0}The process will be terminated.{0}{0}{1}",
-                Environment.NewLine,
-                args.ExceptionObject?.ToStringSafely() ?? "<Unknown exception>");
+            var text =
+                $@"Unhandled exception has occurred (see below).{Environment.NewLine}The process will be terminated.{
+                    Environment.NewLine}{Environment.NewLine}{errorDetails}";
 
             Trace.TraceError(text);
 
             var window = Current?.MainWindow;
-            window?.ShowErrorDialog(text, $@"Unhandled Exception — {Title}");
+            window.ShowErrorDialog(text, $@"Unhandled Exception — {Title}");
 
             Process.GetCurrentProcess().Kill();
         }

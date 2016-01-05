@@ -25,13 +25,13 @@ namespace ChessPlatform.UI.Desktop.Converters
 
         public DebugConverter([CanBeNull] string name)
         {
-            this.Name = name;
+            Name = name;
 
             var stringBuilder = new StringBuilder();
             stringBuilder.AppendFormat(GetType().GetQualifiedName());
-            if (!this.Name.IsNullOrWhiteSpace())
+            if (!Name.IsNullOrWhiteSpace())
             {
-                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, " : {0}", this.Name);
+                stringBuilder.AppendFormat(CultureInfo.InvariantCulture, " : {0}", Name);
             }
 
             _asString = stringBuilder.ToString();

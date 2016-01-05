@@ -15,8 +15,8 @@ namespace ChessPlatform.UI.Desktop.Converters
         /// </summary>
         public BooleanToVisibilityConverter()
         {
-            this.TrueValue = Visibility.Visible;
-            this.FalseValue = Visibility.Collapsed;
+            TrueValue = Visibility.Visible;
+            FalseValue = Visibility.Collapsed;
         }
 
         #endregion

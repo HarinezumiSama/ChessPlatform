@@ -7,13 +7,6 @@ namespace ChessPlatform.Internal
 {
     internal struct PieceAttackInfo
     {
-        #region Constants and Fields
-
-        private readonly Bitboard _bitboard;
-        private readonly bool _isDirectAttack;
-
-        #endregion
-
         #region Constructors
 
         internal PieceAttackInfo(ICollection<Position> positions, bool isDirectAttack)
@@ -32,8 +25,8 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            _bitboard = new Bitboard(positions);
-            _isDirectAttack = isDirectAttack;
+            Bitboard = new Bitboard(positions);
+            IsDirectAttack = isDirectAttack;
         }
 
         #endregion
@@ -43,19 +36,13 @@ namespace ChessPlatform.Internal
         public Bitboard Bitboard
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _bitboard;
-            }
+            get;
         }
 
         public bool IsDirectAttack
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _isDirectAttack;
-            }
+            get;
         }
 
         #endregion

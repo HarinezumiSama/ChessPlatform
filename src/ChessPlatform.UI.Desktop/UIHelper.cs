@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -76,14 +75,15 @@ namespace ChessPlatform.UI.Desktop
             MessageBoxImage icon,
             string caption = null)
         {
-            var window = owner ?? Application.Current.Morph(obj => obj.MainWindow);
-            var title = window.Morph(obj => obj.Title, EntryAssemblyName);
+            var window = owner ?? Application.Current?.MainWindow;
+            var title = window?.Title ?? EntryAssemblyName;
 
-            var fullCaption = caption.IsNullOrWhiteSpace()
-                ? title
-                : string.Format(CultureInfo.InvariantCulture, "{0} – {1}", caption, title);
+            var fullCaption = caption.IsNullOrWhiteSpace() ? title : $@"{caption} – {title}";
 
-            var result = MessageBox.Show(window, text, fullCaption, button, icon);
+            var result = window == null
+                ? MessageBox.Show(text, fullCaption, button, icon)
+                : MessageBox.Show(window, text, fullCaption, button, icon);
+
             return result;
         }
 
@@ -187,15 +187,10 @@ namespace ChessPlatform.UI.Desktop
                 (sender, e) =>
                 {
                     popupOpened?.Invoke();
-
                     popup.BeginStoryboard(storyboard);
                 };
 
-            popup.Closed +=
-                (sender, args) =>
-                {
-                    popupClosed?.Invoke();
-                };
+            popup.Closed += (sender, args) => popupClosed?.Invoke();
 
             // Must be the final statement
             popup.IsOpen = true;

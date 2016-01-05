@@ -16,8 +16,8 @@ namespace ChessPlatform.UI.Desktop.Converters
         /// </summary>
         public BooleanToValueConverter()
         {
-            this.TrueValue = default(T);
-            this.FalseValue = default(T);
+            TrueValue = default(T);
+            FalseValue = default(T);
         }
 
         #endregion
@@ -51,7 +51,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             #endregion
 
-            return (bool)value ? this.TrueValue : this.FalseValue;
+            return (bool)value ? TrueValue : FalseValue;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -67,7 +67,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             #endregion
 
-            return EqualityComparer<T>.Default.Equals((T)value, this.TrueValue);
+            return EqualityComparer<T>.Default.Equals((T)value, TrueValue);
         }
 
         #endregion

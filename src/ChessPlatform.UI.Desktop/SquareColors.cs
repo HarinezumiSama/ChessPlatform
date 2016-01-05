@@ -12,8 +12,8 @@ namespace ChessPlatform.UI.Desktop
         internal SquareColors(Color darkSquareColor, Color lightSquareColor)
             : this()
         {
-            this.DarkSquareColor = darkSquareColor;
-            this.LightSquareColor = lightSquareColor;
+            DarkSquareColor = darkSquareColor;
+            LightSquareColor = lightSquareColor;
         }
 
         #endregion
@@ -25,7 +25,7 @@ namespace ChessPlatform.UI.Desktop
             [DebuggerNonUserCode]
             get
             {
-                return isDark ? this.DarkSquareColor : this.LightSquareColor;
+                return isDark ? DarkSquareColor : LightSquareColor;
             }
         }
 

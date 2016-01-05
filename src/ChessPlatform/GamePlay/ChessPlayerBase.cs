@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ namespace ChessPlatform.GamePlay
 {
     public abstract class ChessPlayerBase : IChessPlayer
     {
-        #region Constructors
+        #region Constructors and Destructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
@@ -49,11 +48,8 @@ namespace ChessPlatform.GamePlay
             if (request.Board.ActiveColor != Color)
             {
                 throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        @"The board's active color '{0}' is inconsistent with the player's color '{1}'.",
-                        request.Board.ActiveColor,
-                        Color),
+                    $@"The board's active color '{request.Board.ActiveColor
+                        }' is inconsistent with the player's color '{Color}'.",
                     nameof(request));
             }
 

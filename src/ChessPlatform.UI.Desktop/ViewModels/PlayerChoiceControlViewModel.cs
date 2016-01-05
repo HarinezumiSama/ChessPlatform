@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Linq;
 using System.Windows.Data;
 using ChessPlatform.Engine;
@@ -103,10 +102,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     AddError(
                         validatorContext,
                         memberContext,
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The player is not selected ({0}).",
-                            ((PlayerChoiceControlViewModel)memberContext.Container).PlayerColor));
+                        $@"The player is not selected ({
+                            ((PlayerChoiceControlViewModel)memberContext.Container).PlayerColor}).");
 
                     return;
                 }

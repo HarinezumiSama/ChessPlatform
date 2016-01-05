@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Omnifactotum;
@@ -523,11 +522,7 @@ namespace ChessPlatform.Internal
             if (!king.IsExactlyOneBitSet())
             {
                 throw new ChessPlatformException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "There are multiple {0} pieces ({1}) on the board.",
-                        kingPiece.GetDescription(),
-                        king.GetBitSetCount()));
+                    $@"There are multiple {kingPiece.GetDescription()} pieces ({king.GetBitSetCount()}) on the board.");
             }
 
             var kingSquareIndex = king.FindFirstBitSetIndex();
@@ -722,11 +717,7 @@ namespace ChessPlatform.Internal
             if (existingPiece != Piece.None)
             {
                 throw new ChessPlatformException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The board square '{0}' is already occupied by '{1}'.",
-                        position,
-                        existingPiece));
+                    $@"The board square '{position}' is already occupied by '{existingPiece}'.");
             }
 
             SetPiece(position, piece);
@@ -850,11 +841,7 @@ namespace ChessPlatform.Internal
             {
                 if (move.PromotionResult == PieceType.None)
                 {
-                    throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Promoted piece type is not specified ({0}).",
-                            move));
+                    throw new ChessPlatformException($@"Promoted piece type is not specified ({move}).");
                 }
 
                 var previousPiece = SetPiece(move.To, move.PromotionResult.ToPiece(movingColor));
@@ -868,11 +855,7 @@ namespace ChessPlatform.Internal
                 if (!castlingOptions.IsAllSet(castlingInfo.Option))
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The castling {{{0}}} ({1}) is not allowed.",
-                            move,
-                            castlingInfo.CastlingType.GetName()));
+                        $@"The castling {{{move}}} ({castlingInfo.CastlingType.GetName()}) is not allowed.");
                 }
 
                 castlingRookMove = castlingInfo.RookMove;
@@ -1090,7 +1073,11 @@ namespace ChessPlatform.Internal
             }
 
             var nonPromotionCaptures = captures & ~rank8;
-            PopulatePawnMoves(resultMoves, nonPromotionCaptures, (int)captureDirection, GameMoveFlags.IsRegularCapture);
+            PopulatePawnMoves(
+                resultMoves,
+                nonPromotionCaptures,
+                (int)captureDirection,
+                GameMoveFlags.IsRegularCapture);
 
             var promotionCaptures = captures & rank8;
             PopulatePawnMoves(
@@ -1328,16 +1315,12 @@ namespace ChessPlatform.Internal
                     if ((piece == currentPiece) != isSet)
                     {
                         throw new ChessPlatformException(
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                "Bitboard inconsistency for the piece '{0}' at '{1}'.",
-                                piece.GetName(),
-                                position));
+                            $@"Bitboard inconsistency for the piece '{piece.GetName()}' at '{position}'.");
                     }
                 }
             }
 
-            var allBitboards = ChessConstants.Pieces.Select(this.GetBitboard).ToArray();
+            var allBitboards = ChessConstants.Pieces.Select(GetBitboard).ToArray();
             for (var outerIndex = 0; outerIndex < allBitboards.Length; outerIndex++)
             {
                 var outerBitboard = allBitboards[outerIndex];
@@ -1353,11 +1336,7 @@ namespace ChessPlatform.Internal
                     var intersectingPositions =
                         intersectionBitboard.GetPositions().Select(item => item.ToString()).Join("', '");
 
-                    throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Bitboard inconsistency at '{0}'.",
-                            intersectingPositions));
+                    throw new ChessPlatformException($@"Bitboard inconsistency at '{intersectingPositions}'.");
                 }
             }
 
@@ -1368,11 +1347,7 @@ namespace ChessPlatform.Internal
                 if (actual != expected)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Entire-color-bitboard inconsistency: expected '{0}', actual '{1}'.",
-                            expected,
-                            actual));
+                        $@"Entire-color-bitboard inconsistency: expected '{expected}', actual '{actual}'.");
                 }
             }
         }
@@ -1405,11 +1380,7 @@ namespace ChessPlatform.Internal
             var movedPiece = SetPiece(move.From, Piece.None);
             if (movedPiece == Piece.None)
             {
-                throw new ChessPlatformException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The source square of the move {{{0}}} is empty.",
-                        move));
+                throw new ChessPlatformException($@"The source square of the move {{{move}}} is empty.");
             }
 
             var capturedPiece = SetPiece(move.To, movedPiece);
@@ -1610,7 +1581,8 @@ namespace ChessPlatform.Internal
                             if (shouldGenerateCaptures)
                             {
                                 var move = new GameMove(sourcePosition, current.GetFirstPosition());
-                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsRegularCapture)));
+                                resultMoves.Add(
+                                    new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsRegularCapture)));
                             }
                         }
 
@@ -1626,19 +1598,12 @@ namespace ChessPlatform.Internal
 
         internal struct InternalCastlingInfo
         {
-            #region Constants and Fields
-
-            private readonly GameMove _kingMove;
-            private readonly Bitboard _emptySquares;
-
-            #endregion
-
             #region Constructors
 
             public InternalCastlingInfo(GameMove kingMove, Bitboard emptySquares)
             {
-                _kingMove = kingMove.EnsureNotNull();
-                _emptySquares = emptySquares;
+                KingMove = kingMove.EnsureNotNull();
+                EmptySquares = emptySquares;
             }
 
             #endregion
@@ -1648,19 +1613,13 @@ namespace ChessPlatform.Internal
             public GameMove KingMove
             {
                 [DebuggerStepThrough]
-                get
-                {
-                    return _kingMove;
-                }
+                get;
             }
 
             public Bitboard EmptySquares
             {
                 [DebuggerStepThrough]
-                get
-                {
-                    return _emptySquares;
-                }
+                get;
             }
 
             #endregion

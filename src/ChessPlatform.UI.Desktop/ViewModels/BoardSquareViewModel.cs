@@ -33,19 +33,19 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             #endregion
 
             _parentViewModel = parentViewModel;
-            this.Position = position;
+            Position = position;
 
-            SubscribeToChangeOf(() => this.Piece, this.OnPieceChanged);
+            SubscribeToChangeOf(() => Piece, OnPieceChanged);
 
-            _parentViewModel.SubscribeToChangeOf(() => _parentViewModel.SelectionMode, this.OnSelectionModeChanged);
+            _parentViewModel.SubscribeToChangeOf(() => _parentViewModel.SelectionMode, OnSelectionModeChanged);
 
             _parentViewModel.SubscribeToChangeOf(
                 () => _parentViewModel.CurrentGameBoard,
-                this.OnCurrentGameBoardChanged);
+                OnCurrentGameBoardChanged);
 
             _parentViewModel.SubscribeToChangeOf(
                 () => _parentViewModel.CurrentTargetPosition,
-                this.OnCurrentTargetPositionChanged);
+                OnCurrentTargetPositionChanged);
 
             _background = UIHelper.GetSquareBrush(position, SquareMode.Default);
 
@@ -78,7 +78,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _background = value;
-                RaisePropertyChanged(() => this.Background);
+                RaisePropertyChanged(() => Background);
             }
         }
 
@@ -98,7 +98,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _foreground = value;
-                RaisePropertyChanged(() => this.Foreground);
+                RaisePropertyChanged(() => Foreground);
             }
         }
 
@@ -118,7 +118,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _text = value;
-                RaisePropertyChanged(() => this.Text);
+                RaisePropertyChanged(() => Text);
             }
         }
 
@@ -152,7 +152,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 _borderBrush = value;
-                RaisePropertyChanged(() => this.BorderBrush);
+                RaisePropertyChanged(() => BorderBrush);
             }
         }
 
@@ -168,15 +168,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             _piece = value;
-            RaisePropertyChanged(() => this.Piece);
+            RaisePropertyChanged(() => Piece);
         }
 
         private SquareMode GetSquareMode()
         {
-            if (_parentViewModel.ValidMoveTargetPositions.Contains(this.Position))
+            if (_parentViewModel.ValidMoveTargetPositions.Contains(Position))
             {
                 return _parentViewModel.CurrentTargetPosition.HasValue
-                    && this.Position == _parentViewModel.CurrentTargetPosition.Value
+                    && Position == _parentViewModel.CurrentTargetPosition.Value
                     ? SquareMode.CurrentMoveTarget
                     : SquareMode.ValidMoveTarget;
             }
@@ -187,7 +187,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 {
                     case GameWindowSelectionMode.DisplayValidMovesOnly:
                         if (_parentViewModel.CurrentSourcePosition.HasValue
-                            && this.Position == _parentViewModel.CurrentSourcePosition.Value)
+                            && Position == _parentViewModel.CurrentSourcePosition.Value)
                         {
                             return SquareMode.ValidMoveSource;
                         }
@@ -196,7 +196,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
                     case GameWindowSelectionMode.MovingPieceSelected:
                         if (_parentViewModel.CurrentSourcePosition.HasValue
-                            && this.Position == _parentViewModel.CurrentSourcePosition.Value)
+                            && Position == _parentViewModel.CurrentSourcePosition.Value)
                         {
                             return SquareMode.CurrentMoveSource;
                         }
@@ -211,7 +211,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void UpdateBackground()
         {
             var squareMode = GetSquareMode();
-            this.Background = UIHelper.GetSquareBrush(this.Position, squareMode);
+            Background = UIHelper.GetSquareBrush(Position, squareMode);
         }
 
         private void UpdatePiece(bool forceRaiseEvent)
@@ -221,7 +221,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return;
             }
 
-            var piece = _parentViewModel.CurrentGameBoard[this.Position];
+            var piece = _parentViewModel.CurrentGameBoard[Position];
             SetPieceInternal(piece, forceRaiseEvent);
         }
 
@@ -231,10 +231,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var lastMove = currentGameBoard.Morph(obj => obj.PreviousMove);
             var isLastMoveSquare = lastMove != null
-                && (lastMove.From == this.Position || lastMove.To == this.Position);
+                && (lastMove.From == Position || lastMove.To == Position);
 
             var isUnderCheck = currentGameBoard != null && currentGameBoard.State.IsAnyCheck()
-                && this.Piece == PieceType.King.ToPiece(currentGameBoard.ActiveColor);
+                && Piece == PieceType.King.ToPiece(currentGameBoard.ActiveColor);
 
             //// TODO [vmcl] Move the choice of a color to UIHelper
 
@@ -250,24 +250,24 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             else
             {
                 var squareMode = GetSquareMode();
-                borderBrush = UIHelper.GetSquareBrush(this.Position, squareMode);
+                borderBrush = UIHelper.GetSquareBrush(Position, squareMode);
             }
 
-            if (!forceRaiseEvent && Equals(borderBrush, this.BorderBrush))
+            if (!forceRaiseEvent && Equals(borderBrush, BorderBrush))
             {
                 return;
             }
 
-            this.BorderBrush = borderBrush;
-            RaisePropertyChanged(() => this.BorderBrush);
+            BorderBrush = borderBrush;
+            RaisePropertyChanged(() => BorderBrush);
         }
 
         private void OnPieceChanged(object sender, EventArgs e)
         {
             var pieceInfo = _piece.GetPieceInfo();
 
-            this.Foreground = UIHelper.GetPieceBrush(pieceInfo.Color);
-            this.Text = UIHelper.PieceToSymbolMap[pieceInfo.PieceType];
+            Foreground = UIHelper.GetPieceBrush(pieceInfo.Color);
+            Text = UIHelper.PieceToSymbolMap[pieceInfo.PieceType];
         }
 
         private void OnSelectionModeChanged(object sender, EventArgs e)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -41,10 +40,7 @@ namespace ChessPlatform.Tests
         [TestCase(PieceColor.Black)]
         public void TestTwoKingsTooCloseToEachOther(PieceColor activeColor)
         {
-            var fen = string.Format(
-                CultureInfo.InvariantCulture,
-                "k7/K7/8/8/8/8/8/8 {0} - - 0 1",
-                activeColor.GetFenSnippet());
+            var fen = $@"k7/K7/8/8/8/8/8/8 {activeColor.GetFenSnippet()} - - 0 1";
 
             Assert.That(
                 () => new GameBoard(fen, PerformInternalBoardValidation),

@@ -36,11 +36,11 @@ namespace ChessPlatform
                     throw color.CreateEnumValueNotSupportedException();
             }
 
-            this.Color = color;
-            this.StartRank = (byte)(isWhite ? 1 : ChessConstants.RankCount - 2);
+            Color = color;
+            StartRank = (byte)(isWhite ? 1 : ChessConstants.RankCount - 2);
 
-            this.EndRank = (byte)(this.StartRank + (isWhite ? Difference : -Difference));
-            this.CaptureTargetRank = (byte)((this.StartRank + this.EndRank) / 2);
+            EndRank = (byte)(StartRank + (isWhite ? Difference : -Difference));
+            CaptureTargetRank = (byte)((StartRank + EndRank) / 2);
         }
 
         #endregion

@@ -10,8 +10,8 @@ namespace ChessPlatform.Internal
         internal MovePieceData(Piece movedPiece, Piece capturedPiece)
             : this()
         {
-            this.MovedPiece = movedPiece;
-            this.CapturedPiece = capturedPiece;
+            MovedPiece = movedPiece;
+            CapturedPiece = capturedPiece;
         }
 
         #endregion

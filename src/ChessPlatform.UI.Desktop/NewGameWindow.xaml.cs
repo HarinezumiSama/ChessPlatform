@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
@@ -19,7 +18,7 @@ namespace ChessPlatform.UI.Desktop
         {
             InitializeComponent();
 
-            Title = string.Format(CultureInfo.InvariantCulture, "New Game – {0}", App.Title);
+            Title = $@"New Game – {App.Title}";
 
             var clipboardText = Clipboard.GetText();
 

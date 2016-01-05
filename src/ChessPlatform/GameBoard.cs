@@ -37,11 +37,8 @@ namespace ChessPlatform
         private readonly ReadOnlyDictionary<GameMove, GameMoveInfo> _validMoves;
         private readonly int _halfMoveCountBy50MoveRule;
         private readonly int _fullMoveIndex;
-        private readonly GameMove _previousMove;
-        private readonly Piece _lastCapturedPiece;
         private readonly string _resultString;
         private readonly bool _validateAfterMove;
-        private readonly GameBoard _previousBoard;
         private readonly ReadOnlyDictionary<long, int> _repetitions;
         private readonly long _zobristKey;
 
@@ -67,7 +64,7 @@ namespace ChessPlatform
         {
             _validateAfterMove = validateAfterMove;
             _gameBoardData = new GameBoardData();
-            _lastCapturedPiece = Piece.None;
+            LastCapturedPiece = Piece.None;
 
             SetupDefault(
                 out _activeColor,
@@ -115,7 +112,7 @@ namespace ChessPlatform
 
             _validateAfterMove = validateAfterMove;
             _gameBoardData = new GameBoardData();
-            _lastCapturedPiece = Piece.None;
+            LastCapturedPiece = Piece.None;
 
             SetupByFen(
                 fen,
@@ -150,7 +147,7 @@ namespace ChessPlatform
 
             #endregion
 
-            _previousBoard = previousBoard;
+            PreviousBoard = previousBoard;
             _validateAfterMove = previousBoard._validateAfterMove;
             _gameBoardData = previousBoard._gameBoardData.Copy();
             _activeColor = previousBoard._activeColor.Invert();
@@ -161,8 +158,8 @@ namespace ChessPlatform
             if (move == null)
             {
                 _enPassantCaptureInfo = previousBoard._enPassantCaptureInfo;
-                _previousMove = previousBoard._previousMove;
-                _lastCapturedPiece = previousBoard._lastCapturedPiece;
+                PreviousMove = previousBoard.PreviousMove;
+                LastCapturedPiece = previousBoard.LastCapturedPiece;
                 _halfMoveCountBy50MoveRule = previousBoard._halfMoveCountBy50MoveRule;
             }
             else
@@ -175,8 +172,8 @@ namespace ChessPlatform
                     previousBoard._enPassantCaptureInfo,
                     ref _castlingOptions);
 
-                _previousMove = makeMoveData.Move;
-                _lastCapturedPiece = makeMoveData.CapturedPiece;
+                PreviousMove = makeMoveData.Move;
+                LastCapturedPiece = makeMoveData.CapturedPiece;
 
                 _halfMoveCountBy50MoveRule = makeMoveData.ShouldKeepCountingBy50MoveRule
                     ? previousBoard._halfMoveCountBy50MoveRule + 1
@@ -210,10 +207,7 @@ namespace ChessPlatform
         public GameBoard PreviousBoard
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _previousBoard;
-            }
+            get;
         }
 
         public PieceColor ActiveColor
@@ -282,19 +276,13 @@ namespace ChessPlatform
         public GameMove PreviousMove
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _previousMove;
-            }
+            get;
         }
 
         public Piece LastCapturedPiece
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _lastCapturedPiece;
-            }
+            get;
         }
 
         public bool CanMakeNullMove => _state == GameState.Default;
@@ -403,9 +391,7 @@ namespace ChessPlatform
 
             if (!_validMoves.ContainsKey(move))
             {
-                throw new ArgumentException(
-                    string.Format(CultureInfo.InvariantCulture, "The move '{0}' is not valid.", move),
-                    nameof(move));
+                throw new ArgumentException($@"The move '{move}' is not valid.", nameof(move));
             }
 
             #endregion
@@ -432,7 +418,7 @@ namespace ChessPlatform
             while (currentBoard != null)
             {
                 boards.Add(currentBoard);
-                currentBoard = currentBoard._previousBoard;
+                currentBoard = currentBoard.PreviousBoard;
             }
 
             boards.Reverse();
@@ -1154,15 +1140,14 @@ namespace ChessPlatform
 
             foreach (var king in ChessConstants.BothKings)
             {
+                const int ExpectedCount = 1;
+
                 var count = _gameBoardData.GetBitboard(king).GetBitSetCount();
-                if (count != 1)
+                if (count != ExpectedCount)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The number of the '{0}' pieces is {1}. Must be exactly one.",
-                            king.GetDescription(),
-                            count));
+                        $@"The number of the '{king.GetDescription()}' pieces is {count}. Must be exactly {
+                            ExpectedCount}.");
                 }
             }
 
@@ -1187,21 +1172,13 @@ namespace ChessPlatform
                 if (pawnCount > ChessConstants.MaxPawnCountPerColor)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Too many '{0}' ({1}).",
-                            PieceType.Pawn.ToPiece(color).GetDescription(),
-                            pawnCount));
+                        $@"Too many '{PieceType.Pawn.ToPiece(color).GetDescription()}' ({pawnCount}).");
                 }
 
                 if (allCount > ChessConstants.MaxPieceCountPerColor)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Too many pieces of the color {0} ({1}).",
-                            color.GetName(),
-                            allCount));
+                        $@"Too many pieces of the color {color.GetName()} ({allCount}).");
                 }
             }
 
@@ -1252,20 +1229,14 @@ namespace ChessPlatform
                 if (pair.Value.IsPawnPromotion != expectedIsPawnPromotion)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The move '{0}' is inconsistent with respect to its pawn promotion state.",
-                            move));
+                        $@"The move '{move}' is inconsistent with respect to its pawn promotion state.");
                 }
 
                 var expectedIsRegularCapture = _gameBoardData[move.To] != Piece.None;
                 if (pair.Value.IsRegularCapture != expectedIsRegularCapture)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The move '{0}' is inconsistent with respect to its capture state.",
-                            move));
+                        $@"The move '{move}' is inconsistent with respect to its capture state.");
                 }
 
                 var expectedIsEnPassantCapture = _gameBoardData.IsEnPassantCapture(
@@ -1275,20 +1246,14 @@ namespace ChessPlatform
                 if (pair.Value.IsEnPassantCapture != expectedIsEnPassantCapture)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The move '{0}' is inconsistent with respect to its en passant capture state.",
-                            move));
+                        $@"The move '{move}' is inconsistent with respect to its en passant capture state.");
                 }
 
                 var expectedIsKingCastling = _gameBoardData.CheckCastlingMove(move) != null;
                 if (pair.Value.IsKingCastling != expectedIsKingCastling)
                 {
                     throw new ChessPlatformException(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "The move '{0}' is inconsistent with respect to its king castling state.",
-                            move));
+                        $@"The move '{move}' is inconsistent with respect to its king castling state.");
                 }
             }
         }
@@ -1393,21 +1358,21 @@ namespace ChessPlatform
                     : 0L)
                 ^ ZobristHashHelper.GetTurnHash(_activeColor);
 
-            if (_previousBoard != null && _previousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
+            if (PreviousBoard != null && PreviousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
             {
                 autoDrawType = AutoDrawType.ThreefoldRepetition;
                 repetitions = null;
             }
             else
             {
-                if (_previousBoard != null && _previousBoard._repetitions == null)
+                if (PreviousBoard != null && PreviousBoard._repetitions == null)
                 {
                     throw new InvalidOperationException("Internal logic error: repetition map is not assigned.");
                 }
 
-                var repetitionMap = _previousBoard == null
+                var repetitionMap = PreviousBoard == null
                     ? new Dictionary<long, int>()
-                    : new Dictionary<long, int>(_previousBoard._repetitions);
+                    : new Dictionary<long, int>(PreviousBoard._repetitions);
 
                 var thisRepetitionCount = repetitionMap.GetValueOrDefault(zobristKey) + 1;
                 repetitionMap[zobristKey] = thisRepetitionCount;

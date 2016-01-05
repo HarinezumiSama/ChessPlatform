@@ -444,11 +444,7 @@ namespace ChessPlatform.UI.Desktop
                     break;
 
                 case GameState.Checkmate:
-                    popupControl.ShowInfoPopup(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "Checkmate! {0}",
-                            currentGameBoard.ResultString));
+                    popupControl.ShowInfoPopup($@"Checkmate! {currentGameBoard.ResultString}");
                     break;
 
                 case GameState.Stalemate:
@@ -479,8 +475,7 @@ namespace ChessPlatform.UI.Desktop
                                     break;
                             }
 
-                            popupControl.ShowInfoPopup(
-                                string.Format(CultureInfo.InvariantCulture, "Draw: {0}.", drawType));
+                            popupControl.ShowInfoPopup($@"Draw: {drawType}.");
 
                             break;
                     }

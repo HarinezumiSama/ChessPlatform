@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 
 namespace ChessPlatform.Internal
@@ -11,8 +10,8 @@ namespace ChessPlatform.Internal
         internal RayInfo(byte offset, bool isStraight)
             : this()
         {
-            this.Offset = offset;
-            this.IsStraight = isStraight;
+            Offset = offset;
+            IsStraight = isStraight;
         }
 
         #endregion
@@ -35,11 +34,7 @@ namespace ChessPlatform.Internal
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{0x{0:X2}, {1}}}",
-                this.Offset,
-                this.IsStraight ? "Straight" : "Diagonal");
+            return $@"{{0x{Offset:X2}, {(IsStraight ? "Straight" : "Diagonal")}}}";
         }
 
         #endregion

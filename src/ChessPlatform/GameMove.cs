@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -154,10 +153,7 @@ namespace ChessPlatform
             }
 
             throw new ArgumentException(
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Invalid string notation of a move '{0}'.",
-                    stringNotation),
+                $@"Invalid string notation of a move '{stringNotation}'.",
                 nameof(stringNotation));
         }
 
@@ -178,15 +174,10 @@ namespace ChessPlatform
 
         public string ToString(bool renderCaptureSign)
         {
-            var result = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}{1}{2}{3}",
-                From,
-                renderCaptureSign ? ChessConstants.CaptureCharString : string.Empty,
-                To,
-                PromotionResult == PieceType.None
+            var result = $@"{From}{(renderCaptureSign ? ChessConstants.CaptureCharString : string.Empty)}{To}{
+                (PromotionResult == PieceType.None
                     ? string.Empty
-                    : ChessConstants.PromotionPrefixCharString + PromotionResult.GetFenChar());
+                    : ChessConstants.PromotionPrefixCharString + PromotionResult.GetFenChar())}";
 
             return result;
         }
@@ -198,10 +189,7 @@ namespace ChessPlatform
             if (!ChessConstants.ValidPromotions.Contains(promotionResult))
             {
                 throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "Must be a valid promotion piece ({0}).",
-                        promotionResult),
+                    $@"Must be a valid promotion piece ({promotionResult}).",
                     nameof(promotionResult));
             }
 

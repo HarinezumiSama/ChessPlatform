@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Omnifactotum;
@@ -93,8 +92,6 @@ namespace ChessPlatform
 
         #endregion
 
-        private readonly ulong _value;
-
         #endregion
 
         #region Constructors
@@ -105,7 +102,7 @@ namespace ChessPlatform
         /// </summary>
         public Bitboard(long value)
         {
-            _value = (ulong)value;
+            InternalValue = (ulong)value;
         }
 
         /// <summary>
@@ -123,7 +120,7 @@ namespace ChessPlatform
 
             #endregion
 
-            _value = positions.Aggregate(NoneValue, (accumulator, position) => accumulator | position.Bitboard._value);
+            InternalValue = positions.Aggregate(NoneValue, (accumulator, position) => accumulator | position.Bitboard.InternalValue);
         }
 
         /// <summary>
@@ -132,7 +129,7 @@ namespace ChessPlatform
         /// </summary>
         internal Bitboard(ulong value)
         {
-            _value = value;
+            InternalValue = value;
         }
 
         #endregion
@@ -145,7 +142,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (long)_value;
+                return (long)InternalValue;
             }
         }
 
@@ -155,7 +152,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _value == NoneValue;
+                return InternalValue == NoneValue;
             }
         }
 
@@ -165,7 +162,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _value != NoneValue;
+                return InternalValue != NoneValue;
             }
         }
 
@@ -177,10 +174,7 @@ namespace ChessPlatform
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _value;
-            }
+            get;
         }
 
         #endregion
@@ -208,25 +202,25 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard operator ~(Bitboard obj)
         {
-            return new Bitboard(~obj._value);
+            return new Bitboard(~obj.InternalValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard operator &(Bitboard left, Bitboard right)
         {
-            return new Bitboard(left._value & right._value);
+            return new Bitboard(left.InternalValue & right.InternalValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard operator |(Bitboard left, Bitboard right)
         {
-            return new Bitboard(left._value | right._value);
+            return new Bitboard(left.InternalValue | right.InternalValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard operator ^(Bitboard left, Bitboard right)
         {
-            return new Bitboard(left._value ^ right._value);
+            return new Bitboard(left.InternalValue ^ right.InternalValue);
         }
 
         #endregion
@@ -236,7 +230,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Bitboard left, Bitboard right)
         {
-            return left._value == right._value;
+            return left.InternalValue == right.InternalValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -248,7 +242,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int PopFirstBitSetIndex(ref Bitboard bitboard)
         {
-            var value = bitboard._value;
+            var value = bitboard.InternalValue;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
             return FindFirstBitSetIndexInternal(value);
         }
@@ -256,7 +250,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Bitboard PopFirstBitSet(ref Bitboard bitboard)
         {
-            var value = bitboard._value;
+            var value = bitboard.InternalValue;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
             return new Bitboard(IsolateFirstBitSetInternal(value));
         }
@@ -269,47 +263,47 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return _value.GetHashCode();
+            return InternalValue.GetHashCode();
         }
 
         public override string ToString()
         {
-            var squares = _value == NoneValue
+            var squares = InternalValue == NoneValue
                 ? "<none>"
                 : GetPositions().Select(item => item.ToString()).OrderBy(Factotum.Identity).Join(", ");
 
-            return string.Format(CultureInfo.InvariantCulture, "{{ {0:X16} : {1} }}", _value, squares);
+            return $@"{{ {InternalValue:X16} : {squares} }}";
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int FindFirstBitSetIndex()
         {
-            return FindFirstBitSetIndexInternal(_value);
+            return FindFirstBitSetIndexInternal(InternalValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExactlyOneBitSet()
         {
-            return _value != NoneValue && IsolateFirstBitSetInternal(_value) == _value;
+            return InternalValue != NoneValue && IsolateFirstBitSetInternal(InternalValue) == InternalValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard IsolateFirstBitSet()
         {
-            return new Bitboard(IsolateFirstBitSetInternal(_value));
+            return new Bitboard(IsolateFirstBitSetInternal(InternalValue));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard Shift(ShiftDirection direction)
         {
-            return new Bitboard(ShiftInternal(_value, direction));
+            return new Bitboard(ShiftInternal(InternalValue, direction));
         }
 
         public Position[] GetPositions()
         {
             var resultList = new List<Position>(ChessConstants.SquareCount);
 
-            var currentValue = _value;
+            var currentValue = InternalValue;
 
             int index;
             while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
@@ -332,7 +326,7 @@ namespace ChessPlatform
         {
             var result = 0;
 
-            var currentValue = _value;
+            var currentValue = InternalValue;
             while (PopFirstBitSetIndexInternal(ref currentValue) >= 0)
             {
                 result++;

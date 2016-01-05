@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -176,11 +175,8 @@ namespace ChessPlatform.Tests
 
         private static string GetPositionString(int file, int rank)
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{0}{1}",
-                (char)('a' + (file - ChessConstants.FileRange.Lower)),
-                rank - ChessConstants.RankRange.Lower + 1);
+            return
+                $@"{(char)('a' + (file - ChessConstants.FileRange.Lower))}{rank - ChessConstants.RankRange.Lower + 1}";
         }
 
         #endregion

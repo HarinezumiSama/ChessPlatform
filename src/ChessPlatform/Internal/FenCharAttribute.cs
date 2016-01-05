@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -24,7 +23,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            this.BaseFenChar = baseFenChar;
+            BaseFenChar = baseFenChar;
         }
 
         #endregion
@@ -76,11 +75,8 @@ namespace ChessPlatform.Internal
             if (!intermediateResult.HasValue)
             {
                 throw new ArgumentException(
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        "The enumeration value '{0}' does not have the attribute '{1}' applied.",
-                        enumValue,
-                        typeof(FenCharAttribute).GetQualifiedName()),
+                    $@"The enumeration value '{enumValue}' does not have the attribute '{
+                        typeof(FenCharAttribute).GetQualifiedName()}' applied.",
                     nameof(enumValue));
             }
 

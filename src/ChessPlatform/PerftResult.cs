@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Omnifactotum;
 
@@ -124,13 +123,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return string.Format(
-                CultureInfo.InvariantCulture,
-                "{{Perft({0}) = {1} [{2}, {3} nps]}}",
-                Depth,
-                NodeCount,
-                Elapsed,
-                NodesPerSecond);
+            return $@"{{Perft({Depth}) = {NodeCount} [{Elapsed}, {NodesPerSecond} nps]}}";
         }
 
         #endregion
