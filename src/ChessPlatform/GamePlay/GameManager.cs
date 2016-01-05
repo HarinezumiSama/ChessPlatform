@@ -15,13 +15,18 @@ namespace ChessPlatform.GamePlay
     {
         #region Constants and Fields
 
-        private static readonly TimeSpan ThreadStopTimeout = TimeSpan.FromSeconds(5);
+        private const string ThisTypeName = nameof(GameManager);
+
+        private static readonly string ThisTypeFullName = typeof(GameManager).GetFullName();
+
+        private static readonly TimeSpan ThreadStopTimeout = TimeSpan.FromSeconds(50);
         private static readonly TimeSpan IdleTime = TimeSpan.FromMilliseconds(10);
         private static readonly TimeSpan MoveWaitingIdleTime = TimeSpan.FromMilliseconds(10);
 
+        private static long _instanceCounter;
+
         private readonly object _syncLock = new object();
-        private readonly IChessPlayer _white;
-        private readonly IChessPlayer _black;
+        private readonly long _instanceIndex;
         private readonly Stack<GameBoard> _gameBoards;
         private readonly Thread _thread;
         private readonly SyncValueContainer<GetMoveState> _getMoveStateContainer;
@@ -64,13 +69,23 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            _white = white;
-            _black = black;
+            _instanceIndex = Interlocked.Increment(ref _instanceCounter);
+
+            White = white;
+            Black = black;
             _gameBoards = new Stack<GameBoard>(gameBoard.GetHistory());
-            _thread = new Thread(ExecuteGame) { Name = GetType().GetFullName(), IsBackground = true };
+
+            _thread = new Thread(ExecuteGame)
+            {
+                Name = $@"{ThisTypeName}: Thread #{_instanceIndex}",
+                IsBackground = true,
+                Priority = ThreadPriority.Normal
+            };
+
             _getMoveStateContainer = new SyncValueContainer<GetMoveState>(null, _syncLock);
             _gameControl = new GameControl();
             _state = GameManagerState.Paused;
+
             _whiteTotalStopwatch = new Stopwatch();
             _blackTotalStopwatch = new Stopwatch();
             _whiteLastMoveStopwatch = new Stopwatch();
@@ -105,19 +120,13 @@ namespace ChessPlatform.GamePlay
         public IChessPlayer White
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _white;
-            }
+            get;
         }
 
         public IChessPlayer Black
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _black;
-            }
+            get;
         }
 
         public TimeSpan WhiteTotalElapsed => _whiteTotalStopwatch.Elapsed;
@@ -343,7 +352,7 @@ namespace ChessPlatform.GamePlay
         {
             if (_isDisposed)
             {
-                throw new ObjectDisposedException(GetType().GetFullName());
+                throw new ObjectDisposedException($@"{ThisTypeFullName} #{_instanceIndex}");
             }
         }
 
@@ -426,7 +435,7 @@ namespace ChessPlatform.GamePlay
                     _getMoveStateContainer.Value = state;
 
                     var activeColor = originalActiveBoard.ActiveColor;
-                    var activePlayer = activeColor == PieceColor.White ? _white : _black;
+                    var activePlayer = activeColor == PieceColor.White ? White : Black;
                     var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken, _gameControl);
                     var task = activePlayer.CreateGetMoveTask(request);
 

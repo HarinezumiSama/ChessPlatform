@@ -22,7 +22,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Constants and Fields
 
         private readonly TaskScheduler _taskScheduler;
-        private readonly Dispatcher _dispatcher;
         private readonly HashSet<Position> _validMoveTargetPositionsInternal;
         private readonly Timer _timeUpdateTimer;
         private GameBoard _currentGameBoard;
@@ -52,7 +51,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public GameWindowViewModel()
         {
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
-            _dispatcher = Dispatcher.CurrentDispatcher;
 
             _validMoveTargetPositionsInternal = new HashSet<Position>();
 
@@ -624,12 +622,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnGameBoardChanged()
         {
-            _dispatcher.Invoke(RefreshBoardHistory, DispatcherPriority.Render);
+            ExecuteOnDispatcher(RefreshBoardHistory, DispatcherPriority.Send);
 
             var gameManager = _gameManager;
             if (gameManager != null)
             {
-                _dispatcher.Invoke(gameManager.Play, DispatcherPriority.ContextIdle);
+                ExecuteOnDispatcher(gameManager.Play, DispatcherPriority.ContextIdle);
             }
         }
 

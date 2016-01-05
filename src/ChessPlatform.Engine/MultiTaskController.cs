@@ -154,7 +154,8 @@ namespace ChessPlatform.Engine
                 Name = $@"{ThisTypeName}:WorkerThread #{index}/{threadCount}",
                 CurrentCulture = CultureInfo.InvariantCulture,
                 CurrentUICulture = CultureInfo.InvariantCulture,
-                IsBackground = true
+                IsBackground = true,
+                Priority = ThreadPriority.BelowNormal
             };
 
             return thread;

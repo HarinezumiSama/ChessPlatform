@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -49,6 +50,8 @@ namespace ChessPlatform.UI.Desktop
             ViewModel.SubscribeToChangeOf(() => ViewModel.CurrentGameBoard, OnCurrentGameBoardChanged);
             ViewModel.SubscribeToChangeOf(() => ViewModel.IsReversedView, OnIsReversedViewChanged);
             ViewModel.SubscribeToChangeOf(() => ViewModel.IsComputerPlayerActive, OnIsComputerPlayerActiveChanged);
+
+            Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
 
         #endregion
