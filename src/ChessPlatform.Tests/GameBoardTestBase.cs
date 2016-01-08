@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Tests
 {
@@ -15,7 +17,7 @@ namespace ChessPlatform.Tests
         #region Protected Methods
 
         protected static void AssertBaseProperties(
-            GameBoard gameBoard,
+            [NotNull] GameBoard gameBoard,
             PieceColor expectedActiveColor,
             CastlingOptions expectedCastlingOptions,
             EnPassantCaptureInfo expectedEnPassantCaptureInfo,
@@ -36,9 +38,13 @@ namespace ChessPlatform.Tests
             Assert.That(gameBoard.GetAutoDrawType(), Is.EqualTo(autoDrawType));
         }
 
-        protected static void AssertValidMoves(GameBoard gameBoard, params GameMove[] expectedValidMoves)
+        protected static void AssertValidMoves(
+            [NotNull] GameBoard gameBoard,
+            [NotNull] params GameMove[] expectedValidMoves)
         {
             Assert.That(gameBoard, Is.Not.Null);
+            Assert.That(gameBoard.ValidMoves, Is.Not.Null);
+
             Assert.That(expectedValidMoves, Is.Not.Null);
 
             var actualValidMoves = gameBoard.ValidMoves.Keys.OrderBy(move => move.ToString()).ToArray();
@@ -80,52 +86,47 @@ namespace ChessPlatform.Tests
             }
         }
 
-        protected static void AssertValidMoves(GameBoard gameBoard, IEnumerable<GameMove> expectedValidMoves)
-        {
-            Assert.That(expectedValidMoves, Is.Not.Null);
-
-            AssertValidMoves(gameBoard, expectedValidMoves.ToArray());
-        }
-
-        protected static void AssertNoValidMoves(GameBoard gameBoard)
+        protected static void AssertNoValidMoves([NotNull] GameBoard gameBoard)
         {
             Assert.That(gameBoard, Is.Not.Null);
 
+            Assert.That(gameBoard.ValidMoves, Is.Not.Null);
             Assert.That(gameBoard.ValidMoves.Count, Is.EqualTo(0));
             Assert.That(gameBoard.ValidMoves, Is.Empty);
         }
 
-        protected static void AssertDefaultInitialBoard(GameBoard gameBoard)
+        protected static void AssertPieces([NotNull] GameBoard gameBoard, [NotNull] params Piece[] pieces)
         {
             Assert.That(gameBoard, Is.Not.Null);
+            Assert.That(pieces, Is.Not.Null);
+            Assert.That(pieces.Length, Is.EqualTo(ChessConstants.SquareCount));
 
-            Assert.That(gameBoard.GetFen(), Is.EqualTo(ChessConstants.DefaultInitialFen));
+            for (var squareIndex = 0; squareIndex < pieces.Length; squareIndex++)
+            {
+                var expectedPiece = pieces[squareIndex];
+                var position = Position.FromSquareIndex(squareIndex);
 
-            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+                Assert.That(
+                    gameBoard[position],
+                    Is.EqualTo(expectedPiece),
+                    $@"Piece at '{position}' must be '{expectedPiece}'.");
 
-            AssertValidMoves(
-                gameBoard,
-                "a2-a3",
-                "a2-a4",
-                "b2-b3",
-                "b2-b4",
-                "c2-c3",
-                "c2-c4",
-                "d2-d3",
-                "d2-d4",
-                "e2-e3",
-                "e2-e4",
-                "f2-f3",
-                "f2-f4",
-                "g2-g3",
-                "g2-g4",
-                "h2-h3",
-                "h2-h4",
-                "b1-a3",
-                "b1-c3",
-                "g1-f3",
-                "g1-h3");
+                var bitboard = gameBoard.GetBitboard(expectedPiece);
+
+                Assert.That(
+                    (bitboard & position.Bitboard).IsExactlyOneBitSet(),
+                    Is.True,
+                    $@"Bitboard for '{expectedPiece}' at '{position}' is invalid.");
+
+                var positions = gameBoard.GetPositions(expectedPiece);
+
+                Assert.That(
+                    positions,
+                    Contains.Item(position),
+                    $@"Positions of '{expectedPiece}' must contain '{position}'.");
+            }
         }
+
 
         #endregion
 

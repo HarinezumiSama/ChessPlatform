@@ -36,6 +36,126 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
+        public void TestConstructionByPosition()
+        {
+            const string Fen = "r1bqkb1r/pppn1p1p/4p2p/3PP3/2P3n1/5N2/PP4P1/RNBQKB1R w KQkq - 1 12";
+
+            var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
+
+            Assert.That(gameBoard.GetFen(), Is.EqualTo(Fen));
+            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 1, 12, GameState.Default);
+
+            AssertPieces(
+                gameBoard,
+                Piece.WhiteRook,
+                Piece.WhiteKnight,
+                Piece.WhiteBishop,
+                Piece.WhiteQueen,
+                Piece.WhiteKing,
+                Piece.WhiteBishop,
+                Piece.None,
+                Piece.WhiteRook,
+                Piece.WhitePawn,
+                Piece.WhitePawn,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.WhitePawn,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.WhiteKnight,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.WhitePawn,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.BlackKnight,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.WhitePawn,
+                Piece.WhitePawn,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.None,
+                Piece.BlackPawn,
+                Piece.None,
+                Piece.None,
+                Piece.BlackPawn,
+                Piece.BlackPawn,
+                Piece.BlackPawn,
+                Piece.BlackPawn,
+                Piece.BlackKnight,
+                Piece.None,
+                Piece.BlackPawn,
+                Piece.None,
+                Piece.BlackPawn,
+                Piece.BlackRook,
+                Piece.None,
+                Piece.BlackBishop,
+                Piece.BlackQueen,
+                Piece.BlackKing,
+                Piece.BlackBishop,
+                Piece.None,
+                Piece.BlackRook);
+
+            AssertValidMoves(
+                gameBoard,
+                "a2a3",
+                "a2a4",
+                "b1a3",
+                "b1c3",
+                "b1d2",
+                "b2b3",
+                "b2b4",
+                "c1d2",
+                "c1e3",
+                "c1f4",
+                "c1g5",
+                "c1h6",
+                "c4c5",
+                "d1a4",
+                "d1b3",
+                "d1c2",
+                "d1d2",
+                "d1d3",
+                "d1d4",
+                "d1e2",
+                "d5d6",
+                "d5e6",
+                "e1d2",
+                "e1e2",
+                "f1d3",
+                "f1e2",
+                "f3d2",
+                "f3d4",
+                "f3g1",
+                "f3g5",
+                "f3h2",
+                "f3h4",
+                "g2g3",
+                "h1g1",
+                "h1h2",
+                "h1h3",
+                "h1h4",
+                "h1h5",
+                "h1h6");
+        }
+
+        [Test]
         [TestCase(PieceColor.White)]
         [TestCase(PieceColor.Black)]
         public void TestTwoKingsTooCloseToEachOther(PieceColor activeColor)
@@ -287,9 +407,11 @@ namespace ChessPlatform.Tests
                 GameState.Default);
 
             var kingMoves = new GameMove[] { "h1-g1", "h1-g2", "h1-h2" };
+
             var expectedValidMoves = kingMoves
                 .Concat(new GameMove("b7", "b8").MakeAllPromotions())
-                .Concat(new GameMove("b7", "a8").MakeAllPromotions());
+                .Concat(new GameMove("b7", "a8").MakeAllPromotions())
+                .ToArray();
 
             AssertValidMoves(gameBoard, expectedValidMoves);
         }
@@ -403,6 +525,38 @@ namespace ChessPlatform.Tests
         #endregion
 
         #region Private Methods
+
+        private static void AssertDefaultInitialBoard(GameBoard gameBoard)
+        {
+            Assert.That(gameBoard, Is.Not.Null);
+
+            Assert.That(gameBoard.GetFen(), Is.EqualTo(ChessConstants.DefaultInitialFen));
+
+            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+
+            AssertValidMoves(
+                gameBoard,
+                "a2-a3",
+                "a2-a4",
+                "b2-b3",
+                "b2-b4",
+                "c2-c3",
+                "c2-c4",
+                "d2-d3",
+                "d2-d4",
+                "e2-e3",
+                "e2-e4",
+                "f2-f3",
+                "f2-f4",
+                "g2-g3",
+                "g2-g4",
+                "h2-h3",
+                "h2-h4",
+                "b1-a3",
+                "b1-c3",
+                "g1-f3",
+                "g1-h3");
+        }
 
         private static GameBoard TestMakeMoveBasicScenario1W()
         {
