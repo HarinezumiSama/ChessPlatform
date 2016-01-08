@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
@@ -17,10 +18,21 @@ namespace ChessPlatform.Tests
             {
                 for (var rank = ChessConstants.RankRange.Lower; file <= ChessConstants.RankRange.Upper; file++)
                 {
+                    var expectedSquareIndex = rank * 8 + file;
+
                     var position = new Position(file, rank);
 
                     Assert.That(position.File, Is.EqualTo(file));
                     Assert.That(position.Rank, Is.EqualTo(rank));
+
+                    Assert.That(position.FileChar, Is.EqualTo((char)('a' + file)));
+                    Assert.That(
+                        position.RankChar.ToString(CultureInfo.InvariantCulture),
+                        Is.EqualTo((rank + 1).ToString(CultureInfo.InvariantCulture)));
+
+                    Assert.That(position.SquareIndex, Is.EqualTo(expectedSquareIndex));
+                    Assert.That(position.X88Value, Is.EqualTo(rank * 16 + file));
+                    Assert.That(position.Bitboard.InternalValue, Is.EqualTo(1UL << expectedSquareIndex));
                 }
             }
         }
@@ -74,15 +86,10 @@ namespace ChessPlatform.Tests
                             ? positionString.ToUpperInvariant()
                             : positionString.ToLowerInvariant();
 
-                        var positionFromUpper = new Position();
-                        Assert.That(
-                            () => positionFromUpper = Position.FromAlgebraic(algebraicNotation),
-                            Throws.Nothing,
-                            "Notation '{0}'.",
-                            algebraicNotation);
+                        var actualValue = Position.FromAlgebraic(algebraicNotation);
 
-                        Assert.That(positionFromUpper.File, Is.EqualTo(file), "Notation '{0}'.", algebraicNotation);
-                        Assert.That(positionFromUpper.Rank, Is.EqualTo(rank), "Notation '{0}'.", algebraicNotation);
+                        Assert.That(actualValue.File, Is.EqualTo(file));
+                        Assert.That(actualValue.Rank, Is.EqualTo(rank));
                     }
                 }
             }

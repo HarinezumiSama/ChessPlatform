@@ -8,10 +8,6 @@ namespace ChessPlatform
 {
     public struct Position : IEquatable<Position>
     {
-        #region Constants and Fields
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
