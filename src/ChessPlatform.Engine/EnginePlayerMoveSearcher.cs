@@ -648,7 +648,7 @@ namespace ChessPlatform.Engine
                 {
                     result += materialWeight;
 
-                    var position = Position.FromSquareIndex(currentSquareIndex);
+                    var position = new Position(currentSquareIndex);
                     var positionScore = positionWeightMap[position];
                     result += positionScore;
                 }
@@ -730,7 +730,7 @@ namespace ChessPlatform.Engine
             int attackerSquareIndex;
             while ((attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
             {
-                var attackerPosition = Position.FromSquareIndex(attackerSquareIndex);
+                var attackerPosition = new Position(attackerSquareIndex);
                 var score = GetKingTropismScore(board, attackerPosition, kingPosition);
                 result -= score;
             }

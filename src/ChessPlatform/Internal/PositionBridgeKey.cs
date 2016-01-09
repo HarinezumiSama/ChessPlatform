@@ -26,7 +26,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            if (first.X88Value > second.X88Value)
+            if (first.SquareIndex > second.SquareIndex)
             {
                 Factotum.Exchange(ref first, ref second);
             }
@@ -34,7 +34,7 @@ namespace ChessPlatform.Internal
             First = first;
             Second = second;
 
-            _hashCode = (First.X88Value << 8) | second.X88Value;
+            _hashCode = (First.SquareIndex << 8) | second.SquareIndex;
         }
 
         #endregion

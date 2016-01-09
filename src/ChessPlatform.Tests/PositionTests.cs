@@ -4,12 +4,36 @@ using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
 
+//// ReSharper disable PossibleInvalidOperationException - Assertions are supposed to verify that
+
 namespace ChessPlatform.Tests
 {
     [TestFixture]
     public sealed class PositionTests
     {
         #region Tests
+
+        [Test]
+        public void TestConstructionBySquareIndex()
+        {
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var position = new Position(squareIndex);
+                Assert.That(position.SquareIndex, Is.EqualTo(squareIndex));
+                Assert.That(position.Rank, Is.EqualTo(squareIndex / 8));
+                Assert.That(position.File, Is.EqualTo(squareIndex % 8));
+            }
+        }
+
+        [Test]
+        [TestCase(-1)]
+        [TestCase(ChessConstants.SquareCount)]
+        [TestCase(int.MinValue)]
+        [TestCase(int.MaxValue)]
+        public void TestConstructionBySquareIndexNegativeCases(int squareIndex)
+        {
+            Assert.That(() => new Position(squareIndex), Throws.TypeOf<ArgumentOutOfRangeException>());
+        }
 
         [Test]
         public void TestConstructionByFileAndRank()
@@ -31,7 +55,6 @@ namespace ChessPlatform.Tests
                         Is.EqualTo((rank + 1).ToString(CultureInfo.InvariantCulture)));
 
                     Assert.That(position.SquareIndex, Is.EqualTo(expectedSquareIndex));
-                    Assert.That(position.X88Value, Is.EqualTo(rank * 16 + file));
                     Assert.That(position.Bitboard.InternalValue, Is.EqualTo(1UL << expectedSquareIndex));
                 }
             }
@@ -155,25 +178,32 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestFromSquareIndex()
+        [TestCase(0, 0, 0, 0)]
+        [TestCase(0, -1, 0, null)]
+        [TestCase(0, 0, -1, null)]
+        [TestCase(0, 8, 0, null)]
+        [TestCase(0, 0, 8, null)]
+        [TestCase(0, 3, 4, 35)]
+        [TestCase(35, -3, -4, 0)]
+        public void TestAdditionWithSquareShift(
+            int squareIndex,
+            int fileOffset,
+            int rankOffset,
+            int? expectedResultSquareIndex)
         {
-            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
-            {
-                var position = Position.FromSquareIndex(squareIndex);
-                Assert.That(position.SquareIndex, Is.EqualTo(squareIndex));
-                Assert.That(position.Rank, Is.EqualTo(squareIndex / 8));
-                Assert.That(position.File, Is.EqualTo(squareIndex % 8));
-            }
-        }
+            var position = new Position(squareIndex);
+            var shift = new SquareShift(fileOffset, rankOffset);
+            var actualResult = position + shift;
 
-        [Test]
-        [TestCase(-1)]
-        [TestCase(ChessConstants.SquareCount)]
-        [TestCase(int.MinValue)]
-        [TestCase(int.MaxValue)]
-        public void TestFromSquareIndexNegativeCases(int squareIndex)
-        {
-            Assert.That(() => Position.FromSquareIndex(squareIndex), Throws.TypeOf<ArgumentOutOfRangeException>());
+            if (expectedResultSquareIndex.HasValue)
+            {
+                Assert.That(actualResult.HasValue, Is.True);
+                Assert.That(actualResult.Value.SquareIndex, Is.EqualTo(expectedResultSquareIndex.Value));
+            }
+            else
+            {
+                Assert.That(actualResult.HasValue, Is.False);
+            }
         }
 
         #endregion

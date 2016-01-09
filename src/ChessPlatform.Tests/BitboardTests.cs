@@ -90,7 +90,7 @@ namespace ChessPlatform.Tests
         public void TestGetPositionsAndGetCount(long value, params int[] expectedIndexesResult)
         {
             Assert.That(expectedIndexesResult, Is.Not.Null);
-            var expectedResult = expectedIndexesResult.Select(Position.FromSquareIndex).ToArray();
+            var expectedResult = expectedIndexesResult.Select(squareIndex => new Position(squareIndex)).ToArray();
 
             var bitboard = new Bitboard(value);
             Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));

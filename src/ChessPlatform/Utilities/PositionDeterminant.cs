@@ -31,7 +31,7 @@ namespace ChessPlatform.Utilities
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override Position GetKey(int index)
         {
-            return Position.FromSquareIndex(index);
+            return new Position(index);
         }
 
         #endregion

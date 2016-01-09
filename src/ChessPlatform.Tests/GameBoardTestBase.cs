@@ -104,7 +104,7 @@ namespace ChessPlatform.Tests
             for (var squareIndex = 0; squareIndex < pieces.Length; squareIndex++)
             {
                 var expectedPiece = pieces[squareIndex];
-                var position = Position.FromSquareIndex(squareIndex);
+                var position = new Position(squareIndex);
 
                 Assert.That(
                     gameBoard[position],

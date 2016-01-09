@@ -836,7 +836,7 @@ namespace ChessPlatform
             while (currentCapturingBitboard.IsAny)
             {
                 var squareIndex = Bitboard.PopFirstBitSetIndex(ref currentCapturingBitboard);
-                var capturingSourcePosition = Position.FromSquareIndex(squareIndex);
+                var capturingSourcePosition = new Position(squareIndex);
 
                 if (!IsValidMoveByPinning(pinLimitations, capturingSourcePosition, checkAttackPosition))
                 {

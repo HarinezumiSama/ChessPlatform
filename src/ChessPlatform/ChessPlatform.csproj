@@ -114,6 +114,7 @@
     <Compile Include="Serializers\Internal\Pgn\TagPairAstNode.cs" />
     <Compile Include="Serializers\PgnGameSerializer.cs" />
     <Compile Include="ShiftDirection.cs" />
+    <Compile Include="SquareShift.cs" />
     <Compile Include="Utilities\PositionDeterminant.cs" />
     <Compile Include="Utilities\PositionDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />
@@ -150,7 +151,6 @@
     <Compile Include="Position.cs" />
     <Compile Include="Internal\PositionBridgeKey.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internal\RayInfo.cs" />
     <Compile Include="Internal\MakeMoveData.cs" />
     <Compile Include="Internal\ResultStrings.cs" />
   </ItemGroup>

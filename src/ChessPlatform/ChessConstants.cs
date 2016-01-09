@@ -17,6 +17,7 @@ namespace ChessPlatform
         public const int RankCount = 8;
 
         public const int SquareCount = FileCount * RankCount;
+        public const int MaxSquareIndex = SquareCount - 1;
 
         public const int WhitePawnPromotionRank = RankCount - 1;
         public const int BlackPawnPromotionRank = 0;
@@ -169,8 +170,6 @@ namespace ChessPlatform
                         "c8",
                         "d8")
                 });
-
-        internal const int X88Length = FileCount * RankCount * 2;
 
         internal const int MaxPieceCountPerColor = 16;
         internal const int MaxPawnCountPerColor = 8;

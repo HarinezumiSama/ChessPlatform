@@ -81,93 +81,107 @@ namespace ChessPlatform
         internal const int MaxPawnAttackOrMoveDistance = 1;
         internal const int MaxKingMoveOrAttackDistance = 1;
 
-        internal static readonly ReadOnlyCollection<RayInfo> StraightRays =
-            new ReadOnlyCollection<RayInfo>(
+        internal static readonly ReadOnlyCollection<SquareShift> StraightRays =
+            new ReadOnlyCollection<SquareShift>(
                 new[]
                 {
-                    new RayInfo(0xFF, true),
-                    new RayInfo(0x01, true),
-                    new RayInfo(0xF0, true),
-                    new RayInfo(0x10, true)
+                    new SquareShift(0, 1),
+                    new SquareShift(1, 0),
+                    new SquareShift(0, -1),
+                    new SquareShift(-1, 0)
                 });
 
-        internal static readonly ReadOnlyCollection<RayInfo> DiagonalRays =
-            new ReadOnlyCollection<RayInfo>(
+        internal static readonly ReadOnlyCollection<SquareShift> DiagonalRays =
+            new ReadOnlyCollection<SquareShift>(
                 new[]
                 {
-                    new RayInfo(0x0F, false),
-                    new RayInfo(0x11, false),
-                    new RayInfo(0xEF, false),
-                    new RayInfo(0xF1, false)
+                    new SquareShift(1, 1),
+                    new SquareShift(1, -1),
+                    new SquareShift(-1, 1),
+                    new SquareShift(-1, -1)
                 });
 
-        internal static readonly ReadOnlyCollection<RayInfo> AllRays =
-            new ReadOnlyCollection<RayInfo>(StraightRays.Concat(DiagonalRays).ToArray());
+        internal static readonly ReadOnlyCollection<SquareShift> AllRays =
+            new ReadOnlyCollection<SquareShift>(StraightRays.Concat(DiagonalRays).ToArray());
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnMoveRayMap =
-            new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
-                new Dictionary<PieceColor, RayInfo>
-                {
-                    { PieceColor.White, new RayInfo(0x10, true) },
-                    { PieceColor.Black, new RayInfo(0xF0, true) }
-                });
+        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, SquareShift> PawnMoveRayMap =
+        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, SquareShift>(
+        ////        new Dictionary<PieceColor, SquareShift>
+        ////        {
+        ////            { PieceColor.White, new RayInfo(0x10, true) },
+        ////            { PieceColor.Black, new RayInfo(0xF0, true) }
+        ////        });
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
-            new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
-                new Dictionary<PieceColor, RayInfo>
-                {
-                    { PieceColor.White, new RayInfo(0x20, true) },
-                    { PieceColor.Black, new RayInfo(0xE0, true) }
-                });
+        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
+        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
+        ////        new Dictionary<PieceColor, RayInfo>
+        ////        {
+        ////            { PieceColor.White, new RayInfo(0x20, true) },
+        ////            { PieceColor.Black, new RayInfo(0xE0, true) }
+        ////        });
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
-            new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-                new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-                {
+        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
+        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+        ////        new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
+        ////        {
+        ////            {
+        ////                PieceColor.White,
+        ////                new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+        ////            },
+        ////            {
+        ////                PieceColor.Black,
+        ////                new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+        ////            }
+        ////        });
+
+        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>
+        ////    PawnReverseAttackRayMap =
+        ////        new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
+        ////            new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
+        ////            {
+        ////                {
+        ////                    PieceColor.White,
+        ////                    new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
+        ////                },
+        ////                {
+        ////                    PieceColor.Black,
+        ////                    new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
+        ////                }
+        ////            });
+
+        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
+        ////    PawnAttackRayMap.ToDictionary(
+        ////        pair => pair.Key,
+        ////        pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
+
+        ////internal static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
+
+        ////internal static readonly ReadOnlySet<byte> KingAttackOrMoveOffsets =
+        ////    KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
+
+        internal static readonly ReadOnlySet<SquareShift> KnightAttackOrMoveOffsets =
+            new ReadOnlySet<SquareShift>(
+                new HashSet<SquareShift>(
+                    new[]
                     {
-                        PieceColor.White,
-                        new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-                    },
-                    {
-                        PieceColor.Black,
-                        new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-                    }
-                });
-
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>
-            PawnReverseAttackRayMap =
-                new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-                    new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-                    {
-                        {
-                            PieceColor.White,
-                            new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-                        },
-                        {
-                            PieceColor.Black,
-                            new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-                        }
-                    });
-
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
-            PawnAttackRayMap.ToDictionary(
-                pair => pair.Key,
-                pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
-
-        internal static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
-
-        internal static readonly ReadOnlySet<byte> KingAttackOrMoveOffsets =
-            KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
-
-        internal static readonly ReadOnlySet<byte> KnightAttackOrMoveOffsets =
-            new byte[] { 0x21, 0x1F, 0xE1, 0xDF, 0x12, 0x0E, 0xEE, 0xF2 }.ToHashSet().AsReadOnly();
+                        new SquareShift(+2, +1),
+                        new SquareShift(+1, +2),
+                        new SquareShift(+2, -1),
+                        new SquareShift(+1, -2),
+                        new SquareShift(-2, +1),
+                        new SquareShift(-1, +2),
+                        new SquareShift(-2, -1),
+                        new SquareShift(-1, -2)
+                    }));
 
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
 
         internal static readonly ReadOnlySet<Position> AllPawnPositions =
             Enumerable
-                .Range(1, ChessConstants.RankCount - 2)
+                .Range(
+                    1,
+                    ChessConstants.RankCount - 2)
                 .SelectMany(rank => Position.GenerateRank(checked((byte)rank)))
                 .ToHashSet()
                 .AsReadOnly();
@@ -176,13 +190,17 @@ namespace ChessPlatform
             GeneratePositionBridgeMap();
 
         internal static readonly Bitboard InvalidPawnPositionsBitboard =
-            new Bitboard(Position.GenerateRanks(ChessConstants.RankRange.Lower, ChessConstants.RankRange.Upper));
+            new Bitboard(
+                Position.GenerateRanks(
+                    ChessConstants.RankRange.Lower,
+                    ChessConstants.RankRange.Upper));
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
         private const string MoveSeparator = ", ";
 
-        private static readonly Omnifactotum.ReadOnlyDictionary<Position, ReadOnlyCollection<Position>>
+        private static readonly Omnifactotum.ReadOnlyDictionary<Position,
+            ReadOnlyCollection<Position>>
             KnightMovePositionMap =
                 AllPositions
                     .ToDictionary(
@@ -307,35 +325,18 @@ namespace ChessPlatform
 
         #region Internal Methods
 
-        internal static Position[] GetOnboardPositions(Position position, ICollection<byte> x88Offsets)
+        internal static Position[] GetOnboardPositions(Position position, IEnumerable<SquareShift> shifts)
         {
             #region Argument Check
 
-            if (x88Offsets == null)
+            if (shifts == null)
             {
-                throw new ArgumentNullException(nameof(x88Offsets));
+                throw new ArgumentNullException(nameof(shifts));
             }
 
             #endregion
 
-            var result = new List<Position>(x88Offsets.Count);
-
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var x88Offset in x88Offsets)
-            {
-                if (x88Offset == 0)
-                {
-                    continue;
-                }
-
-                var x88Value = (byte)(position.X88Value + x88Offset);
-                if (Position.IsValidX88Value(x88Value))
-                {
-                    result.Add(new Position(x88Value));
-                }
-            }
-
-            return result.ToArray();
+            return shifts.Select(shift => position + shift).Where(p => p.HasValue).Select(p => p.Value).ToArray();
         }
 
         internal static bool TryParseInt(string value, out int result)
@@ -493,19 +494,19 @@ namespace ChessPlatform
 
         private static Position[] GetMovePositionArraysByRays(
             Position sourcePosition,
-            IEnumerable<RayInfo> rays,
+            IEnumerable<SquareShift> rays,
             int maxDistance)
         {
             var resultList = new List<Position>(AllPositions.Count);
 
             foreach (var ray in rays)
             {
-                for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
-                    Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
-                    currentX88Value += ray.Offset, distance++)
+                var distance = 1;
+                for (var position = sourcePosition + ray;
+                    position.HasValue && distance <= maxDistance;
+                    position = position.Value + ray, distance++)
                 {
-                    var currentPosition = new Position(currentX88Value);
-                    resultList.Add(currentPosition);
+                    resultList.Add(position.Value);
                 }
             }
 

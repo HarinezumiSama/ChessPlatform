@@ -308,7 +308,7 @@ namespace ChessPlatform
             int index;
             while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
             {
-                resultList.Add(Position.FromSquareIndex(index));
+                resultList.Add(new Position(index));
                 currentValue &= ~(1UL << index);
             }
 
@@ -319,7 +319,7 @@ namespace ChessPlatform
         public Position GetFirstPosition()
         {
             var squareIndex = FindFirstBitSetIndex();
-            return Position.FromSquareIndex(squareIndex);
+            return new Position(squareIndex);
         }
 
         public int GetBitSetCount()

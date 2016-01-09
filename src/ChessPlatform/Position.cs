@@ -6,12 +6,25 @@ using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
+    //// TODO [vmcl] Rename Position to Square or GameBoardSquare
+
     public struct Position : IEquatable<Position>
     {
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> class
+        ///     Initializes a new instance of the <see cref="Position"/> structure
+        ///     using the specified square index.
+        /// </summary>
+        [DebuggerNonUserCode]
+        public Position(int squareIndex)
+            : this(true, squareIndex)
+        {
+            // Nothing to do
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Position"/> structure
         ///     using the specified file and rank.
         /// </summary>
         [DebuggerNonUserCode]
@@ -21,19 +34,27 @@ namespace ChessPlatform
             // Nothing to do
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> class
-        ///     using the specified 0x88 board representation value.
-        /// </summary>
         [DebuggerNonUserCode]
-        internal Position(int x88Value)
+        internal Position(bool checkArguments, int squareIndex)
         {
-            X88Value = x88Value;
+            #region Argument Check
+
+            if (checkArguments)
+            {
+                if ((squareIndex & ~0x3F) != 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(squareIndex),
+                        squareIndex,
+                        $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
+                }
+            }
+
+            #endregion
+
+            SquareIndex = squareIndex;
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> class.
-        /// </summary>
         [DebuggerNonUserCode]
         internal Position(bool checkArguments, int file, int rank)
         {
@@ -60,7 +81,7 @@ namespace ChessPlatform
 
             #endregion
 
-            X88Value = (byte)((rank << 4) | file);
+            SquareIndex = (rank << 3) | file;
         }
 
         #endregion
@@ -73,7 +94,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return X88Value & 0x07;
+                return SquareIndex & 0x07;
             }
         }
 
@@ -83,7 +104,7 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return X88Value >> 4;
+                return (SquareIndex >> 3) & 0x07;
             }
         }
 
@@ -91,10 +112,7 @@ namespace ChessPlatform
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (Rank << 3) | File;
-            }
+            get;
         }
 
         public Bitboard Bitboard
@@ -129,17 +147,6 @@ namespace ChessPlatform
 
         #endregion
 
-        #region Internal Properties
-
-        internal int X88Value
-        {
-            [DebuggerNonUserCode]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get;
-        }
-
-        #endregion
-
         #region Operators
 
         [DebuggerNonUserCode]
@@ -149,6 +156,7 @@ namespace ChessPlatform
             return FromAlgebraic(algebraicNotation);
         }
 
+        [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Position left, Position right)
         {
@@ -161,6 +169,16 @@ namespace ChessPlatform
             return !(left == right);
         }
 
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Position? operator +(Position left, SquareShift right)
+        {
+            var file = left.File + right.FileOffset;
+            var rank = left.Rank + right.RankOffset;
+
+            return (file & ~0x07) == 0 && (rank & ~0x07) == 0 ? new Position(false, file, rank) : default(Position?);
+        }
+
         #endregion
 
         #region Public Methods
@@ -168,27 +186,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Position left, Position right)
         {
-            return left.X88Value == right.X88Value;
-        }
-
-        [DebuggerNonUserCode]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Position FromSquareIndex(int squareIndex)
-        {
-            #region Argument Check
-
-            if ((squareIndex & ~0x3F) != 0)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(squareIndex),
-                    squareIndex,
-                    $@"The value is out of the valid range ({0} .. {ChessConstants.SquareCount - 1}).");
-            }
-
-            #endregion
-
-            var x88Value = (byte)(((squareIndex & 0x38) << 1) | (squareIndex & 7));
-            return new Position(x88Value);
+            return left.SquareIndex == right.SquareIndex;
         }
 
         [DebuggerNonUserCode]
@@ -307,7 +305,7 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return X88Value;
+            return SquareIndex;
         }
 
         #endregion

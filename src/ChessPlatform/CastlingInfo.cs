@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
@@ -15,9 +16,9 @@ namespace ChessPlatform
         /// </summary>
         internal CastlingInfo(
             CastlingType castlingType,
-            GameMove kingMove,
-            GameMove rookMove,
-            params Position[] emptySquares)
+            [NotNull] GameMove kingMove,
+            [NotNull] GameMove rookMove,
+            [NotNull] params Position[] emptySquares)
         {
             #region Argument Check
 
@@ -38,9 +39,12 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(emptySquares));
             }
 
-            if (Math.Abs(kingMove.From.X88Value - kingMove.To.X88Value) != 2)
+            if (kingMove.From.Rank != kingMove.To.Rank
+                || Math.Abs(kingMove.From.SquareIndex - kingMove.To.SquareIndex) != 2)
             {
-                throw new ArgumentException("Invalid castling move.", nameof(kingMove));
+                throw new ArgumentException(
+                    $@"Invalid castling move '{kingMove.ToUciNotation()}'.",
+                    nameof(kingMove));
             }
 
             #endregion
@@ -51,7 +55,7 @@ namespace ChessPlatform
             KingMove = kingMove;
             RookMove = rookMove;
             EmptySquares = emptySquares.AsReadOnly();
-            PassedPosition = new Position((byte)((kingMove.From.X88Value + kingMove.To.X88Value) / 2));
+            PassedPosition = new Position((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
             Color = Option.IsAnySet(CastlingOptions.WhiteMask) ? PieceColor.White : PieceColor.Black;
         }
 

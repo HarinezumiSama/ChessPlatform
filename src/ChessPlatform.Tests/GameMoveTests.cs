@@ -23,7 +23,7 @@ namespace ChessPlatform.Tests
         {
             for (var fromIndex = 0; fromIndex < ChessConstants.SquareCount; fromIndex++)
             {
-                var from = Position.FromSquareIndex(fromIndex);
+                var from = new Position(fromIndex);
 
                 for (var toIndex = 0; toIndex < ChessConstants.SquareCount; toIndex++)
                 {
@@ -32,7 +32,7 @@ namespace ChessPlatform.Tests
                         continue;
                     }
 
-                    var to = Position.FromSquareIndex(toIndex);
+                    var to = new Position(toIndex);
 
                     var outerMove = new GameMove(from, to);
                     Assert.That(outerMove.From, Is.EqualTo(from));

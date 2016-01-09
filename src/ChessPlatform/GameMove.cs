@@ -48,7 +48,7 @@ namespace ChessPlatform
             To = to;
             PromotionResult = promotionResult;
 
-            _hashCode = ((byte)PromotionResult << 16) | (To.X88Value << 8) | From.X88Value;
+            _hashCode = ((byte)PromotionResult << 16) | (To.SquareIndex << 8) | From.SquareIndex;
         }
 
         /// <summary>

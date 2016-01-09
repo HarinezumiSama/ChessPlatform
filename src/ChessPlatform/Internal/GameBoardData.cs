@@ -57,10 +57,8 @@ namespace ChessPlatform.Internal
 
         internal GameBoardData()
         {
-            Trace.Assert(ChessConstants.X88Length == 128, "Invalid 0x88 length.");
-
             _undoMoveDatas = new Stack<MakeMoveData>();
-            _pieces = new Piece[ChessConstants.X88Length];
+            _pieces = new Piece[ChessConstants.SquareCount];
 
             _bitboards = new Bitboard[PieceArrayLength];
             _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboard.Everything;
@@ -96,7 +94,7 @@ namespace ChessPlatform.Internal
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _pieces[position.X88Value];
+                return _pieces[position.SquareIndex];
             }
         }
 
@@ -526,7 +524,7 @@ namespace ChessPlatform.Internal
             }
 
             var kingSquareIndex = king.FindFirstBitSetIndex();
-            var sourcePosition = Position.FromSquareIndex(kingSquareIndex);
+            var sourcePosition = new Position(kingSquareIndex);
             var directTargets = KingAttacksOrMoves[kingSquareIndex] & target;
 
             var emptySquares = GetBitboard(Piece.None);
@@ -602,7 +600,7 @@ namespace ChessPlatform.Internal
                     continue;
                 }
 
-                var sourcePosition = Position.FromSquareIndex(sourceSquareIndex);
+                var sourcePosition = new Position(sourceSquareIndex);
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
                 {
                     var captures = movesOnTarget & enemies;
@@ -674,11 +672,11 @@ namespace ChessPlatform.Internal
 
         internal Piece SetPiece(Position position, Piece piece)
         {
-            var x88Value = position.X88Value;
+            var squareIndex = position.SquareIndex;
             var bitboardBit = position.Bitboard;
 
-            var oldPiece = _pieces[x88Value];
-            _pieces[x88Value] = piece;
+            var oldPiece = _pieces[squareIndex];
+            _pieces[squareIndex] = piece;
 
             _bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
 
@@ -1030,8 +1028,8 @@ namespace ChessPlatform.Internal
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
                 var move = new GameMove(
-                    Position.FromSquareIndex(targetSquareIndex - moveOffset),
-                    Position.FromSquareIndex(targetSquareIndex));
+                    new Position(targetSquareIndex - moveOffset),
+                    new Position(targetSquareIndex));
 
                 var moveInfo = new GameMoveInfo(moveFlags);
                 if (isPawnPromotion)
@@ -1098,7 +1096,7 @@ namespace ChessPlatform.Internal
             {
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
-                var move = new GameMove(sourcePosition, Position.FromSquareIndex(targetSquareIndex));
+                var move = new GameMove(sourcePosition, new Position(targetSquareIndex));
                 resultMoves.Add(new GameMoveData(move, moveInfo));
             }
         }
@@ -1161,7 +1159,7 @@ namespace ChessPlatform.Internal
 
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
-                var position = Position.FromSquareIndex(squareIndex);
+                var position = new Position(squareIndex);
                 var attackBitboard = new Bitboard(
                     Position.GenerateRank(position.Rank).Concat(Position.GenerateFile(position.File)));
                 result[squareIndex] = attackBitboard;
@@ -1208,7 +1206,7 @@ namespace ChessPlatform.Internal
 
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
-                var position = Position.FromSquareIndex(squareIndex);
+                var position = new Position(squareIndex);
                 var knightMovePositions = ChessHelper.GetKnightMovePositions(position);
                 var bitboard = new Bitboard(knightMovePositions);
                 result[squareIndex] = bitboard;
@@ -1304,14 +1302,11 @@ namespace ChessPlatform.Internal
             // ReSharper disable once LoopCanBeConvertedToQuery
             foreach (var position in ChessHelper.AllPositions)
             {
-                var x88Value = position.X88Value;
-                var bitboardBit = position.Bitboard;
-
-                var piece = _pieces[x88Value];
+                var piece = _pieces[position.SquareIndex];
 
                 foreach (var currentPiece in ChessConstants.Pieces)
                 {
-                    var isSet = (GetBitboard(currentPiece) & bitboardBit).IsAny;
+                    var isSet = (GetBitboard(currentPiece) & position.Bitboard).IsAny;
                     if ((piece == currentPiece) != isSet)
                     {
                         throw new ChessPlatformException(
@@ -1398,18 +1393,19 @@ namespace ChessPlatform.Internal
         private void GetPotentialMovePositionsByRays(
             Position sourcePosition,
             PieceColor sourceColor,
-            IEnumerable<RayInfo> rays,
+            IEnumerable<SquareShift> rays,
             int maxDistance,
             bool allowCapturing,
             ICollection<Position> resultCollection)
         {
             foreach (var ray in rays)
             {
-                for (byte currentX88Value = (byte)(sourcePosition.X88Value + ray.Offset), distance = 1;
-                    Position.IsValidX88Value(currentX88Value) && distance <= maxDistance;
-                    currentX88Value += ray.Offset, distance++)
+                var distance = 1;
+                for (var position = sourcePosition + ray;
+                    position.HasValue && distance <= maxDistance;
+                    position = position.Value + ray, distance++)
                 {
-                    var currentPosition = new Position(currentX88Value);
+                    var currentPosition = position.Value;
 
                     var pieceInfo = GetPieceInfo(currentPosition);
                     var currentColor = pieceInfo.Color;
@@ -1557,7 +1553,7 @@ namespace ChessPlatform.Internal
             {
                 var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref pieces);
                 var sourceBitboard = Bitboard.FromSquareIndex(sourceSquareIndex);
-                var sourcePosition = Position.FromSquareIndex(sourceSquareIndex);
+                var sourcePosition = new Position(sourceSquareIndex);
 
                 foreach (var direction in directions)
                 {
