@@ -61,8 +61,8 @@ namespace ChessPlatform.Engine
                 return _bestMoveEncoded == 0
                     ? null
                     : new GameMove(
-                        new Position((_bestMoveEncoded >> 9) & ChessConstants.MaxSquareIndex),
-                        new Position((_bestMoveEncoded >> 3) & ChessConstants.MaxSquareIndex),
+                        new Square((_bestMoveEncoded >> 9) & ChessConstants.MaxSquareIndex),
+                        new Square((_bestMoveEncoded >> 3) & ChessConstants.MaxSquareIndex),
                         (PieceType)(_bestMoveEncoded & 0x7));
             }
         }

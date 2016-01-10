@@ -174,18 +174,18 @@ namespace ChessPlatform.Engine
 
         public string GetAllHistoryInfoString()
         {
-            var entries = new List<Tuple<Piece, Position, int>>(_historyTable.Length);
+            var entries = new List<Tuple<Piece, Square, int>>(_historyTable.Length);
             lock (_syncLock)
             {
                 foreach (var piece in ChessConstants.PiecesExceptNone)
                 {
-                    foreach (var position in ChessHelper.AllPositions)
+                    foreach (var square in ChessHelper.AllSquares)
                     {
-                        var historyTableOffset = GetHistoryTableOffset(piece, position);
+                        var historyTableOffset = GetHistoryTableOffset(piece, square);
                         var value = _historyTable[historyTableOffset];
                         if (value > 0)
                         {
-                            entries.Add(Tuple.Create(piece, position, value));
+                            entries.Add(Tuple.Create(piece, square, value));
                         }
                     }
                 }
@@ -211,9 +211,9 @@ namespace ChessPlatform.Engine
         #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetHistoryTableOffset(Piece piece, Position position)
+        private static int GetHistoryTableOffset(Piece piece, Square square)
         {
-            return ((int)piece) * ChessConstants.SquareCount + position.SquareIndex;
+            return ((int)piece) * ChessConstants.SquareCount + square.SquareIndex;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

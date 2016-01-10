@@ -18,7 +18,7 @@ namespace ChessPlatform
             CastlingType castlingType,
             [NotNull] GameMove kingMove,
             [NotNull] GameMove rookMove,
-            [NotNull] params Position[] emptySquares)
+            [NotNull] params Square[] emptySquares)
         {
             #region Argument Check
 
@@ -55,7 +55,7 @@ namespace ChessPlatform
             KingMove = kingMove;
             RookMove = rookMove;
             EmptySquares = emptySquares.AsReadOnly();
-            PassedPosition = new Position((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
+            PassedSquare = new Square((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
             Color = Option.IsAnySet(CastlingOptions.WhiteMask) ? PieceColor.White : PieceColor.Black;
         }
 
@@ -93,13 +93,13 @@ namespace ChessPlatform
             get;
         }
 
-        public ReadOnlyCollection<Position> EmptySquares
+        public ReadOnlyCollection<Square> EmptySquares
         {
             [DebuggerStepThrough]
             get;
         }
 
-        public Position PassedPosition
+        public Square PassedSquare
         {
             [DebuggerStepThrough]
             get;

@@ -8,32 +8,32 @@ namespace ChessPlatform.Internal
     {
         #region Constructors
 
-        internal DoublePushData(Position destinationPosition, Bitboard emptyPositions)
+        internal DoublePushData(Square destinationSquare, Bitboard emptySquares)
         {
             #region Argument Check
 
-            if ((destinationPosition.Bitboard & emptyPositions).IsNone)
+            if ((destinationSquare.Bitboard & emptySquares).IsNone)
             {
-                throw new ArgumentException("Empty positions should contain destination position.");
+                throw new ArgumentException("Empty squares should contain destination square.");
             }
 
             #endregion
 
-            DestinationPosition = destinationPosition;
-            EmptyPositions = emptyPositions;
+            DestinationSquare = destinationSquare;
+            EmptySquares = emptySquares;
         }
 
         #endregion
 
         #region Public Properties
 
-        public Position DestinationPosition
+        public Square DestinationSquare
         {
             [DebuggerStepThrough]
             get;
         }
 
-        public Bitboard EmptyPositions
+        public Bitboard EmptySquares
         {
             [DebuggerStepThrough]
             get;

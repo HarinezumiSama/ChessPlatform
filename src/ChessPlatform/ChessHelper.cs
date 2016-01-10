@@ -68,11 +68,11 @@ namespace ChessPlatform
                     { PieceColor.Black, ChessConstants.BlackPawnPromotionRank }
                 });
 
-        public static readonly ReadOnlySet<Position> AllPositions =
+        public static readonly ReadOnlyCollection<Square> AllSquares =
             Enumerable
-                .Range(0, ChessConstants.FileCount)
-                .SelectMany(rank => Position.GenerateRank((byte)rank))
-                .ToHashSet()
+                .Range(0, ChessConstants.SquareCount)
+                .Select(squareIndex => new Square(squareIndex))
+                .ToArray()
                 .AsReadOnly();
 
         public static readonly PieceType DefaultPromotion = PieceType.Queen;
@@ -177,35 +177,20 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
 
-        internal static readonly ReadOnlySet<Position> AllPawnPositions =
-            Enumerable
-                .Range(
-                    1,
-                    ChessConstants.RankCount - 2)
-                .SelectMany(rank => Position.GenerateRank(checked((byte)rank)))
-                .ToHashSet()
-                .AsReadOnly();
+        internal static readonly Omnifactotum.ReadOnlyDictionary<SquareBridgeKey, Bitboard> SquareBridgeMap =
+            GenerateSquareBridgeMap();
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> PositionBridgeMap =
-            GeneratePositionBridgeMap();
-
-        internal static readonly Bitboard InvalidPawnPositionsBitboard =
-            new Bitboard(
-                Position.GenerateRanks(
-                    ChessConstants.RankRange.Lower,
-                    ChessConstants.RankRange.Upper));
+        internal static readonly Bitboard InvalidPawnSquaresBitboard =
+            new Bitboard(Square.GenerateRanks(ChessConstants.RankRange.Lower, ChessConstants.RankRange.Upper));
 
         private const string FenRankRegexSnippet = @"[1-8KkQqRrBbNnPp]{1,8}";
 
         private const string MoveSeparator = ", ";
 
-        private static readonly Omnifactotum.ReadOnlyDictionary<Position,
-            ReadOnlyCollection<Position>>
-            KnightMovePositionMap =
-                AllPositions
-                    .ToDictionary(
-                        Factotum.Identity,
-                        position => GetKnightMovePositionsNonCached(position).AsReadOnly())
+        private static readonly Omnifactotum.ReadOnlyDictionary<Square, Square[]>
+            KnightMoveSquareMap =
+                AllSquares
+                    .ToDictionary(Factotum.Identity, GetKnightMoveSquaresNonCached)
                     .AsReadOnly();
 
         private static readonly Regex ValidFenRegex = new Regex(
@@ -217,11 +202,6 @@ namespace ChessPlatform
         #endregion
 
         #region Public Methods
-
-        public static ReadOnlyCollection<Position> GetKnightMovePositions(Position position)
-        {
-            return KnightMovePositionMap[position];
-        }
 
         public static bool IsZero(this double value, double tolerance = DefaultZeroTolerance)
         {
@@ -321,11 +301,7 @@ namespace ChessPlatform
             return moves.Select(ToUciNotation).Join(MoveSeparator);
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        internal static Position[] GetOnboardPositions(Position position, IEnumerable<SquareShift> shifts)
+        public static Square[] GetOnboardSquares(Square square, IEnumerable<SquareShift> shifts)
         {
             #region Argument Check
 
@@ -336,7 +312,16 @@ namespace ChessPlatform
 
             #endregion
 
-            return shifts.Select(shift => position + shift).Where(p => p.HasValue).Select(p => p.Value).ToArray();
+            return shifts.Select(shift => square + shift).Where(p => p.HasValue).Select(p => p.Value).ToArray();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        internal static Square[] GetKnightMoveSquares(Square square)
+        {
+            return KnightMoveSquareMap[square];
         }
 
         internal static bool TryParseInt(string value, out int result)
@@ -427,7 +412,7 @@ namespace ChessPlatform
                 {
                     resultBuilder.Append(pieceType.GetFenChar());
 
-                    var competitorPositions = board
+                    var competitorSquares = board
                         .ValidMoves
                         .Keys
                         .Where(
@@ -435,10 +420,10 @@ namespace ChessPlatform
                         .Select(obj => obj.From)
                         .ToArray();
 
-                    if (competitorPositions.Length != 0)
+                    if (competitorSquares.Length != 0)
                     {
-                        var onSameFile = competitorPositions.Any(position => position.File == move.From.File);
-                        var onSameRank = competitorPositions.Any(position => position.Rank == move.From.Rank);
+                        var onSameFile = competitorSquares.Any(square => square.File == move.From.File);
+                        var onSameRank = competitorSquares.Any(square => square.Rank == move.From.Rank);
 
                         if (onSameFile)
                         {
@@ -487,56 +472,56 @@ namespace ChessPlatform
 
         #region Private Methods
 
-        private static Position[] GetKnightMovePositionsNonCached(Position position)
+        private static Square[] GetKnightMoveSquaresNonCached(Square square)
         {
-            return GetOnboardPositions(position, KnightAttackOrMoveOffsets);
+            return GetOnboardSquares(square, KnightAttackOrMoveOffsets);
         }
 
-        private static Position[] GetMovePositionArraysByRays(
-            Position sourcePosition,
+        private static Square[] GetMoveSquareArraysByRays(
+            Square sourceSquare,
             IEnumerable<SquareShift> rays,
             int maxDistance)
         {
-            var resultList = new List<Position>(AllPositions.Count);
+            var resultList = new List<Square>(AllSquares.Count);
 
             foreach (var ray in rays)
             {
                 var distance = 1;
-                for (var position = sourcePosition + ray;
-                    position.HasValue && distance <= maxDistance;
-                    position = position.Value + ray, distance++)
+                for (var square = sourceSquare + ray;
+                    square.HasValue && distance <= maxDistance;
+                    square = square.Value + ray, distance++)
                 {
-                    resultList.Add(position.Value);
+                    resultList.Add(square.Value);
                 }
             }
 
             return resultList.ToArray();
         }
 
-        private static Omnifactotum.ReadOnlyDictionary<PositionBridgeKey, Bitboard> GeneratePositionBridgeMap()
+        private static Omnifactotum.ReadOnlyDictionary<SquareBridgeKey, Bitboard> GenerateSquareBridgeMap()
         {
-            var resultMap = new Dictionary<PositionBridgeKey, Bitboard>(AllPositions.Count * AllPositions.Count);
+            var resultMap = new Dictionary<SquareBridgeKey, Bitboard>(AllSquares.Count * AllSquares.Count);
 
-            var allPositions = AllPositions.ToArray();
-            for (var outerIndex = 0; outerIndex < allPositions.Length; outerIndex++)
+            var allSquares = AllSquares.ToArray();
+            for (var outerIndex = 0; outerIndex < allSquares.Length; outerIndex++)
             {
-                var first = allPositions[outerIndex];
-                for (var innerIndex = outerIndex + 1; innerIndex < allPositions.Length; innerIndex++)
+                var first = allSquares[outerIndex];
+                for (var innerIndex = outerIndex + 1; innerIndex < allSquares.Length; innerIndex++)
                 {
-                    var second = allPositions[innerIndex];
+                    var second = allSquares[innerIndex];
 
                     foreach (var ray in AllRays)
                     {
-                        var positions = GetMovePositionArraysByRays(first, ray.AsArray(), MaxSlidingPieceDistance);
-                        var index = Array.IndexOf(positions, second);
+                        var squares = GetMoveSquareArraysByRays(first, ray.AsArray(), MaxSlidingPieceDistance);
+                        var index = Array.IndexOf(squares, second);
                         if (index < 0)
                         {
                             continue;
                         }
 
-                        var positionBridgeKey = new PositionBridgeKey(first, second);
-                        var positionBridge = new Bitboard(positions.Take(index));
-                        resultMap.Add(positionBridgeKey, positionBridge);
+                        var key = new SquareBridgeKey(first, second);
+                        var squareBridge = new Bitboard(squares.Take(index));
+                        resultMap.Add(key, squareBridge);
                         break;
                     }
                 }

@@ -119,7 +119,7 @@ namespace ChessPlatform.Tests
         [TestCase("f2", "e1", PieceType.Queen, "f2e1q")]
         public void TestToUciNotation(string from, string to, PieceType promotionResult, string expectedResult)
         {
-            var move = new GameMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), promotionResult);
+            var move = new GameMove(Square.FromAlgebraic(@from), Square.FromAlgebraic(to), promotionResult);
             var actualResult = move.ToUciNotation();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
@@ -131,10 +131,10 @@ namespace ChessPlatform.Tests
 
             var moves = new[]
             {
-                new GameMove(Position.FromAlgebraic("a1"), Position.FromAlgebraic("c2"), PieceType.None),
-                new GameMove(Position.FromAlgebraic("f2"), Position.FromAlgebraic("f4"), PieceType.None),
-                new GameMove(Position.FromAlgebraic("b7"), Position.FromAlgebraic("b8"), PieceType.Knight),
-                new GameMove(Position.FromAlgebraic("f2"), Position.FromAlgebraic("e1"), PieceType.Queen)
+                new GameMove(Square.FromAlgebraic("a1"), Square.FromAlgebraic("c2"), PieceType.None),
+                new GameMove(Square.FromAlgebraic("f2"), Square.FromAlgebraic("f4"), PieceType.None),
+                new GameMove(Square.FromAlgebraic("b7"), Square.FromAlgebraic("b8"), PieceType.Knight),
+                new GameMove(Square.FromAlgebraic("f2"), Square.FromAlgebraic("e1"), PieceType.Queen)
             };
 
             var actualResult = moves.ToUciNotation();

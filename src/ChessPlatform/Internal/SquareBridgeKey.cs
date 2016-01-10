@@ -5,7 +5,7 @@ using Omnifactotum;
 
 namespace ChessPlatform.Internal
 {
-    internal struct PositionBridgeKey : IEquatable<PositionBridgeKey>
+    internal struct SquareBridgeKey : IEquatable<SquareBridgeKey>
     {
         #region Constants and Fields
 
@@ -15,13 +15,13 @@ namespace ChessPlatform.Internal
 
         #region Constructors
 
-        internal PositionBridgeKey(Position first, Position second)
+        internal SquareBridgeKey(Square first, Square second)
         {
             #region Argument Check
 
             if (first == second)
             {
-                throw new ArgumentException("Positions cannot be equal.");
+                throw new ArgumentException("Squares cannot be the same.");
             }
 
             #endregion
@@ -41,13 +41,13 @@ namespace ChessPlatform.Internal
 
         #region Public Properties
 
-        public Position First
+        public Square First
         {
             [DebuggerStepThrough]
             get;
         }
 
-        public Position Second
+        public Square Second
         {
             [DebuggerStepThrough]
             get;
@@ -59,7 +59,7 @@ namespace ChessPlatform.Internal
 
         public override bool Equals(object obj)
         {
-            return obj is PositionBridgeKey && Equals((PositionBridgeKey)obj);
+            return obj is SquareBridgeKey && Equals((SquareBridgeKey)obj);
         }
 
         public override int GetHashCode()
@@ -74,9 +74,9 @@ namespace ChessPlatform.Internal
 
         #endregion
 
-        #region IEquatable<PositionBridgeKey> Members
+        #region IEquatable<SquareBridgeKey> Members
 
-        public bool Equals(PositionBridgeKey other)
+        public bool Equals(SquareBridgeKey other)
         {
             return other.First == First && other.Second == Second;
         }

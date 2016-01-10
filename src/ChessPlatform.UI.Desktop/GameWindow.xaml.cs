@@ -69,10 +69,10 @@ namespace ChessPlatform.UI.Desktop
 
         #region Private Methods: General
 
-        private static Position? GetSquarePosition(object element)
+        private static Square? GetSquare(object element)
         {
             var source = element as FrameworkElement;
-            return source?.Tag as Position?;
+            return source?.Tag as Square?;
         }
 
         private void StartNewGame()
@@ -128,21 +128,21 @@ namespace ChessPlatform.UI.Desktop
                 .Range(0, ChessConstants.FileCount)
                 .DoForEach(i => BoardGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = StarGridLength }));
 
-            foreach (var position in ChessHelper.AllPositions)
+            foreach (var square in ChessHelper.AllSquares)
             {
                 var row = reversedView
-                    ? ChessConstants.RankRange.Lower + position.Rank
-                    : ChessConstants.RankRange.Upper - position.Rank;
+                    ? ChessConstants.RankRange.Lower + square.Rank
+                    : ChessConstants.RankRange.Upper - square.Rank;
 
                 var column = reversedView
-                    ? ChessConstants.FileRange.Upper - position.File
-                    : ChessConstants.FileRange.Lower + position.File;
+                    ? ChessConstants.FileRange.Upper - square.File
+                    : ChessConstants.FileRange.Lower + square.File;
 
                 var label = new Label
                 {
                     Margin = new Thickness(),
                     Padding = new Thickness(),
-                    Tag = position,
+                    Tag = square,
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
                     HorizontalContentAlignment = HorizontalAlignment.Center,
@@ -168,7 +168,7 @@ namespace ChessPlatform.UI.Desktop
                     Padding = new Thickness(),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     VerticalAlignment = VerticalAlignment.Stretch,
-                    DataContext = ViewModel.SquareViewModels[position],
+                    DataContext = ViewModel.SquareViewModels[square],
                     BorderThickness = new Thickness(1)
                 };
 
@@ -506,8 +506,8 @@ namespace ChessPlatform.UI.Desktop
 
         private void BoardSquare_MouseEnter(object sender, MouseEventArgs args)
         {
-            var position = GetSquarePosition(args.OriginalSource);
-            if (!position.HasValue)
+            var square = GetSquare(args.OriginalSource);
+            if (!square.HasValue)
             {
                 return;
             }
@@ -518,12 +518,12 @@ namespace ChessPlatform.UI.Desktop
                     return;
 
                 case GameWindowSelectionMode.Default:
-                    ViewModel.CurrentTargetPosition = null;
-                    ViewModel.SetValidMovesOnlySelectionMode(position.Value);
+                    ViewModel.CurrentTargetSquare = null;
+                    ViewModel.SetValidMovesOnlySelectionMode(square.Value);
                     return;
             }
 
-            ViewModel.CurrentTargetPosition = position.Value;
+            ViewModel.CurrentTargetSquare = square.Value;
         }
 
         private void BoardSquare_MouseLeave(object sender, MouseEventArgs args)
@@ -541,8 +541,8 @@ namespace ChessPlatform.UI.Desktop
 
         private void BoardSquare_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
-            var position = GetSquarePosition(e.Source);
-            if (!position.HasValue)
+            var square = GetSquare(e.Source);
+            if (!square.HasValue)
             {
                 return;
             }
@@ -552,21 +552,21 @@ namespace ChessPlatform.UI.Desktop
                 return;
             }
 
-            var movingPiecePosition = ViewModel.CurrentSourcePosition;
+            var movingPieceSquare = ViewModel.CurrentSourceSquare;
             if (ViewModel.SelectionMode != GameWindowSelectionMode.MovingPieceSelected
-                || !movingPiecePosition.HasValue)
+                || !movingPieceSquare.HasValue)
             {
-                ViewModel.SetMovingPieceSelectionMode(position.Value);
+                ViewModel.SetMovingPieceSelectionMode(square.Value);
                 return;
             }
 
-            if (movingPiecePosition.Value == position.Value)
+            if (movingPieceSquare.Value == square.Value)
             {
                 ViewModel.ResetSelectionMode();
                 return;
             }
 
-            var move = new GameMove(movingPiecePosition.Value, position.Value);
+            var move = new GameMove(movingPieceSquare.Value, square.Value);
             MakeMove(move);
         }
 

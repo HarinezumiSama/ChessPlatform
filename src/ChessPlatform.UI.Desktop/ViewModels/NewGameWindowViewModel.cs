@@ -86,7 +86,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     AddError(
                         validatorContext,
                         memberContext,
-                        "The specified FEN has invalid format or represents an invalid board position.");
+                        "The specified FEN has invalid format or represents an invalid position.");
                 }
             }
         }

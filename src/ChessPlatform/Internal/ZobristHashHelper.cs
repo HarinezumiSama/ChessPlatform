@@ -838,25 +838,25 @@ namespace ChessPlatform.Internal
                 .Select(KeyValuePair.Create)
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        private static readonly Dictionary<Position, Bitboard> EnPassantAdjacentPawnsBitboardMap =
-            new Dictionary<Position, Bitboard>
+        private static readonly Dictionary<Square, Bitboard> EnPassantAdjacentPawnsBitboardMap =
+            new Dictionary<Square, Bitboard>
             {
-                { GetPosition("a4"), GetBitboard("b4") },
-                { GetPosition("b4"), GetBitboard("a4", "c4") },
-                { GetPosition("c4"), GetBitboard("b4", "d4") },
-                { GetPosition("d4"), GetBitboard("c4", "e4") },
-                { GetPosition("e4"), GetBitboard("d4", "f4") },
-                { GetPosition("f4"), GetBitboard("e4", "g4") },
-                { GetPosition("g4"), GetBitboard("f4", "h4") },
-                { GetPosition("h4"), GetBitboard("g4") },
-                { GetPosition("a5"), GetBitboard("b5") },
-                { GetPosition("b5"), GetBitboard("a4", "c5") },
-                { GetPosition("c5"), GetBitboard("b4", "d5") },
-                { GetPosition("d5"), GetBitboard("c4", "e5") },
-                { GetPosition("e5"), GetBitboard("d4", "f5") },
-                { GetPosition("f5"), GetBitboard("e4", "g5") },
-                { GetPosition("g5"), GetBitboard("f4", "h5") },
-                { GetPosition("h5"), GetBitboard("g5") }
+                { GetSquare("a4"), GetBitboard("b4") },
+                { GetSquare("b4"), GetBitboard("a4", "c4") },
+                { GetSquare("c4"), GetBitboard("b4", "d4") },
+                { GetSquare("d4"), GetBitboard("c4", "e4") },
+                { GetSquare("e4"), GetBitboard("d4", "f4") },
+                { GetSquare("f4"), GetBitboard("e4", "g4") },
+                { GetSquare("g4"), GetBitboard("f4", "h4") },
+                { GetSquare("h4"), GetBitboard("g4") },
+                { GetSquare("a5"), GetBitboard("b5") },
+                { GetSquare("b5"), GetBitboard("a4", "c5") },
+                { GetSquare("c5"), GetBitboard("b4", "d5") },
+                { GetSquare("d5"), GetBitboard("c4", "e5") },
+                { GetSquare("e5"), GetBitboard("d4", "f5") },
+                { GetSquare("f5"), GetBitboard("e4", "g5") },
+                { GetSquare("g5"), GetBitboard("f4", "h5") },
+                { GetSquare("h5"), GetBitboard("g5") }
             };
 
         #endregion
@@ -864,7 +864,7 @@ namespace ChessPlatform.Internal
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long GetPieceHash(Position position, Piece piece)
+        public static long GetPieceHash(Square square, Piece piece)
         {
             if (piece == Piece.None)
             {
@@ -872,7 +872,7 @@ namespace ChessPlatform.Internal
             }
 
             var pieceIndex = PieceMap[piece];
-            var hashArrayIndex = (pieceIndex << 6) | (position.Rank << 3) | position.File;
+            var hashArrayIndex = (pieceIndex << 6) | (square.Rank << 3) | square.File;
 
             var result = (long)Randoms[RandomsPieceOffset + hashArrayIndex];
             return result;
@@ -922,14 +922,14 @@ namespace ChessPlatform.Internal
                 return 0;
             }
 
-            var targetPiecePosition = info.TargetPiecePosition;
-            var adjacentPawnsBitboard = EnPassantAdjacentPawnsBitboardMap[targetPiecePosition];
+            var targetPieceSquare = info.TargetPieceSquare;
+            var adjacentPawnsBitboard = EnPassantAdjacentPawnsBitboardMap[targetPieceSquare];
             if ((adjacentPawnsBitboard & activeSidePawns).IsNone)
             {
                 return 0;
             }
 
-            var file = targetPiecePosition.File;
+            var file = targetPieceSquare.File;
             var result = (long)Randoms[RandomsEnPassantOffset + file];
             return result;
         }
@@ -962,25 +962,25 @@ namespace ChessPlatform.Internal
             return array;
         }
 
-        private static Position GetPosition(string s)
+        private static Square GetSquare(string s)
         {
-            return Position.FromAlgebraic(s);
+            return Square.FromAlgebraic(s);
         }
 
-        private static Bitboard GetBitboard([NotNull] params string[] positions)
+        private static Bitboard GetBitboard([NotNull] params string[] squares)
         {
             #region Argument Check
 
-            if (positions == null)
+            if (squares == null)
             {
-                throw new ArgumentNullException(nameof(positions));
+                throw new ArgumentNullException(nameof(squares));
             }
 
             #endregion
 
-            return positions.Aggregate(
+            return squares.Aggregate(
                 Bitboard.None,
-                (accumulator, position) => accumulator ^ GetPosition(position).Bitboard);
+                (accumulator, square) => accumulator ^ GetSquare(square).Bitboard);
         }
 
         #endregion

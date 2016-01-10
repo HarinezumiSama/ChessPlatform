@@ -73,8 +73,8 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<Piece> PiecesExceptNone =
             Pieces.Where(item => item != Piece.None).ToHashSet().AsReadOnly();
 
-        public static readonly Position WhiteKingInitialPosition = "e1";
-        public static readonly Position BlackKingInitialPosition = "e8";
+        public static readonly Square WhiteKingInitialSquare = "e1";
+        public static readonly Square BlackKingInitialSquare = "e8";
 
         public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToEnPassantInfoMap =
             PieceColors.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
@@ -145,26 +145,26 @@ namespace ChessPlatform
                 {
                     new CastlingInfo(
                         CastlingType.WhiteKingSide,
-                        new GameMove(WhiteKingInitialPosition, "g1"),
+                        new GameMove(WhiteKingInitialSquare, "g1"),
                         new GameMove("h1", "f1"),
                         "f1",
                         "g1"),
                     new CastlingInfo(
                         CastlingType.WhiteQueenSide,
-                        new GameMove(WhiteKingInitialPosition, "c1"),
+                        new GameMove(WhiteKingInitialSquare, "c1"),
                         new GameMove("a1", "d1"),
                         "b1",
                         "c1",
                         "d1"),
                     new CastlingInfo(
                         CastlingType.BlackKingSide,
-                        new GameMove(BlackKingInitialPosition, "g8"),
+                        new GameMove(BlackKingInitialSquare, "g8"),
                         new GameMove("h8", "f8"),
                         "f8",
                         "g8"),
                     new CastlingInfo(
                         CastlingType.BlackQueenSide,
-                        new GameMove(BlackKingInitialPosition, "c8"),
+                        new GameMove(BlackKingInitialSquare, "c8"),
                         new GameMove("a8", "d8"),
                         "b8",
                         "c8",

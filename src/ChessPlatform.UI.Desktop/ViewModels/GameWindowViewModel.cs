@@ -22,11 +22,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Constants and Fields
 
         private readonly TaskScheduler _taskScheduler;
-        private readonly HashSet<Position> _validMoveTargetPositionsInternal;
+        private readonly HashSet<Square> _validMoveTargetSquaresInternal;
         private readonly Timer _timeUpdateTimer;
         private GameBoard _currentGameBoard;
         private GameWindowSelectionMode _selectionMode;
-        private Position? _currentTargetPosition;
+        private Square? _currentTargetSquare;
         private GameManager _gameManager;
         private IChessPlayer _whitePlayer;
         private IChessPlayer _blackPlayer;
@@ -52,10 +52,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
-            _validMoveTargetPositionsInternal = new HashSet<Position>();
+            _validMoveTargetSquaresInternal = new HashSet<Square>();
 
             _selectionMode = GameWindowSelectionMode.Default;
-            ValidMoveTargetPositions = _validMoveTargetPositionsInternal.AsReadOnly();
+            ValidMoveTargetSquares = _validMoveTargetSquaresInternal.AsReadOnly();
 
             _shouldShowPlayerFeedback = true;
             _shouldShowPlayersTimers = true;
@@ -67,8 +67,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 Timeout.InfiniteTimeSpan);
 
             SquareViewModels = ChessHelper
-                .AllPositions
-                .ToDictionary(Factotum.Identity, position => new BoardSquareViewModel(this, position))
+                .AllSquares
+                .ToDictionary(Factotum.Identity, square => new BoardSquareViewModel(this, square))
                 .AsReadOnly();
 
             SubscribeToChangeOf(() => IsReversedView, OnIsReversedViewChanged);
@@ -85,7 +85,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Public Properties
 
         [NotNull]
-        public ReadOnlyDictionary<Position, BoardSquareViewModel> SquareViewModels
+        public ReadOnlyDictionary<Square, BoardSquareViewModel> SquareViewModels
         {
             get;
             private set;
@@ -132,23 +132,23 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        public Position? CurrentTargetPosition
+        public Square? CurrentTargetSquare
         {
             [DebuggerStepThrough]
             get
             {
-                return _currentTargetPosition;
+                return _currentTargetSquare;
             }
 
             set
             {
-                if (value == _currentTargetPosition)
+                if (value == _currentTargetSquare)
                 {
                     return;
                 }
 
-                _currentTargetPosition = value;
-                RaisePropertyChanged(() => CurrentTargetPosition);
+                _currentTargetSquare = value;
+                RaisePropertyChanged(() => CurrentTargetSquare);
             }
         }
 
@@ -256,13 +256,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         #region Internal Properties
 
         [NotNull]
-        internal ReadOnlySet<Position> ValidMoveTargetPositions
+        internal ReadOnlySet<Square> ValidMoveTargetSquares
         {
             get;
             private set;
         }
 
-        internal Position? CurrentSourcePosition
+        internal Square? CurrentSourceSquare
         {
             get;
             private set;
@@ -277,14 +277,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ResetSelectionModeInternal(null);
         }
 
-        public void SetMovingPieceSelectionMode(Position currentSourcePosition)
+        public void SetMovingPieceSelectionMode(Square currentSourceSquare)
         {
-            SetModeInternal(currentSourcePosition, GameWindowSelectionMode.MovingPieceSelected);
+            SetModeInternal(currentSourceSquare, GameWindowSelectionMode.MovingPieceSelected);
         }
 
-        public void SetValidMovesOnlySelectionMode(Position currentSourcePosition)
+        public void SetValidMovesOnlySelectionMode(Square currentSourceSquare)
         {
-            SetModeInternal(currentSourcePosition, GameWindowSelectionMode.DisplayValidMovesOnly);
+            SetModeInternal(currentSourceSquare, GameWindowSelectionMode.DisplayValidMovesOnly);
         }
 
         public void InitializeNewGame(
@@ -409,7 +409,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             return ChessConstants
                 .PieceTypesExceptNone
-                .ToDictionary(Factotum.Identity, item => board.GetPositions(item.ToPiece(color)).Length);
+                .ToDictionary(Factotum.Identity, item => board.GetSquares(item.ToPiece(color)).Length);
         }
 
         private string GetPlayerPieceAdvantage(PieceColor color)
@@ -444,8 +444,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void ResetSelectionModeInternal(GameWindowSelectionMode? selectionMode)
         {
-            _validMoveTargetPositionsInternal.Clear();
-            CurrentSourcePosition = null;
+            _validMoveTargetSquaresInternal.Clear();
+            CurrentSourceSquare = null;
 
             if (selectionMode.HasValue)
             {
@@ -478,9 +478,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             return GetActivePlayer() as GuiHumanChessPlayer;
         }
 
-        private void SetModeInternal(Position currentSourcePosition, GameWindowSelectionMode selectionMode)
+        private void SetModeInternal(Square currentSourceSquare, GameWindowSelectionMode selectionMode)
         {
-            _validMoveTargetPositionsInternal.Clear();
+            _validMoveTargetSquaresInternal.Clear();
 
             var currentGameBoard = CurrentGameBoard;
             if (currentGameBoard == null)
@@ -488,15 +488,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return;
             }
 
-            var validMoves = currentGameBoard.GetValidMovesBySource(currentSourcePosition);
+            var validMoves = currentGameBoard.GetValidMovesBySource(currentSourceSquare);
             if (validMoves.Length == 0)
             {
                 return;
             }
 
-            validMoves.DoForEach(move => _validMoveTargetPositionsInternal.Add(move.To));
+            validMoves.DoForEach(move => _validMoveTargetSquaresInternal.Add(move.To));
 
-            CurrentSourcePosition = currentSourcePosition;
+            CurrentSourceSquare = currentSourceSquare;
             SelectionMode = selectionMode;
         }
 

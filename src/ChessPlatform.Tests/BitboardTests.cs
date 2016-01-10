@@ -39,12 +39,12 @@ namespace ChessPlatform.Tests
         [TestCase(1L << 49, "b7")]
         [TestCase((1L << 49) | (1L << 23), "b7", "h3")]
         [TestCase((1L << 1) | (1L << 59), "b1", "d8")]
-        public void TestConstructionFromPositions(long expectedValue, params string[] positionNotations)
+        public void TestConstructionFromSquares(long expectedValue, params string[] squareNotations)
         {
-            Assert.That(positionNotations, Is.Not.Null);
-            var positions = positionNotations.Select(Position.FromAlgebraic).ToArray();
+            Assert.That(squareNotations, Is.Not.Null);
+            var squares = squareNotations.Select(Square.FromAlgebraic).ToArray();
 
-            var bitboard = new Bitboard(positions);
+            var bitboard = new Bitboard(squares);
             Assert.That(bitboard.Value, Is.EqualTo(expectedValue));
         }
 
@@ -87,13 +87,13 @@ namespace ChessPlatform.Tests
         [TestCase(1L << 49, 49)]
         [TestCase((1L << 49) | (1L << 23), 49, 23)]
         [TestCase((1L << 1) | (1L << 59), 1, 59)]
-        public void TestGetPositionsAndGetCount(long value, params int[] expectedIndexesResult)
+        public void TestGetSquaresAndGetCount(long value, params int[] expectedIndexesResult)
         {
             Assert.That(expectedIndexesResult, Is.Not.Null);
-            var expectedResult = expectedIndexesResult.Select(squareIndex => new Position(squareIndex)).ToArray();
+            var expectedResult = expectedIndexesResult.Select(squareIndex => new Square(squareIndex)).ToArray();
 
             var bitboard = new Bitboard(value);
-            Assert.That(bitboard.GetPositions(), Is.EquivalentTo(expectedResult));
+            Assert.That(bitboard.GetSquares(), Is.EquivalentTo(expectedResult));
             Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedResult.Length));
         }
 
@@ -152,20 +152,20 @@ namespace ChessPlatform.Tests
         [TestCase("e2", ShiftDirection.West, "d2")]
         [TestCase("e2", ShiftDirection.NorthWest, "d3")]
         public void TestShift(
-            string positionNotation,
+            string squareNotation,
             ShiftDirection direction,
-            string expectedResultPositionNotation)
+            string expectedResultSquareNotation)
         {
-            var bitboard = Position.FromAlgebraic(positionNotation).Bitboard;
+            var bitboard = Square.FromAlgebraic(squareNotation).Bitboard;
             var resultBitboard = bitboard.Shift(direction);
 
-            if (expectedResultPositionNotation == null)
+            if (expectedResultSquareNotation == null)
             {
                 Assert.That(resultBitboard.IsNone, Is.True);
                 return;
             }
 
-            var expectedResultBitboard = Position.FromAlgebraic(expectedResultPositionNotation).Bitboard;
+            var expectedResultBitboard = Square.FromAlgebraic(expectedResultSquareNotation).Bitboard;
             Assert.That(resultBitboard.Value, Is.EqualTo(expectedResultBitboard.Value));
         }
 

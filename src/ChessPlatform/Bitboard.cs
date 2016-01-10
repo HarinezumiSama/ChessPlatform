@@ -107,20 +107,22 @@ namespace ChessPlatform
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Bitboard"/> structure
-        ///     using the specified positions.
+        ///     using the specified squares.
         /// </summary>
-        public Bitboard(IEnumerable<Position> positions)
+        public Bitboard(IEnumerable<Square> squares)
         {
             #region Argument Check
 
-            if (positions == null)
+            if (squares == null)
             {
-                throw new ArgumentNullException(nameof(positions));
+                throw new ArgumentNullException(nameof(squares));
             }
 
             #endregion
 
-            InternalValue = positions.Aggregate(NoneValue, (accumulator, position) => accumulator | position.Bitboard.InternalValue);
+            InternalValue = squares.Aggregate(
+                NoneValue,
+                (accumulator, square) => accumulator | square.Bitboard.InternalValue);
         }
 
         /// <summary>
@@ -270,7 +272,7 @@ namespace ChessPlatform
         {
             var squares = InternalValue == NoneValue
                 ? "<none>"
-                : GetPositions().Select(item => item.ToString()).OrderBy(Factotum.Identity).Join(", ");
+                : GetSquares().Select(item => item.ToString()).OrderBy(Factotum.Identity).Join(", ");
 
             return $@"{{ {InternalValue:X16} : {squares} }}";
         }
@@ -299,16 +301,16 @@ namespace ChessPlatform
             return new Bitboard(ShiftInternal(InternalValue, direction));
         }
 
-        public Position[] GetPositions()
+        public Square[] GetSquares()
         {
-            var resultList = new List<Position>(ChessConstants.SquareCount);
+            var resultList = new List<Square>(ChessConstants.SquareCount);
 
             var currentValue = InternalValue;
 
             int index;
             while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
             {
-                resultList.Add(new Position(index));
+                resultList.Add(new Square(index));
                 currentValue &= ~(1UL << index);
             }
 
@@ -316,10 +318,10 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Position GetFirstPosition()
+        public Square GetFirstSquare()
         {
             var squareIndex = FindFirstBitSetIndex();
-            return new Position(squareIndex);
+            return new Square(squareIndex);
         }
 
         public int GetBitSetCount()

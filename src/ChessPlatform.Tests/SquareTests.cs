@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace ChessPlatform.Tests
 {
     [TestFixture]
-    public sealed class PositionTests
+    public sealed class SquareTests
     {
         #region Tests
 
@@ -18,10 +18,10 @@ namespace ChessPlatform.Tests
         {
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
-                var position = new Position(squareIndex);
-                Assert.That(position.SquareIndex, Is.EqualTo(squareIndex));
-                Assert.That(position.Rank, Is.EqualTo(squareIndex / 8));
-                Assert.That(position.File, Is.EqualTo(squareIndex % 8));
+                var square = new Square(squareIndex);
+                Assert.That(square.SquareIndex, Is.EqualTo(squareIndex));
+                Assert.That(square.Rank, Is.EqualTo(squareIndex / 8));
+                Assert.That(square.File, Is.EqualTo(squareIndex % 8));
             }
         }
 
@@ -32,7 +32,7 @@ namespace ChessPlatform.Tests
         [TestCase(int.MaxValue)]
         public void TestConstructionBySquareIndexNegativeCases(int squareIndex)
         {
-            Assert.That(() => new Position(squareIndex), Throws.TypeOf<ArgumentOutOfRangeException>());
+            Assert.That(() => new Square(squareIndex), Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
         [Test]
@@ -44,18 +44,18 @@ namespace ChessPlatform.Tests
                 {
                     var expectedSquareIndex = rank * 8 + file;
 
-                    var position = new Position(file, rank);
+                    var square = new Square(file, rank);
 
-                    Assert.That(position.File, Is.EqualTo(file));
-                    Assert.That(position.Rank, Is.EqualTo(rank));
+                    Assert.That(square.File, Is.EqualTo(file));
+                    Assert.That(square.Rank, Is.EqualTo(rank));
 
-                    Assert.That(position.FileChar, Is.EqualTo((char)('a' + file)));
+                    Assert.That(square.FileChar, Is.EqualTo((char)('a' + file)));
                     Assert.That(
-                        position.RankChar.ToString(CultureInfo.InvariantCulture),
+                        square.RankChar.ToString(CultureInfo.InvariantCulture),
                         Is.EqualTo((rank + 1).ToString(CultureInfo.InvariantCulture)));
 
-                    Assert.That(position.SquareIndex, Is.EqualTo(expectedSquareIndex));
-                    Assert.That(position.Bitboard.InternalValue, Is.EqualTo(1UL << expectedSquareIndex));
+                    Assert.That(square.SquareIndex, Is.EqualTo(expectedSquareIndex));
+                    Assert.That(square.Bitboard.InternalValue, Is.EqualTo(1UL << expectedSquareIndex));
                 }
             }
         }
@@ -64,19 +64,19 @@ namespace ChessPlatform.Tests
         public void TestConstructionByFileAndRankNegativeCases()
         {
             Assert.That(
-                () => new Position(checked(ChessConstants.FileRange.Lower - 1), ChessConstants.RankRange.Lower),
+                () => new Square(checked(ChessConstants.FileRange.Lower - 1), ChessConstants.RankRange.Lower),
                 Throws.TypeOf<ArgumentOutOfRangeException>());
 
             Assert.That(
-                () => new Position(checked(ChessConstants.FileRange.Upper + 1), ChessConstants.RankRange.Lower),
+                () => new Square(checked(ChessConstants.FileRange.Upper + 1), ChessConstants.RankRange.Lower),
                 Throws.TypeOf<ArgumentOutOfRangeException>());
 
             Assert.That(
-                () => new Position(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Lower - 1)),
+                () => new Square(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Lower - 1)),
                 Throws.TypeOf<ArgumentOutOfRangeException>());
 
             Assert.That(
-                () => new Position(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Upper + 1)),
+                () => new Square(ChessConstants.FileRange.Lower, checked(ChessConstants.RankRange.Upper + 1)),
                 Throws.TypeOf<ArgumentOutOfRangeException>());
         }
 
@@ -87,10 +87,10 @@ namespace ChessPlatform.Tests
             {
                 for (var rank = ChessConstants.RankRange.Lower; file <= ChessConstants.RankRange.Upper; file++)
                 {
-                    var position = new Position(file, rank);
+                    var square = new Square(file, rank);
 
-                    var expectedString = GetPositionString(file, rank);
-                    Assert.That(position.ToString(), Is.EqualTo(expectedString));
+                    var expectedString = GetSquareString(file, rank);
+                    Assert.That(square.ToString(), Is.EqualTo(expectedString));
                 }
             }
         }
@@ -102,14 +102,14 @@ namespace ChessPlatform.Tests
             {
                 for (var rank = ChessConstants.RankRange.Lower; file <= ChessConstants.RankRange.Upper; file++)
                 {
-                    var positionString = GetPositionString(file, rank);
+                    var squareString = GetSquareString(file, rank);
                     foreach (var useUpperCase in new[] { false, true })
                     {
                         var algebraicNotation = useUpperCase
-                            ? positionString.ToUpperInvariant()
-                            : positionString.ToLowerInvariant();
+                            ? squareString.ToUpperInvariant()
+                            : squareString.ToLowerInvariant();
 
-                        var actualValue = Position.FromAlgebraic(algebraicNotation);
+                        var actualValue = Square.FromAlgebraic(algebraicNotation);
 
                         Assert.That(actualValue.File, Is.EqualTo(file));
                         Assert.That(actualValue.Rank, Is.EqualTo(rank));
@@ -121,29 +121,31 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestFromAlgebraicNegativeCases()
         {
-            Assert.That(() => Position.FromAlgebraic(null), Throws.ArgumentException);
-            Assert.That(() => Position.FromAlgebraic("1a"), Throws.ArgumentException);
-            Assert.That(() => Position.FromAlgebraic("a0"), Throws.ArgumentException);
-            Assert.That(() => Position.FromAlgebraic("b9"), Throws.ArgumentException);
-            Assert.That(() => Position.FromAlgebraic("i1"), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic(null), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic("1a"), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic("a0"), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic("b9"), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic("i1"), Throws.ArgumentException);
         }
 
         [Test]
         public void TestOperatorFromString()
         {
-            var position = (Position)"a3";
-            Assert.That(position.File, Is.EqualTo(0));
-            Assert.That(position.Rank, Is.EqualTo(2));
+            var square = (Square)"a3";
+            Assert.That(square.FileChar, Is.EqualTo('a'));
+            Assert.That(square.RankChar, Is.EqualTo('3'));
+            Assert.That(square.File, Is.EqualTo(0));
+            Assert.That(square.Rank, Is.EqualTo(2));
         }
 
         [Test]
         public void TestOperatorFromStringNegativeCases()
         {
-            Assert.That(() => (Position)(string)null, Throws.ArgumentException);
-            Assert.That(() => (Position)"1a", Throws.ArgumentException);
-            Assert.That(() => (Position)"a0", Throws.ArgumentException);
-            Assert.That(() => (Position)"b9", Throws.ArgumentException);
-            Assert.That(() => (Position)"i1", Throws.ArgumentException);
+            Assert.That(() => (Square)(string)null, Throws.ArgumentException);
+            Assert.That(() => (Square)"1a", Throws.ArgumentException);
+            Assert.That(() => (Square)"a0", Throws.ArgumentException);
+            Assert.That(() => (Square)"b9", Throws.ArgumentException);
+            Assert.That(() => (Square)"i1", Throws.ArgumentException);
         }
 
         [Test]
@@ -153,26 +155,26 @@ namespace ChessPlatform.Tests
             {
                 for (var rank = ChessConstants.RankRange.Lower; file <= ChessConstants.RankRange.Upper; file++)
                 {
-                    var position = new Position(file, rank);
-                    var samePosition = new Position(file, rank);
-                    var otherFilePosition = new Position(file ^ 1, rank);
-                    var otherRankPosition = new Position(file, rank ^ 1);
+                    var square = new Square(file, rank);
+                    var sameSquare = new Square(file, rank);
+                    var otherFileSquare = new Square(file ^ 1, rank);
+                    var otherRankSquare = new Square(file, rank ^ 1);
 
-                    Assert.That(position, Is.EqualTo(samePosition));
-                    Assert.That(EqualityComparer<Position>.Default.Equals(position, samePosition), Is.True);
-                    Assert.That(position == samePosition, Is.True);
-                    Assert.That(position != samePosition, Is.False);
-                    Assert.That(position.GetHashCode(), Is.EqualTo(samePosition.GetHashCode()));
+                    Assert.That(square, Is.EqualTo(sameSquare));
+                    Assert.That(EqualityComparer<Square>.Default.Equals(square, sameSquare), Is.True);
+                    Assert.That(square == sameSquare, Is.True);
+                    Assert.That(square != sameSquare, Is.False);
+                    Assert.That(square.GetHashCode(), Is.EqualTo(sameSquare.GetHashCode()));
 
-                    Assert.That(position, Is.Not.EqualTo(otherFilePosition));
-                    Assert.That(EqualityComparer<Position>.Default.Equals(position, otherFilePosition), Is.False);
-                    Assert.That(position == otherFilePosition, Is.False);
-                    Assert.That(position != otherFilePosition, Is.True);
+                    Assert.That(square, Is.Not.EqualTo(otherFileSquare));
+                    Assert.That(EqualityComparer<Square>.Default.Equals(square, otherFileSquare), Is.False);
+                    Assert.That(square == otherFileSquare, Is.False);
+                    Assert.That(square != otherFileSquare, Is.True);
 
-                    Assert.That(position, Is.Not.EqualTo(otherRankPosition));
-                    Assert.That(EqualityComparer<Position>.Default.Equals(position, otherRankPosition), Is.False);
-                    Assert.That(position == otherRankPosition, Is.False);
-                    Assert.That(position != otherRankPosition, Is.True);
+                    Assert.That(square, Is.Not.EqualTo(otherRankSquare));
+                    Assert.That(EqualityComparer<Square>.Default.Equals(square, otherRankSquare), Is.False);
+                    Assert.That(square == otherRankSquare, Is.False);
+                    Assert.That(square != otherRankSquare, Is.True);
                 }
             }
         }
@@ -191,9 +193,9 @@ namespace ChessPlatform.Tests
             int rankOffset,
             int? expectedResultSquareIndex)
         {
-            var position = new Position(squareIndex);
+            var square = new Square(squareIndex);
             var shift = new SquareShift(fileOffset, rankOffset);
-            var actualResult = position + shift;
+            var actualResult = square + shift;
 
             if (expectedResultSquareIndex.HasValue)
             {
@@ -210,7 +212,7 @@ namespace ChessPlatform.Tests
 
         #region Private Methods
 
-        private static string GetPositionString(int file, int rank)
+        private static string GetSquareString(int file, int rank)
         {
             return
                 $@"{(char)('a' + (file - ChessConstants.FileRange.Lower))}{rank - ChessConstants.RankRange.Lower + 1}";

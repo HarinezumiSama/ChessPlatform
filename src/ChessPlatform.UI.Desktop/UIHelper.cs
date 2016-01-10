@@ -52,9 +52,9 @@ namespace ChessPlatform.UI.Desktop
 
         #region Public Methods
 
-        public static Brush GetSquareBrush(Position position, SquareMode squareMode)
+        public static Brush GetSquareBrush(Square square, SquareMode squareMode)
         {
-            var color = GetSquareColor(position, squareMode);
+            var color = GetSquareColor(square, squareMode);
             return new SolidColorBrush(color);
         }
 
@@ -216,10 +216,10 @@ namespace ChessPlatform.UI.Desktop
 
         #region Private Methods
 
-        private static Color GetSquareColor(Position position, SquareMode squareMode)
+        private static Color GetSquareColor(Square square, SquareMode squareMode)
         {
             var squareColors = SquareColorMap[squareMode];
-            var isDark = (position.File + position.Rank) % 2 == 0;
+            var isDark = (square.File + square.Rank) % 2 == 0;
             return squareColors[isDark];
         }
 

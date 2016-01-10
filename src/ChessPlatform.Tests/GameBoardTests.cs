@@ -562,7 +562,7 @@ namespace ChessPlatform.Tests
         {
             var gameBoard1W = new GameBoard(PerformInternalBoardValidation);
 
-            // Testing invalid move (no piece at the source position)
+            // Testing invalid move (no piece at the source square)
             Assert.That(() => gameBoard1W.MakeMove("a3-a4"), Throws.ArgumentException);
 
             AssertBaseProperties(gameBoard1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
@@ -587,7 +587,7 @@ namespace ChessPlatform.Tests
                 1,
                 GameState.Default);
 
-            // Testing invalid move (piece of non-active color at the source position)
+            // Testing invalid move (piece of non-active color at the source square)
             Assert.That(() => gameBoard1B.MakeMove("d2-d4"), Throws.ArgumentException);
 
             AssertBaseProperties(

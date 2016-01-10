@@ -14,7 +14,7 @@ namespace ChessPlatform.Internal
             Piece movedPiece,
             Piece capturedPiece,
             [CanBeNull] GameMove castlingRookMove,
-            [CanBeNull] Position? enPassantCapturedPiecePosition)
+            [CanBeNull] Square? enPassantCapturedPieceSquare)
         {
             #region Argument Check
 
@@ -28,7 +28,7 @@ namespace ChessPlatform.Internal
                 throw new ArgumentException("Invalid moved piece.", nameof(movedPiece));
             }
 
-            if (castlingRookMove != null && enPassantCapturedPiecePosition.HasValue)
+            if (castlingRookMove != null && enPassantCapturedPieceSquare.HasValue)
             {
                 throw new ArgumentException("Castling and en passant capture could not occur simultaneously.");
             }
@@ -45,7 +45,7 @@ namespace ChessPlatform.Internal
             CapturedPiece = capturedPiece;
             CastlingRookMove = castlingRookMove;
 
-            CapturedPiecePosition = enPassantCapturedPiecePosition ?? move.To;
+            CapturedPieceSquare = enPassantCapturedPieceSquare ?? move.To;
         }
 
         #endregion
@@ -72,7 +72,7 @@ namespace ChessPlatform.Internal
             get;
         }
 
-        public Position CapturedPiecePosition
+        public Square CapturedPieceSquare
         {
             get;
         }

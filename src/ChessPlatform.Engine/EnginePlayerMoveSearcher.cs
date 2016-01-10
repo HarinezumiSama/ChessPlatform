@@ -99,15 +99,15 @@ namespace ChessPlatform.Engine
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToMobilityWeightMap =
             new EnumFixedSizeDictionary<PieceType, int>(CreatePieceTypeToMobilityWeightMap());
 
-        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
-            PieceToPositionWeightInMiddlegameMap =
-                new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
-                    CreatePieceToPositionWeightInMiddlegameMap());
+        private static readonly EnumFixedSizeDictionary<Piece, SquareDictionary<int>>
+            PieceToSquareWeightInMiddlegameMap =
+                new EnumFixedSizeDictionary<Piece, SquareDictionary<int>>(
+                    CreatePieceToSquareWeightInMiddlegameMap());
 
-        private static readonly EnumFixedSizeDictionary<Piece, PositionDictionary<int>>
-            PieceToPositionWeightInEndgameMap =
-                new EnumFixedSizeDictionary<Piece, PositionDictionary<int>>(
-                    CreatePieceToPositionWeightInEndgameMap());
+        private static readonly EnumFixedSizeDictionary<Piece, SquareDictionary<int>>
+            PieceToSquareWeightInEndgameMap =
+                new EnumFixedSizeDictionary<Piece, SquareDictionary<int>>(
+                    CreatePieceToSquareWeightInEndgameMap());
 
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
             CreatePieceTypeToKingTropismWeightMap();
@@ -307,7 +307,7 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        private static PositionDictionary<int> ToPositionWeightMap(PieceColor color, int[,] weights)
+        private static SquareDictionary<int> ToSquareWeightMap(PieceColor color, int[,] weights)
         {
             #region Argument Check
 
@@ -323,7 +323,7 @@ namespace ChessPlatform.Engine
 
             #endregion
 
-            var result = new PositionDictionary<int>();
+            var result = new SquareDictionary<int>();
 
             var startRank = color == PieceColor.White
                 ? ChessConstants.RankRange.Upper
@@ -337,14 +337,14 @@ namespace ChessPlatform.Engine
                 for (var file = ChessConstants.FileRange.Lower; file <= ChessConstants.FileRange.Upper; file++)
                 {
                     var weight = weights[rankIndex, file];
-                    result.Add(new Position(file, rank), weight);
+                    result.Add(new Square(file, rank), weight);
                 }
             }
 
             return result;
         }
 
-        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightMap(
+        private static Dictionary<Piece, SquareDictionary<int>> CreatePieceToSquareWeightMap(
             [NotNull] Dictionary<PieceType, Func<int[,]>> weightGetters)
         {
             var result = weightGetters
@@ -356,46 +356,46 @@ namespace ChessPlatform.Engine
                                 new
                                 {
                                     Piece = pair.Key.ToPiece(color),
-                                    Weights = ToPositionWeightMap(color, pair.Value())
+                                    Weights = ToSquareWeightMap(color, pair.Value())
                                 }))
                 .ToDictionary(obj => obj.Piece, obj => obj.Weights);
 
             return result;
         }
 
-        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightInMiddlegameMap()
+        private static Dictionary<Piece, SquareDictionary<int>> CreatePieceToSquareWeightInMiddlegameMap()
         {
             var weightGetters =
                 new Dictionary<PieceType, Func<int[,]>>
                 {
-                    { PieceType.Pawn, CreatePawnPositionWeightInMiddlegameMap },
-                    { PieceType.Knight, CreateKnightPositionWeightMap },
-                    { PieceType.Bishop, CreateBishopPositionWeightMap },
-                    { PieceType.Rook, CreateRookPositionWeightMap },
-                    { PieceType.Queen, CreateQueenPositionWeightMap },
-                    { PieceType.King, CreateKingPositionWeightInMiddlegameMap }
+                    { PieceType.Pawn, CreatePawnSquareWeightInMiddlegameMap },
+                    { PieceType.Knight, CreateKnightSquareWeightMap },
+                    { PieceType.Bishop, CreateBishopSquareWeightMap },
+                    { PieceType.Rook, CreateRookSquareWeightMap },
+                    { PieceType.Queen, CreateQueenSquareWeightMap },
+                    { PieceType.King, CreateKingSquareWeightInMiddlegameMap }
                 };
 
-            return CreatePieceToPositionWeightMap(weightGetters);
+            return CreatePieceToSquareWeightMap(weightGetters);
         }
 
-        private static Dictionary<Piece, PositionDictionary<int>> CreatePieceToPositionWeightInEndgameMap()
+        private static Dictionary<Piece, SquareDictionary<int>> CreatePieceToSquareWeightInEndgameMap()
         {
             var weightGetters =
                 new Dictionary<PieceType, Func<int[,]>>
                 {
-                    { PieceType.Pawn, CreatePawnPositionWeightInEndgameMap },
-                    { PieceType.Knight, CreateKnightPositionWeightMap },
-                    { PieceType.Bishop, CreateBishopPositionWeightMap },
-                    { PieceType.Rook, CreateRookPositionWeightMap },
-                    { PieceType.Queen, CreateQueenPositionWeightMap },
-                    { PieceType.King, CreateKingPositionWeightInEndgameMap }
+                    { PieceType.Pawn, CreatePawnSquareWeightInEndgameMap },
+                    { PieceType.Knight, CreateKnightSquareWeightMap },
+                    { PieceType.Bishop, CreateBishopSquareWeightMap },
+                    { PieceType.Rook, CreateRookSquareWeightMap },
+                    { PieceType.Queen, CreateQueenSquareWeightMap },
+                    { PieceType.King, CreateKingSquareWeightInEndgameMap }
                 };
 
-            return CreatePieceToPositionWeightMap(weightGetters);
+            return CreatePieceToSquareWeightMap(weightGetters);
         }
 
-        private static int[,] CreatePawnPositionWeightInMiddlegameMap()
+        private static int[,] CreatePawnSquareWeightInMiddlegameMap()
         {
             var weights = new[,]
             {
@@ -412,7 +412,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreatePawnPositionWeightInEndgameMap()
+        private static int[,] CreatePawnSquareWeightInEndgameMap()
         {
             var weights = new[,]
             {
@@ -429,7 +429,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateKnightPositionWeightMap()
+        private static int[,] CreateKnightSquareWeightMap()
         {
             //// Formula used here for knight (normalized to range from -50 to +30):
             ////   Weight = ((Sq - 2) * 10) - 50
@@ -453,7 +453,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateBishopPositionWeightMap()
+        private static int[,] CreateBishopSquareWeightMap()
         {
             //// Formula used here for bishop (normalized to range from -20 to +20):
             ////   Weight = (((Sq * N) - 7) / 45 * 40) - 20
@@ -476,7 +476,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateRookPositionWeightMap()
+        private static int[,] CreateRookSquareWeightMap()
         {
             var weights = new[,]
             {
@@ -493,7 +493,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateQueenPositionWeightMap()
+        private static int[,] CreateQueenSquareWeightMap()
         {
             var weights = new[,]
             {
@@ -510,7 +510,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateKingPositionWeightInMiddlegameMap()
+        private static int[,] CreateKingSquareWeightInMiddlegameMap()
         {
             var weights = new[,]
             {
@@ -527,7 +527,7 @@ namespace ChessPlatform.Engine
             return weights;
         }
 
-        private static int[,] CreateKingPositionWeightInEndgameMap()
+        private static int[,] CreateKingSquareWeightInEndgameMap()
         {
             var weights = new[,]
             {
@@ -626,9 +626,9 @@ namespace ChessPlatform.Engine
         {
             var result = 0;
 
-            var pieceToPositionWeightMap = gamePhase == GamePhase.Endgame
-                ? PieceToPositionWeightInEndgameMap
-                : PieceToPositionWeightInMiddlegameMap;
+            var pieceToSquareWeightMap = gamePhase == GamePhase.Endgame
+                ? PieceToSquareWeightInEndgameMap
+                : PieceToSquareWeightInMiddlegameMap;
 
             foreach (var pieceType in ChessConstants.PieceTypesExceptNone)
             {
@@ -640,7 +640,7 @@ namespace ChessPlatform.Engine
                 }
 
                 var materialWeight = GetMaterialWeight(pieceType, gamePhase);
-                var positionWeightMap = pieceToPositionWeightMap[piece];
+                var squareWeightMap = pieceToSquareWeightMap[piece];
 
                 var remainingBitboard = pieceBitboard;
                 int currentSquareIndex;
@@ -648,9 +648,9 @@ namespace ChessPlatform.Engine
                 {
                     result += materialWeight;
 
-                    var position = new Position(currentSquareIndex);
-                    var positionScore = positionWeightMap[position];
-                    result += positionScore;
+                    var square = new Square(currentSquareIndex);
+                    var squareWeight = squareWeightMap[square];
+                    result += squareWeight;
                 }
             }
 
@@ -682,11 +682,11 @@ namespace ChessPlatform.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Position position)
+        private static GameMove GetCheapestAttackerMove([NotNull] GameBoard board, Square square)
         {
             var result = board
                 .ValidMoves
-                .Where(pair => pair.Key.To == position && pair.Value.IsAnyCapture)
+                .Where(pair => pair.Key.To == square && pair.Value.IsAnyCapture)
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))
@@ -696,23 +696,23 @@ namespace ChessPlatform.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetKingTropismDistance(Position attackerPosition, Position kingPosition)
+        private static int GetKingTropismDistance(Square attackerSquare, Square kingSquare)
         {
             //// Using Manhattan-Distance
 
-            var result = Math.Abs(attackerPosition.Rank - kingPosition.Rank)
-                + Math.Abs(attackerPosition.File - kingPosition.File);
+            var result = Math.Abs(attackerSquare.Rank - kingSquare.Rank)
+                + Math.Abs(attackerSquare.File - kingSquare.File);
 
             return result;
         }
 
         private static int GetKingTropismScore(
             [NotNull] GameBoard board,
-            Position attackerPosition,
-            Position kingPosition)
+            Square attackerSquare,
+            Square kingSquare)
         {
-            var proximity = KingTropismNormingFactor - GetKingTropismDistance(attackerPosition, kingPosition);
-            var attackerPieceType = board[attackerPosition].GetPieceType();
+            var proximity = KingTropismNormingFactor - GetKingTropismDistance(attackerSquare, kingSquare);
+            var attackerPieceType = board[attackerSquare].GetPieceType();
             var score = proximity * PieceTypeToKingTropismWeightMap[attackerPieceType] / KingTropismNormingFactor;
 
             return score;
@@ -721,7 +721,7 @@ namespace ChessPlatform.Engine
         private static int EvaluateKingTropism([NotNull] GameBoard board, PieceColor kingColor)
         {
             var king = PieceType.King.ToPiece(kingColor);
-            var kingPosition = board.GetBitboard(king).GetFirstPosition();
+            var kingSquare = board.GetBitboard(king).GetFirstSquare();
             var allAttackersBitboard = board.GetBitboard(kingColor.Invert());
 
             var result = 0;
@@ -730,8 +730,8 @@ namespace ChessPlatform.Engine
             int attackerSquareIndex;
             while ((attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
             {
-                var attackerPosition = new Position(attackerSquareIndex);
-                var score = GetKingTropismScore(board, attackerPosition, kingPosition);
+                var attackerSquare = new Square(attackerSquareIndex);
+                var score = GetKingTropismScore(board, attackerSquare, kingSquare);
                 result -= score;
             }
 
@@ -793,7 +793,7 @@ namespace ChessPlatform.Engine
             }
 
             var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
-            var opponentKingPosition = board.GetBitboard(opponentKing).GetFirstPosition();
+            var opponentKingSquare = board.GetBitboard(opponentKing).GetFirstSquare();
 
             var allCaptureOrPromotionDatas = remainingMoves
                 .Where(pair => !LocalHelper.IsQuietMove(pair.Value))
@@ -831,7 +831,7 @@ namespace ChessPlatform.Engine
                             Value = _moveHistoryStatistics.GetHistoryValue(board, pair.Key)
                         })
                 .OrderByDescending(obj => obj.Value)
-                .ThenBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingPosition))
+                .ThenBy(obj => GetKingTropismDistance(obj.Move.To, opponentKingSquare))
                 .ThenBy(obj => obj.Move.From.SquareIndex)
                 .ThenBy(obj => obj.Move.To.SquareIndex)
                 .Select(obj => new OrderedMove(obj.Move, obj.MoveInfo))
@@ -920,12 +920,12 @@ namespace ChessPlatform.Engine
 
         private int ComputeStaticExchangeEvaluationScore(
             [NotNull] GameBoard board,
-            Position position,
+            Square square,
             [CanBeNull] GameMove move)
         {
             _gameControlInfo.CheckInterruptions();
 
-            var actualMove = move ?? GetCheapestAttackerMove(board, position);
+            var actualMove = move ?? GetCheapestAttackerMove(board, square);
             if (actualMove == null)
             {
                 return 0;
@@ -935,7 +935,7 @@ namespace ChessPlatform.Engine
             var lastCapturedPieceType = currentBoard.LastCapturedPiece.GetPieceType();
             var weight = GetMaterialWeight(lastCapturedPieceType);
 
-            var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, position, null);
+            var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, square, null);
 
             if (move == null && result < 0)
             {

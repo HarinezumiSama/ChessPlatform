@@ -264,11 +264,11 @@ namespace ChessPlatform.Engine
             {
                 var toFile = rawMove & 7;
                 var toRow = (rawMove >> 3) & 7;
-                var to = new Position(toFile, toRow);
+                var to = new Square(toFile, toRow);
 
                 var fromFile = (rawMove >> 6) & 7;
                 var fromRow = (rawMove >> 9) & 7;
-                var from = new Position(fromFile, fromRow);
+                var from = new Square(fromFile, fromRow);
 
                 var rawPromotion = (rawMove >> 12) & 7;
                 var promotion = PromotionMapping[rawPromotion];

@@ -11,22 +11,22 @@ namespace ChessPlatform
     {
         #region Constructors
 
-        internal EnPassantCaptureInfo(Position capturePosition, Position targetPiecePosition)
+        internal EnPassantCaptureInfo(Square captureSquare, Square targetPieceSquare)
         {
-            CapturePosition = capturePosition;
-            TargetPiecePosition = targetPiecePosition;
+            CaptureSquare = captureSquare;
+            TargetPieceSquare = targetPieceSquare;
         }
 
         #endregion
 
         #region Public Properties
 
-        public Position CapturePosition
+        public Square CaptureSquare
         {
             get;
         }
 
-        public Position TargetPiecePosition
+        public Square TargetPieceSquare
         {
             get;
         }
@@ -48,8 +48,8 @@ namespace ChessPlatform
                 return false;
             }
 
-            return left.CapturePosition == right.CapturePosition
-                && left.TargetPiecePosition == right.TargetPiecePosition;
+            return left.CaptureSquare == right.CaptureSquare
+                && left.TargetPieceSquare == right.TargetPieceSquare;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,12 +60,14 @@ namespace ChessPlatform
 
         public override int GetHashCode()
         {
-            return CapturePosition.GetHashCode();
+            return CaptureSquare.GetHashCode();
         }
 
         public override string ToString()
         {
-            return $@"{{ CapturePosition = {CapturePosition}, TargetPiecePosition = {TargetPiecePosition} }}";
+            return
+                $@"{{ {nameof(CaptureSquare)} = {CaptureSquare}, {nameof(TargetPieceSquare)} = {TargetPieceSquare
+                    } }}";
         }
 
         #endregion

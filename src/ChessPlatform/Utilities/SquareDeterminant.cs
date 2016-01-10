@@ -5,7 +5,7 @@ using Omnifactotum;
 
 namespace ChessPlatform.Utilities
 {
-    public sealed class PositionDeterminant : FixedSizeDictionaryDeterminant<Position>
+    public sealed class SquareDeterminant : FixedSizeDictionaryDeterminant<Square>
     {
         #region Public Properties
 
@@ -23,15 +23,15 @@ namespace ChessPlatform.Utilities
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override int GetIndex(Position key)
+        public override int GetIndex(Square key)
         {
             return key.SquareIndex;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override Position GetKey(int index)
+        public override Square GetKey(int index)
         {
-            return new Position(index);
+            return new Square(index);
         }
 
         #endregion

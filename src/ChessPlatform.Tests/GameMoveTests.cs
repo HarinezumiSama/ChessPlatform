@@ -23,7 +23,7 @@ namespace ChessPlatform.Tests
         {
             for (var fromIndex = 0; fromIndex < ChessConstants.SquareCount; fromIndex++)
             {
-                var from = new Position(fromIndex);
+                var from = new Square(fromIndex);
 
                 for (var toIndex = 0; toIndex < ChessConstants.SquareCount; toIndex++)
                 {
@@ -32,7 +32,7 @@ namespace ChessPlatform.Tests
                         continue;
                     }
 
-                    var to = new Position(toIndex);
+                    var to = new Square(toIndex);
 
                     var outerMove = new GameMove(from, to);
                     Assert.That(outerMove.From, Is.EqualTo(from));
@@ -54,8 +54,8 @@ namespace ChessPlatform.Tests
         [TestCaseSource(typeof(FromStringNotationCases))]
         public void TestFromStringNotation(
             string input,
-            Position expectedFrom,
-            Position expectedTo,
+            Square expectedFrom,
+            Square expectedTo,
             PieceType expectedPromotionResult)
         {
             foreach (var useExplicitMethod in new[] { false, true })
@@ -189,8 +189,8 @@ namespace ChessPlatform.Tests
             /// </summary>
             internal FromStringNotationCaseData(
                 string input,
-                Position expectedFrom,
-                Position expectedTo,
+                Square expectedFrom,
+                Square expectedTo,
                 PieceType expectedPromotionResult)
                 : base(input, expectedFrom, expectedTo, expectedPromotionResult)
             {

@@ -42,7 +42,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameMove"/> class.
         /// </summary>
-        public GameMove(Position from, Position to, PieceType promotionResult)
+        public GameMove(Square from, Square to, PieceType promotionResult)
         {
             From = from;
             To = to;
@@ -54,7 +54,7 @@ namespace ChessPlatform
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameMove"/> class.
         /// </summary>
-        public GameMove(Position from, Position to)
+        public GameMove(Square from, Square to)
             : this(from, to, PieceType.None)
         {
             // Nothing to do
@@ -64,13 +64,13 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public Position From
+        public Square From
         {
             [DebuggerStepThrough]
             get;
         }
 
-        public Position To
+        public Square To
         {
             [DebuggerStepThrough]
             get;
@@ -149,7 +149,7 @@ namespace ChessPlatform
                     ? char.ToUpperInvariant(promotionGroup.Value.Single()).ToPieceType()
                     : PieceType.None;
 
-                return new GameMove(Position.FromAlgebraic(@from), Position.FromAlgebraic(to), pieceType);
+                return new GameMove(Square.FromAlgebraic(@from), Square.FromAlgebraic(to), pieceType);
             }
 
             throw new ArgumentException(

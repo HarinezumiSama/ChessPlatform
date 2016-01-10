@@ -89,12 +89,12 @@ namespace ChessPlatform.Internal
 
         #region Public Properties
 
-        public Piece this[Position position]
+        public Piece this[Square square]
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return _pieces[position.SquareIndex];
+                return _pieces[square.SquareIndex];
             }
         }
 
@@ -157,9 +157,9 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public PieceInfo GetPieceInfo(Position position)
+        public PieceInfo GetPieceInfo(Square square)
         {
-            var piece = this[position];
+            var piece = this[square];
             return piece.GetPieceInfo();
         }
 
@@ -180,17 +180,17 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Position[] GetPositions(Piece piece)
+        public Square[] GetSquares(Piece piece)
         {
             var bitboard = GetBitboard(piece);
-            return bitboard.GetPositions();
+            return bitboard.GetSquares();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Position[] GetPositions(PieceColor color)
+        public Square[] GetSquares(PieceColor color)
         {
             var bitboard = GetBitboard(color);
-            return bitboard.GetPositions();
+            return bitboard.GetSquares();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -225,18 +225,18 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var capturePosition = new Position(false, move.From.File, enPassantInfo.CaptureTargetRank);
-            var targetPiecePosition = new Position(false, move.From.File, enPassantInfo.EndRank);
+            var captureSquare = new Square(false, move.From.File, enPassantInfo.CaptureTargetRank);
+            var targetPieceSquare = new Square(false, move.From.File, enPassantInfo.EndRank);
 
-            return new EnPassantCaptureInfo(capturePosition, targetPiecePosition);
+            return new EnPassantCaptureInfo(captureSquare, targetPieceSquare);
         }
 
         public bool IsEnPassantCapture(
-            Position source,
-            Position destination,
+            Square source,
+            Square destination,
             EnPassantCaptureInfo enPassantCaptureInfo)
         {
-            if (enPassantCaptureInfo == null || enPassantCaptureInfo.CapturePosition != destination)
+            if (enPassantCaptureInfo == null || enPassantCaptureInfo.CaptureSquare != destination)
             {
                 return false;
             }
@@ -247,11 +247,11 @@ namespace ChessPlatform.Internal
                 return false;
             }
 
-            var targetPieceInfo = GetPieceInfo(enPassantCaptureInfo.TargetPiecePosition);
+            var targetPieceInfo = GetPieceInfo(enPassantCaptureInfo.TargetPieceSquare);
             return targetPieceInfo.PieceType == PieceType.Pawn;
         }
 
-        public bool IsPawnPromotion(Position from, Position to)
+        public bool IsPawnPromotion(Square from, Square to)
         {
             var fromBitboard = from.Bitboard;
             var toBitboard = to.Bitboard;
@@ -275,33 +275,33 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetAttackers(Position targetPosition, PieceColor attackingColor)
+        public Bitboard GetAttackers(Square targetSquare, PieceColor attackingColor)
         {
-            return GetAttackersInternal(targetPosition, attackingColor, false);
+            return GetAttackersInternal(targetSquare, attackingColor, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsUnderAttack(Position targetPosition, PieceColor attackingColor)
+        public bool IsUnderAttack(Square targetSquare, PieceColor attackingColor)
         {
-            var bitboard = GetAttackersInternal(targetPosition, attackingColor, true);
+            var bitboard = GetAttackersInternal(targetSquare, attackingColor, true);
             return bitboard.IsAny;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAnyUnderAttack(
-            [NotNull] IEnumerable<Position> targetPositions,
+            [NotNull] IEnumerable<Square> targetSquares,
             PieceColor attackingColor)
         {
             #region Argument Check
 
-            if (targetPositions == null)
+            if (targetSquares == null)
             {
-                throw new ArgumentNullException(nameof(targetPositions));
+                throw new ArgumentNullException(nameof(targetSquares));
             }
 
             #endregion
 
-            var result = targetPositions.Any(targetPosition => IsUnderAttack(targetPosition, attackingColor));
+            var result = targetSquares.Any(targetSquare => IsUnderAttack(targetSquare, attackingColor));
             return result;
         }
 
@@ -339,9 +339,8 @@ namespace ChessPlatform.Internal
         {
             var king = PieceType.King.ToPiece(kingColor);
             var oppositeColor = kingColor.Invert();
-            var kingPositions = GetPositions(king);
-            return kingPositions.Length != 0 && kingPositions.Any(position => IsUnderAttack(position, oppositeColor));
-            ////return kingPositions.Length > 0 && IsUnderAttack(kingPositions[0], oppositeColor);
+            var kingSquares = GetSquares(king);
+            return kingSquares.Length != 0 && IsAnyUnderAttack(kingSquares, oppositeColor);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -350,23 +349,23 @@ namespace ChessPlatform.Internal
             return IsKingLeftOnly(PieceColor.White) && IsKingLeftOnly(PieceColor.Black);
         }
 
-        public Position[] GetPotentialMovePositions(
+        public Square[] GetPotentialMoveSquares(
             CastlingOptions castlingOptions,
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
-            Position sourcePosition)
+            Square sourceSquare)
         {
-            var pieceInfo = GetPieceInfo(sourcePosition);
+            var pieceInfo = GetPieceInfo(sourceSquare);
             if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Color.HasValue)
             {
-                throw new ArgumentException("No piece at the source position.", nameof(sourcePosition));
+                throw new ArgumentException("No piece at the source Square.", nameof(sourceSquare));
             }
 
             var pieceColor = pieceInfo.Color.Value;
 
             if (pieceInfo.PieceType == PieceType.Knight)
             {
-                var result = ChessHelper.GetKnightMovePositions(sourcePosition)
-                    .Where(position => GetPieceInfo(position).Color != pieceColor)
+                var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
+                    .Where(square => GetPieceInfo(square).Color != pieceColor)
                     .ToArray();
 
                 return result;
@@ -382,12 +381,12 @@ namespace ChessPlatform.Internal
                 throw new InvalidOperationException("MUST NOT go into this branch anymore.");
             }
 
-            var resultList = new List<Position>();
+            var resultList = new List<Square>();
 
             if (pieceInfo.PieceType.IsSlidingStraight())
             {
-                GetPotentialMovePositionsByRays(
-                    sourcePosition,
+                GetPotentialMoveSquaresByRays(
+                    sourceSquare,
                     pieceColor,
                     ChessHelper.StraightRays,
                     ChessHelper.MaxSlidingPieceDistance,
@@ -397,8 +396,8 @@ namespace ChessPlatform.Internal
 
             if (pieceInfo.PieceType.IsSlidingDiagonally())
             {
-                GetPotentialMovePositionsByRays(
-                    sourcePosition,
+                GetPotentialMoveSquaresByRays(
+                    sourceSquare,
                     pieceColor,
                     ChessHelper.DiagonalRays,
                     ChessHelper.MaxSlidingPieceDistance,
@@ -524,29 +523,29 @@ namespace ChessPlatform.Internal
             }
 
             var kingSquareIndex = king.FindFirstBitSetIndex();
-            var sourcePosition = new Position(kingSquareIndex);
+            var sourceSquare = new Square(kingSquareIndex);
             var directTargets = KingAttacksOrMoves[kingSquareIndex] & target;
 
             var emptySquares = GetBitboard(Piece.None);
             var nonCaptures = directTargets & emptySquares;
-            PopulateSimpleMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
+            PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
 
             var enemies = GetBitboard(color.Invert());
             var captures = directTargets & enemies;
-            PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsRegularCapture);
+            PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
 
             var nonEmptySquares = ~emptySquares;
 
             PopulateKingCastlingMoves(
                 resultMoves,
-                sourcePosition,
+                sourceSquare,
                 allowedCastlingOptions,
                 nonEmptySquares,
                 CastlingSide.KingSide.ToCastlingType(color));
 
             PopulateKingCastlingMoves(
                 resultMoves,
-                sourcePosition,
+                sourceSquare,
                 allowedCastlingOptions,
                 nonEmptySquares,
                 CastlingSide.QueenSide.ToCastlingType(color));
@@ -600,17 +599,17 @@ namespace ChessPlatform.Internal
                     continue;
                 }
 
-                var sourcePosition = new Position(sourceSquareIndex);
+                var sourceSquare = new Square(sourceSquareIndex);
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
                 {
                     var captures = movesOnTarget & enemies;
-                    PopulateSimpleMoves(resultMoves, sourcePosition, captures, GameMoveFlags.IsRegularCapture);
+                    PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
                 }
 
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
                 {
                     var nonCaptures = movesOnTarget & emptySquares;
-                    PopulateSimpleMoves(resultMoves, sourcePosition, nonCaptures, GameMoveFlags.None);
+                    PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
                 }
             }
         }
@@ -670,10 +669,10 @@ namespace ChessPlatform.Internal
 
         #region Internal Methods
 
-        internal Piece SetPiece(Position position, Piece piece)
+        internal Piece SetPiece(Square square, Piece piece)
         {
-            var squareIndex = position.SquareIndex;
-            var bitboardBit = position.Bitboard;
+            var squareIndex = square.SquareIndex;
+            var bitboardBit = square.Bitboard;
 
             var oldPiece = _pieces[squareIndex];
             _pieces[squareIndex] = piece;
@@ -694,13 +693,13 @@ namespace ChessPlatform.Internal
                 _entireColorBitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
             }
 
-            ZobristKey ^= ZobristHashHelper.GetPieceHash(position, oldPiece)
-                ^ ZobristHashHelper.GetPieceHash(position, piece);
+            ZobristKey ^= ZobristHashHelper.GetPieceHash(square, oldPiece)
+                ^ ZobristHashHelper.GetPieceHash(square, piece);
 
             return oldPiece;
         }
 
-        internal void SetupNewPiece(Piece piece, Position position)
+        internal void SetupNewPiece(Piece piece, Square square)
         {
             #region Argument Check
 
@@ -711,14 +710,14 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var existingPiece = this[position];
+            var existingPiece = this[square];
             if (existingPiece != Piece.None)
             {
                 throw new ChessPlatformException(
-                    $@"The board square '{position}' is already occupied by '{existingPiece}'.");
+                    $@"The board square '{square}' is already occupied by '{existingPiece}'.");
             }
 
-            SetPiece(position, piece);
+            SetPiece(square, piece);
         }
 
         internal void SetupByFenSnippet(string fenSnippet)
@@ -766,8 +765,8 @@ namespace ChessPlatform.Internal
                 Piece piece;
                 if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
                 {
-                    var position = new Position(Convert.ToByte(currentFile), Convert.ToByte(currentRank));
-                    SetupNewPiece(piece, position);
+                    var square = new Square(Convert.ToByte(currentFile), Convert.ToByte(currentRank));
+                    SetupNewPiece(piece, square);
                     currentFile++;
                     continue;
                 }
@@ -809,7 +808,7 @@ namespace ChessPlatform.Internal
             #endregion
 
             GameMove castlingRookMove = null;
-            Position? enPassantCapturedPiecePosition = null;
+            Square? enPassantCapturedPieceSquare = null;
 
             var movingColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[movingColor];
 
@@ -828,8 +827,8 @@ namespace ChessPlatform.Internal
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
 
-                enPassantCapturedPiecePosition = enPassantCaptureInfo.TargetPiecePosition;
-                capturedPiece = SetPiece(enPassantCaptureInfo.TargetPiecePosition, Piece.None);
+                enPassantCapturedPieceSquare = enPassantCaptureInfo.TargetPieceSquare;
+                capturedPiece = SetPiece(enPassantCaptureInfo.TargetPieceSquare, Piece.None);
                 if (capturedPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
@@ -910,7 +909,7 @@ namespace ChessPlatform.Internal
                 moveData.MovedPiece,
                 capturedPiece,
                 castlingRookMove,
-                enPassantCapturedPiecePosition);
+                enPassantCapturedPieceSquare);
 
             _undoMoveDatas.Push(undoMoveData);
 
@@ -938,7 +937,7 @@ namespace ChessPlatform.Internal
 
             if (data.CapturedPiece != Piece.None)
             {
-                SetPiece(data.CapturedPiecePosition, data.CapturedPiece);
+                SetPiece(data.CapturedPieceSquare, data.CapturedPiece);
             }
             else if (data.CastlingRookMove != null)
             {
@@ -1028,8 +1027,8 @@ namespace ChessPlatform.Internal
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
                 var move = new GameMove(
-                    new Position(targetSquareIndex - moveOffset),
-                    new Position(targetSquareIndex));
+                    new Square(targetSquareIndex - moveOffset),
+                    new Square(targetSquareIndex));
 
                 var moveInfo = new GameMoveInfo(moveFlags);
                 if (isPawnPromotion)
@@ -1087,7 +1086,7 @@ namespace ChessPlatform.Internal
 
         private static void PopulateSimpleMoves(
             ICollection<GameMoveData> resultMoves,
-            Position sourcePosition,
+            Square sourceSquare,
             Bitboard destinationsBitboard,
             GameMoveFlags moveFlags)
         {
@@ -1096,14 +1095,14 @@ namespace ChessPlatform.Internal
             {
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
-                var move = new GameMove(sourcePosition, new Position(targetSquareIndex));
+                var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
                 resultMoves.Add(new GameMoveData(move, moveInfo));
             }
         }
 
         private static void PopulateKingCastlingMoves(
             ICollection<GameMoveData> resultMoves,
-            Position sourcePosition,
+            Square sourceSquare,
             CastlingOptions allowedCastlingOptions,
             Bitboard nonEmptySquares,
             CastlingType castlingType)
@@ -1115,7 +1114,7 @@ namespace ChessPlatform.Internal
             }
 
             var info = KingCastlingInfos[GetCastlingTypeArrayIndexInternal(castlingType)];
-            if (info.KingMove.From != sourcePosition || (nonEmptySquares & info.EmptySquares).IsAny)
+            if (info.KingMove.From != sourceSquare || (nonEmptySquares & info.EmptySquares).IsAny)
             {
                 return;
             }
@@ -1159,9 +1158,9 @@ namespace ChessPlatform.Internal
 
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
-                var position = new Position(squareIndex);
+                var square = new Square(squareIndex);
                 var attackBitboard = new Bitboard(
-                    Position.GenerateRank(position.Rank).Concat(Position.GenerateFile(position.File)));
+                    Square.GenerateRank(square.Rank).Concat(Square.GenerateFile(square.File)));
                 result[squareIndex] = attackBitboard;
             }
 
@@ -1206,9 +1205,9 @@ namespace ChessPlatform.Internal
 
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
-                var position = new Position(squareIndex);
-                var knightMovePositions = ChessHelper.GetKnightMovePositions(position);
-                var bitboard = new Bitboard(knightMovePositions);
+                var square = new Square(squareIndex);
+                var moveSquares = ChessHelper.GetKnightMoveSquares(square);
+                var bitboard = new Bitboard(moveSquares);
                 result[squareIndex] = bitboard;
             }
 
@@ -1247,7 +1246,7 @@ namespace ChessPlatform.Internal
                 var index = GetCastlingTypeArrayIndexInternal(castlingType);
                 result[index] = new InternalCastlingInfo(
                     info.KingMove,
-                    new Bitboard(info.EmptySquares.Concat(info.PassedPosition.AsArray())));
+                    new Bitboard(info.EmptySquares.Concat(info.PassedSquare.AsArray())));
             }
 
             return result;
@@ -1300,17 +1299,17 @@ namespace ChessPlatform.Internal
         private void EnsureConsistencyInternal()
         {
             // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var position in ChessHelper.AllPositions)
+            foreach (var square in ChessHelper.AllSquares)
             {
-                var piece = _pieces[position.SquareIndex];
+                var piece = _pieces[square.SquareIndex];
 
                 foreach (var currentPiece in ChessConstants.Pieces)
                 {
-                    var isSet = (GetBitboard(currentPiece) & position.Bitboard).IsAny;
+                    var isSet = (GetBitboard(currentPiece) & square.Bitboard).IsAny;
                     if ((piece == currentPiece) != isSet)
                     {
                         throw new ChessPlatformException(
-                            $@"Bitboard inconsistency for the piece '{piece.GetName()}' at '{position}'.");
+                            $@"Bitboard inconsistency for the piece '{piece.GetName()}' at '{square}'.");
                     }
                 }
             }
@@ -1328,10 +1327,10 @@ namespace ChessPlatform.Internal
                         continue;
                     }
 
-                    var intersectingPositions =
-                        intersectionBitboard.GetPositions().Select(item => item.ToString()).Join("', '");
+                    var intersectingSquaresString =
+                        intersectionBitboard.GetSquares().Select(item => item.ToString()).Join("', '");
 
-                    throw new ChessPlatformException($@"Bitboard inconsistency at '{intersectingPositions}'.");
+                    throw new ChessPlatformException($@"Bitboard inconsistency at '{intersectingSquaresString}'.");
                 }
             }
 
@@ -1349,14 +1348,14 @@ namespace ChessPlatform.Internal
 
         private long ComputeZobristKey()
         {
-            var pieces = ChessHelper.AllPositions
-                .Select(position => new { Position = position, Piece = this[position] })
+            var pieces = ChessHelper.AllSquares
+                .Select(square => new { Square = square, Piece = this[square] })
                 .Where(obj => obj.Piece != Piece.None)
                 .ToArray();
 
             var result = pieces.Aggregate(
                 0L,
-                (accumulator, obj) => accumulator ^ ZobristHashHelper.GetPieceHash(obj.Position, obj.Piece));
+                (accumulator, obj) => accumulator ^ ZobristHashHelper.GetPieceHash(obj.Square, obj.Piece));
 
             return result;
         }
@@ -1390,34 +1389,34 @@ namespace ChessPlatform.Internal
             return new MovePieceData(movedPiece, capturedPiece);
         }
 
-        private void GetPotentialMovePositionsByRays(
-            Position sourcePosition,
+        private void GetPotentialMoveSquaresByRays(
+            Square sourceSquare,
             PieceColor sourceColor,
             IEnumerable<SquareShift> rays,
             int maxDistance,
             bool allowCapturing,
-            ICollection<Position> resultCollection)
+            ICollection<Square> resultCollection)
         {
             foreach (var ray in rays)
             {
                 var distance = 1;
-                for (var position = sourcePosition + ray;
-                    position.HasValue && distance <= maxDistance;
-                    position = position.Value + ray, distance++)
+                for (var square = sourceSquare + ray;
+                    square.HasValue && distance <= maxDistance;
+                    square = square.Value + ray, distance++)
                 {
-                    var currentPosition = position.Value;
+                    var currentSquare = square.Value;
 
-                    var pieceInfo = GetPieceInfo(currentPosition);
+                    var pieceInfo = GetPieceInfo(currentSquare);
                     var currentColor = pieceInfo.Color;
                     if (pieceInfo.Piece == Piece.None || !currentColor.HasValue)
                     {
-                        resultCollection.Add(currentPosition);
+                        resultCollection.Add(currentSquare);
                         continue;
                     }
 
                     if (currentColor.Value != sourceColor && allowCapturing)
                     {
-                        resultCollection.Add(currentPosition);
+                        resultCollection.Add(currentSquare);
                     }
 
                     break;
@@ -1433,14 +1432,14 @@ namespace ChessPlatform.Internal
         }
 
         private Bitboard GetAttackersInternal(
-            Position targetPosition,
+            Square targetSquare,
             PieceColor attackingColor,
             bool findFirstAttackOnly)
         {
             var result = new Bitboard();
 
-            var targetBitboard = targetPosition.Bitboard;
-            var targetSquareIndex = targetPosition.SquareIndex;
+            var targetBitboard = targetSquare.Bitboard;
+            var targetSquareIndex = targetSquare.SquareIndex;
 
             var opponentPawns = GetBitboard(PieceType.Pawn.ToPiece(attackingColor));
             if (opponentPawns.IsAny)
@@ -1553,7 +1552,7 @@ namespace ChessPlatform.Internal
             {
                 var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref pieces);
                 var sourceBitboard = Bitboard.FromSquareIndex(sourceSquareIndex);
-                var sourcePosition = new Position(sourceSquareIndex);
+                var sourceSquare = new Square(sourceSquareIndex);
 
                 foreach (var direction in directions)
                 {
@@ -1565,7 +1564,7 @@ namespace ChessPlatform.Internal
                         {
                             if (shouldGenerateQuiets)
                             {
-                                var move = new GameMove(sourcePosition, current.GetFirstPosition());
+                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
                                 resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.None)));
                             }
 
@@ -1576,7 +1575,7 @@ namespace ChessPlatform.Internal
                         {
                             if (shouldGenerateCaptures)
                             {
-                                var move = new GameMove(sourcePosition, current.GetFirstPosition());
+                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
                                 resultMoves.Add(
                                     new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsRegularCapture)));
                             }

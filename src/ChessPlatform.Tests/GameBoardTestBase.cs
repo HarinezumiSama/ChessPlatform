@@ -104,26 +104,26 @@ namespace ChessPlatform.Tests
             for (var squareIndex = 0; squareIndex < pieces.Length; squareIndex++)
             {
                 var expectedPiece = pieces[squareIndex];
-                var position = new Position(squareIndex);
+                var square = new Square(squareIndex);
 
                 Assert.That(
-                    gameBoard[position],
+                    gameBoard[square],
                     Is.EqualTo(expectedPiece),
-                    $@"Piece at '{position}' must be '{expectedPiece}'.");
+                    $@"Piece at '{square}' must be '{expectedPiece}'.");
 
                 var bitboard = gameBoard.GetBitboard(expectedPiece);
 
                 Assert.That(
-                    (bitboard & position.Bitboard).IsExactlyOneBitSet(),
+                    (bitboard & square.Bitboard).IsExactlyOneBitSet(),
                     Is.True,
-                    $@"Bitboard for '{expectedPiece}' at '{position}' is invalid.");
+                    $@"Bitboard for '{expectedPiece}' at '{square}' is invalid.");
 
-                var positions = gameBoard.GetPositions(expectedPiece);
+                var squares = gameBoard.GetSquares(expectedPiece);
 
                 Assert.That(
-                    positions,
-                    Contains.Item(position),
-                    $@"Positions of '{expectedPiece}' must contain '{position}'.");
+                    squares,
+                    Contains.Item(square),
+                    $@"Squares of '{expectedPiece}' must contain '{square}'.");
             }
         }
 
@@ -145,14 +145,14 @@ namespace ChessPlatform.Tests
             Assert.That(actualEnPassantCaptureInfo, Is.Not.Null);
 
             Assert.That(
-                actualEnPassantCaptureInfo.CapturePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.CapturePosition),
-                "Capture position.");
+                actualEnPassantCaptureInfo.CaptureSquare,
+                Is.EqualTo(expectedEnPassantCaptureInfo.CaptureSquare),
+                "Capture Square.");
 
             Assert.That(
-                actualEnPassantCaptureInfo.TargetPiecePosition,
-                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPiecePosition),
-                "Target piece position.");
+                actualEnPassantCaptureInfo.TargetPieceSquare,
+                Is.EqualTo(expectedEnPassantCaptureInfo.TargetPieceSquare),
+                "Target piece Square.");
         }
 
         #endregion

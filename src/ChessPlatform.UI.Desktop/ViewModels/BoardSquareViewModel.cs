@@ -21,7 +21,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Constructors
 
-        internal BoardSquareViewModel(GameWindowViewModel parentViewModel, Position position)
+        internal BoardSquareViewModel(GameWindowViewModel parentViewModel, Square square)
         {
             #region Argument Check
 
@@ -33,7 +33,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             #endregion
 
             _parentViewModel = parentViewModel;
-            Position = position;
+            Square = square;
 
             SubscribeToChangeOf(() => Piece, OnPieceChanged);
 
@@ -44,10 +44,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 OnCurrentGameBoardChanged);
 
             _parentViewModel.SubscribeToChangeOf(
-                () => _parentViewModel.CurrentTargetPosition,
-                OnCurrentTargetPositionChanged);
+                () => _parentViewModel.CurrentTargetSquare,
+                OnCurrentTargetSquareChanged);
 
-            _background = UIHelper.GetSquareBrush(position, SquareMode.Default);
+            _background = UIHelper.GetSquareBrush(square, SquareMode.Default);
 
             UpdatePiece(true);
             UpdateBorderBrush(true);
@@ -57,7 +57,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Public Properties
 
-        public Position Position
+        public Square Square
         {
             get;
         }
@@ -173,21 +173,21 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private SquareMode GetSquareMode()
         {
-            if (_parentViewModel.ValidMoveTargetPositions.Contains(Position))
+            if (_parentViewModel.ValidMoveTargetSquares.Contains(Square))
             {
-                return _parentViewModel.CurrentTargetPosition.HasValue
-                    && Position == _parentViewModel.CurrentTargetPosition.Value
+                return _parentViewModel.CurrentTargetSquare.HasValue
+                    && Square == _parentViewModel.CurrentTargetSquare.Value
                     ? SquareMode.CurrentMoveTarget
                     : SquareMode.ValidMoveTarget;
             }
 
-            if (_parentViewModel.ValidMoveTargetPositions.Count != 0)
+            if (_parentViewModel.ValidMoveTargetSquares.Count != 0)
             {
                 switch (_parentViewModel.SelectionMode)
                 {
                     case GameWindowSelectionMode.DisplayValidMovesOnly:
-                        if (_parentViewModel.CurrentSourcePosition.HasValue
-                            && Position == _parentViewModel.CurrentSourcePosition.Value)
+                        if (_parentViewModel.CurrentSourceSquare.HasValue
+                            && Square == _parentViewModel.CurrentSourceSquare.Value)
                         {
                             return SquareMode.ValidMoveSource;
                         }
@@ -195,8 +195,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                         break;
 
                     case GameWindowSelectionMode.MovingPieceSelected:
-                        if (_parentViewModel.CurrentSourcePosition.HasValue
-                            && Position == _parentViewModel.CurrentSourcePosition.Value)
+                        if (_parentViewModel.CurrentSourceSquare.HasValue
+                            && Square == _parentViewModel.CurrentSourceSquare.Value)
                         {
                             return SquareMode.CurrentMoveSource;
                         }
@@ -211,7 +211,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void UpdateBackground()
         {
             var squareMode = GetSquareMode();
-            Background = UIHelper.GetSquareBrush(Position, squareMode);
+            Background = UIHelper.GetSquareBrush(Square, squareMode);
         }
 
         private void UpdatePiece(bool forceRaiseEvent)
@@ -221,7 +221,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return;
             }
 
-            var piece = _parentViewModel.CurrentGameBoard[Position];
+            var piece = _parentViewModel.CurrentGameBoard[Square];
             SetPieceInternal(piece, forceRaiseEvent);
         }
 
@@ -231,7 +231,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var lastMove = currentGameBoard.Morph(obj => obj.PreviousMove);
             var isLastMoveSquare = lastMove != null
-                && (lastMove.From == Position || lastMove.To == Position);
+                && (lastMove.From == Square || lastMove.To == Square);
 
             var isUnderCheck = currentGameBoard != null && currentGameBoard.State.IsAnyCheck()
                 && Piece == PieceType.King.ToPiece(currentGameBoard.ActiveColor);
@@ -250,7 +250,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             else
             {
                 var squareMode = GetSquareMode();
-                borderBrush = UIHelper.GetSquareBrush(Position, squareMode);
+                borderBrush = UIHelper.GetSquareBrush(Square, squareMode);
             }
 
             if (!forceRaiseEvent && Equals(borderBrush, BorderBrush))
@@ -281,7 +281,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             UpdateBorderBrush(false);
         }
 
-        private void OnCurrentTargetPositionChanged(object sender, EventArgs e)
+        private void OnCurrentTargetSquareChanged(object sender, EventArgs e)
         {
             UpdateBackground();
         }

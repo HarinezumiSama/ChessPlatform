@@ -6,22 +6,22 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Utilities
 {
-    public sealed class PositionDictionary<TValue> : FixedSizeDictionary<Position, TValue, PositionDeterminant>
+    public sealed class SquareDictionary<TValue> : FixedSizeDictionary<Square, TValue, SquareDeterminant>
     {
         #region Constructors
 
-        public PositionDictionary()
+        public SquareDictionary()
         {
             // Nothing to do
         }
 
-        public PositionDictionary([NotNull] IDictionary<Position, TValue> dictionary)
+        public SquareDictionary([NotNull] IDictionary<Square, TValue> dictionary)
             : base(dictionary)
         {
             // Nothing to do
         }
 
-        public PositionDictionary([NotNull] PositionDictionary<TValue> dictionary)
+        public SquareDictionary([NotNull] SquareDictionary<TValue> dictionary)
             : base(dictionary)
         {
             // Nothing to do

@@ -6,36 +6,34 @@ using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
-    //// TODO [vmcl] Rename Position to Square or GameBoardSquare
-
-    public struct Position : IEquatable<Position>
+    public struct Square : IEquatable<Square>
     {
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> structure
+        ///     Initializes a new instance of the <see cref="Square"/> structure
         ///     using the specified square index.
         /// </summary>
         [DebuggerNonUserCode]
-        public Position(int squareIndex)
+        public Square(int squareIndex)
             : this(true, squareIndex)
         {
             // Nothing to do
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="Position"/> structure
+        ///     Initializes a new instance of the <see cref="Square"/> structure
         ///     using the specified file and rank.
         /// </summary>
         [DebuggerNonUserCode]
-        public Position(int file, int rank)
+        public Square(int file, int rank)
             : this(true, file, rank)
         {
             // Nothing to do
         }
 
         [DebuggerNonUserCode]
-        internal Position(bool checkArguments, int squareIndex)
+        internal Square(bool checkArguments, int squareIndex)
         {
             #region Argument Check
 
@@ -56,7 +54,7 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
-        internal Position(bool checkArguments, int file, int rank)
+        internal Square(bool checkArguments, int file, int rank)
         {
             #region Argument Check
 
@@ -151,32 +149,32 @@ namespace ChessPlatform
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static implicit operator Position(string algebraicNotation)
+        public static implicit operator Square(string algebraicNotation)
         {
             return FromAlgebraic(algebraicNotation);
         }
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Position left, Position right)
+        public static bool operator ==(Square left, Square right)
         {
             return Equals(left, right);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Position left, Position right)
+        public static bool operator !=(Square left, Square right)
         {
             return !(left == right);
         }
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Position? operator +(Position left, SquareShift right)
+        public static Square? operator +(Square left, SquareShift right)
         {
             var file = left.File + right.FileOffset;
             var rank = left.Rank + right.RankOffset;
 
-            return (file & ~0x07) == 0 && (rank & ~0x07) == 0 ? new Position(false, file, rank) : default(Position?);
+            return (file & ~0x07) == 0 && (rank & ~0x07) == 0 ? new Square(false, file, rank) : default(Square?);
         }
 
         #endregion
@@ -184,7 +182,7 @@ namespace ChessPlatform
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool Equals(Position left, Position right)
+        public static bool Equals(Square left, Square right)
         {
             return left.SquareIndex == right.SquareIndex;
         }
@@ -204,21 +202,21 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
-        public static Position FromAlgebraic(string algebraicNotation)
+        public static Square FromAlgebraic(string algebraicNotation)
         {
-            var position = TryFromAlgebraic(algebraicNotation);
-            if (!position.HasValue)
+            var square = TryFromAlgebraic(algebraicNotation);
+            if (!square.HasValue)
             {
                 throw new ArgumentException(
                     $@"Invalid algebraic notation '{algebraicNotation}'.",
                     nameof(algebraicNotation));
             }
 
-            return position.Value;
+            return square.Value;
         }
 
         [DebuggerNonUserCode]
-        public static Position? TryFromAlgebraic(string algebraicNotation)
+        public static Square? TryFromAlgebraic(string algebraicNotation)
         {
             if (algebraicNotation?.Length != 2)
             {
@@ -229,11 +227,11 @@ namespace ChessPlatform
             var rank = GetRankIndex(algebraicNotation[1]);
 
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
-                ? new Position(false, file, rank)
+                ? new Square(false, file, rank)
                 : null;
         }
 
-        public static Position[] GenerateFile(int file)
+        public static Square[] GenerateFile(int file)
         {
             #region Argument Check
 
@@ -249,17 +247,23 @@ namespace ChessPlatform
 
             return Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .Select(rank => new Position(false, file, (byte)rank))
+                .Select(rank => new Square(false, file, (byte)rank))
                 .ToArray();
         }
 
-        public static Position[] GenerateFile(char file)
+        public static Square[] GenerateFile(char file)
         {
             var fileIndex = GetFileIndex(file);
+
+            if (!ChessConstants.FileRange.Contains(fileIndex))
+            {
+                throw new ArgumentOutOfRangeException(nameof(file), file, "The value is out of the valid range.");
+            }
+
             return GenerateFile(Convert.ToByte(fileIndex));
         }
 
-        public static Position[] GenerateRank(int rank)
+        public static Square[] GenerateRank(int rank)
         {
             #region Argument Check
 
@@ -268,18 +272,18 @@ namespace ChessPlatform
                 throw new ArgumentOutOfRangeException(
                     nameof(rank),
                     rank,
-                    $@"The value is out of the valid range {ChessConstants.FileRange}.");
+                    $@"The value is out of the valid range {ChessConstants.RankRange}.");
             }
 
             #endregion
 
             return Enumerable
                 .Range(0, ChessConstants.FileCount)
-                .Select(file => new Position(false, (byte)file, rank))
+                .Select(file => new Square(false, (byte)file, rank))
                 .ToArray();
         }
 
-        public static Position[] GenerateRanks(params int[] ranks)
+        public static Square[] GenerateRanks(params int[] ranks)
         {
             #region Argument Check
 
@@ -300,7 +304,7 @@ namespace ChessPlatform
 
         public override bool Equals(object obj)
         {
-            return obj is Position && Equals((Position)obj);
+            return obj is Square && Equals((Square)obj);
         }
 
         public override int GetHashCode()
@@ -310,10 +314,10 @@ namespace ChessPlatform
 
         #endregion
 
-        #region IEquatable<Position> Members
+        #region IEquatable<Square> Members
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals(Position other)
+        public bool Equals(Square other)
         {
             return Equals(this, other);
         }
