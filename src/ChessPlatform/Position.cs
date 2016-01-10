@@ -41,7 +41,7 @@ namespace ChessPlatform
 
             if (checkArguments)
             {
-                if ((squareIndex & ~0x3F) != 0)
+                if ((squareIndex & ~ChessConstants.MaxSquareIndex) != 0)
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(squareIndex),
