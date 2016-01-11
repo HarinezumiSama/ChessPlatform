@@ -10,7 +10,7 @@ namespace ChessPlatform.GamePlay
         #region Constructors
 
         public ChessPlayerFeedbackEventArgs(
-            PieceColor color,
+            GameSide side,
             [NotNull] GameBoard board,
             int depth,
             int maxDepth,
@@ -54,7 +54,7 @@ namespace ChessPlatform.GamePlay
 
             #endregion
 
-            Color = color;
+            Side = side;
             Board = board;
             Depth = depth;
             MaxDepth = maxDepth;
@@ -65,7 +65,7 @@ namespace ChessPlatform.GamePlay
 
         #region Public Properties
 
-        public PieceColor Color
+        public GameSide Side
         {
             [DebuggerStepThrough]
             get;

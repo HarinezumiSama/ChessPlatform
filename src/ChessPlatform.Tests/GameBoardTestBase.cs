@@ -18,7 +18,7 @@ namespace ChessPlatform.Tests
 
         protected static void AssertBaseProperties(
             [NotNull] GameBoard gameBoard,
-            PieceColor expectedActiveColor,
+            GameSide expectedActiveSide,
             CastlingOptions expectedCastlingOptions,
             EnPassantCaptureInfo expectedEnPassantCaptureInfo,
             int expectedHalfMoveCountBy50MoveRule,
@@ -28,7 +28,7 @@ namespace ChessPlatform.Tests
         {
             Assert.That(gameBoard, Is.Not.Null);
 
-            Assert.That(gameBoard.ActiveColor, Is.EqualTo(expectedActiveColor));
+            Assert.That(gameBoard.ActiveSide, Is.EqualTo(expectedActiveSide));
             Assert.That(gameBoard.CastlingOptions, Is.EqualTo(expectedCastlingOptions));
             AssertEnPassantCaptureInfo(gameBoard.EnPassantCaptureInfo, expectedEnPassantCaptureInfo);
             Assert.That(gameBoard.FullMoveIndex, Is.EqualTo(expectedFullMoveIndex));
@@ -61,17 +61,17 @@ namespace ChessPlatform.Tests
                     Is.EqualTo(gameBoard.IsCapturingMove(actualValidMove)));
 
                 Assert.That(
-                    gameBoard[actualValidMove.To].GetColor(),
+                    gameBoard[actualValidMove.To].GetSide(),
                     Is.EqualTo(
                         pieceMoveInfo.IsRegularCapture && !pieceMoveInfo.IsEnPassantCapture
-                            ? gameBoard.ActiveColor.Invert()
-                            : (PieceColor?)null));
+                            ? gameBoard.ActiveSide.Invert()
+                            : (GameSide?)null));
 
                 if (pieceMoveInfo.IsEnPassantCapture)
                 {
                     Assert.That(
                         gameBoard[actualValidMove.From],
-                        Is.EqualTo(PieceType.Pawn.ToPiece(gameBoard.ActiveColor)));
+                        Is.EqualTo(gameBoard.ActiveSide.ToPiece(PieceType.Pawn)));
 
                     Assert.That(gameBoard[actualValidMove.To].GetPieceType(), Is.EqualTo(PieceType.None));
                 }
@@ -126,7 +126,6 @@ namespace ChessPlatform.Tests
                     $@"Squares of '{expectedPiece}' must contain '{square}'.");
             }
         }
-
 
         #endregion
 

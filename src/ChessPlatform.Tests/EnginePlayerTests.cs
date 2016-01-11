@@ -70,7 +70,7 @@ namespace ChessPlatform.Tests
                 UseMultipleProcessors = false
             };
 
-            var player = new EnginePlayer(gameBoard.ActiveColor, playerParameters);
+            var player = new EnginePlayer(gameBoard.ActiveSide, playerParameters);
 
             var stopwatch = Stopwatch.StartNew();
             var gameControlStub = new GameControl();

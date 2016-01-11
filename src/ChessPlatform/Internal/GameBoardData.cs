@@ -13,7 +13,7 @@ namespace ChessPlatform.Internal
         #region Constants and Fields
 
         private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
-        private static readonly int ColorArrayLength = ChessConstants.PieceColors.Max(item => (int)item) + 1;
+        private static readonly int GameSideArrayLength = ChessConstants.GameSides.Max(item => (int)item) + 1;
 
         private static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
         private static readonly ShiftDirection[] QueenDirections = AllDirections;
@@ -48,7 +48,7 @@ namespace ChessPlatform.Internal
         private readonly Stack<MakeMoveData> _undoMoveDatas;
 
         private readonly Bitboard[] _bitboards;
-        private readonly Bitboard[] _entireColorBitboards;
+        private readonly Bitboard[] _entireSideBitboards;
         private readonly Piece[] _pieces;
 
         #endregion
@@ -63,7 +63,7 @@ namespace ChessPlatform.Internal
             _bitboards = new Bitboard[PieceArrayLength];
             _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboard.Everything;
 
-            _entireColorBitboards = new Bitboard[ColorArrayLength];
+            _entireSideBitboards = new Bitboard[GameSideArrayLength];
             ZobristKey = ComputeZobristKey();
         }
 
@@ -81,7 +81,7 @@ namespace ChessPlatform.Internal
             _undoMoveDatas = new Stack<MakeMoveData>();
             _pieces = other._pieces.Copy();
             _bitboards = other._bitboards.Copy();
-            _entireColorBitboards = other._entireColorBitboards.Copy();
+            _entireSideBitboards = other._entireSideBitboards.Copy();
             ZobristKey = other.ZobristKey;
         }
 
@@ -173,9 +173,9 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetBitboard(PieceColor color)
+        public Bitboard GetBitboard(GameSide side)
         {
-            var bitboard = _entireColorBitboards[GetColorArrayIndexInternal(color)];
+            var bitboard = _entireSideBitboards[GetGameSideArrayIndexInternal(side)];
             return bitboard;
         }
 
@@ -187,9 +187,9 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Square[] GetSquares(PieceColor color)
+        public Square[] GetSquares(GameSide side)
         {
-            var bitboard = GetBitboard(color);
+            var bitboard = GetBitboard(side);
             return bitboard.GetSquares();
         }
 
@@ -213,12 +213,12 @@ namespace ChessPlatform.Internal
             #endregion
 
             var pieceInfo = GetPieceInfo(move.From);
-            if (!pieceInfo.Color.HasValue || pieceInfo.PieceType != PieceType.Pawn || move.From.File != move.To.File)
+            if (!pieceInfo.Side.HasValue || pieceInfo.PieceType != PieceType.Pawn || move.From.File != move.To.File)
             {
                 return null;
             }
 
-            var enPassantInfo = ChessConstants.ColorToDoublePushInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            var enPassantInfo = ChessConstants.GameSideToDoublePushInfoMap[pieceInfo.Side.Value].EnsureNotNull();
             var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
             if (!isEnPassant)
             {
@@ -266,7 +266,7 @@ namespace ChessPlatform.Internal
         public CastlingInfo CheckCastlingMove([NotNull] GameMove move)
         {
             var pieceInfo = GetPieceInfo(move.From);
-            if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Color.HasValue)
+            if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Side.HasValue)
             {
                 return null;
             }
@@ -275,22 +275,22 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetAttackers(Square targetSquare, PieceColor attackingColor)
+        public Bitboard GetAttackers(Square targetSquare, GameSide attackingSide)
         {
-            return GetAttackersInternal(targetSquare, attackingColor, false);
+            return GetAttackersInternal(targetSquare, attackingSide, false);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsUnderAttack(Square targetSquare, PieceColor attackingColor)
+        public bool IsUnderAttack(Square targetSquare, GameSide attackingSide)
         {
-            var bitboard = GetAttackersInternal(targetSquare, attackingColor, true);
+            var bitboard = GetAttackersInternal(targetSquare, attackingSide, true);
             return bitboard.IsAny;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAnyUnderAttack(
             [NotNull] IEnumerable<Square> targetSquares,
-            PieceColor attackingColor)
+            GameSide attackingSide)
         {
             #region Argument Check
 
@@ -301,20 +301,20 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var result = targetSquares.Any(targetSquare => IsUnderAttack(targetSquare, attackingColor));
+            var result = targetSquares.Any(targetSquare => IsUnderAttack(targetSquare, attackingSide));
             return result;
         }
 
-        public Bitboard[] GetPinLimitations(int valuablePieceSquareIndex, PieceColor attackingColor)
+        public Bitboard[] GetPinLimitations(int valuablePieceSquareIndex, GameSide attackingSide)
         {
             var result = DefaultPinLimitations.Copy();
 
-            var enemyPieces = GetBitboard(attackingColor);
-            var ownPieces = GetBitboard(attackingColor.Invert());
+            var enemyPieces = GetBitboard(attackingSide);
+            var ownPieces = GetBitboard(attackingSide.Invert());
 
-            var queens = GetBitboard(PieceType.Queen.ToPiece(attackingColor));
-            var bishops = GetBitboard(PieceType.Bishop.ToPiece(attackingColor));
-            var rooks = GetBitboard(PieceType.Rook.ToPiece(attackingColor));
+            var queens = GetBitboard(attackingSide.ToPiece(PieceType.Queen));
+            var bishops = GetBitboard(attackingSide.ToPiece(PieceType.Bishop));
+            var rooks = GetBitboard(attackingSide.ToPiece(PieceType.Rook));
 
             PopulatePinLimitations(
                 result,
@@ -335,18 +335,18 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        public bool IsInCheck(PieceColor kingColor)
+        public bool IsInCheck(GameSide side)
         {
-            var king = PieceType.King.ToPiece(kingColor);
-            var oppositeColor = kingColor.Invert();
+            var king = side.ToPiece(PieceType.King);
+            var oppositeSide = side.Invert();
             var kingSquares = GetSquares(king);
-            return kingSquares.Length != 0 && IsAnyUnderAttack(kingSquares, oppositeColor);
+            return kingSquares.Length != 0 && IsAnyUnderAttack(kingSquares, oppositeSide);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsInsufficientMaterialState()
         {
-            return IsKingLeftOnly(PieceColor.White) && IsKingLeftOnly(PieceColor.Black);
+            return IsKingLeftOnly(GameSide.White) && IsKingLeftOnly(GameSide.Black);
         }
 
         public Square[] GetPotentialMoveSquares(
@@ -355,17 +355,17 @@ namespace ChessPlatform.Internal
             Square sourceSquare)
         {
             var pieceInfo = GetPieceInfo(sourceSquare);
-            if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Color.HasValue)
+            if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Side.HasValue)
             {
                 throw new ArgumentException("No piece at the source Square.", nameof(sourceSquare));
             }
 
-            var pieceColor = pieceInfo.Color.Value;
+            var pieceSide = pieceInfo.Side.Value;
 
             if (pieceInfo.PieceType == PieceType.Knight)
             {
                 var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
-                    .Where(square => GetPieceInfo(square).Color != pieceColor)
+                    .Where(square => GetPieceInfo(square).Side != pieceSide)
                     .ToArray();
 
                 return result;
@@ -387,7 +387,7 @@ namespace ChessPlatform.Internal
             {
                 GetPotentialMoveSquaresByRays(
                     sourceSquare,
-                    pieceColor,
+                    pieceSide,
                     ChessHelper.StraightRays,
                     ChessHelper.MaxSlidingPieceDistance,
                     true,
@@ -398,7 +398,7 @@ namespace ChessPlatform.Internal
             {
                 GetPotentialMoveSquaresByRays(
                     sourceSquare,
-                    pieceColor,
+                    pieceSide,
                     ChessHelper.DiagonalRays,
                     ChessHelper.MaxSlidingPieceDistance,
                     true,
@@ -410,7 +410,7 @@ namespace ChessPlatform.Internal
 
         public void GeneratePawnMoves(
             [NotNull] ICollection<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes,
             Bitboard enPassantCaptureTarget,
             Bitboard target)
@@ -424,18 +424,18 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var pawnPiece = PieceType.Pawn.ToPiece(color);
+            var pawnPiece = side.ToPiece(PieceType.Pawn);
             var pawns = GetBitboard(pawnPiece);
             if (pawns.IsNone)
             {
                 return;
             }
 
-            var rank8 = color == PieceColor.White ? Bitboards.Rank8 : Bitboards.Rank1;
+            var rank8 = side == GameSide.White ? Bitboards.Rank8 : Bitboards.Rank1;
 
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
             {
-                var forwardDirection = color == PieceColor.White ? ShiftDirection.North : ShiftDirection.South;
+                var forwardDirection = side == GameSide.White ? ShiftDirection.North : ShiftDirection.South;
                 var emptySquares = GetBitboard(Piece.None);
                 var pushes = pawns.Shift(forwardDirection) & emptySquares;
 
@@ -455,7 +455,7 @@ namespace ChessPlatform.Internal
 
                 if (pushes.IsAny)
                 {
-                    var rank3 = color == PieceColor.White ? Bitboards.Rank3 : Bitboards.Rank6;
+                    var rank3 = side == GameSide.White ? Bitboards.Rank3 : Bitboards.Rank6;
                     var doublePushes = (pushes & rank3).Shift(forwardDirection) & emptySquares & target;
                     PopulatePawnMoves(
                         resultMoves,
@@ -467,10 +467,10 @@ namespace ChessPlatform.Internal
 
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
             {
-                var enemies = GetBitboard(color.Invert());
+                var enemies = GetBitboard(side.Invert());
                 var enemyTargets = enemies & target;
 
-                var leftCaptureOffset = color == PieceColor.White
+                var leftCaptureOffset = side == GameSide.White
                     ? ShiftDirection.NorthWest
                     : ShiftDirection.SouthEast;
                 PopulatePawnCaptures(
@@ -481,7 +481,7 @@ namespace ChessPlatform.Internal
                     rank8,
                     enPassantCaptureTarget);
 
-                var rightCaptureOffset = color == PieceColor.White
+                var rightCaptureOffset = side == GameSide.White
                     ? ShiftDirection.NorthEast
                     : ShiftDirection.SouthWest;
                 PopulatePawnCaptures(
@@ -496,7 +496,7 @@ namespace ChessPlatform.Internal
 
         public void GenerateKingMoves(
             [NotNull] ICollection<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             CastlingOptions allowedCastlingOptions,
             Bitboard target)
         {
@@ -509,7 +509,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var kingPiece = PieceType.King.ToPiece(color);
+            var kingPiece = side.ToPiece(PieceType.King);
             var king = GetBitboard(kingPiece);
             if (king.IsNone)
             {
@@ -530,7 +530,7 @@ namespace ChessPlatform.Internal
             var nonCaptures = directTargets & emptySquares;
             PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
 
-            var enemies = GetBitboard(color.Invert());
+            var enemies = GetBitboard(side.Invert());
             var captures = directTargets & enemies;
             PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
 
@@ -541,19 +541,19 @@ namespace ChessPlatform.Internal
                 sourceSquare,
                 allowedCastlingOptions,
                 nonEmptySquares,
-                CastlingSide.KingSide.ToCastlingType(color));
+                CastlingSide.KingSide.ToCastlingType(side));
 
             PopulateKingCastlingMoves(
                 resultMoves,
                 sourceSquare,
                 allowedCastlingOptions,
                 nonEmptySquares,
-                CastlingSide.QueenSide.ToCastlingType(color));
+                CastlingSide.QueenSide.ToCastlingType(side));
         }
 
         public void GenerateKnightMoves(
             [NotNull] ICollection<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes,
             Bitboard target)
         {
@@ -567,7 +567,7 @@ namespace ChessPlatform.Internal
             #endregion
 
             var emptySquares = GetBitboard(Piece.None);
-            var enemies = GetBitboard(color.Invert());
+            var enemies = GetBitboard(side.Invert());
 
             var internalTarget = Bitboard.None;
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
@@ -586,7 +586,7 @@ namespace ChessPlatform.Internal
                 return;
             }
 
-            var knightPiece = PieceType.Knight.ToPiece(color);
+            var knightPiece = side.ToPiece(PieceType.Knight);
             var knights = GetBitboard(knightPiece);
 
             while (knights.IsAny)
@@ -616,7 +616,7 @@ namespace ChessPlatform.Internal
 
         public void GenerateQueenMoves(
             [NotNull] List<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes)
         {
             #region Argument Check
@@ -628,12 +628,12 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Queen, QueenDirections);
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Queen, QueenDirections);
         }
 
         public void GenerateRookMoves(
             [NotNull] List<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes)
         {
             #region Argument Check
@@ -645,12 +645,12 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Rook, RookDirections);
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Rook, RookDirections);
         }
 
         public void GenerateBishopMoves(
             [NotNull] List<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes)
         {
             #region Argument Check
@@ -662,7 +662,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            GenerateSlidingPieceMoves(resultMoves, color, moveTypes, PieceType.Bishop, BishopDirections);
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Bishop, BishopDirections);
         }
 
         #endregion
@@ -679,18 +679,18 @@ namespace ChessPlatform.Internal
 
             _bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
 
-            var oldPieceColor = oldPiece.GetColor();
-            if (oldPieceColor.HasValue)
+            var oldPieceSide = oldPiece.GetSide();
+            if (oldPieceSide.HasValue)
             {
-                _entireColorBitboards[GetColorArrayIndexInternal(oldPieceColor.Value)] &= ~bitboardBit;
+                _entireSideBitboards[GetGameSideArrayIndexInternal(oldPieceSide.Value)] &= ~bitboardBit;
             }
 
             _bitboards[GetPieceArrayIndexInternal(piece)] |= bitboardBit;
 
-            var pieceColor = piece.GetColor();
-            if (pieceColor.HasValue)
+            var pieceSide = piece.GetSide();
+            if (pieceSide.HasValue)
             {
-                _entireColorBitboards[GetColorArrayIndexInternal(pieceColor.Value)] |= bitboardBit;
+                _entireSideBitboards[GetGameSideArrayIndexInternal(pieceSide.Value)] |= bitboardBit;
             }
 
             ZobristKey ^= ZobristHashHelper.GetPieceHash(square, oldPiece)
@@ -788,7 +788,7 @@ namespace ChessPlatform.Internal
 
         internal MakeMoveData MakeMove(
             [NotNull] GameMove move,
-            PieceColor movingColor,
+            GameSide movingSide,
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             ref CastlingOptions castlingOptions)
         {
@@ -800,7 +800,7 @@ namespace ChessPlatform.Internal
             }
 
             var pieceInfo = GetPieceInfo(move.From);
-            if (pieceInfo.PieceType == PieceType.None || pieceInfo.Color != movingColor)
+            if (pieceInfo.PieceType == PieceType.None || pieceInfo.Side != movingSide)
             {
                 throw new ArgumentException("Invalid move.", nameof(move));
             }
@@ -810,7 +810,7 @@ namespace ChessPlatform.Internal
             GameMove castlingRookMove = null;
             Square? enPassantCapturedPieceSquare = null;
 
-            var movingColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[movingColor];
+            var movingSideAllCastlingOptions = ChessHelper.GameSideToCastlingOptionsMap[movingSide];
 
             // Performing checks before actual move!
             var castlingInfo = CheckCastlingMove(move);
@@ -841,7 +841,7 @@ namespace ChessPlatform.Internal
                     throw new ChessPlatformException($@"Promoted piece type is not specified ({move}).");
                 }
 
-                var previousPiece = SetPiece(move.To, move.PromotionResult.ToPiece(movingColor));
+                var previousPiece = SetPiece(move.To, move.PromotionResult.ToPiece(movingSide));
                 if (previousPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
@@ -862,16 +862,16 @@ namespace ChessPlatform.Internal
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
 
-                castlingOptions &= ~movingColorAllCastlingOptions;
+                castlingOptions &= ~movingSideAllCastlingOptions;
             }
 
-            var movingColorCurrentCastlingOptions = castlingOptions & movingColorAllCastlingOptions;
-            if (movingColorCurrentCastlingOptions != CastlingOptions.None)
+            var movingSideCurrentCastlingOptions = castlingOptions & movingSideAllCastlingOptions;
+            if (movingSideCurrentCastlingOptions != CastlingOptions.None)
             {
                 switch (pieceInfo.PieceType)
                 {
                     case PieceType.King:
-                        castlingOptions &= ~movingColorAllCastlingOptions;
+                        castlingOptions &= ~movingSideAllCastlingOptions;
                         break;
 
                     case PieceType.Rook:
@@ -889,10 +889,10 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var oppositeColor = movingColor.Invert();
-            var oppositeColorAllCastlingOptions = ChessHelper.ColorToCastlingOptionsMap[oppositeColor];
-            var oppositeColorCurrentCastlingOptions = castlingOptions & oppositeColorAllCastlingOptions;
-            if (oppositeColorCurrentCastlingOptions != CastlingOptions.None
+            var oppositeSide = movingSide.Invert();
+            var oppositeSideAllCastlingOptions = ChessHelper.GameSideToCastlingOptionsMap[oppositeSide];
+            var oppositeSideCurrentCastlingOptions = castlingOptions & oppositeSideAllCastlingOptions;
+            if (oppositeSideCurrentCastlingOptions != CastlingOptions.None
                 && capturedPiece.GetPieceType() == PieceType.Rook)
             {
                 var oppositeCastlingInfo =
@@ -943,7 +943,7 @@ namespace ChessPlatform.Internal
             {
                 var castlingRook = SetPiece(data.CastlingRookMove.To, Piece.None);
                 if (castlingRook.GetPieceType() != PieceType.Rook
-                    || castlingRook.GetColor() != data.MovedPiece.GetColor())
+                    || castlingRook.GetSide() != data.MovedPiece.GetSide())
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
@@ -965,9 +965,9 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetColorArrayIndexInternal(PieceColor color)
+        private static int GetGameSideArrayIndexInternal(GameSide side)
         {
-            return (int)color;
+            return (int)side;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1334,14 +1334,14 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            foreach (var color in ChessConstants.PieceColors)
+            foreach (var side in ChessConstants.GameSides)
             {
-                var actual = GetBitboard(color);
-                var expected = GetEntireColorBitboardNonCached(color);
+                var actual = GetBitboard(side);
+                var expected = GetEntireSideBitboardNonCached(side);
                 if (actual != expected)
                 {
                     throw new ChessPlatformException(
-                        $@"Entire-color-bitboard inconsistency: expected '{expected}', actual '{actual}'.");
+                        $@"Entire-side-bitboard inconsistency: expected '{expected}', actual '{actual}'.");
                 }
             }
         }
@@ -1378,9 +1378,9 @@ namespace ChessPlatform.Internal
             }
 
             var capturedPiece = SetPiece(move.To, movedPiece);
-            if (capturedPiece != Piece.None && capturedPiece.GetColor() == movedPiece.GetColor())
+            if (capturedPiece != Piece.None && capturedPiece.GetSide() == movedPiece.GetSide())
             {
-                throw new ChessPlatformException("Cannot capture a piece of the same color.");
+                throw new ChessPlatformException("Cannot capture an own piece.");
             }
 
             return new MovePieceData(movedPiece, capturedPiece);
@@ -1388,7 +1388,7 @@ namespace ChessPlatform.Internal
 
         private void GetPotentialMoveSquaresByRays(
             Square sourceSquare,
-            PieceColor sourceColor,
+            GameSide sourceSide,
             IEnumerable<SquareShift> rays,
             int maxDistance,
             bool allowCapturing,
@@ -1404,14 +1404,14 @@ namespace ChessPlatform.Internal
                     var currentSquare = square.Value;
 
                     var pieceInfo = GetPieceInfo(currentSquare);
-                    var currentColor = pieceInfo.Color;
-                    if (pieceInfo.Piece == Piece.None || !currentColor.HasValue)
+                    var currentSide = pieceInfo.Side;
+                    if (pieceInfo.Piece == Piece.None || !currentSide.HasValue)
                     {
                         resultCollection.Add(currentSquare);
                         continue;
                     }
 
-                    if (currentColor.Value != sourceColor && allowCapturing)
+                    if (currentSide.Value != sourceSide && allowCapturing)
                     {
                         resultCollection.Add(currentSquare);
                     }
@@ -1421,16 +1421,16 @@ namespace ChessPlatform.Internal
             }
         }
 
-        private Bitboard GetEntireColorBitboardNonCached(PieceColor color)
+        private Bitboard GetEntireSideBitboardNonCached(GameSide side)
         {
-            return ChessConstants.ColorToPiecesMap[color].Aggregate(
+            return ChessConstants.GameSideToPiecesMap[side].Aggregate(
                 Bitboard.None,
                 (a, piece) => a | GetBitboard(piece));
         }
 
         private Bitboard GetAttackersInternal(
             Square targetSquare,
-            PieceColor attackingColor,
+            GameSide attackingSide,
             bool findFirstAttackOnly)
         {
             var result = new Bitboard();
@@ -1438,12 +1438,12 @@ namespace ChessPlatform.Internal
             var targetBitboard = targetSquare.Bitboard;
             var targetSquareIndex = targetSquare.SquareIndex;
 
-            var opponentPawns = GetBitboard(PieceType.Pawn.ToPiece(attackingColor));
+            var opponentPawns = GetBitboard(attackingSide.ToPiece(PieceType.Pawn));
             if (opponentPawns.IsAny)
             {
                 ShiftDirection left;
                 ShiftDirection right;
-                if (attackingColor == PieceColor.White)
+                if (attackingSide == GameSide.White)
                 {
                     left = ShiftDirection.SouthEast;
                     right = ShiftDirection.SouthWest;
@@ -1462,7 +1462,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var opponentKnights = GetBitboard(PieceType.Knight.ToPiece(attackingColor));
+            var opponentKnights = GetBitboard(attackingSide.ToPiece(PieceType.Knight));
             if (opponentKnights.IsAny)
             {
                 var knightAttacks = KnightAttacksOrMoves[targetSquareIndex];
@@ -1474,7 +1474,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var opponentKings = GetBitboard(PieceType.King.ToPiece(attackingColor));
+            var opponentKings = GetBitboard(attackingSide.ToPiece(PieceType.King));
             if (opponentKings.IsAny)
             {
                 var kingAttacks = KingAttacksOrMoves[targetSquareIndex];
@@ -1488,9 +1488,9 @@ namespace ChessPlatform.Internal
 
             var emptySquareBitboard = GetBitboard(Piece.None);
 
-            var opponentQueens = GetBitboard(PieceType.Queen.ToPiece(attackingColor));
+            var opponentQueens = GetBitboard(attackingSide.ToPiece(PieceType.Queen));
+            var opponentRooks = GetBitboard(attackingSide.ToPiece(PieceType.Rook));
 
-            var opponentRooks = GetBitboard(PieceType.Rook.ToPiece(attackingColor));
             var opponentSlidingStraightPieces = opponentQueens | opponentRooks;
             var slidingStraightAttackers =
                 GetSlidingAttackers(
@@ -1506,7 +1506,8 @@ namespace ChessPlatform.Internal
                 return result;
             }
 
-            var opponentBishops = GetBitboard(PieceType.Bishop.ToPiece(attackingColor));
+            var opponentBishops = GetBitboard(attackingSide.ToPiece(PieceType.Bishop));
+
             var opponentSlidingDiagonallyPieces = opponentQueens | opponentBishops;
             var slidingDiagonallyAttackers =
                 GetSlidingAttackers(
@@ -1521,26 +1522,26 @@ namespace ChessPlatform.Internal
             return result;
         }
 
-        private bool IsKingLeftOnly(PieceColor color)
+        private bool IsKingLeftOnly(GameSide side)
         {
-            var entire = GetBitboard(color);
-            var king = GetBitboard(PieceType.King.ToPiece(color));
+            var entire = GetBitboard(side);
+            var king = GetBitboard(side.ToPiece(PieceType.King));
             var otherPieces = entire & ~king;
             return otherPieces.IsNone;
         }
 
         private void GenerateSlidingPieceMoves(
             [NotNull] ICollection<GameMoveData> resultMoves,
-            PieceColor color,
+            GameSide side,
             GeneratedMoveTypes moveTypes,
             PieceType pieceType,
             ShiftDirection[] directions)
         {
-            var piece = pieceType.ToPiece(color);
+            var piece = pieceType.ToPiece(side);
             var pieces = GetBitboard(piece);
 
             var emptySquares = GetBitboard(Piece.None);
-            var enemies = GetBitboard(color.Invert());
+            var enemies = GetBitboard(side.Invert());
 
             var shouldGenerateQuiets = moveTypes.IsAnySet(GeneratedMoveTypes.Quiet);
             var shouldGenerateCaptures = moveTypes.IsAnySet(GeneratedMoveTypes.Capture);

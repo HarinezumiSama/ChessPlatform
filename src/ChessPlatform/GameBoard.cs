@@ -26,7 +26,7 @@ namespace ChessPlatform
 
         private readonly GameBoardData _gameBoardData;
 
-        private readonly PieceColor _activeColor;
+        private readonly GameSide _activeSide;
         private readonly GameState _state;
         private readonly AutoDrawType _autoDrawType;
         private readonly CastlingOptions _castlingOptions;
@@ -67,7 +67,7 @@ namespace ChessPlatform
             LastCapturedPiece = Piece.None;
 
             SetupDefault(
-                out _activeColor,
+                out _activeSide,
                 out _castlingOptions,
                 out _enPassantCaptureInfo,
                 out _halfMoveCountBy50MoveRule,
@@ -116,7 +116,7 @@ namespace ChessPlatform
 
             SetupByFen(
                 fen,
-                out _activeColor,
+                out _activeSide,
                 out _castlingOptions,
                 out _enPassantCaptureInfo,
                 out _halfMoveCountBy50MoveRule,
@@ -150,10 +150,10 @@ namespace ChessPlatform
             PreviousBoard = previousBoard;
             _validateAfterMove = previousBoard._validateAfterMove;
             _gameBoardData = previousBoard._gameBoardData.Copy();
-            _activeColor = previousBoard._activeColor.Invert();
+            _activeSide = previousBoard._activeSide.Invert();
             _castlingOptions = previousBoard._castlingOptions;
 
-            _fullMoveIndex = previousBoard._fullMoveIndex + (move != null && _activeColor == PieceColor.White ? 1 : 0);
+            _fullMoveIndex = previousBoard._fullMoveIndex + (move != null && _activeSide == GameSide.White ? 1 : 0);
 
             if (move == null)
             {
@@ -168,7 +168,7 @@ namespace ChessPlatform
 
                 var makeMoveData = _gameBoardData.MakeMove(
                     move,
-                    previousBoard._activeColor,
+                    previousBoard._activeSide,
                     previousBoard._enPassantCaptureInfo,
                     ref _castlingOptions);
 
@@ -210,12 +210,12 @@ namespace ChessPlatform
             get;
         }
 
-        public PieceColor ActiveColor
+        public GameSide ActiveSide
         {
             [DebuggerStepThrough]
             get
             {
-                return _activeColor;
+                return _activeSide;
             }
         }
 
@@ -429,14 +429,14 @@ namespace ChessPlatform
         public string GetFen()
         {
             var pieceDataSnippet = _gameBoardData.GetFenSnippet();
-            var activeColorSnippet = _activeColor.GetFenSnippet();
+            var activeSideSnippet = _activeSide.GetFenSnippet();
             var castlingOptionsSnippet = _castlingOptions.GetFenSnippet();
             var enPassantCaptureInfoSnippet = _enPassantCaptureInfo.GetFenSnippet();
 
             var result = string.Join(
                 ChessConstants.FenSnippetSeparator,
                 pieceDataSnippet,
-                activeColorSnippet,
+                activeSideSnippet,
                 castlingOptionsSnippet,
                 enPassantCaptureInfoSnippet,
                 _halfMoveCountBy50MoveRule.ToString(CultureInfo.InvariantCulture),
@@ -455,9 +455,9 @@ namespace ChessPlatform
             return _gameBoardData.GetBitboard(piece);
         }
 
-        public Bitboard GetBitboard(PieceColor color)
+        public Bitboard GetBitboard(GameSide side)
         {
-            return _gameBoardData.GetBitboard(color);
+            return _gameBoardData.GetBitboard(side);
         }
 
         public Square[] GetSquares(Piece piece)
@@ -465,9 +465,9 @@ namespace ChessPlatform
             return _gameBoardData.GetSquares(piece);
         }
 
-        public Square[] GetSquares(PieceColor color)
+        public Square[] GetSquares(GameSide side)
         {
-            return _gameBoardData.GetSquares(color);
+            return _gameBoardData.GetSquares(side);
         }
 
         public bool IsValidMove(GameMove move)
@@ -518,8 +518,8 @@ namespace ChessPlatform
             var sourcePieceInfo = GetPieceInfo(move.From);
             var destinationPieceInfo = GetPieceInfo(move.To);
 
-            var result = sourcePieceInfo.Color == _activeColor
-                && destinationPieceInfo.Color == _activeColor.Invert();
+            var result = sourcePieceInfo.Side == _activeSide
+                && destinationPieceInfo.Side == _activeSide.Invert();
 
             return result;
         }
@@ -538,9 +538,9 @@ namespace ChessPlatform
             return ValidMoves.ContainsKey(move) ? _gameBoardData.CheckCastlingMove(move) : null;
         }
 
-        public Square[] GetAttacks(Square targetSquare, PieceColor attackingColor)
+        public Square[] GetAttacks(Square targetSquare, GameSide attackingSide)
         {
-            var bitboard = _gameBoardData.GetAttackers(targetSquare, attackingColor);
+            var bitboard = _gameBoardData.GetAttackers(targetSquare, attackingSide);
             return bitboard.GetSquares();
         }
 
@@ -663,7 +663,7 @@ namespace ChessPlatform
             return ReferenceEquals(this, otherBoard) ||
                 (_zobristKey == otherBoard._zobristKey
                     && _castlingOptions == otherBoard._castlingOptions
-                    && _activeColor == otherBoard._activeColor
+                    && _activeSide == otherBoard._activeSide
                     && _enPassantCaptureInfo == otherBoard._enPassantCaptureInfo
                     && _gameBoardData.IsSamePosition(otherBoard._gameBoardData));
         }
@@ -727,7 +727,7 @@ namespace ChessPlatform
 
             gameBoardData.GenerateKingMoves(
                 _potentialMoveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 isInCheck ? CastlingOptions.None : addMoveData.CastlingOptions,
                 Bitboard.Everything);
 
@@ -739,14 +739,14 @@ namespace ChessPlatform
             var noActiveKingGameBoardData = gameBoardData.Copy();
             noActiveKingGameBoardData.SetPiece(activeKingSquare, Piece.None);
 
-            var oppositeColor = addMoveData.OppositeColor;
+            var oppositeSide = addMoveData.OppositeSide;
 
             // ReSharper disable once ForCanBeConvertedToForeach - For optimization
             for (var index = 0; index < _potentialMoveDatas.Count; index++)
             {
                 var potentialMoveData = _potentialMoveDatas[index];
 
-                if (noActiveKingGameBoardData.IsUnderAttack(potentialMoveData.Move.To, oppositeColor))
+                if (noActiveKingGameBoardData.IsUnderAttack(potentialMoveData.Move.To, oppositeSide))
                 {
                     continue;
                 }
@@ -754,7 +754,7 @@ namespace ChessPlatform
                 if (!isInCheck && potentialMoveData.MoveInfo.IsKingCastling)
                 {
                     var castlingInfo = gameBoardData.CheckCastlingMove(potentialMoveData.Move);
-                    if (gameBoardData.IsUnderAttack(castlingInfo.PassedSquare, oppositeColor))
+                    if (gameBoardData.IsUnderAttack(castlingInfo.PassedSquare, oppositeSide))
                     {
                         continue;
                     }
@@ -784,23 +784,23 @@ namespace ChessPlatform
 
             gameBoardData.GenerateKnightMoves(
                 moveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 GeneratedMoveTypes.All,
                 Bitboard.Everything);
 
             gameBoardData.GenerateQueenMoves(
                 moveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 GeneratedMoveTypes.All);
 
             gameBoardData.GenerateRookMoves(
                 moveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 GeneratedMoveTypes.All);
 
             gameBoardData.GenerateBishopMoves(
                 moveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 GeneratedMoveTypes.All);
 
             foreach (var moveData in moveDatas)
@@ -829,7 +829,7 @@ namespace ChessPlatform
             var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
 
             //// TODO [vmcl] Generate attacker moves (this will eliminate some extra checks)
-            var capturingBitboard = gameBoardData.GetAttackers(checkAttackSquare, addMoveData.ActiveColor)
+            var capturingBitboard = gameBoardData.GetAttackers(checkAttackSquare, addMoveData.ActiveSide)
                 & ~activeKingBitboard;
 
             var currentCapturingBitboard = capturingBitboard;
@@ -922,7 +922,7 @@ namespace ChessPlatform
 
             gameBoardData.GeneratePawnMoves(
                 _potentialMoveDatas,
-                addMoveData.ActiveColor,
+                addMoveData.ActiveSide,
                 generatedMoveTypes,
                 enPassantCaptureInfo?.CaptureSquare.Bitboard ?? Bitboard.None,
                 target);
@@ -953,11 +953,11 @@ namespace ChessPlatform
 
                     gameBoardData.MakeMove(
                         move,
-                        addMoveData.ActiveColor,
+                        addMoveData.ActiveSide,
                         enPassantCaptureInfo,
                         ref temporaryCastlingOptions);
 
-                    var isInvalidMove = gameBoardData.IsInCheck(addMoveData.ActiveColor);
+                    var isInvalidMove = gameBoardData.IsInCheck(addMoveData.ActiveSide);
                     gameBoardData.UndoMove();
 
                     if (isInvalidMove)
@@ -1083,11 +1083,11 @@ namespace ChessPlatform
                     var castlingOptions = gameBoard._castlingOptions;
                     gameBoardDataCopy.MakeMove(
                         move,
-                        gameBoard._activeColor,
+                        gameBoard._activeSide,
                         gameBoard._enPassantCaptureInfo,
                         ref castlingOptions);
 
-                    var isInCheck = gameBoardDataCopy.IsInCheck(gameBoard._activeColor.Invert());
+                    var isInCheck = gameBoardDataCopy.IsInCheck(gameBoard._activeSide.Invert());
                     gameBoardDataCopy.UndoMove();
 
                     if (!isInCheck)
@@ -1151,39 +1151,36 @@ namespace ChessPlatform
                 }
             }
 
-            if (_gameBoardData.IsInCheck(_activeColor.Invert()))
+            if (_gameBoardData.IsInCheck(_activeSide.Invert()))
             {
                 throw new ChessPlatformException("Inactive king is in check.");
             }
 
-            foreach (var pieceColor in ChessConstants.PieceColors)
+            foreach (var side in ChessConstants.GameSides)
             {
-                var color = pieceColor;
-
                 var pieceToCountMap = ChessConstants
                     .PieceTypesExceptNone
                     .ToDictionary(
                         Factotum.Identity,
-                        item => _gameBoardData.GetPieceCount(item.ToPiece(color)));
+                        item => _gameBoardData.GetPieceCount(item.ToPiece(side)));
 
                 var allCount = pieceToCountMap.Values.Sum();
                 var pawnCount = pieceToCountMap[PieceType.Pawn];
 
-                if (pawnCount > ChessConstants.MaxPawnCountPerColor)
+                if (pawnCount > ChessConstants.MaxPawnCountPerSide)
                 {
                     throw new ChessPlatformException(
-                        $@"Too many '{PieceType.Pawn.ToPiece(color).GetDescription()}' ({pawnCount}).");
+                        $@"Too many '{side.ToPiece(PieceType.Pawn).GetDescription()}' ({pawnCount}).");
                 }
 
-                if (allCount > ChessConstants.MaxPieceCountPerColor)
+                if (allCount > ChessConstants.MaxPieceCountPerSide)
                 {
-                    throw new ChessPlatformException(
-                        $@"Too many pieces of the color {color.GetName()} ({allCount}).");
+                    throw new ChessPlatformException($@"Too many {side.GetName()} side pieces ({allCount}).");
                 }
             }
 
-            var allPawnsBitboard = _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.White))
-                | _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(PieceColor.Black));
+            var allPawnsBitboard = _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(GameSide.White))
+                | _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(GameSide.Black));
 
             if ((allPawnsBitboard & ChessHelper.InvalidPawnSquaresBitboard).IsAny)
             {
@@ -1199,15 +1196,15 @@ namespace ChessPlatform
                         continue;
                     }
 
-                    var color = castlingInfo.Color;
-                    var king = PieceType.King.ToPiece(color);
-                    var rook = PieceType.Rook.ToPiece(color);
+                    var side = castlingInfo.GameSide;
+                    var king = side.ToPiece(PieceType.King);
+                    var rook = side.ToPiece(PieceType.Rook);
 
                     if (_gameBoardData[castlingInfo.KingMove.From] != king
                         || _gameBoardData[castlingInfo.RookMove.From] != rook)
                     {
                         throw new ChessPlatformException(
-                            $@"Invalid position. {color} cannot castle {castlingInfo.Side}.");
+                            $@"Invalid position. {side} cannot castle {castlingInfo.CastlingSide}.");
                     }
                 }
             }
@@ -1262,19 +1259,19 @@ namespace ChessPlatform
             out Dictionary<GameMove, GameMoveInfo> validMoves,
             out GameState state)
         {
-            var activeKing = PieceType.King.ToPiece(_activeColor);
+            var activeKing = _activeSide.ToPiece(PieceType.King);
             var activeKingSquare = _gameBoardData.GetBitboard(activeKing).GetFirstSquare();
-            var oppositeColor = _activeColor.Invert();
+            var oppositeSide = _activeSide.Invert();
 
-            var attackersBitboard = _gameBoardData.GetAttackers(activeKingSquare, oppositeColor);
+            var attackersBitboard = _gameBoardData.GetAttackers(activeKingSquare, oppositeSide);
             var isInCheck = attackersBitboard.IsAny;
             var isInDoubleCheck = isInCheck && !attackersBitboard.IsExactlyOneBitSet();
 
-            var pinLimitations = _gameBoardData.GetPinLimitations(activeKingSquare.SquareIndex, oppositeColor);
+            var pinLimitations = _gameBoardData.GetPinLimitations(activeKingSquare.SquareIndex, oppositeSide);
 
-            var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.GetBitboard(_activeColor)
+            var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.GetBitboard(_activeSide)
                 & ~_gameBoardData.GetBitboard(activeKing)
-                & ~_gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(_activeColor));
+                & ~_gameBoardData.GetBitboard(_activeSide.ToPiece(PieceType.Pawn));
 
             validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
 
@@ -1282,7 +1279,7 @@ namespace ChessPlatform
                 _gameBoardData,
                 validMoves,
                 _enPassantCaptureInfo,
-                _activeColor,
+                _activeSide,
                 _castlingOptions,
                 pinLimitations,
                 activePiecesExceptKingAndPawnsBitboard);
@@ -1322,7 +1319,7 @@ namespace ChessPlatform
                     break;
 
                 case GameState.Checkmate:
-                    resultString = _activeColor == PieceColor.White ? ResultStrings.BlackWon : ResultStrings.WhiteWon;
+                    resultString = _activeSide == GameSide.White ? ResultStrings.BlackWon : ResultStrings.WhiteWon;
                     break;
 
                 case GameState.Stalemate:
@@ -1354,9 +1351,9 @@ namespace ChessPlatform
                 ^ (ShouldIncludeEnPassantHash(_enPassantCaptureInfo, validMoves)
                     ? ZobristHashHelper.GetEnPassantHash(
                         _enPassantCaptureInfo,
-                        GetBitboard(PieceType.Pawn.ToPiece(_activeColor)))
+                        GetBitboard(_activeSide.ToPiece(PieceType.Pawn)))
                     : 0L)
-                ^ ZobristHashHelper.GetTurnHash(_activeColor);
+                ^ ZobristHashHelper.GetTurnHash(_activeSide);
 
             if (PreviousBoard != null && PreviousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
             {
@@ -1406,7 +1403,7 @@ namespace ChessPlatform
         }
 
         private void SetupDefault(
-            out PieceColor activeColor,
+            out GameSide activeSide,
             out CastlingOptions castlingOptions,
             out EnPassantCaptureInfo enPassantTarget,
             out int halfMovesBy50MoveRule,
@@ -1432,7 +1429,7 @@ namespace ChessPlatform
             _gameBoardData.SetupNewPiece(Piece.BlackKnight, "g8");
             _gameBoardData.SetupNewPiece(Piece.BlackRook, "h8");
 
-            activeColor = PieceColor.White;
+            activeSide = GameSide.White;
             castlingOptions = CastlingOptions.All;
             enPassantTarget = null;
             halfMovesBy50MoveRule = 0;
@@ -1441,7 +1438,7 @@ namespace ChessPlatform
 
         private void SetupByFen(
             string fen,
-            out PieceColor activeColor,
+            out GameSide activeSide,
             out CastlingOptions castlingOptions,
             out EnPassantCaptureInfo enPassantCaptureInfo,
             out int halfMovesBy50MoveRule,
@@ -1460,8 +1457,8 @@ namespace ChessPlatform
             var pieceDataSnippet = fenSnippets[0];
             _gameBoardData.SetupByFenSnippet(pieceDataSnippet);
 
-            var activeColorSnippet = fenSnippets[1];
-            if (!ChessConstants.FenSnippetToColorMap.TryGetValue(activeColorSnippet, out activeColor))
+            var activeSideSnippet = fenSnippets[1];
+            if (!ChessConstants.FenSnippetToGameSideMap.TryGetValue(activeSideSnippet, out activeSide))
             {
                 throw new ArgumentException(InvalidFenMessage, nameof(fen));
             }
@@ -1494,7 +1491,7 @@ namespace ChessPlatform
                 }
 
                 var enPassantInfo =
-                    ChessConstants.ColorToDoublePushInfoMap.Values.SingleOrDefault(
+                    ChessConstants.GameSideToDoublePushInfoMap.Values.SingleOrDefault(
                         obj => obj.CaptureTargetRank == captureSquare.Value.Rank);
 
                 if (enPassantInfo == null)
@@ -1639,7 +1636,7 @@ namespace ChessPlatform
                 [NotNull] GameBoardData gameBoardData,
                 [NotNull] IDictionary<GameMove, GameMoveInfo> validMovesReference,
                 [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
-                PieceColor activeColor,
+                GameSide activeSide,
                 CastlingOptions castlingOptions,
                 [NotNull] Bitboard[] pinLimitations,
                 Bitboard activePiecesExceptKingAndPawnsBitboard)
@@ -1647,8 +1644,8 @@ namespace ChessPlatform
                 GameBoardData = gameBoardData.EnsureNotNull();
                 ValidMoves = validMovesReference.EnsureNotNull();
                 EnPassantCaptureInfo = enPassantCaptureInfo;
-                ActiveColor = activeColor;
-                OppositeColor = activeColor.Invert();
+                ActiveSide = activeSide;
+                OppositeSide = activeSide.Invert();
                 CastlingOptions = castlingOptions;
                 PinLimitations = pinLimitations.EnsureNotNull();
                 ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
@@ -1676,12 +1673,12 @@ namespace ChessPlatform
                 get;
             }
 
-            public PieceColor ActiveColor
+            public GameSide ActiveSide
             {
                 get;
             }
 
-            public PieceColor OppositeColor
+            public GameSide OppositeSide
             {
                 get;
             }

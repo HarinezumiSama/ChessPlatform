@@ -19,7 +19,7 @@ namespace ChessPlatform.UI.Desktop
         #region Methods
 
         [NotNull]
-        IChessPlayer CreatePlayer(PieceColor color);
+        IChessPlayer CreatePlayer(GameSide side);
 
         #endregion
     }

@@ -307,7 +307,7 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        private static SquareDictionary<int> ToSquareWeightMap(PieceColor color, int[,] weights)
+        private static SquareDictionary<int> ToSquareWeightMap(GameSide side, int[,] weights)
         {
             #region Argument Check
 
@@ -325,10 +325,10 @@ namespace ChessPlatform.Engine
 
             var result = new SquareDictionary<int>();
 
-            var startRank = color == PieceColor.White
+            var startRank = side == GameSide.White
                 ? ChessConstants.RankRange.Upper
                 : ChessConstants.RankRange.Lower;
-            var rankIncrement = color == PieceColor.White ? -1 : 1;
+            var rankIncrement = side == GameSide.White ? -1 : 1;
 
             for (int rank = startRank, rankIndex = ChessConstants.RankRange.Lower;
                 rankIndex <= ChessConstants.RankRange.Upper;
@@ -351,12 +351,12 @@ namespace ChessPlatform.Engine
                 .EnsureNotNull()
                 .SelectMany(
                     pair =>
-                        ChessConstants.PieceColors.Select(
-                            color =>
+                        ChessConstants.GameSides.Select(
+                            side =>
                                 new
                                 {
-                                    Piece = pair.Key.ToPiece(color),
-                                    Weights = ToSquareWeightMap(color, pair.Value())
+                                    Piece = pair.Key.ToPiece(side),
+                                    Weights = ToSquareWeightMap(side, pair.Value())
                                 }))
                 .ToDictionary(obj => obj.Piece, obj => obj.Weights);
 
@@ -545,14 +545,14 @@ namespace ChessPlatform.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetNonPawnMaterialValue([NotNull] GameBoard board, PieceColor color)
+        private static int GetNonPawnMaterialValue([NotNull] GameBoard board, GameSide side)
         {
             var result = 0;
 
             for (var index = 0; index < PhaseDeterminationPieceTypes.Length; index++)
             {
                 var pieceType = PhaseDeterminationPieceTypes[index];
-                var piece = pieceType.ToPiece(color);
+                var piece = pieceType.ToPiece(side);
                 var count = board.GetBitboard(piece).GetBitSetCount();
                 result += PieceTypeToMaterialWeightInMiddlegameMap[pieceType] * count;
             }
@@ -563,15 +563,15 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static GamePhase GetGamePhase([NotNull] GameBoard board)
         {
-            var nonPawnMaterialValue = GetNonPawnMaterialValue(board, PieceColor.White)
-                + GetNonPawnMaterialValue(board, PieceColor.Black);
+            var nonPawnMaterialValue = GetNonPawnMaterialValue(board, GameSide.White)
+                + GetNonPawnMaterialValue(board, GameSide.Black);
 
             return nonPawnMaterialValue <= EndgameMaterialLimit ? GamePhase.Endgame : GamePhase.Middlegame;
         }
 
-        private static int EvaluatePawnStructureByColor(GameBoard board, PieceColor color, GamePhase gamePhase)
+        private static int EvaluatePawnStructureBySide(GameBoard board, GameSide side, GamePhase gamePhase)
         {
-            var pawnPiece = PieceType.Pawn.ToPiece(color);
+            var pawnPiece = side.ToPiece(PieceType.Pawn);
             var pawns = board.GetBitboard(pawnPiece);
             if (pawns.IsNone)
             {
@@ -619,9 +619,9 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        private static int EvaluateMaterialAndItsPositionByColor(
+        private static int EvaluateMaterialAndItsPositionBySide(
             [NotNull] GameBoard board,
-            PieceColor color,
+            GameSide side,
             GamePhase gamePhase)
         {
             var result = 0;
@@ -632,7 +632,7 @@ namespace ChessPlatform.Engine
 
             foreach (var pieceType in ChessConstants.PieceTypesExceptNone)
             {
-                var piece = pieceType.ToPiece(color);
+                var piece = pieceType.ToPiece(side);
                 var pieceBitboard = board.GetBitboard(piece);
                 if (pieceBitboard.IsNone)
                 {
@@ -654,7 +654,7 @@ namespace ChessPlatform.Engine
                 }
             }
 
-            var pawnStructureScore = EvaluatePawnStructureByColor(board, color, gamePhase);
+            var pawnStructureScore = EvaluatePawnStructureBySide(board, side, gamePhase);
             result += pawnStructureScore;
 
             return result;
@@ -663,8 +663,8 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int EvaluateMaterialAndItsPosition([NotNull] GameBoard board, GamePhase gamePhase)
         {
-            var activeScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor, gamePhase);
-            var inactiveScore = EvaluateMaterialAndItsPositionByColor(board, board.ActiveColor.Invert(), gamePhase);
+            var activeScore = EvaluateMaterialAndItsPositionBySide(board, board.ActiveSide, gamePhase);
+            var inactiveScore = EvaluateMaterialAndItsPositionBySide(board, board.ActiveSide.Invert(), gamePhase);
 
             return activeScore - inactiveScore;
         }
@@ -718,11 +718,11 @@ namespace ChessPlatform.Engine
             return score;
         }
 
-        private static int EvaluateKingTropism([NotNull] GameBoard board, PieceColor kingColor)
+        private static int EvaluateKingTropism([NotNull] GameBoard board, GameSide kingSide)
         {
-            var king = PieceType.King.ToPiece(kingColor);
+            var king = kingSide.ToPiece(PieceType.King);
             var kingSquare = board.GetBitboard(king).GetFirstSquare();
-            var allAttackersBitboard = board.GetBitboard(kingColor.Invert());
+            var allAttackersBitboard = board.GetBitboard(kingSide.Invert());
 
             var result = 0;
 
@@ -792,7 +792,7 @@ namespace ChessPlatform.Engine
                 }
             }
 
-            var opponentKing = PieceType.King.ToPiece(board.ActiveColor.Invert());
+            var opponentKing = board.ActiveSide.Invert().ToPiece(PieceType.King);
             var opponentKingSquare = board.GetBitboard(opponentKing).GetFirstSquare();
 
             var allCaptureOrPromotionDatas = remainingMoves
@@ -911,8 +911,8 @@ namespace ChessPlatform.Engine
             var gamePhase = GetGamePhase(board);
             var materialAndItsPosition = EvaluateMaterialAndItsPosition(board, gamePhase);
             var mobility = EvaluateMobility(board);
-            var kingTropism = EvaluateKingTropism(board, board.ActiveColor)
-                - EvaluateKingTropism(board, board.ActiveColor.Invert());
+            var kingTropism = EvaluateKingTropism(board, board.ActiveSide)
+                - EvaluateKingTropism(board, board.ActiveSide.Invert());
 
             var result = new EvaluationScore(materialAndItsPosition + mobility + kingTropism);
             return result;
@@ -1185,7 +1185,7 @@ namespace ChessPlatform.Engine
                     && correctedRemainingDepth >= 2
                     && localScore.Value >= localBeta.Value
                     && board.CanMakeNullMove
-                    && board.HasNonPawnMaterial(board.ActiveColor))
+                    && board.HasNonPawnMaterial(board.ActiveSide))
                 {
                     //// TODO [vmcl] IDEA (board.HasNonPawnMaterial): Check also that non-pawn pieces have at least one legal move (to avoid zugzwang more thoroughly)
 

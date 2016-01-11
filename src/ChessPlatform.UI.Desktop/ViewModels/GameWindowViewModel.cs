@@ -230,10 +230,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string LowerPlayerTitle => GetPlayerTitle(IsReversedView ? _blackPlayer : _whitePlayer);
 
         public string UpperPlayerPieceAdvantage
-            => IsReversedView ? GetPlayerPieceAdvantage(PieceColor.White) : GetPlayerPieceAdvantage(PieceColor.Black);
+            => IsReversedView ? GetPlayerPieceAdvantage(GameSide.White) : GetPlayerPieceAdvantage(GameSide.Black);
 
         public string LowerPlayerPieceAdvantage
-            => IsReversedView ? GetPlayerPieceAdvantage(PieceColor.Black) : GetPlayerPieceAdvantage(PieceColor.White);
+            => IsReversedView ? GetPlayerPieceAdvantage(GameSide.Black) : GetPlayerPieceAdvantage(GameSide.White);
 
         public string UpperPlayerFeedback => IsReversedView ? _whitePlayerFeedback : _blackPlayerFeedback;
 
@@ -305,8 +305,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             Factotum.DisposeAndNull(ref _gameManager);
 
-            RecreatePlayer(ref _whitePlayer, whitePlayerInfo, PieceColor.White);
-            RecreatePlayer(ref _blackPlayer, blackPlayerInfo, PieceColor.Black);
+            RecreatePlayer(ref _whitePlayer, whitePlayerInfo, GameSide.White);
+            RecreatePlayer(ref _blackPlayer, blackPlayerInfo, GameSide.Black);
 
             ResetSelectionMode();
 
@@ -405,14 +405,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             return isHumanPlayer ? "Human Player" : "Computer";
         }
 
-        private static Dictionary<PieceType, int> GetPieceCounts([NotNull] GameBoard board, PieceColor color)
+        private static Dictionary<PieceType, int> GetPieceCounts([NotNull] GameBoard board, GameSide side)
         {
             return ChessConstants
                 .PieceTypesExceptNone
-                .ToDictionary(Factotum.Identity, item => board.GetSquares(item.ToPiece(color)).Length);
+                .ToDictionary(Factotum.Identity, item => board.GetSquares(item.ToPiece(side)).Length);
         }
 
-        private string GetPlayerPieceAdvantage(PieceColor color)
+        private string GetPlayerPieceAdvantage(GameSide side)
         {
             var currentGameBoard = CurrentGameBoard;
             if (currentGameBoard == null)
@@ -420,8 +420,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return string.Empty;
             }
 
-            var counts = GetPieceCounts(currentGameBoard, color);
-            var opponentCounts = GetPieceCounts(currentGameBoard, color.Invert());
+            var counts = GetPieceCounts(currentGameBoard, side);
+            var opponentCounts = GetPieceCounts(currentGameBoard, side.Invert());
 
             const string Separator = " ";
 
@@ -469,8 +469,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 return null;
             }
 
-            var activeColor = gameManager.ActiveColor;
-            return activeColor == PieceColor.White ? _whitePlayer : _blackPlayer;
+            var activeSide = gameManager.ActiveSide;
+            return activeSide == GameSide.White ? _whitePlayer : _blackPlayer;
         }
 
         private GuiHumanChessPlayer GetActiveHumanPlayer()
@@ -599,7 +599,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     moveIndex = previousBoard.FullMoveIndex;
                     resultBuilder.AppendFormat(CultureInfo.InvariantCulture, "{0}.", moveIndex);
 
-                    if (index == 1 && initialBoard.ActiveColor == PieceColor.Black)
+                    if (index == 1 && initialBoard.ActiveSide == GameSide.Black)
                     {
                         resultBuilder.Append(" ...");
                     }
@@ -650,9 +650,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             ExecuteGarbageCollection();
         }
 
-        private IChessPlayer CreatePlayer([NotNull] IPlayerInfo playerInfo, PieceColor color)
+        private IChessPlayer CreatePlayer([NotNull] IPlayerInfo playerInfo, GameSide side)
         {
-            var player = playerInfo.CreatePlayer(color).EnsureNotNull();
+            var player = playerInfo.CreatePlayer(side).EnsureNotNull();
 
             player.FeedbackProvided += Player_FeedbackProvided;
 
@@ -666,10 +666,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             return player;
         }
 
-        private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, PieceColor color)
+        private void RecreatePlayer(ref IChessPlayer player, [NotNull] IPlayerInfo playerInfo, GameSide side)
         {
             DestroyPlayer(ref player);
-            player = CreatePlayer(playerInfo, color);
+            player = CreatePlayer(playerInfo, side);
         }
 
         [CanBeNull]
@@ -725,14 +725,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnPlayerThinkingStarted()
         {
-            var activeColor = GetActivePlayer()?.Color;
+            var activeSide = GetActivePlayer()?.Side;
 
-            if (!activeColor.HasValue || activeColor.Value == PieceColor.White)
+            if (!activeSide.HasValue || activeSide.Value == GameSide.White)
             {
                 _whitePlayerFeedback = null;
             }
 
-            if (!activeColor.HasValue || activeColor.Value == PieceColor.Black)
+            if (!activeSide.HasValue || activeSide.Value == GameSide.Black)
             {
                 _blackPlayerFeedback = null;
             }
@@ -804,7 +804,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 $@"D={args.Depth}/{args.MaxDepth}{Environment.NewLine}{args.Variation.ValueString}{Environment.NewLine
                     }PV: {args.Board.GetStandardAlgebraicNotation(args.Variation.Moves)}";
 
-            if (args.Color == PieceColor.White)
+            if (args.Side == GameSide.White)
             {
                 _whitePlayerFeedback = feedback;
             }

@@ -31,7 +31,7 @@ namespace ChessPlatform.Tests
             const string Fen = "k7/8/1Q6/8/8/8/8/7K b - - 0 1";
 
             var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
-            AssertBaseProperties(gameBoard, PieceColor.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
+            AssertBaseProperties(gameBoard, GameSide.Black, CastlingOptions.None, null, 0, 1, GameState.Stalemate);
             AssertNoValidMoves(gameBoard);
         }
 
@@ -43,7 +43,7 @@ namespace ChessPlatform.Tests
             var gameBoard = new GameBoard(Fen, PerformInternalBoardValidation);
 
             Assert.That(gameBoard.GetFen(), Is.EqualTo(Fen));
-            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 1, 12, GameState.Default);
+            AssertBaseProperties(gameBoard, GameSide.White, CastlingOptions.All, null, 1, 12, GameState.Default);
 
             AssertPieces(
                 gameBoard,
@@ -156,11 +156,11 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        [TestCase(PieceColor.White)]
-        [TestCase(PieceColor.Black)]
-        public void TestTwoKingsTooCloseToEachOther(PieceColor activeColor)
+        [TestCase(GameSide.White)]
+        [TestCase(GameSide.Black)]
+        public void TestTwoKingsTooCloseToEachOther(GameSide activeSide)
         {
-            var fen = $@"k7/K7/8/8/8/8/8/8 {activeColor.GetFenSnippet()} - - 0 1";
+            var fen = $@"k7/K7/8/8/8/8/8/8 {activeSide.GetFenSnippet()} - - 0 1";
 
             Assert.That(
                 () => new GameBoard(fen, PerformInternalBoardValidation),
@@ -196,7 +196,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.None,
                 null,
                 0,
@@ -216,7 +216,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 0,
@@ -235,7 +235,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 0,
@@ -254,7 +254,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 0,
@@ -271,7 +271,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.None,
                 null,
                 0,
@@ -290,7 +290,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.All,
                 null,
                 0,
@@ -309,7 +309,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 0,
@@ -328,7 +328,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("c6", "c5"),
                 0,
@@ -345,7 +345,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("e3", "e4"),
                 0,
@@ -365,7 +365,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.None,
                 new EnPassantCaptureInfo("g3", "g4"),
                 0,
@@ -382,7 +382,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.None,
                 null,
                 0,
@@ -399,7 +399,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.None,
                 null,
                 0,
@@ -423,7 +423,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.None,
                 null,
                 0,
@@ -440,7 +440,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.None,
                 null,
                 0,
@@ -457,7 +457,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.None,
                 null,
                 0,
@@ -478,7 +478,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 nullMoveGameBoard,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 0,
@@ -490,7 +490,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 doubleNullMoveGameBoard,
-                gameBoard.ActiveColor,
+                gameBoard.ActiveSide,
                 gameBoard.CastlingOptions,
                 gameBoard.EnPassantCaptureInfo,
                 gameBoard.HalfMoveCountBy50MoveRule,
@@ -532,7 +532,7 @@ namespace ChessPlatform.Tests
 
             Assert.That(gameBoard.GetFen(), Is.EqualTo(ChessConstants.DefaultInitialFen));
 
-            AssertBaseProperties(gameBoard, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+            AssertBaseProperties(gameBoard, GameSide.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
             AssertValidMoves(
                 gameBoard,
@@ -565,7 +565,7 @@ namespace ChessPlatform.Tests
             // Testing invalid move (no piece at the source square)
             Assert.That(() => gameBoard1W.MakeMove("a3-a4"), Throws.ArgumentException);
 
-            AssertBaseProperties(gameBoard1W, PieceColor.White, CastlingOptions.All, null, 0, 1, GameState.Default);
+            AssertBaseProperties(gameBoard1W, GameSide.White, CastlingOptions.All, null, 0, 1, GameState.Default);
 
             return gameBoard1W;
         }
@@ -580,19 +580,19 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard1B,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e3", "e4"),
                 0,
                 1,
                 GameState.Default);
 
-            // Testing invalid move (piece of non-active color at the source square)
+            // Testing invalid move (piece of non-active side at the source square)
             Assert.That(() => gameBoard1B.MakeMove("d2-d4"), Throws.ArgumentException);
 
             AssertBaseProperties(
                 gameBoard1B,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e3", "e4"),
                 0,
@@ -612,7 +612,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard2W,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.All,
                 new EnPassantCaptureInfo("e6", "e5"),
                 0,
@@ -632,7 +632,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard2B,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.All,
                 null,
                 1,
@@ -652,7 +652,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard3W,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
                 null,
                 2,
@@ -672,7 +672,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard3B,
-                PieceColor.Black,
+                GameSide.Black,
                 CastlingOptions.WhiteKingSide | CastlingOptions.WhiteQueenSide,
                 null,
                 3,
@@ -706,7 +706,7 @@ namespace ChessPlatform.Tests
 
             AssertBaseProperties(
                 gameBoard3W,
-                PieceColor.White,
+                GameSide.White,
                 CastlingOptions.All,
                 null,
                 1,

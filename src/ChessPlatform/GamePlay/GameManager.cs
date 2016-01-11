@@ -138,13 +138,13 @@ namespace ChessPlatform.GamePlay
         public TimeSpan BlackLastMoveElapsed => _blackLastMoveStopwatch.Elapsed;
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        public PieceColor ActiveColor
+        public GameSide ActiveSide
         {
             get
             {
                 lock (_syncLock)
                 {
-                    return GetActiveBoard().ActiveColor;
+                    return GetActiveBoard().ActiveSide;
                 }
             }
         }
@@ -434,8 +434,8 @@ namespace ChessPlatform.GamePlay
                     var state = new GetMoveState(_state, originalActiveBoard);
                     _getMoveStateContainer.Value = state;
 
-                    var activeColor = originalActiveBoard.ActiveColor;
-                    var activePlayer = activeColor == PieceColor.White ? White : Black;
+                    var activeSide = originalActiveBoard.ActiveSide;
+                    var activePlayer = activeSide == GameSide.White ? White : Black;
                     var request = new GetMoveRequest(originalActiveBoard, state.CancellationToken, _gameControl);
                     var task = activePlayer.CreateGetMoveTask(request);
 
@@ -494,7 +494,7 @@ namespace ChessPlatform.GamePlay
 
                     Stopwatch totalStopwatch;
                     Stopwatch lastMoveStopwatch;
-                    if (activeColor == PieceColor.White)
+                    if (activeSide == GameSide.White)
                     {
                         totalStopwatch = _whiteTotalStopwatch;
                         lastMoveStopwatch = _whiteLastMoveStopwatch;
@@ -527,7 +527,7 @@ namespace ChessPlatform.GamePlay
             switch (gameBoard.State)
             {
                 case GameState.Checkmate:
-                    _result = gameBoard.ActiveColor == PieceColor.White ? GameResult.BlackWon : GameResult.WhiteWon;
+                    _result = gameBoard.ActiveSide == GameSide.White ? GameResult.BlackWon : GameResult.WhiteWon;
                     _state = GameManagerState.GameFinished;
                     return;
 

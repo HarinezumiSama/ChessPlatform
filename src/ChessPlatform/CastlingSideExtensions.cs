@@ -9,9 +9,9 @@ namespace ChessPlatform
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CastlingType ToCastlingType(this CastlingSide castlingSide, PieceColor color)
+        public static CastlingType ToCastlingType(this CastlingSide castlingSide, GameSide gameSide)
         {
-            return unchecked((CastlingType)(((int)color << 1) + castlingSide));
+            return unchecked((CastlingType)(((int)gameSide << 1) + castlingSide));
         }
 
         #endregion

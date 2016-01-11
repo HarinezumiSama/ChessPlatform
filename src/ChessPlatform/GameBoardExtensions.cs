@@ -10,7 +10,7 @@ namespace ChessPlatform
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasNonPawnMaterial([NotNull] this GameBoard board, PieceColor color)
+        public static bool HasNonPawnMaterial([NotNull] this GameBoard board, GameSide side)
         {
             #region Argument Check
 
@@ -21,9 +21,9 @@ namespace ChessPlatform
 
             #endregion
 
-            var nonPawnBitboard = board.GetBitboard(color)
-                & ~board.GetBitboard(PieceType.King.ToPiece(color))
-                & ~board.GetBitboard(PieceType.Pawn.ToPiece(color));
+            var nonPawnBitboard = board.GetBitboard(side)
+                & ~board.GetBitboard(side.ToPiece(PieceType.King))
+                & ~board.GetBitboard(side.ToPiece(PieceType.Pawn));
 
             return nonPawnBitboard.IsAny;
         }

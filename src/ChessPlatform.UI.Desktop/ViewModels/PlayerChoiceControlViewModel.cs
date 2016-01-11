@@ -17,9 +17,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         /// <summary>
         ///     Initializes a new instance of the <see cref="PlayerChoiceControlViewModel"/> class.
         /// </summary>
-        public PlayerChoiceControlViewModel(PieceColor playerColor)
+        public PlayerChoiceControlViewModel(GameSide playerSide)
         {
-            PlayerColor = playerColor;
+            PlayerSide = playerSide;
 
             var playerControlItemsInternal =
                 new[]
@@ -30,9 +30,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     new ControlItem<IPlayerInfo>(
                         new PlayerInfo<EnginePlayer, SmartEnoughPlayerCreationData>(
                             new SmartEnoughPlayerCreationData(),
-                            (color, data) =>
+                            (side, data) =>
                                 new EnginePlayer(
-                                    color,
+                                    side,
                                     new EnginePlayerParameters
                                     {
                                         UseOpeningBook = data.UseOpeningBook,
@@ -56,7 +56,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         #region Public Properties
 
-        public PieceColor PlayerColor
+        public GameSide PlayerSide
         {
             get;
         }
@@ -103,7 +103,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                         validatorContext,
                         memberContext,
                         $@"The player is not selected ({
-                            ((PlayerChoiceControlViewModel)memberContext.Container).PlayerColor}).");
+                            ((PlayerChoiceControlViewModel)memberContext.Container).PlayerSide}).");
 
                     return;
                 }

@@ -21,8 +21,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         /// </summary>
         public NewGameWindowViewModel()
         {
-            WhitePlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.White);
-            BlackPlayerViewModel = new PlayerChoiceControlViewModel(PieceColor.Black);
+            WhitePlayerViewModel = new PlayerChoiceControlViewModel(GameSide.White);
+            BlackPlayerViewModel = new PlayerChoiceControlViewModel(GameSide.Black);
         }
 
         #endregion

@@ -65,7 +65,7 @@
     <Compile Include="BitboardTests.cs" />
     <Compile Include="GameMoveTests.cs" />
     <Compile Include="PgnGameSerializerTests.cs" />
-    <Compile Include="PieceColorExtensionsTests.cs" />
+    <Compile Include="GameSideExtensionsTests.cs" />
     <Compile Include="PieceTypeExtensionsTests.cs" />
     <Compile Include="SquareTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

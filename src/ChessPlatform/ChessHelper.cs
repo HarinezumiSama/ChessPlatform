@@ -33,39 +33,39 @@ namespace ChessPlatform
         public static readonly Omnifactotum.ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>
-            ColorToCastlingOptionSetMap =
-                new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<CastlingOptions>>(
-                    new Dictionary<PieceColor, ReadOnlySet<CastlingOptions>>
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>
+            GameSideToCastlingOptionSetMap =
+                new Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>(
+                    new Dictionary<GameSide, ReadOnlySet<CastlingOptions>>
                     {
                         {
-                            PieceColor.White,
+                            GameSide.White,
                             new[] { CastlingOptions.WhiteKingSide, CastlingOptions.WhiteQueenSide }
                                 .ToHashSet()
                                 .AsReadOnly()
                         },
                         {
-                            PieceColor.Black,
+                            GameSide.Black,
                             new[] { CastlingOptions.BlackKingSide, CastlingOptions.BlackQueenSide }
                                 .ToHashSet()
                                 .AsReadOnly()
                         }
                     });
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, CastlingOptions>
-            ColorToCastlingOptionsMap =
-                ColorToCastlingOptionSetMap
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, CastlingOptions>
+            GameSideToCastlingOptionsMap =
+                GameSideToCastlingOptionSetMap
                     .ToDictionary(
                         pair => pair.Key,
                         pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
                     .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, int> ColorToPawnPromotionRankMap =
-            new Omnifactotum.ReadOnlyDictionary<PieceColor, int>(
-                new EnumFixedSizeDictionary<PieceColor, int>
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, int> GameSideToPawnPromotionRankMap =
+            new Omnifactotum.ReadOnlyDictionary<GameSide, int>(
+                new EnumFixedSizeDictionary<GameSide, int>
                 {
-                    { PieceColor.White, ChessConstants.WhitePawnPromotionRank },
-                    { PieceColor.Black, ChessConstants.BlackPawnPromotionRank }
+                    { GameSide.White, ChessConstants.WhitePawnPromotionRank },
+                    { GameSide.Black, ChessConstants.BlackPawnPromotionRank }
                 });
 
         public static readonly ReadOnlyCollection<Square> AllSquares =

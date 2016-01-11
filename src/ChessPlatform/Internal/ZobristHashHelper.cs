@@ -935,9 +935,9 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static long GetTurnHash(PieceColor activeColor)
+        public static long GetTurnHash(GameSide activeSide)
         {
-            return activeColor == PieceColor.White ? (long)Randoms[RandomsTurnOffset] : 0L;
+            return activeSide == GameSide.White ? (long)Randoms[RandomsTurnOffset] : 0L;
         }
 
         #endregion

@@ -15,7 +15,7 @@ namespace ChessPlatform
         {
             Piece = piece;
             PieceType = piece.GetPieceType();
-            Color = piece.GetColor();
+            Side = piece.GetSide();
         }
 
         #endregion
@@ -34,7 +34,7 @@ namespace ChessPlatform
             get;
         }
 
-        public PieceColor? Color
+        public GameSide? Side
         {
             [DebuggerStepThrough]
             get;
@@ -46,7 +46,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return $@"{{{Piece.GetName()}, {PieceType.GetName()}, {Color?.ToString() ?? "null"}}}";
+            return $@"{{{Piece.GetName()}, {PieceType.GetName()}, {Side?.ToString() ?? "null"}}}";
         }
 
         #endregion

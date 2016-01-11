@@ -234,7 +234,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 && (lastMove.From == Square || lastMove.To == Square);
 
             var isUnderCheck = currentGameBoard != null && currentGameBoard.State.IsAnyCheck()
-                && Piece == PieceType.King.ToPiece(currentGameBoard.ActiveColor);
+                && Piece == currentGameBoard.ActiveSide.ToPiece(PieceType.King);
 
             //// TODO [vmcl] Move the choice of a color to UIHelper
 
@@ -266,7 +266,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             var pieceInfo = _piece.GetPieceInfo();
 
-            Foreground = UIHelper.GetPieceBrush(pieceInfo.Color);
+            Foreground = UIHelper.GetPieceBrush(pieceInfo.Side);
             Text = UIHelper.PieceToSymbolMap[pieceInfo.PieceType];
         }
 

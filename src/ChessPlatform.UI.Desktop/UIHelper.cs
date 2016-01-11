@@ -58,14 +58,14 @@ namespace ChessPlatform.UI.Desktop
             return new SolidColorBrush(color);
         }
 
-        public static Brush GetPieceBrush(PieceColor color)
+        public static Brush GetPieceBrush(GameSide side)
         {
-            return color == PieceColor.White ? WhitePieceBrush : BlackPieceBrush;
+            return side == GameSide.White ? WhitePieceBrush : BlackPieceBrush;
         }
 
-        public static Brush GetPieceBrush(PieceColor? color)
+        public static Brush GetPieceBrush(GameSide? side)
         {
-            return color.HasValue ? GetPieceBrush(color.Value) : Brushes.Transparent;
+            return side.HasValue ? GetPieceBrush(side.Value) : Brushes.Transparent;
         }
 
         public static MessageBoxResult ShowMessageDialog(

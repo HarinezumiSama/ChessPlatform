@@ -15,7 +15,7 @@ namespace ChessPlatform.GamePlay
 
         #region Properties
 
-        PieceColor Color
+        GameSide Side
         {
             get;
         }

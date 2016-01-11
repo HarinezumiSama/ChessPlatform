@@ -5,9 +5,9 @@ namespace ChessPlatform
 {
     public enum CastlingType
     {
-        WhiteKingSide = (PieceColor.White << 1) + CastlingSide.KingSide,
-        WhiteQueenSide = (PieceColor.White << 1) + CastlingSide.QueenSide,
-        BlackKingSide = (PieceColor.Black << 1) + CastlingSide.KingSide,
-        BlackQueenSide = (PieceColor.Black << 1) + CastlingSide.QueenSide
+        WhiteKingSide = (GameSide.White << 1) + CastlingSide.KingSide,
+        WhiteQueenSide = (GameSide.White << 1) + CastlingSide.QueenSide,
+        BlackKingSide = (GameSide.Black << 1) + CastlingSide.KingSide,
+        BlackQueenSide = (GameSide.Black << 1) + CastlingSide.QueenSide
     }
 }

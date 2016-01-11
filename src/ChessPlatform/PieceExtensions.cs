@@ -10,14 +10,14 @@ namespace ChessPlatform
         #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static PieceColor? GetColor(this Piece piece)
+        public static GameSide? GetSide(this Piece piece)
         {
             if (piece == Piece.None)
             {
                 return null;
             }
 
-            var result = (PieceColor)(((int)piece & PieceConstants.ColorMask) >> PieceConstants.BlackColorShift);
+            var result = (GameSide)(((int)piece & PieceConstants.SideMask) >> PieceConstants.BlackSideShift);
             return result;
         }
 
@@ -48,15 +48,15 @@ namespace ChessPlatform
 
         public static string GetDescription(this Piece piece)
         {
-            var color = piece.GetColor();
+            var side = piece.GetSide();
             var pieceType = piece.GetPieceType();
 
-            if (!color.HasValue || pieceType == PieceType.None)
+            if (!side.HasValue || pieceType == PieceType.None)
             {
                 return "Empty Square";
             }
 
-            return $@"{color.Value} {pieceType}";
+            return $@"{side.Value} {pieceType}";
         }
 
         #endregion

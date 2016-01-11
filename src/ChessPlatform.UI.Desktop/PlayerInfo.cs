@@ -12,7 +12,7 @@ namespace ChessPlatform.UI.Desktop
     {
         #region Constants and Fields
 
-        private readonly Func<PieceColor, TCreationData, TPlayer> _createPlayer;
+        private readonly Func<GameSide, TCreationData, TPlayer> _createPlayer;
 
         #endregion
 
@@ -20,7 +20,7 @@ namespace ChessPlatform.UI.Desktop
 
         public PlayerInfo(
             [CanBeNull] TCreationData initialCreationData,
-            [NotNull] Func<PieceColor, TCreationData, TPlayer> createPlayer)
+            [NotNull] Func<GameSide, TCreationData, TPlayer> createPlayer)
         {
             #region Argument Check
 
@@ -50,9 +50,9 @@ namespace ChessPlatform.UI.Desktop
         #region Public Methods
 
         [NotNull]
-        public TPlayer CreatePlayer(PieceColor color)
+        public TPlayer CreatePlayer(GameSide side)
         {
-            return _createPlayer(color, CreationData).EnsureNotNull();
+            return _createPlayer(side, CreationData).EnsureNotNull();
         }
 
         #endregion
@@ -61,9 +61,9 @@ namespace ChessPlatform.UI.Desktop
 
         PlayerCreationData IPlayerInfo.CreationData => CreationData;
 
-        IChessPlayer IPlayerInfo.CreatePlayer(PieceColor color)
+        IChessPlayer IPlayerInfo.CreatePlayer(GameSide side)
         {
-            return CreatePlayer(color);
+            return CreatePlayer(side);
         }
 
         #endregion

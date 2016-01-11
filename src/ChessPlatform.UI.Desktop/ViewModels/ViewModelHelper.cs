@@ -11,7 +11,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             return new PlayerInfo<GuiHumanChessPlayer, GuiHumanChessPlayerCreationData>(
                 null,
-                (color, data) => new GuiHumanChessPlayer(color));
+                (side, data) => new GuiHumanChessPlayer(side));
         }
 
         #endregion

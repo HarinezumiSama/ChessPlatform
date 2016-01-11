@@ -13,30 +13,30 @@ namespace ChessPlatform
 
         #region Constructors
 
-        internal DoublePushInfo(PieceColor color)
+        internal DoublePushInfo(GameSide side)
         {
             #region Argument Check
 
-            color.EnsureDefined();
+            side.EnsureDefined();
 
             #endregion
 
             bool isWhite;
-            switch (color)
+            switch (side)
             {
-                case PieceColor.White:
+                case GameSide.White:
                     isWhite = true;
                     break;
 
-                case PieceColor.Black:
+                case GameSide.Black:
                     isWhite = false;
                     break;
 
                 default:
-                    throw color.CreateEnumValueNotSupportedException();
+                    throw side.CreateEnumValueNotSupportedException();
             }
 
-            Color = color;
+            Side = side;
             StartRank = isWhite ? 1 : ChessConstants.RankCount - 2;
 
             EndRank = StartRank + (isWhite ? Difference : -Difference);
@@ -47,7 +47,7 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public PieceColor Color
+        public GameSide Side
         {
             get;
         }

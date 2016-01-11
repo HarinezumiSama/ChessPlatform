@@ -47,7 +47,7 @@ namespace ChessPlatform.UI.Desktop.Converters
             }
 
             var result =
-                $@"Move: {gameBoard.FullMoveIndex}. Turn: {gameBoard.ActiveColor}. State: {gameBoard.State
+                $@"Move: {gameBoard.FullMoveIndex}. Side to move: {gameBoard.ActiveSide}. State: {gameBoard.State
                     }. Valid moves: {gameBoard.ValidMoves.Count}. Result: {gameBoard.ResultString}. Auto draw: {
                     gameBoard.GetAutoDrawType()}";
 

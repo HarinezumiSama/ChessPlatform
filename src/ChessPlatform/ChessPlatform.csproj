@@ -138,10 +138,10 @@
     <Compile Include="Internal\GameBoardData.cs" />
     <Compile Include="Internal\GameBoardDataExtensions.cs" />
     <Compile Include="PieceExtensions.cs" />
-    <Compile Include="PieceColorExtensions.cs" />
+    <Compile Include="GameSideExtensions.cs" />
     <Compile Include="PieceInfo.cs" />
     <Compile Include="GameMove.cs" />
-    <Compile Include="PieceColor.cs" />
+    <Compile Include="GameSide.cs" />
     <Compile Include="GameMoveInfo.cs" />
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />

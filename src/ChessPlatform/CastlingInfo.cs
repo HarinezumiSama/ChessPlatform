@@ -50,13 +50,13 @@ namespace ChessPlatform
             #endregion
 
             CastlingType = castlingType;
-            Side = castlingType.GetSide();
+            CastlingSide = castlingType.GetSide();
             Option = castlingType.ToOption();
             KingMove = kingMove;
             RookMove = rookMove;
             EmptySquares = emptySquares.AsReadOnly();
             PassedSquare = new Square((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
-            Color = Option.IsAnySet(CastlingOptions.WhiteMask) ? PieceColor.White : PieceColor.Black;
+            GameSide = Option.IsAnySet(CastlingOptions.WhiteMask) ? GameSide.White : GameSide.Black;
         }
 
         #endregion
@@ -69,7 +69,7 @@ namespace ChessPlatform
             get;
         }
 
-        public CastlingSide Side
+        public CastlingSide CastlingSide
         {
             [DebuggerStepThrough]
             get;
@@ -105,7 +105,7 @@ namespace ChessPlatform
             get;
         }
 
-        public PieceColor Color
+        public GameSide GameSide
         {
             [DebuggerStepThrough]
             get;
@@ -117,7 +117,7 @@ namespace ChessPlatform
 
         public override string ToString()
         {
-            return $@"[{GetType().GetQualifiedName()}] {Color} {Side}: {KingMove}";
+            return $@"[{GetType().GetQualifiedName()}] {GameSide} {CastlingSide}: {KingMove}";
         }
 
         #endregion

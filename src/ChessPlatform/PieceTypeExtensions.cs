@@ -23,11 +23,11 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Piece ToPiece(this PieceType pieceType, PieceColor color)
+        public static Piece ToPiece(this PieceType pieceType, GameSide side)
         {
             var result = pieceType == PieceType.None
                 ? Piece.None
-                : (Piece)((int)pieceType | ((int)color << PieceConstants.BlackColorShift));
+                : (Piece)((int)pieceType | ((int)side << PieceConstants.BlackSideShift));
 
             return result;
         }

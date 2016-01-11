@@ -23,8 +23,8 @@ namespace ChessPlatform.UI.Desktop
         /// <summary>
         ///     Initializes a new instance of the <see cref="GuiHumanChessPlayer"/> class.
         /// </summary>
-        internal GuiHumanChessPlayer(PieceColor color)
-            : base(color)
+        internal GuiHumanChessPlayer(GameSide side)
+            : base(side)
         {
             // Nothing to do
         }
@@ -49,7 +49,7 @@ namespace ChessPlatform.UI.Desktop
 
         public override string ToString()
         {
-            return $@"{{ {GetType().GetQualifiedName()} : {Color.GetName()} }}";
+            return $@"{{ {GetType().GetQualifiedName()} : {Side.GetName()} }}";
         }
 
         #endregion

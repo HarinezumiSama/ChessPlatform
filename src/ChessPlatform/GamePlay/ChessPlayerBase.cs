@@ -13,9 +13,9 @@ namespace ChessPlatform.GamePlay
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
-        protected ChessPlayerBase(PieceColor color)
+        protected ChessPlayerBase(GameSide side)
         {
-            Color = color.EnsureDefined();
+            Side = side.EnsureDefined();
         }
 
         ~ChessPlayerBase()
@@ -29,7 +29,7 @@ namespace ChessPlatform.GamePlay
 
         public event EventHandler<ChessPlayerFeedbackEventArgs> FeedbackProvided;
 
-        public PieceColor Color
+        public GameSide Side
         {
             get;
         }
@@ -45,11 +45,11 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (request.Board.ActiveColor != Color)
+            if (request.Board.ActiveSide != Side)
             {
                 throw new ArgumentException(
-                    $@"The board's active color '{request.Board.ActiveColor
-                        }' is inconsistent with the player's color '{Color}'.",
+                    $@"The board's active side '{request.Board.ActiveSide
+                        }' is inconsistent with the player's side '{Side}'.",
                     nameof(request));
             }
 

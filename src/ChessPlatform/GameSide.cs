@@ -4,7 +4,7 @@ using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {
-    public enum PieceColor
+    public enum GameSide
     {
         [FenChar('w')]
         White = 0,

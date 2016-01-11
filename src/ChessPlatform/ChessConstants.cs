@@ -43,8 +43,8 @@ namespace ChessPlatform
         public static readonly ReadOnlyCollection<Piece> BothKings =
             new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
 
-        public static readonly ReadOnlyCollection<PieceColor> PieceColors =
-            new[] { PieceColor.White, PieceColor.Black }.AsReadOnly();
+        public static readonly ReadOnlyCollection<GameSide> GameSides =
+            new[] { GameSide.White, GameSide.Black }.AsReadOnly();
 
         public static readonly ReadOnlySet<PieceType> PieceTypes =
             EnumFactotum.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
@@ -52,21 +52,21 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<PieceType> PieceTypesExceptNone =
             PieceTypes.Where(item => item != PieceType.None).ToHashSet().AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<Piece>> ColorToPiecesMap =
-            PieceColors
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<Piece>> GameSideToPiecesMap =
+            GameSides
                 .ToDictionary(
                     Factotum.Identity,
-                    color =>
+                    side =>
                         PieceTypes
                             .Where(item => item != PieceType.None)
-                            .Select(item => item.ToPiece(color))
+                            .Select(item => item.ToPiece(side))
                             .ToHashSet()
                             .AsReadOnly())
                 .AsReadOnly();
 
         public static readonly ReadOnlySet<Piece> Pieces =
-            PieceColors
-                .SelectMany(color => PieceTypes.Select(item => item.ToPiece(color)))
+            GameSides
+                .SelectMany(side => PieceTypes.Select(item => item.ToPiece(side)))
                 .ToHashSet()
                 .AsReadOnly();
 
@@ -76,18 +76,18 @@ namespace ChessPlatform
         public static readonly Square WhiteKingInitialSquare = "e1";
         public static readonly Square BlackKingInitialSquare = "e8";
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToDoublePushInfoMap =
-            PieceColors.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, DoublePushInfo> GameSideToDoublePushInfoMap =
+            GameSides.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =
-            PieceColors
+        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, string> GameSideToFenSnippetMap =
+            GameSides
                 .ToDictionary(
                     Factotum.Identity,
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture))
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<string, PieceColor> FenSnippetToColorMap =
-            PieceColors
+        public static readonly Omnifactotum.ReadOnlyDictionary<string, GameSide> FenSnippetToGameSideMap =
+            GameSides
                 .ToDictionary(
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture),
                     Factotum.Identity)
@@ -171,8 +171,8 @@ namespace ChessPlatform
                         "d8")
                 });
 
-        internal const int MaxPieceCountPerColor = 16;
-        internal const int MaxPawnCountPerColor = 8;
+        internal const int MaxPieceCountPerSide = 16;
+        internal const int MaxPawnCountPerSide = 8;
 
         internal const int FenSnippetCount = 6;
         internal const string NoneCastlingOptionsFenSnippet = "-";

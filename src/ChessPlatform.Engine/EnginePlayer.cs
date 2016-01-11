@@ -33,8 +33,8 @@ namespace ChessPlatform.Engine
 
         #region Constructors
 
-        public EnginePlayer(PieceColor color, [NotNull] EnginePlayerParameters parameters)
-            : base(color)
+        public EnginePlayer(GameSide side, [NotNull] EnginePlayerParameters parameters)
+            : base(side)
         {
             #region Argument Check
 
@@ -111,7 +111,7 @@ namespace ChessPlatform.Engine
             Trace.WriteLine(
                 $@"{Environment.NewLine
                     }*** [{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
-                    }  Color: {Color}{Environment.NewLine
+                    }  Side: {Side}{Environment.NewLine
                     }  Max depth: {MaxPlyDepth} plies{Environment.NewLine
                     }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
                     }  Multi CPU: {_useMultipleProcessors}{Environment.NewLine
@@ -348,7 +348,7 @@ namespace ChessPlatform.Engine
                 gameControlInfo.AllowMoveNow();
 
                 var feedbackEventArgs = new ChessPlayerFeedbackEventArgs(
-                    Color,
+                    Side,
                     board,
                     plyDepth,
                     MaxPlyDepth,
