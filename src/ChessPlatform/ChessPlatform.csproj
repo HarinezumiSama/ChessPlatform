@@ -82,7 +82,6 @@
     <Compile Include="GamePlay\EvaluationScore.cs" />
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
-    <Compile Include="Internal\DoublePushData.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
     <Compile Include="Internal\GeneratedMoveTypes.cs" />
     <Compile Include="Internal\GeneratedMoveTypesExtensions.cs" />

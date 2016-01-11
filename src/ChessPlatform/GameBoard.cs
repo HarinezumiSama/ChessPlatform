@@ -1494,7 +1494,7 @@ namespace ChessPlatform
                 }
 
                 var enPassantInfo =
-                    ChessConstants.ColorToEnPassantInfoMap.Values.SingleOrDefault(
+                    ChessConstants.ColorToDoublePushInfoMap.Values.SingleOrDefault(
                         obj => obj.CaptureTargetRank == captureSquare.Value.Rank);
 
                 if (enPassantInfo == null)
@@ -1504,7 +1504,7 @@ namespace ChessPlatform
 
                 enPassantCaptureInfo = new EnPassantCaptureInfo(
                     captureSquare.Value,
-                    new Square(false, captureSquare.Value.File, enPassantInfo.EndRank));
+                    new Square(captureSquare.Value.File, enPassantInfo.EndRank));
             }
 
             var halfMovesBy50MoveRuleSnippet = fenSnippets[4];

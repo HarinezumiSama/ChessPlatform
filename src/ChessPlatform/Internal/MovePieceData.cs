@@ -8,7 +8,6 @@ namespace ChessPlatform.Internal
         #region Constructors
 
         internal MovePieceData(Piece movedPiece, Piece capturedPiece)
-            : this()
         {
             MovedPiece = movedPiece;
             CapturedPiece = capturedPiece;
@@ -21,13 +20,11 @@ namespace ChessPlatform.Internal
         public Piece MovedPiece
         {
             get;
-            private set;
         }
 
         public Piece CapturedPiece
         {
             get;
-            private set;
         }
 
         #endregion

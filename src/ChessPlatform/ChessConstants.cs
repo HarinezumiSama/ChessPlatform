@@ -76,7 +76,7 @@ namespace ChessPlatform
         public static readonly Square WhiteKingInitialSquare = "e1";
         public static readonly Square BlackKingInitialSquare = "e8";
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToEnPassantInfoMap =
+        public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, DoublePushInfo> ColorToDoublePushInfoMap =
             PieceColors.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, string> ColorToFenSnippetMap =

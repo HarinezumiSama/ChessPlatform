@@ -37,10 +37,10 @@ namespace ChessPlatform
             }
 
             Color = color;
-            StartRank = (byte)(isWhite ? 1 : ChessConstants.RankCount - 2);
+            StartRank = isWhite ? 1 : ChessConstants.RankCount - 2;
 
-            EndRank = (byte)(StartRank + (isWhite ? Difference : -Difference));
-            CaptureTargetRank = (byte)((StartRank + EndRank) / 2);
+            EndRank = StartRank + (isWhite ? Difference : -Difference);
+            CaptureTargetRank = (StartRank + EndRank) / 2;
         }
 
         #endregion
@@ -50,23 +50,21 @@ namespace ChessPlatform
         public PieceColor Color
         {
             get;
-            private set;
         }
 
-        public byte StartRank
+        public int StartRank
         {
             get;
         }
 
-        public byte EndRank
+        public int EndRank
         {
             get;
         }
 
-        public byte CaptureTargetRank
+        public int CaptureTargetRank
         {
             get;
-            private set;
         }
 
         #endregion

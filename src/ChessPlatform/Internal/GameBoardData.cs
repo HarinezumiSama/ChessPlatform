@@ -218,7 +218,7 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var enPassantInfo = ChessConstants.ColorToEnPassantInfoMap[pieceInfo.Color.Value].EnsureNotNull();
+            var enPassantInfo = ChessConstants.ColorToDoublePushInfoMap[pieceInfo.Color.Value].EnsureNotNull();
             var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
             if (!isEnPassant)
             {
@@ -1378,12 +1378,9 @@ namespace ChessPlatform.Internal
             }
 
             var capturedPiece = SetPiece(move.To, movedPiece);
-            if (capturedPiece != Piece.None)
+            if (capturedPiece != Piece.None && capturedPiece.GetColor() == movedPiece.GetColor())
             {
-                if (capturedPiece.GetColor() == movedPiece.GetColor())
-                {
-                    throw new ChessPlatformException("Cannot capture a piece of the same color.");
-                }
+                throw new ChessPlatformException("Cannot capture a piece of the same color.");
             }
 
             return new MovePieceData(movedPiece, capturedPiece);

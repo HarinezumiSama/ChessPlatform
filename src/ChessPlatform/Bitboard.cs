@@ -360,8 +360,6 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong ShiftInternal(ulong value, ShiftDirection direction)
         {
-            //// Using if-s instead of a single switch for optimization
-
             if (direction == ShiftDirection.North)
             {
                 return (value & ~Bitboards.Rank8Value) << 8;
