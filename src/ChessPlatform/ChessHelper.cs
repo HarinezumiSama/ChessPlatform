@@ -104,61 +104,6 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<SquareShift> AllRays =
             new ReadOnlyCollection<SquareShift>(StraightRays.Concat(DiagonalRays).ToArray());
 
-        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, SquareShift> PawnMoveRayMap =
-        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, SquareShift>(
-        ////        new Dictionary<PieceColor, SquareShift>
-        ////        {
-        ////            { PieceColor.White, new RayInfo(0x10, true) },
-        ////            { PieceColor.Black, new RayInfo(0xF0, true) }
-        ////        });
-
-        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo> PawnEnPassantMoveRayMap =
-        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, RayInfo>(
-        ////        new Dictionary<PieceColor, RayInfo>
-        ////        {
-        ////            { PieceColor.White, new RayInfo(0x20, true) },
-        ////            { PieceColor.Black, new RayInfo(0xE0, true) }
-        ////        });
-
-        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>> PawnAttackRayMap =
-        ////    new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-        ////        new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-        ////        {
-        ////            {
-        ////                PieceColor.White,
-        ////                new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-        ////            },
-        ////            {
-        ////                PieceColor.Black,
-        ////                new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-        ////            }
-        ////        });
-
-        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>
-        ////    PawnReverseAttackRayMap =
-        ////        new Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<RayInfo>>(
-        ////            new Dictionary<PieceColor, ReadOnlySet<RayInfo>>
-        ////            {
-        ////                {
-        ////                    PieceColor.White,
-        ////                    new[] { new RayInfo(0xEF, false), new RayInfo(0xF1, false) }.ToHashSet().AsReadOnly()
-        ////                },
-        ////                {
-        ////                    PieceColor.Black,
-        ////                    new[] { new RayInfo(0x0F, false), new RayInfo(0x11, false) }.ToHashSet().AsReadOnly()
-        ////                }
-        ////            });
-
-        ////internal static readonly Omnifactotum.ReadOnlyDictionary<PieceColor, ReadOnlySet<byte>> PawnAttackOffsetMap =
-        ////    PawnAttackRayMap.ToDictionary(
-        ////        pair => pair.Key,
-        ////        pair => pair.Value.Select(item => item.Offset).ToHashSet().AsReadOnly()).AsReadOnly();
-
-        ////internal static readonly ReadOnlySet<RayInfo> KingAttackRays = AllRays.ToHashSet().AsReadOnly();
-
-        ////internal static readonly ReadOnlySet<byte> KingAttackOrMoveOffsets =
-        ////    KingAttackRays.Select(item => item.Offset).ToHashSet().AsReadOnly();
-
         internal static readonly ReadOnlySet<SquareShift> KnightAttackOrMoveOffsets =
             new ReadOnlySet<SquareShift>(
                 new HashSet<SquareShift>(
