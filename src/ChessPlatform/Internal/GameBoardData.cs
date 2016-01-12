@@ -157,13 +157,6 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public PieceInfo GetPieceInfo(Square square)
-        {
-            var piece = this[square];
-            return piece.GetPieceInfo();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetBitboard(Piece piece)
         {
             var index = GetPieceArrayIndexInternal(piece);
@@ -212,13 +205,14 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var pieceInfo = GetPieceInfo(move.From);
-            if (!pieceInfo.Side.HasValue || pieceInfo.PieceType != PieceType.Pawn || move.From.File != move.To.File)
+            var piece = this[move.From];
+            var side = piece.GetSide();
+            if (!side.HasValue || piece.GetPieceType() != PieceType.Pawn || move.From.File != move.To.File)
             {
                 return null;
             }
 
-            var enPassantInfo = ChessConstants.GameSideToDoublePushInfoMap[pieceInfo.Side.Value].EnsureNotNull();
+            var enPassantInfo = ChessConstants.GameSideToDoublePushInfoMap[side.Value].EnsureNotNull();
             var isEnPassant = move.From.Rank == enPassantInfo.StartRank && move.To.Rank == enPassantInfo.EndRank;
             if (!isEnPassant)
             {
@@ -241,14 +235,14 @@ namespace ChessPlatform.Internal
                 return false;
             }
 
-            var pieceInfo = GetPieceInfo(source);
-            if (pieceInfo.PieceType != PieceType.Pawn)
+            var piece = this[source];
+            if (piece.GetPieceType() != PieceType.Pawn)
             {
                 return false;
             }
 
-            var targetPieceInfo = GetPieceInfo(enPassantCaptureInfo.TargetPieceSquare);
-            return targetPieceInfo.PieceType == PieceType.Pawn;
+            var targetPiece = this[enPassantCaptureInfo.TargetPieceSquare];
+            return targetPiece.GetPieceType() == PieceType.Pawn;
         }
 
         public bool IsPawnPromotion(Square from, Square to)
@@ -263,15 +257,14 @@ namespace ChessPlatform.Internal
                 || ((fromBitboard & blackPawns).IsAny && (toBitboard & Bitboards.Rank1).IsAny);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CastlingInfo CheckCastlingMove([NotNull] GameMove move)
         {
-            var pieceInfo = GetPieceInfo(move.From);
-            if (pieceInfo.PieceType != PieceType.King || !pieceInfo.Side.HasValue)
-            {
-                return null;
-            }
+            var piece = this[move.From];
 
-            return ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move);
+            return piece.Is(PieceType.King)
+                ? ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move)
+                : null;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -354,36 +347,36 @@ namespace ChessPlatform.Internal
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             Square sourceSquare)
         {
-            var pieceInfo = GetPieceInfo(sourceSquare);
-            if (pieceInfo.PieceType == PieceType.None || !pieceInfo.Side.HasValue)
+            var piece = this[sourceSquare];
+            var pieceType = piece.GetPieceType();
+
+            if (pieceType == PieceType.None)
             {
-                throw new ArgumentException("No piece at the source Square.", nameof(sourceSquare));
+                throw new ArgumentException(
+                    $@"No piece at the source square '{sourceSquare}'.",
+                    nameof(sourceSquare));
             }
 
-            var pieceSide = pieceInfo.Side.Value;
+            var pieceSide = piece.GetSide().EnsureNotNull();
 
-            if (pieceInfo.PieceType == PieceType.Knight)
+            if (pieceType == PieceType.Knight)
             {
+                //// TODO [vmcl] Use bitboard instead of squares
                 var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
-                    .Where(square => GetPieceInfo(square).Side != pieceSide)
+                    .Where(square => this[square].GetSide() != pieceSide)
                     .ToArray();
 
                 return result;
             }
 
-            if (pieceInfo.PieceType == PieceType.King)
-            {
-                throw new InvalidOperationException("MUST NOT go into this branch anymore.");
-            }
-
-            if (pieceInfo.PieceType == PieceType.Pawn)
+            if (pieceType == PieceType.King || pieceType == PieceType.Pawn)
             {
                 throw new InvalidOperationException("MUST NOT go into this branch anymore.");
             }
 
             var resultList = new List<Square>();
 
-            if (pieceInfo.PieceType.IsSlidingStraight())
+            if (pieceType.IsSlidingStraight())
             {
                 GetPotentialMoveSquaresByRays(
                     sourceSquare,
@@ -394,7 +387,7 @@ namespace ChessPlatform.Internal
                     resultList);
             }
 
-            if (pieceInfo.PieceType.IsSlidingDiagonally())
+            if (pieceType.IsSlidingDiagonally())
             {
                 GetPotentialMoveSquaresByRays(
                     sourceSquare,
@@ -799,10 +792,10 @@ namespace ChessPlatform.Internal
                 throw new ArgumentNullException(nameof(move));
             }
 
-            var pieceInfo = GetPieceInfo(move.From);
-            if (pieceInfo.PieceType == PieceType.None || pieceInfo.Side != movingSide)
+            var piece = this[move.From];
+            if (piece == Piece.None || piece.GetSide() != movingSide)
             {
-                throw new ArgumentException("Invalid move.", nameof(move));
+                throw new ArgumentException($@"Invalid move '{move}' in the position.", nameof(move));
             }
 
             #endregion
@@ -868,7 +861,7 @@ namespace ChessPlatform.Internal
             var movingSideCurrentCastlingOptions = castlingOptions & movingSideAllCastlingOptions;
             if (movingSideCurrentCastlingOptions != CastlingOptions.None)
             {
-                switch (pieceInfo.PieceType)
+                switch (piece.GetPieceType())
                 {
                     case PieceType.King:
                         castlingOptions &= ~movingSideAllCastlingOptions;
@@ -1403,9 +1396,9 @@ namespace ChessPlatform.Internal
                 {
                     var currentSquare = square.Value;
 
-                    var pieceInfo = GetPieceInfo(currentSquare);
-                    var currentSide = pieceInfo.Side;
-                    if (pieceInfo.Piece == Piece.None || !currentSide.HasValue)
+                    var piece = this[currentSquare];
+                    var currentSide = piece.GetSide();
+                    if (piece == Piece.None || !currentSide.HasValue)
                     {
                         resultCollection.Add(currentSquare);
                         continue;

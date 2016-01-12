@@ -264,10 +264,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void OnPieceChanged(object sender, EventArgs e)
         {
-            var pieceInfo = _piece.GetPieceInfo();
-
-            Foreground = UIHelper.GetPieceBrush(pieceInfo.Side);
-            Text = UIHelper.PieceToSymbolMap[pieceInfo.PieceType];
+            Foreground = UIHelper.GetPieceBrush(_piece.GetSide());
+            Text = UIHelper.PieceToSymbolMap[_piece.GetPieceType()];
         }
 
         private void OnSelectionModeChanged(object sender, EventArgs e)

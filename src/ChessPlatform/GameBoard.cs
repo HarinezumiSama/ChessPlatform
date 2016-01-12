@@ -445,11 +445,6 @@ namespace ChessPlatform
             return result;
         }
 
-        public PieceInfo GetPieceInfo(Square square)
-        {
-            return _gameBoardData.GetPieceInfo(square);
-        }
-
         public Bitboard GetBitboard(Piece piece)
         {
             return _gameBoardData.GetBitboard(piece);
@@ -515,11 +510,11 @@ namespace ChessPlatform
                 return true;
             }
 
-            var sourcePieceInfo = GetPieceInfo(move.From);
-            var destinationPieceInfo = GetPieceInfo(move.To);
+            var sourcePiece = this[move.From];
+            var destinationPiece = this[move.To];
 
-            var result = sourcePieceInfo.Side == _activeSide
-                && destinationPieceInfo.Side == _activeSide.Invert();
+            var result = sourcePiece.GetSide() == _activeSide
+                && destinationPiece.GetSide() == _activeSide.Invert();
 
             return result;
         }
@@ -825,7 +820,7 @@ namespace ChessPlatform
             var pinLimitations = addMoveData.PinLimitations;
 
             var checkAttackSquare = checkAttackSquaresBitboard.GetFirstSquare();
-            var checkingPieceInfo = gameBoardData.GetPieceInfo(checkAttackSquare);
+            var checkingPiece = gameBoardData[checkAttackSquare];
             var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
 
             //// TODO [vmcl] Generate attacker moves (this will eliminate some extra checks)
@@ -870,7 +865,7 @@ namespace ChessPlatform
                     enPassantCaptureInfo.CaptureSquare.Bitboard);
             }
 
-            if (!checkingPieceInfo.PieceType.IsSliding())
+            if (!checkingPiece.GetPieceType().IsSliding())
             {
                 return;
             }

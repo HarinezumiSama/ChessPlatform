@@ -139,7 +139,6 @@
     <Compile Include="Internal\GameBoardDataExtensions.cs" />
     <Compile Include="PieceExtensions.cs" />
     <Compile Include="GameSideExtensions.cs" />
-    <Compile Include="PieceInfo.cs" />
     <Compile Include="GameMove.cs" />
     <Compile Include="GameSide.cs" />
     <Compile Include="GameMoveInfo.cs" />
