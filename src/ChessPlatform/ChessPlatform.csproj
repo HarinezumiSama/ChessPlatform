@@ -113,6 +113,7 @@
     <Compile Include="Serializers\Internal\Pgn\TagPairAstNode.cs" />
     <Compile Include="Serializers\PgnGameSerializer.cs" />
     <Compile Include="ShiftDirection.cs" />
+    <Compile Include="SquareExtensions.cs" />
     <Compile Include="SquareShift.cs" />
     <Compile Include="Utilities\SquareDeterminant.cs" />
     <Compile Include="Utilities\SquareDictionary.cs" />

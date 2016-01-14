@@ -219,8 +219,8 @@ namespace ChessPlatform.Internal
                 return null;
             }
 
-            var captureSquare = new Square(false, move.From.File, enPassantInfo.CaptureTargetRank);
-            var targetPieceSquare = new Square(false, move.From.File, enPassantInfo.EndRank);
+            var captureSquare = new Square(move.From.File, enPassantInfo.CaptureTargetRank);
+            var targetPieceSquare = new Square(move.From.File, enPassantInfo.EndRank);
 
             return new EnPassantCaptureInfo(captureSquare, targetPieceSquare);
         }

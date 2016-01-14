@@ -45,7 +45,7 @@ namespace ChessPlatform.Internal
 
                 for (var file = 0; file < ChessConstants.FileCount; file++)
                 {
-                    var square = new Square(false, (byte)file, (byte)rank);
+                    var square = new Square(file, rank);
                     var piece = gameBoardData[square];
                     if (piece == Piece.None)
                     {

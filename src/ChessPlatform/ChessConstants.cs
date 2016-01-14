@@ -14,7 +14,10 @@ namespace ChessPlatform
         #region Constants and Fields
 
         public const int FileCount = 8;
+        public const int MaxFileIndex = FileCount - 1;
+
         public const int RankCount = 8;
+        public const int MaxRankIndex = RankCount - 1;
 
         public const int SquareCount = FileCount * RankCount;
         public const int MaxSquareIndex = SquareCount - 1;

@@ -219,8 +219,8 @@ namespace ChessPlatform.UI.Desktop
         private static Color GetSquareColor(Square square, SquareMode squareMode)
         {
             var squareColors = SquareColorMap[squareMode];
-            var isDark = (square.File + square.Rank) % 2 == 0;
-            return squareColors[isDark];
+            var isDarkSquare = square.IsDark();
+            return squareColors[isDarkSquare];
         }
 
         #endregion

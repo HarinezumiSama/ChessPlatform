@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NUnit.Framework;
+using Omnifactotum.NUnit;
 
 //// ReSharper disable PossibleInvalidOperationException - Assertions are supposed to verify that
 
@@ -18,10 +19,17 @@ namespace ChessPlatform.Tests
         {
             for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
             {
+                var expectedRank = squareIndex / 8;
+                var expectedFile = squareIndex % 8;
+
                 var square = new Square(squareIndex);
+
                 Assert.That(square.SquareIndex, Is.EqualTo(squareIndex));
-                Assert.That(square.Rank, Is.EqualTo(squareIndex / 8));
-                Assert.That(square.File, Is.EqualTo(squareIndex % 8));
+                Assert.That(square.Rank, Is.EqualTo(expectedRank));
+                Assert.That(square.File, Is.EqualTo(expectedFile));
+                Assert.That(square.RankChar, Is.EqualTo((char)('1' + expectedRank)));
+                Assert.That(square.FileChar, Is.EqualTo((char)('a' + expectedFile)));
+                Assert.That(square.Bitboard.InternalValue, Is.EqualTo(1UL << squareIndex));
             }
         }
 
@@ -96,7 +104,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestFromAlgebraic()
+        public void TestFromAlgebraicAndTryFromAlgebraic()
         {
             for (var file = ChessConstants.FileRange.Lower; file <= ChessConstants.FileRange.Upper; file++)
             {
@@ -109,23 +117,29 @@ namespace ChessPlatform.Tests
                             ? squareString.ToUpperInvariant()
                             : squareString.ToLowerInvariant();
 
-                        var actualValue = Square.FromAlgebraic(algebraicNotation);
+                        var fromAlgebraic = Square.FromAlgebraic(algebraicNotation);
+                        Assert.That(fromAlgebraic.File, Is.EqualTo(file));
+                        Assert.That(fromAlgebraic.Rank, Is.EqualTo(rank));
 
-                        Assert.That(actualValue.File, Is.EqualTo(file));
-                        Assert.That(actualValue.Rank, Is.EqualTo(rank));
+                        var tryFromAlgebraic = Square.TryFromAlgebraic(algebraicNotation).AssertNotNull();
+                        Assert.That(tryFromAlgebraic.File, Is.EqualTo(file));
+                        Assert.That(tryFromAlgebraic.Rank, Is.EqualTo(rank));
                     }
                 }
             }
         }
 
         [Test]
-        public void TestFromAlgebraicNegativeCases()
+        [TestCase(null)]
+        [TestCase("1a")]
+        [TestCase("a0")]
+        [TestCase("b9")]
+        [TestCase("i1")]
+        [TestCase("a12")]
+        public void TestFromAlgebraicAndTryFromAlgebraicNegativeCases(string algebraicNotation)
         {
-            Assert.That(() => Square.FromAlgebraic(null), Throws.ArgumentException);
-            Assert.That(() => Square.FromAlgebraic("1a"), Throws.ArgumentException);
-            Assert.That(() => Square.FromAlgebraic("a0"), Throws.ArgumentException);
-            Assert.That(() => Square.FromAlgebraic("b9"), Throws.ArgumentException);
-            Assert.That(() => Square.FromAlgebraic("i1"), Throws.ArgumentException);
+            Assert.That(() => Square.FromAlgebraic(algebraicNotation), Throws.ArgumentException);
+            Assert.That(Square.TryFromAlgebraic(algebraicNotation), Is.Null);
         }
 
         [Test]

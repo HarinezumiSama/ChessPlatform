@@ -591,8 +591,8 @@ namespace ChessPlatform
                     var movedPiece = match.Groups[SanMoveHelper.MovedPieceGroupName].Value;
                     var fromFile = match.Groups[SanMoveHelper.FromFileGroupName].Value;
                     var fromRank = match.Groups[SanMoveHelper.FromRankGroupName].Value;
-                    var isCapture = match.Groups[SanMoveHelper.CaptureSignGroupName].Value
-                        == SanMoveHelper.CaptureSymbol;
+                    var isCapture =
+                        match.Groups[SanMoveHelper.CaptureSignGroupName].Value == SanMoveHelper.CaptureSymbol;
                     var to = match.Groups[SanMoveHelper.ToGroupName].Value;
                     var promotion = match.Groups[SanMoveHelper.PromotionGroupName].Value;
                     var check = match.Groups[SanMoveHelper.CheckGroupName].Value;
@@ -602,8 +602,8 @@ namespace ChessPlatform
                         MovedPiece = movedPiece.IsNullOrEmpty()
                             ? PieceType.Pawn
                             : ChessConstants.FenCharToPieceTypeMap[movedPiece.Single()],
-                        FromFile = fromFile.IsNullOrEmpty() ? default(int?) : Square.GetFileIndex(fromFile.Single()),
-                        FromRank = fromRank.IsNullOrEmpty() ? default(int?) : Square.GetRankIndex(fromRank.Single()),
+                        FromFile = fromFile.IsNullOrEmpty() ? default(int?) : Square.GetFileFromChar(fromFile.Single()),
+                        FromRank = fromRank.IsNullOrEmpty() ? default(int?) : Square.GetRankFromChar(fromRank.Single()),
                         IsCapture = isCapture,
                         To = Square.FromAlgebraic(to),
                         Promotion =

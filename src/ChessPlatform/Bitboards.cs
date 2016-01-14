@@ -47,6 +47,18 @@ namespace ChessPlatform
                 .ToArray()
                 .AsReadOnly();
 
+        public static readonly Bitboard LightSquares = Enumerable
+            .Range(0, ChessConstants.SquareCount)
+            .Select(squareIndex => new Square(squareIndex))
+            .Where(square => !square.IsDark())
+            .Aggregate(Bitboard.None, (accumulator, square) => accumulator | square.Bitboard);
+
+        public static readonly Bitboard DarkSquares = Enumerable
+            .Range(0, ChessConstants.SquareCount)
+            .Select(squareIndex => new Square(squareIndex))
+            .Where(square => square.IsDark())
+            .Aggregate(Bitboard.None, (accumulator, square) => accumulator | square.Bitboard);
+
         internal static readonly ulong Rank1Value = Rank1.InternalValue;
         internal static readonly ulong Rank8Value = Rank8.InternalValue;
 

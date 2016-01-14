@@ -8,6 +8,22 @@ namespace ChessPlatform
 {
     public struct Square : IEquatable<Square>
     {
+        #region Constants and Fields
+
+        private static readonly string[] StringRepresentations = Enumerable
+            .Range(0, ChessConstants.SquareCount)
+            .Select(
+                squareIndex =>
+                    new string(new[] { GetFileChar(GetFile(squareIndex)), GetRankChar(GetRank(squareIndex)) }))
+            .ToArray();
+
+        private static readonly Bitboard[] Bitboards = Enumerable
+            .Range(0, ChessConstants.SquareCount)
+            .Select(Bitboard.FromSquareIndex)
+            .ToArray();
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -16,9 +32,20 @@ namespace ChessPlatform
         /// </summary>
         [DebuggerNonUserCode]
         public Square(int squareIndex)
-            : this(true, squareIndex)
         {
-            // Nothing to do
+            #region Argument Check
+
+            if ((squareIndex & ~ChessConstants.MaxSquareIndex) != 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(squareIndex),
+                    squareIndex,
+                    $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
+            }
+
+            #endregion
+
+            SquareIndex = squareIndex;
         }
 
         /// <summary>
@@ -27,54 +54,23 @@ namespace ChessPlatform
         /// </summary>
         [DebuggerNonUserCode]
         public Square(int file, int rank)
-            : this(true, file, rank)
-        {
-            // Nothing to do
-        }
-
-        [DebuggerNonUserCode]
-        internal Square(bool checkArguments, int squareIndex)
         {
             #region Argument Check
 
-            if (checkArguments)
+            if ((file & ~ChessConstants.MaxFileIndex) != 0)
             {
-                if ((squareIndex & ~ChessConstants.MaxSquareIndex) != 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(squareIndex),
-                        squareIndex,
-                        $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
-                }
+                throw new ArgumentOutOfRangeException(
+                    nameof(file),
+                    file,
+                    $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
 
-            #endregion
-
-            SquareIndex = squareIndex;
-        }
-
-        [DebuggerNonUserCode]
-        internal Square(bool checkArguments, int file, int rank)
-        {
-            #region Argument Check
-
-            if (checkArguments)
+            if ((rank & ~ChessConstants.MaxRankIndex) != 0)
             {
-                if ((file & ~0x07) != 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(file),
-                        file,
-                        $@"The value is out of the valid range {ChessConstants.FileRange}.");
-                }
-
-                if ((rank & ~0x07) != 0)
-                {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(rank),
-                        rank,
-                        $@"The value is out of the valid range {ChessConstants.FileRange}.");
-                }
+                throw new ArgumentOutOfRangeException(
+                    nameof(rank),
+                    rank,
+                    $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
 
             #endregion
@@ -85,26 +81,6 @@ namespace ChessPlatform
         #endregion
 
         #region Public Properties
-
-        public int File
-        {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return SquareIndex & 0x07;
-            }
-        }
-
-        public int Rank
-        {
-            [DebuggerStepThrough]
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (SquareIndex >> 3) & 0x07;
-            }
-        }
 
         public int SquareIndex
         {
@@ -119,17 +95,37 @@ namespace ChessPlatform
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return Bitboard.FromSquareIndex(SquareIndex);
+                return Bitboards[SquareIndex];
+            }
+        }
+
+        public int File
+        {
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return GetFile(SquareIndex);
+            }
+        }
+
+        public int Rank
+        {
+            [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return GetRank(SquareIndex);
             }
         }
 
         public char FileChar
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [DebuggerStepThrough]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return (char)('a' + File);
+                return GetFileChar(File);
             }
         }
 
@@ -139,7 +135,7 @@ namespace ChessPlatform
             [DebuggerStepThrough]
             get
             {
-                return (char)('1' + Rank);
+                return GetRankChar(Rank);
             }
         }
 
@@ -161,6 +157,7 @@ namespace ChessPlatform
             return Equals(left, right);
         }
 
+        [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Square left, Square right)
         {
@@ -174,31 +171,20 @@ namespace ChessPlatform
             var file = left.File + right.FileOffset;
             var rank = left.Rank + right.RankOffset;
 
-            return (file & ~0x07) == 0 && (rank & ~0x07) == 0 ? new Square(false, file, rank) : default(Square?);
+            return (file & ~ChessConstants.MaxFileIndex) == 0 && (rank & ~ChessConstants.MaxRankIndex) == 0
+                ? new Square(file, rank)
+                : default(Square?);
         }
 
         #endregion
 
         #region Public Methods
 
+        [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Square left, Square right)
         {
             return left.SquareIndex == right.SquareIndex;
-        }
-
-        [DebuggerNonUserCode]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetFileIndex(char file)
-        {
-            return checked(file - 'a');
-        }
-
-        [DebuggerNonUserCode]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int GetRankIndex(char rank)
-        {
-            return checked(rank - '1');
         }
 
         [DebuggerNonUserCode]
@@ -223,12 +209,12 @@ namespace ChessPlatform
                 return null;
             }
 
-            var file = GetFileIndex(char.ToLowerInvariant(algebraicNotation[0]));
-            var rank = GetRankIndex(algebraicNotation[1]);
+            var file = GetFileFromChar(algebraicNotation[0]);
+            var rank = GetRankFromChar(algebraicNotation[1]);
 
             return ChessConstants.FileRange.Contains(file) && ChessConstants.RankRange.Contains(rank)
-                ? new Square(false, file, rank)
-                : null;
+                ? new Square(file, rank)
+                : default(Square?);
         }
 
         public static Square[] GenerateFile(int file)
@@ -247,20 +233,20 @@ namespace ChessPlatform
 
             return Enumerable
                 .Range(0, ChessConstants.RankCount)
-                .Select(rank => new Square(false, file, (byte)rank))
+                .Select(rank => new Square(file, rank))
                 .ToArray();
         }
 
         public static Square[] GenerateFile(char file)
         {
-            var fileIndex = GetFileIndex(file);
+            var fileIndex = GetFileFromChar(file);
 
             if (!ChessConstants.FileRange.Contains(fileIndex))
             {
                 throw new ArgumentOutOfRangeException(nameof(file), file, "The value is out of the valid range.");
             }
 
-            return GenerateFile(Convert.ToByte(fileIndex));
+            return GenerateFile(fileIndex);
         }
 
         public static Square[] GenerateRank(int rank)
@@ -279,7 +265,7 @@ namespace ChessPlatform
 
             return Enumerable
                 .Range(0, ChessConstants.FileCount)
-                .Select(file => new Square(false, (byte)file, rank))
+                .Select(file => new Square(file, rank))
                 .ToArray();
         }
 
@@ -294,12 +280,12 @@ namespace ChessPlatform
 
             #endregion
 
-            return ranks.SelectMany(GenerateRank).ToArray();
+            return ranks.SelectMany(GenerateRank).Distinct().ToArray();
         }
 
         public override string ToString()
         {
-            return new string(new[] { FileChar, RankChar });
+            return StringRepresentations[SquareIndex];
         }
 
         public override bool Equals(object obj)
@@ -326,11 +312,39 @@ namespace ChessPlatform
 
         #region Internal Methods
 
+        [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsValidX88Value(int x88Value)
+        internal static int GetFileFromChar(char file)
         {
-            return (x88Value & 0xFFFFFF88) == 0;
+            return checked(char.ToLowerInvariant(file) - 'a');
         }
+
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static int GetRankFromChar(char rank)
+        {
+            return checked(rank - '1');
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetFile(int squareIndex) => squareIndex & 0x07;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetRank(int squareIndex) => (squareIndex >> 3) & 0x07;
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static char GetFileChar(int file) => (char)('a' + file);
+
+        [DebuggerStepThrough]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static char GetRankChar(int rank) => (char)('1' + rank);
 
         #endregion
     }
