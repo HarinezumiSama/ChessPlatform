@@ -50,6 +50,7 @@
     <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
       <Link>Properties\Generated.GlobalVersion.cs</Link>
     </Compile>
+    <Compile Include="Evaluator.cs" />
     <Compile Include="IOpeningBook.cs" />
     <Compile Include="LocalHelper.cs" />
     <Compile Include="MultiTaskControllerStopException.cs" />

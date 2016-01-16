@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
@@ -122,7 +123,8 @@ namespace ChessPlatform
         }
 
         [DebuggerNonUserCode]
-        public static GameMove FromStringNotation(string stringNotation)
+        [NotNull]
+        public static GameMove FromStringNotation([NotNull] string stringNotation)
         {
             #region Argument Check
 
@@ -153,7 +155,7 @@ namespace ChessPlatform
             }
 
             throw new ArgumentException(
-                $@"Invalid string notation of a move '{stringNotation}'.",
+                $@"Invalid string notation of a move: '{stringNotation}'.",
                 nameof(stringNotation));
         }
 

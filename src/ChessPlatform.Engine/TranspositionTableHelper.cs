@@ -7,7 +7,7 @@ using Omnifactotum;
 
 namespace ChessPlatform.Engine
 {
-    public static class TranspositionTableHelper
+    internal static class TranspositionTableHelper
     {
         #region Constants and Fields
 
