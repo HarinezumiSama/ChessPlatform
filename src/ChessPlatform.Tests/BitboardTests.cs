@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
+using Omnifactotum.NUnit;
 
 namespace ChessPlatform.Tests
 {
@@ -33,12 +35,12 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        [TestCase(0L)]
-        [TestCase(1L, "a1")]
-        [TestCase(1L << 1, "b1")]
-        [TestCase(1L << 49, "b7")]
-        [TestCase((1L << 49) | (1L << 23), "b7", "h3")]
-        [TestCase((1L << 1) | (1L << 59), "b1", "d8")]
+        [TestCase(0L, new string[0])]
+        [TestCase(1L, new[] { "a1" })]
+        [TestCase(1L << 1, new[] { "b1" })]
+        [TestCase(1L << 49, new[] { "b7" })]
+        [TestCase((1L << 49) | (1L << 23), new[] { "b7", "h3" })]
+        [TestCase((1L << 1) | (1L << 59), new[] { "b1", "d8" })]
         public void TestConstructionFromSquares(long expectedValue, params string[] squareNotations)
         {
             Assert.That(squareNotations, Is.Not.Null);
@@ -81,20 +83,38 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        [TestCase(0L)]
-        [TestCase(1L, 0)]
-        [TestCase(1L << 1, 1)]
-        [TestCase(1L << 49, 49)]
-        [TestCase((1L << 49) | (1L << 23), 49, 23)]
-        [TestCase((1L << 1) | (1L << 59), 1, 59)]
-        public void TestGetSquaresAndGetCount(long value, params int[] expectedIndexesResult)
+        [TestCase(0L, new int[0])]
+        [TestCase(1L, new[] { 0 })]
+        [TestCase(1L << 1, new[] { 1 })]
+        [TestCase(1L << 49, new[] { 49 })]
+        [TestCase((1L << 49) | (1L << 23), new[] { 49, 23 })]
+        [TestCase((1L << 1) | (1L << 59), new[] { 1, 59 })]
+        [TestCase((1L << 2) | (1L << 11) | (1L << 34), new[] { 2, 11, 34 })]
+        public void TestGetSquaresAndGetFirstSquareAndGetBitSetCountAndIsExactlyOneBitSet(
+            long value,
+            params int[] expectedIndexesResult)
         {
             Assert.That(expectedIndexesResult, Is.Not.Null);
-            var expectedResult = expectedIndexesResult.Select(squareIndex => new Square(squareIndex)).ToArray();
+
+            var expectedGetSquares = expectedIndexesResult.Select(squareIndex => new Square(squareIndex)).ToArray();
+            var expectedGetBitSetCount = expectedGetSquares.Length;
+            var expectedIsExactlyOneBitSet = expectedIndexesResult.Length == 1;
+
+            var expectedGetFirstSquareIndex = expectedIndexesResult.Length == 0
+                ? default(int?)
+                : expectedIndexesResult.Min();
 
             var bitboard = new Bitboard(value);
-            Assert.That(bitboard.GetSquares(), Is.EquivalentTo(expectedResult));
-            Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedResult.Length));
+
+            Assert.That(bitboard.GetSquares(), Is.EquivalentTo(expectedGetSquares));
+            Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedGetBitSetCount));
+            Assert.That(bitboard.IsExactlyOneBitSet(), Is.EqualTo(expectedIsExactlyOneBitSet));
+
+            Assert.That(
+                () => bitboard.GetFirstSquare().SquareIndex,
+                expectedGetFirstSquareIndex.HasValue
+                    ? (IResolveConstraint)Is.EqualTo(expectedGetFirstSquareIndex)
+                    : Throws.InvalidOperationException);
         }
 
         [Test]
@@ -167,6 +187,82 @@ namespace ChessPlatform.Tests
 
             var expectedResultBitboard = Square.FromAlgebraic(expectedResultSquareNotation).Bitboard;
             Assert.That(resultBitboard.Value, Is.EqualTo(expectedResultBitboard.Value));
+        }
+
+        [Test]
+        [TestCase((ShiftDirection)int.MinValue)]
+        [TestCase((ShiftDirection)0)]
+        [TestCase((ShiftDirection)int.MaxValue)]
+        public void TestShiftNegativeCases(ShiftDirection direction)
+        {
+            var bitboard = Square.FromAlgebraic("a1").Bitboard;
+
+            Assert.That(
+                () => bitboard.Shift(direction),
+                Throws
+                    .TypeOf<ArgumentOutOfRangeException>()
+                    .With
+                    .Property(nameof(ArgumentOutOfRangeException.ParamName))
+                    .EqualTo("direction"));
+        }
+
+        [Test]
+        [TestCase(0x123456789ABCDEFul, 0x123456789ABCDEFul, true)]
+        [TestCase(0x0ul, 0x0ul, true)]
+        [TestCase(0x0ul, 0x1ul, false)]
+        [TestCase(0x123456789ABCDEFul, 0x123456789ABCDEEul, false)]
+        [TestCase(0x123456789ABCDEFul, 0x223456789ABCDEFul, false)]
+        public void TestEquality(ulong value1, ulong value2, bool shouldBeEqual)
+        {
+            var bitboard1 = new Bitboard(value1);
+            var bitboard2 = new Bitboard(value2);
+            var expectation = shouldBeEqual
+                ? AssertEqualityExpectation.EqualAndCannotBeSame
+                : AssertEqualityExpectation.NotEqual;
+
+            NUnitFactotum.AssertEquality(bitboard1, bitboard2, expectation);
+            Assert.That(Bitboard.Equals(bitboard1, bitboard2), Is.EqualTo(shouldBeEqual));
+            Assert.That(bitboard1 == bitboard2, Is.EqualTo(shouldBeEqual));
+            Assert.That(bitboard1 != bitboard2, Is.Not.EqualTo(shouldBeEqual));
+        }
+
+        [Test]
+        public void TestFromSquareIndex()
+        {
+            for (var squareIndex = 0; squareIndex < ChessConstants.SquareCount; squareIndex++)
+            {
+                var bitboard = Bitboard.FromSquareIndex(squareIndex);
+                Assert.That(bitboard.InternalValue, Is.EqualTo(1UL << squareIndex));
+            }
+        }
+
+        [Test]
+        public void TestPopFirstBitSetIndexAndPopFirstBitSet()
+        {
+            const int Bit1 = 2;
+            const int Bit2 = 23;
+            const int Bit3 = 49;
+
+            var bitboard1 = new Bitboard((1L << Bit1) | (1L << Bit2) | (1L << Bit3));
+            var bitboard2 = bitboard1;
+
+            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit1));
+            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit1));
+
+            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit2));
+            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit2));
+
+            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit3));
+            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit3));
+
+            Assert.That(bitboard1.IsNone, Is.True);
+            Assert.That(bitboard2.IsNone, Is.True);
+
+            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bitboard.NoBitSetIndex));
+            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(0UL));
+
+            Assert.That(bitboard1.IsNone, Is.True);
+            Assert.That(bitboard2.IsNone, Is.True);
         }
 
         [Test]

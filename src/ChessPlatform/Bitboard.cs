@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Omnifactotum;
 
 namespace ChessPlatform
 {
@@ -272,9 +271,9 @@ namespace ChessPlatform
         {
             var squares = InternalValue == NoneValue
                 ? "<none>"
-                : GetSquares().Select(item => item.ToString()).OrderBy(Factotum.Identity).Join(", ");
+                : GetSquares().OrderBy(square => square.SquareIndex).Select(item => item.ToString()).Join(", ");
 
-            return $@"{{ {InternalValue:X16} : {squares} }}";
+            return $@"{{ 0x{InternalValue:X16} : {squares} }}";
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -320,6 +319,11 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Square GetFirstSquare()
         {
+            if (IsNone)
+            {
+                throw new InvalidOperationException("The bitboard represents no squares.");
+            }
+
             var squareIndex = FindFirstBitSetIndex();
             return new Square(squareIndex);
         }
@@ -360,47 +364,35 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong ShiftInternal(ulong value, ShiftDirection direction)
         {
-            if (direction == ShiftDirection.North)
+            switch (direction)
             {
-                return (value & ~Bitboards.Rank8Value) << 8;
-            }
+                case ShiftDirection.North:
+                    return (value & ~Bitboards.Rank8Value) << 8;
 
-            if (direction == ShiftDirection.NorthEast)
-            {
-                return (value & ~Bitboards.Rank8WithFileHValue) << 9;
-            }
+                case ShiftDirection.NorthEast:
+                    return (value & ~Bitboards.Rank8WithFileHValue) << 9;
 
-            if (direction == ShiftDirection.East)
-            {
-                return (value & ~Bitboards.FileHValue) << 1;
-            }
+                case ShiftDirection.East:
+                    return (value & ~Bitboards.FileHValue) << 1;
 
-            if (direction == ShiftDirection.SouthEast)
-            {
-                return (value & ~Bitboards.Rank1WithFileHValue) >> 7;
-            }
+                case ShiftDirection.SouthEast:
+                    return (value & ~Bitboards.Rank1WithFileHValue) >> 7;
 
-            if (direction == ShiftDirection.South)
-            {
-                return (value & ~Bitboards.Rank1Value) >> 8;
-            }
+                case ShiftDirection.South:
+                    return (value & ~Bitboards.Rank1Value) >> 8;
 
-            if (direction == ShiftDirection.SouthWest)
-            {
-                return (value & ~Bitboards.Rank1WithFileAValue) >> 9;
-            }
+                case ShiftDirection.SouthWest:
+                    return (value & ~Bitboards.Rank1WithFileAValue) >> 9;
 
-            if (direction == ShiftDirection.West)
-            {
-                return (value & ~Bitboards.FileAValue) >> 1;
-            }
+                case ShiftDirection.West:
+                    return (value & ~Bitboards.FileAValue) >> 1;
 
-            if (direction == ShiftDirection.NorthWest)
-            {
-                return (value & ~Bitboards.Rank8WithFileAValue) << 7;
-            }
+                case ShiftDirection.NorthWest:
+                    return (value & ~Bitboards.Rank8WithFileAValue) << 7;
 
-            return NoneValue;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, "Invalid shift direction.");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

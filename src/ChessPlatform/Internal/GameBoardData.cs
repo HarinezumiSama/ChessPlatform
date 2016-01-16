@@ -758,7 +758,7 @@ namespace ChessPlatform.Internal
                 Piece piece;
                 if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
                 {
-                    var square = new Square(Convert.ToByte(currentFile), Convert.ToByte(currentRank));
+                    var square = new Square(currentFile, currentRank);
                     SetupNewPiece(piece, square);
                     currentFile++;
                     continue;

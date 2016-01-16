@@ -35,7 +35,7 @@ namespace ChessPlatform
         {
             #region Argument Check
 
-            if ((squareIndex & ~ChessConstants.MaxSquareIndex) != 0)
+            if (IsInvalidSquareIndex(squareIndex))
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(squareIndex),
@@ -311,6 +311,13 @@ namespace ChessPlatform
         #endregion
 
         #region Internal Methods
+
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool IsInvalidSquareIndex(int squareIndex)
+        {
+            return (squareIndex & ~ChessConstants.MaxSquareIndex) != 0;
+        }
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
