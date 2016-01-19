@@ -6,14 +6,16 @@ using System.Runtime.CompilerServices;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
+//// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
+//// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
+//// ReSharper disable ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
+//// ReSharper disable SuggestBaseTypeForParameter - Using specific types (such as arrays) for speed optimization
+
 namespace ChessPlatform.Internal
 {
     internal sealed class GameBoardData
     {
         #region Constants and Fields
-
-        private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
-        private static readonly int GameSideArrayLength = ChessConstants.GameSides.Max(item => (int)item) + 1;
 
         private static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
         private static readonly ShiftDirection[] QueenDirections = AllDirections;
@@ -47,27 +49,17 @@ namespace ChessPlatform.Internal
 
         private readonly Stack<MakeMoveData> _undoMoveDatas;
 
-        private readonly Bitboard[] _bitboards;
-        private readonly Bitboard[] _entireSideBitboards;
-        private readonly Piece[] _pieces;
-
         #endregion
 
         #region Constructors
 
         internal GameBoardData()
         {
+            PiecePosition = new PiecePosition();
             _undoMoveDatas = new Stack<MakeMoveData>();
-            _pieces = new Piece[ChessConstants.SquareCount];
-
-            _bitboards = new Bitboard[PieceArrayLength];
-            _bitboards[GetPieceArrayIndexInternal(Piece.None)] = Bitboard.Everything;
-
-            _entireSideBitboards = new Bitboard[GameSideArrayLength];
-            ZobristKey = ComputeZobristKey();
         }
 
-        private GameBoardData(GameBoardData other)
+        private GameBoardData([NotNull] GameBoardData other)
         {
             #region Argument Check
 
@@ -78,30 +70,17 @@ namespace ChessPlatform.Internal
 
             #endregion
 
+            PiecePosition = other.PiecePosition.Copy();
             _undoMoveDatas = new Stack<MakeMoveData>();
-            _pieces = other._pieces.Copy();
-            _bitboards = other._bitboards.Copy();
-            _entireSideBitboards = other._entireSideBitboards.Copy();
-            ZobristKey = other.ZobristKey;
         }
 
         #endregion
 
         #region Public Properties
 
-        public Piece this[Square square]
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _pieces[square.SquareIndex];
-            }
-        }
-
-        public long ZobristKey
+        public PiecePosition PiecePosition
         {
             get;
-            private set;
         }
 
         #endregion
@@ -110,17 +89,7 @@ namespace ChessPlatform.Internal
 
         public override string ToString()
         {
-            return this.GetFenSnippet();
-        }
-
-        public void EnsureConsistency()
-        {
-            if (!DebugConstants.EnsurePieceDataConsistency)
-            {
-                return;
-            }
-
-            EnsureConsistencyInternal();
+            return PiecePosition.GetFenSnippet();
         }
 
         public GameBoardData Copy()
@@ -128,69 +97,18 @@ namespace ChessPlatform.Internal
             return new GameBoardData(this);
         }
 
-        public bool IsSamePosition([NotNull] GameBoardData otherBoardData)
+        public bool IsSamePosition([NotNull] GameBoardData other)
         {
             #region Argument Check
 
-            if (otherBoardData == null)
+            if (other == null)
             {
-                throw new ArgumentNullException(nameof(otherBoardData));
+                throw new ArgumentNullException(nameof(other));
             }
 
             #endregion
 
-            var length = _bitboards.Length;
-            if (length != otherBoardData._bitboards.Length)
-            {
-                return false;
-            }
-
-            for (var index = 0; index < length; index++)
-            {
-                if (_bitboards[index] != otherBoardData._bitboards[index])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetBitboard(Piece piece)
-        {
-            var index = GetPieceArrayIndexInternal(piece);
-
-            var bitboard = _bitboards[index];
-            return bitboard;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard GetBitboard(GameSide side)
-        {
-            var bitboard = _entireSideBitboards[GetGameSideArrayIndexInternal(side)];
-            return bitboard;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Square[] GetSquares(Piece piece)
-        {
-            var bitboard = GetBitboard(piece);
-            return bitboard.GetSquares();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Square[] GetSquares(GameSide side)
-        {
-            var bitboard = GetBitboard(side);
-            return bitboard.GetSquares();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetPieceCount(Piece piece)
-        {
-            var bitboard = GetBitboard(piece);
-            return bitboard.GetBitSetCount();
+            return PiecePosition.IsSamePosition(other.PiecePosition);
         }
 
         [CanBeNull]
@@ -205,7 +123,7 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var piece = this[move.From];
+            var piece = PiecePosition[move.From];
             var side = piece.GetSide();
             if (!side.HasValue || piece.GetPieceType() != PieceType.Pawn || move.From.File != move.To.File)
             {
@@ -235,13 +153,13 @@ namespace ChessPlatform.Internal
                 return false;
             }
 
-            var piece = this[source];
+            var piece = PiecePosition[source];
             if (piece.GetPieceType() != PieceType.Pawn)
             {
                 return false;
             }
 
-            var targetPiece = this[enPassantCaptureInfo.TargetPieceSquare];
+            var targetPiece = PiecePosition[enPassantCaptureInfo.TargetPieceSquare];
             return targetPiece.GetPieceType() == PieceType.Pawn;
         }
 
@@ -250,8 +168,8 @@ namespace ChessPlatform.Internal
             var fromBitboard = from.Bitboard;
             var toBitboard = to.Bitboard;
 
-            var whitePawns = GetBitboard(Piece.WhitePawn);
-            var blackPawns = GetBitboard(Piece.BlackPawn);
+            var whitePawns = PiecePosition[Piece.WhitePawn];
+            var blackPawns = PiecePosition[Piece.BlackPawn];
 
             return ((fromBitboard & whitePawns).IsAny && (toBitboard & Bitboards.Rank8).IsAny)
                 || ((fromBitboard & blackPawns).IsAny && (toBitboard & Bitboards.Rank1).IsAny);
@@ -260,7 +178,7 @@ namespace ChessPlatform.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CastlingInfo CheckCastlingMove([NotNull] GameMove move)
         {
-            var piece = this[move.From];
+            var piece = PiecePosition[move.From];
 
             return piece.Is(PieceType.King)
                 ? ChessHelper.KingMoveToCastlingInfoMap.GetValueOrDefault(move)
@@ -302,12 +220,12 @@ namespace ChessPlatform.Internal
         {
             var result = DefaultPinLimitations.Copy();
 
-            var enemyPieces = GetBitboard(attackingSide);
-            var ownPieces = GetBitboard(attackingSide.Invert());
+            var enemyPieces = PiecePosition[attackingSide];
+            var ownPieces = PiecePosition[attackingSide.Invert()];
 
-            var queens = GetBitboard(attackingSide.ToPiece(PieceType.Queen));
-            var bishops = GetBitboard(attackingSide.ToPiece(PieceType.Bishop));
-            var rooks = GetBitboard(attackingSide.ToPiece(PieceType.Rook));
+            var queens = PiecePosition[attackingSide.ToPiece(PieceType.Queen)];
+            var bishops = PiecePosition[attackingSide.ToPiece(PieceType.Bishop)];
+            var rooks = PiecePosition[attackingSide.ToPiece(PieceType.Rook)];
 
             PopulatePinLimitations(
                 result,
@@ -332,7 +250,7 @@ namespace ChessPlatform.Internal
         {
             var king = side.ToPiece(PieceType.King);
             var oppositeSide = side.Invert();
-            var kingSquares = GetSquares(king);
+            var kingSquares = PiecePosition[king].GetSquares();
             return kingSquares.Length != 0 && IsAnyUnderAttack(kingSquares, oppositeSide);
         }
 
@@ -347,7 +265,7 @@ namespace ChessPlatform.Internal
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             Square sourceSquare)
         {
-            var piece = this[sourceSquare];
+            var piece = PiecePosition[sourceSquare];
             var pieceType = piece.GetPieceType();
 
             if (pieceType == PieceType.None)
@@ -359,19 +277,33 @@ namespace ChessPlatform.Internal
 
             var pieceSide = piece.GetSide().EnsureNotNull();
 
-            if (pieceType == PieceType.Knight)
+            switch (pieceType)
             {
-                //// TODO [vmcl] Use bitboard instead of squares
-                var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
-                    .Where(square => this[square].GetSide() != pieceSide)
-                    .ToArray();
+                case PieceType.Knight:
+                    //// TODO [vmcl] Use bitboard instead of squares
+                    var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
+                        .Where(square => PiecePosition[square].GetSide() != pieceSide)
+                        .ToArray();
 
-                return result;
-            }
+                    return result;
 
-            if (pieceType == PieceType.King || pieceType == PieceType.Pawn)
-            {
-                throw new InvalidOperationException("MUST NOT go into this branch anymore.");
+                case PieceType.King:
+                case PieceType.Pawn:
+                    throw new InvalidOperationException("MUST NOT go into this branch anymore.");
+
+                case PieceType.None:
+                    throw new ArgumentException(
+                        $@"No piece at the source square '{sourceSquare}'.",
+                        nameof(sourceSquare));
+
+                case PieceType.Bishop:
+                case PieceType.Rook:
+                case PieceType.Queen:
+                    // Just go ahead
+                    break;
+
+                default:
+                    throw pieceType.CreateEnumValueNotImplementedException();
             }
 
             var resultList = new List<Square>();
@@ -418,7 +350,7 @@ namespace ChessPlatform.Internal
             #endregion
 
             var pawnPiece = side.ToPiece(PieceType.Pawn);
-            var pawns = GetBitboard(pawnPiece);
+            var pawns = PiecePosition[pawnPiece];
             if (pawns.IsNone)
             {
                 return;
@@ -429,7 +361,7 @@ namespace ChessPlatform.Internal
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
             {
                 var forwardDirection = side == GameSide.White ? ShiftDirection.North : ShiftDirection.South;
-                var emptySquares = GetBitboard(Piece.None);
+                var emptySquares = PiecePosition[Piece.None];
                 var pushes = pawns.Shift(forwardDirection) & emptySquares;
 
                 var targetPushes = pushes & target;
@@ -460,7 +392,7 @@ namespace ChessPlatform.Internal
 
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
             {
-                var enemies = GetBitboard(side.Invert());
+                var enemies = PiecePosition[side.Invert()];
                 var enemyTargets = enemies & target;
 
                 var leftCaptureOffset = side == GameSide.White
@@ -503,7 +435,7 @@ namespace ChessPlatform.Internal
             #endregion
 
             var kingPiece = side.ToPiece(PieceType.King);
-            var king = GetBitboard(kingPiece);
+            var king = PiecePosition[kingPiece];
             if (king.IsNone)
             {
                 return;
@@ -519,11 +451,11 @@ namespace ChessPlatform.Internal
             var sourceSquare = new Square(kingSquareIndex);
             var directTargets = KingAttacksOrMoves[kingSquareIndex] & target;
 
-            var emptySquares = GetBitboard(Piece.None);
+            var emptySquares = PiecePosition[Piece.None];
             var nonCaptures = directTargets & emptySquares;
             PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
 
-            var enemies = GetBitboard(side.Invert());
+            var enemies = PiecePosition[side.Invert()];
             var captures = directTargets & enemies;
             PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
 
@@ -559,8 +491,8 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var emptySquares = GetBitboard(Piece.None);
-            var enemies = GetBitboard(side.Invert());
+            var emptySquares = PiecePosition[Piece.None];
+            var enemies = PiecePosition[side.Invert()];
 
             var internalTarget = Bitboard.None;
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
@@ -580,7 +512,7 @@ namespace ChessPlatform.Internal
             }
 
             var knightPiece = side.ToPiece(PieceType.Knight);
-            var knights = GetBitboard(knightPiece);
+            var knights = PiecePosition[knightPiece];
 
             while (knights.IsAny)
             {
@@ -662,123 +594,6 @@ namespace ChessPlatform.Internal
 
         #region Internal Methods
 
-        internal Piece SetPiece(Square square, Piece piece)
-        {
-            var squareIndex = square.SquareIndex;
-            var bitboardBit = square.Bitboard;
-
-            var oldPiece = _pieces[squareIndex];
-            _pieces[squareIndex] = piece;
-
-            _bitboards[GetPieceArrayIndexInternal(oldPiece)] &= ~bitboardBit;
-
-            var oldPieceSide = oldPiece.GetSide();
-            if (oldPieceSide.HasValue)
-            {
-                _entireSideBitboards[GetGameSideArrayIndexInternal(oldPieceSide.Value)] &= ~bitboardBit;
-            }
-
-            _bitboards[GetPieceArrayIndexInternal(piece)] |= bitboardBit;
-
-            var pieceSide = piece.GetSide();
-            if (pieceSide.HasValue)
-            {
-                _entireSideBitboards[GetGameSideArrayIndexInternal(pieceSide.Value)] |= bitboardBit;
-            }
-
-            ZobristKey ^= ZobristHashHelper.GetPieceHash(square, oldPiece)
-                ^ ZobristHashHelper.GetPieceHash(square, piece);
-
-            return oldPiece;
-        }
-
-        internal void SetupNewPiece(Piece piece, Square square)
-        {
-            #region Argument Check
-
-            if (piece == Piece.None)
-            {
-                throw new ArgumentException("Must be a piece rather than empty square.", nameof(piece));
-            }
-
-            #endregion
-
-            var existingPiece = this[square];
-            if (existingPiece != Piece.None)
-            {
-                throw new ChessPlatformException(
-                    $@"The board square '{square}' is already occupied by '{existingPiece}'.");
-            }
-
-            SetPiece(square, piece);
-        }
-
-        internal void SetupByFenSnippet(string fenSnippet)
-        {
-            #region Argument Check
-
-            if (string.IsNullOrWhiteSpace(fenSnippet))
-            {
-                throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
-                    nameof(fenSnippet));
-            }
-
-            #endregion
-
-            const string InvalidFenMessage = "Invalid FEN.";
-
-            var currentRank = ChessConstants.RankCount - 1;
-            var currentFile = 0;
-            foreach (var ch in fenSnippet)
-            {
-                if (ch == ChessConstants.FenRankSeparator)
-                {
-                    if (currentFile != ChessConstants.FileCount)
-                    {
-                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                    }
-
-                    currentFile = 0;
-                    currentRank--;
-
-                    if (currentRank < 0)
-                    {
-                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                    }
-
-                    continue;
-                }
-
-                if (currentFile >= ChessConstants.FileCount)
-                {
-                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                }
-
-                Piece piece;
-                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
-                {
-                    var square = new Square(currentFile, currentRank);
-                    SetupNewPiece(piece, square);
-                    currentFile++;
-                    continue;
-                }
-
-                var emptySquareCount = byte.Parse(new string(ch, 1));
-                if (emptySquareCount == 0)
-                {
-                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                }
-
-                currentFile += emptySquareCount;
-            }
-
-            if (currentFile != ChessConstants.FileCount)
-            {
-                throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-            }
-        }
-
         internal MakeMoveData MakeMove(
             [NotNull] GameMove move,
             GameSide movingSide,
@@ -792,7 +607,7 @@ namespace ChessPlatform.Internal
                 throw new ArgumentNullException(nameof(move));
             }
 
-            var piece = this[move.From];
+            var piece = PiecePosition[move.From];
             if (piece == Piece.None || piece.GetSide() != movingSide)
             {
                 throw new ArgumentException($@"Invalid move '{move}' in the position.", nameof(move));
@@ -821,7 +636,7 @@ namespace ChessPlatform.Internal
                 }
 
                 enPassantCapturedPieceSquare = enPassantCaptureInfo.TargetPieceSquare;
-                capturedPiece = SetPiece(enPassantCaptureInfo.TargetPieceSquare, Piece.None);
+                capturedPiece = PiecePosition.SetPiece(enPassantCaptureInfo.TargetPieceSquare, Piece.None);
                 if (capturedPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
@@ -834,7 +649,7 @@ namespace ChessPlatform.Internal
                     throw new ChessPlatformException($@"Promoted piece type is not specified ({move}).");
                 }
 
-                var previousPiece = SetPiece(move.To, move.PromotionResult.ToPiece(movingSide));
+                var previousPiece = PiecePosition.SetPiece(move.To, move.PromotionResult.ToPiece(movingSide));
                 if (previousPiece.GetPieceType() != PieceType.Pawn)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
@@ -906,7 +721,7 @@ namespace ChessPlatform.Internal
 
             _undoMoveDatas.Push(undoMoveData);
 
-            EnsureConsistency();
+            PiecePosition.EnsureConsistency();
 
             return undoMoveData;
         }
@@ -925,43 +740,31 @@ namespace ChessPlatform.Internal
 
             var data = _undoMoveDatas.Pop();
 
-            SetPiece(data.Move.From, data.MovedPiece);
-            SetPiece(data.Move.To, Piece.None);
+            PiecePosition.SetPiece(data.Move.From, data.MovedPiece);
+            PiecePosition.SetPiece(data.Move.To, Piece.None);
 
             if (data.CapturedPiece != Piece.None)
             {
-                SetPiece(data.CapturedPieceSquare, data.CapturedPiece);
+                PiecePosition.SetPiece(data.CapturedPieceSquare, data.CapturedPiece);
             }
             else if (data.CastlingRookMove != null)
             {
-                var castlingRook = SetPiece(data.CastlingRookMove.To, Piece.None);
+                var castlingRook = PiecePosition.SetPiece(data.CastlingRookMove.To, Piece.None);
                 if (castlingRook.GetPieceType() != PieceType.Rook
                     || castlingRook.GetSide() != data.MovedPiece.GetSide())
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
 
-                SetPiece(data.CastlingRookMove.From, castlingRook);
+                PiecePosition.SetPiece(data.CastlingRookMove.From, castlingRook);
             }
 
-            EnsureConsistency();
+            PiecePosition.EnsureConsistency();
         }
 
         #endregion
 
         #region Private Methods
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetPieceArrayIndexInternal(Piece piece)
-        {
-            return (int)piece;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetGameSideArrayIndexInternal(GameSide side)
-        {
-            return (int)side;
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
@@ -1289,70 +1092,6 @@ namespace ChessPlatform.Internal
             return Connections[index];
         }
 
-        private void EnsureConsistencyInternal()
-        {
-            // ReSharper disable once LoopCanBeConvertedToQuery
-            foreach (var square in ChessHelper.AllSquares)
-            {
-                var piece = _pieces[square.SquareIndex];
-
-                foreach (var currentPiece in ChessConstants.Pieces)
-                {
-                    var isSet = (GetBitboard(currentPiece) & square.Bitboard).IsAny;
-                    if ((piece == currentPiece) != isSet)
-                    {
-                        throw new ChessPlatformException(
-                            $@"Bitboard inconsistency for the piece '{piece.GetName()}' at '{square}'.");
-                    }
-                }
-            }
-
-            var allBitboards = ChessConstants.Pieces.Select(GetBitboard).ToArray();
-            for (var outerIndex = 0; outerIndex < allBitboards.Length; outerIndex++)
-            {
-                var outerBitboard = allBitboards[outerIndex];
-                for (var innerIndex = outerIndex + 1; innerIndex < allBitboards.Length; innerIndex++)
-                {
-                    var innerBitboard = allBitboards[innerIndex];
-                    var intersectionBitboard = outerBitboard & innerBitboard;
-                    if (intersectionBitboard.IsNone)
-                    {
-                        continue;
-                    }
-
-                    var intersectingSquaresString =
-                        intersectionBitboard.GetSquares().Select(item => item.ToString()).Join("', '");
-
-                    throw new ChessPlatformException($@"Bitboard inconsistency at '{intersectingSquaresString}'.");
-                }
-            }
-
-            foreach (var side in ChessConstants.GameSides)
-            {
-                var actual = GetBitboard(side);
-                var expected = GetEntireSideBitboardNonCached(side);
-                if (actual != expected)
-                {
-                    throw new ChessPlatformException(
-                        $@"Entire-side-bitboard inconsistency: expected '{expected}', actual '{actual}'.");
-                }
-            }
-        }
-
-        private long ComputeZobristKey()
-        {
-            var pieces = ChessHelper.AllSquares
-                .Select(square => new { Square = square, Piece = this[square] })
-                .Where(obj => obj.Piece != Piece.None)
-                .ToArray();
-
-            var result = pieces.Aggregate(
-                0L,
-                (accumulator, obj) => accumulator ^ ZobristHashHelper.GetPieceHash(obj.Square, obj.Piece));
-
-            return result;
-        }
-
         private MovePieceData MovePieceInternal(GameMove move)
         {
             #region Argument Check
@@ -1364,13 +1103,13 @@ namespace ChessPlatform.Internal
 
             #endregion
 
-            var movedPiece = SetPiece(move.From, Piece.None);
+            var movedPiece = PiecePosition.SetPiece(move.From, Piece.None);
             if (movedPiece == Piece.None)
             {
                 throw new ChessPlatformException($@"The source square of the move {{{move}}} is empty.");
             }
 
-            var capturedPiece = SetPiece(move.To, movedPiece);
+            var capturedPiece = PiecePosition.SetPiece(move.To, movedPiece);
             if (capturedPiece != Piece.None && capturedPiece.GetSide() == movedPiece.GetSide())
             {
                 throw new ChessPlatformException("Cannot capture an own piece.");
@@ -1396,7 +1135,7 @@ namespace ChessPlatform.Internal
                 {
                     var currentSquare = square.Value;
 
-                    var piece = this[currentSquare];
+                    var piece = PiecePosition[currentSquare];
                     var currentSide = piece.GetSide();
                     if (piece == Piece.None || !currentSide.HasValue)
                     {
@@ -1414,13 +1153,6 @@ namespace ChessPlatform.Internal
             }
         }
 
-        private Bitboard GetEntireSideBitboardNonCached(GameSide side)
-        {
-            return ChessConstants.GameSideToPiecesMap[side].Aggregate(
-                Bitboard.None,
-                (a, piece) => a | GetBitboard(piece));
-        }
-
         private Bitboard GetAttackersInternal(
             Square targetSquare,
             GameSide attackingSide,
@@ -1431,7 +1163,7 @@ namespace ChessPlatform.Internal
             var targetBitboard = targetSquare.Bitboard;
             var targetSquareIndex = targetSquare.SquareIndex;
 
-            var opponentPawns = GetBitboard(attackingSide.ToPiece(PieceType.Pawn));
+            var opponentPawns = PiecePosition[attackingSide.ToPiece(PieceType.Pawn)];
             if (opponentPawns.IsAny)
             {
                 ShiftDirection left;
@@ -1455,7 +1187,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var opponentKnights = GetBitboard(attackingSide.ToPiece(PieceType.Knight));
+            var opponentKnights = PiecePosition[attackingSide.ToPiece(PieceType.Knight)];
             if (opponentKnights.IsAny)
             {
                 var knightAttacks = KnightAttacksOrMoves[targetSquareIndex];
@@ -1467,7 +1199,7 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var opponentKings = GetBitboard(attackingSide.ToPiece(PieceType.King));
+            var opponentKings = PiecePosition[attackingSide.ToPiece(PieceType.King)];
             if (opponentKings.IsAny)
             {
                 var kingAttacks = KingAttacksOrMoves[targetSquareIndex];
@@ -1479,10 +1211,10 @@ namespace ChessPlatform.Internal
                 }
             }
 
-            var emptySquareBitboard = GetBitboard(Piece.None);
+            var emptySquareBitboard = PiecePosition[Piece.None];
 
-            var opponentQueens = GetBitboard(attackingSide.ToPiece(PieceType.Queen));
-            var opponentRooks = GetBitboard(attackingSide.ToPiece(PieceType.Rook));
+            var opponentQueens = PiecePosition[attackingSide.ToPiece(PieceType.Queen)];
+            var opponentRooks = PiecePosition[attackingSide.ToPiece(PieceType.Rook)];
 
             var opponentSlidingStraightPieces = opponentQueens | opponentRooks;
             var slidingStraightAttackers =
@@ -1499,7 +1231,7 @@ namespace ChessPlatform.Internal
                 return result;
             }
 
-            var opponentBishops = GetBitboard(attackingSide.ToPiece(PieceType.Bishop));
+            var opponentBishops = PiecePosition[attackingSide.ToPiece(PieceType.Bishop)];
 
             var opponentSlidingDiagonallyPieces = opponentQueens | opponentBishops;
             var slidingDiagonallyAttackers =
@@ -1517,9 +1249,9 @@ namespace ChessPlatform.Internal
 
         private bool IsKingLeftOnly(GameSide side)
         {
-            var entire = GetBitboard(side);
-            var king = GetBitboard(side.ToPiece(PieceType.King));
-            var otherPieces = entire & ~king;
+            var sideBitboard = PiecePosition[side];
+            var kingBitboard = PiecePosition[side.ToPiece(PieceType.King)];
+            var otherPieces = sideBitboard & ~kingBitboard;
             return otherPieces.IsNone;
         }
 
@@ -1531,10 +1263,10 @@ namespace ChessPlatform.Internal
             ShiftDirection[] directions)
         {
             var piece = pieceType.ToPiece(side);
-            var pieces = GetBitboard(piece);
+            var pieces = PiecePosition[piece];
 
-            var emptySquares = GetBitboard(Piece.None);
-            var enemies = GetBitboard(side.Invert());
+            var emptySquares = PiecePosition[Piece.None];
+            var enemies = PiecePosition[side.Invert()];
 
             var shouldGenerateQuiets = moveTypes.IsAnySet(GeneratedMoveTypes.Quiet);
             var shouldGenerateCaptures = moveTypes.IsAnySet(GeneratedMoveTypes.Capture);

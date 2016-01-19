@@ -118,7 +118,7 @@ namespace ChessPlatform.Tests
                     Is.True,
                     $@"Bitboard for '{expectedPiece}' at '{square}' is invalid.");
 
-                var squares = gameBoard.GetSquares(expectedPiece);
+                var squares = gameBoard[expectedPiece].GetSquares();
 
                 Assert.That(
                     squares,

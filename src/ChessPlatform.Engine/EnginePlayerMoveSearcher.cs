@@ -10,7 +10,7 @@ using Omnifactotum.Annotations;
 
 //// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
 //// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
-//// ReSharper disable once ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
+//// ReSharper disable ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
 
 namespace ChessPlatform.Engine
 {

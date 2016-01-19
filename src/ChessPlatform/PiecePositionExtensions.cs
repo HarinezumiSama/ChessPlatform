@@ -2,20 +2,21 @@
 using System.Linq;
 using System.Text;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Internal
+namespace ChessPlatform
 {
-    internal static class GameBoardDataExtensions
+    public static class PiecePositionExtensions
     {
         #region Public Methods
 
-        public static void GetFenSnippet(this GameBoardData gameBoardData, StringBuilder resultBuilder)
+        public static void GetFenSnippet([NotNull] this PiecePosition position, [NotNull] StringBuilder resultBuilder)
         {
             #region Argument Check
 
-            if (gameBoardData == null)
+            if (position == null)
             {
-                throw new ArgumentNullException(nameof(gameBoardData));
+                throw new ArgumentNullException(nameof(position));
             }
 
             if (resultBuilder == null)
@@ -46,7 +47,7 @@ namespace ChessPlatform.Internal
                 for (var file = 0; file < ChessConstants.FileCount; file++)
                 {
                     var square = new Square(file, rank);
-                    var piece = gameBoardData.PiecePosition[square];
+                    var piece = position[square];
                     if (piece == Piece.None)
                     {
                         emptySquareCount.Value++;
@@ -62,10 +63,10 @@ namespace ChessPlatform.Internal
             }
         }
 
-        public static string GetFenSnippet(this GameBoardData gameBoardData)
+        public static string GetFenSnippet([NotNull] this PiecePosition position)
         {
             var resultBuilder = new StringBuilder();
-            GetFenSnippet(gameBoardData, resultBuilder);
+            GetFenSnippet(position, resultBuilder);
             return resultBuilder.ToString();
         }
 

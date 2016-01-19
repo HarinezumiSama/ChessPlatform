@@ -63,6 +63,7 @@
     <Compile Include="CastlingType.cs" />
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
+    <Compile Include="PiecePositionExtensions.cs" />
     <Compile Include="GameBoardExtensions.cs" />
     <Compile Include="GameDescription.cs" />
     <Compile Include="GamePlay\MoveNowRequestedException.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="GamePlay\VariationLine.cs" />
     <Compile Include="GamePlay\EvaluationScore.cs" />
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
+    <Compile Include="PiecePosition.cs" />
     <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
     <Compile Include="Internal\GeneratedMoveTypes.cs" />

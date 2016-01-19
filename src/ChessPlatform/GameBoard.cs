@@ -287,7 +287,35 @@ namespace ChessPlatform
 
         public bool CanMakeNullMove => _state == GameState.Default;
 
-        public Piece this[Square square] => _gameBoardData[square];
+        public Piece this[Square square]
+        {
+            [DebuggerNonUserCode]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _gameBoardData.PiecePosition[square];
+            }
+        }
+
+        public Bitboard this[Piece piece]
+        {
+            [DebuggerNonUserCode]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _gameBoardData.PiecePosition[piece];
+            }
+        }
+
+        public Bitboard this[GameSide side]
+        {
+            [DebuggerNonUserCode]
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get
+            {
+                return _gameBoardData.PiecePosition[side];
+            }
+        }
 
         public long ZobristKey => _zobristKey;
 
@@ -445,26 +473,19 @@ namespace ChessPlatform
             return result;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetBitboard(Piece piece)
         {
-            return _gameBoardData.GetBitboard(piece);
+            return _gameBoardData.PiecePosition[piece];
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetBitboard(GameSide side)
         {
-            return _gameBoardData.GetBitboard(side);
+            return _gameBoardData.PiecePosition[side];
         }
 
-        public Square[] GetSquares(Piece piece)
-        {
-            return _gameBoardData.GetSquares(piece);
-        }
-
-        public Square[] GetSquares(GameSide side)
-        {
-            return _gameBoardData.GetSquares(side);
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsValidMove(GameMove move)
         {
             #region Argument Check
@@ -479,6 +500,7 @@ namespace ChessPlatform
             return _validMoves.ContainsKey(move);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPawnPromotionMove(GameMove move)
         {
             #region Argument Check
@@ -602,8 +624,10 @@ namespace ChessPlatform
                         MovedPiece = movedPiece.IsNullOrEmpty()
                             ? PieceType.Pawn
                             : ChessConstants.FenCharToPieceTypeMap[movedPiece.Single()],
-                        FromFile = fromFile.IsNullOrEmpty() ? default(int?) : Square.GetFileFromChar(fromFile.Single()),
-                        FromRank = fromRank.IsNullOrEmpty() ? default(int?) : Square.GetRankFromChar(fromRank.Single()),
+                        FromFile =
+                            fromFile.IsNullOrEmpty() ? default(int?) : Square.GetFileFromChar(fromFile.Single()),
+                        FromRank =
+                            fromRank.IsNullOrEmpty() ? default(int?) : Square.GetRankFromChar(fromRank.Single()),
                         IsCapture = isCapture,
                         To = Square.FromAlgebraic(to),
                         Promotion =
@@ -732,7 +756,7 @@ namespace ChessPlatform
             }
 
             var noActiveKingGameBoardData = gameBoardData.Copy();
-            noActiveKingGameBoardData.SetPiece(activeKingSquare, Piece.None);
+            noActiveKingGameBoardData.PiecePosition.SetPiece(activeKingSquare, Piece.None);
 
             var oppositeSide = addMoveData.OppositeSide;
 
@@ -820,8 +844,8 @@ namespace ChessPlatform
             var pinLimitations = addMoveData.PinLimitations;
 
             var checkAttackSquare = checkAttackSquaresBitboard.GetFirstSquare();
-            var checkingPiece = gameBoardData[checkAttackSquare];
-            var activeKingBitboard = gameBoardData.GetBitboard(activeKing);
+            var checkingPiece = gameBoardData.PiecePosition[checkAttackSquare];
+            var activeKingBitboard = gameBoardData.PiecePosition[activeKing];
 
             //// TODO [vmcl] Generate attacker moves (this will eliminate some extra checks)
             var capturingBitboard = gameBoardData.GetAttackers(checkAttackSquare, addMoveData.ActiveSide)
@@ -1131,13 +1155,13 @@ namespace ChessPlatform
                 return;
             }
 
-            _gameBoardData.EnsureConsistency();
+            _gameBoardData.PiecePosition.EnsureConsistency();
 
             foreach (var king in ChessConstants.BothKings)
             {
                 const int ExpectedCount = 1;
 
-                var count = _gameBoardData.GetBitboard(king).GetBitSetCount();
+                var count = _gameBoardData.PiecePosition[king].GetBitSetCount();
                 if (count != ExpectedCount)
                 {
                     throw new ChessPlatformException(
@@ -1157,7 +1181,7 @@ namespace ChessPlatform
                     .PieceTypesExceptNone
                     .ToDictionary(
                         Factotum.Identity,
-                        item => _gameBoardData.GetPieceCount(item.ToPiece(side)));
+                        item => _gameBoardData.PiecePosition[item.ToPiece(side)].GetBitSetCount());
 
                 var allCount = pieceToCountMap.Values.Sum();
                 var pawnCount = pieceToCountMap[PieceType.Pawn];
@@ -1174,8 +1198,8 @@ namespace ChessPlatform
                 }
             }
 
-            var allPawnsBitboard = _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(GameSide.White))
-                | _gameBoardData.GetBitboard(PieceType.Pawn.ToPiece(GameSide.Black));
+            var allPawnsBitboard = _gameBoardData.PiecePosition[PieceType.Pawn.ToPiece(GameSide.White)]
+                | _gameBoardData.PiecePosition[PieceType.Pawn.ToPiece(GameSide.Black)];
 
             if ((allPawnsBitboard & ChessHelper.InvalidPawnSquaresBitboard).IsAny)
             {
@@ -1195,8 +1219,8 @@ namespace ChessPlatform
                     var king = side.ToPiece(PieceType.King);
                     var rook = side.ToPiece(PieceType.Rook);
 
-                    if (_gameBoardData[castlingInfo.KingMove.From] != king
-                        || _gameBoardData[castlingInfo.RookMove.From] != rook)
+                    if (_gameBoardData.PiecePosition[castlingInfo.KingMove.From] != king
+                        || _gameBoardData.PiecePosition[castlingInfo.RookMove.From] != rook)
                     {
                         throw new ChessPlatformException(
                             $@"Invalid position. {side} cannot castle {castlingInfo.CastlingSide}.");
@@ -1224,7 +1248,7 @@ namespace ChessPlatform
                         $@"The move '{move}' is inconsistent with respect to its pawn promotion state.");
                 }
 
-                var expectedIsRegularCapture = _gameBoardData[move.To] != Piece.None;
+                var expectedIsRegularCapture = _gameBoardData.PiecePosition[move.To] != Piece.None;
                 if (pair.Value.IsRegularCapture != expectedIsRegularCapture)
                 {
                     throw new ChessPlatformException(
@@ -1255,7 +1279,7 @@ namespace ChessPlatform
             out GameState state)
         {
             var activeKing = _activeSide.ToPiece(PieceType.King);
-            var activeKingSquare = _gameBoardData.GetBitboard(activeKing).GetFirstSquare();
+            var activeKingSquare = _gameBoardData.PiecePosition[activeKing].GetFirstSquare();
             var oppositeSide = _activeSide.Invert();
 
             var attackersBitboard = _gameBoardData.GetAttackers(activeKingSquare, oppositeSide);
@@ -1264,9 +1288,9 @@ namespace ChessPlatform
 
             var pinLimitations = _gameBoardData.GetPinLimitations(activeKingSquare.SquareIndex, oppositeSide);
 
-            var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.GetBitboard(_activeSide)
-                & ~_gameBoardData.GetBitboard(activeKing)
-                & ~_gameBoardData.GetBitboard(_activeSide.ToPiece(PieceType.Pawn));
+            var activePiecesExceptKingAndPawnsBitboard = _gameBoardData.PiecePosition[_activeSide]
+                & ~_gameBoardData.PiecePosition[activeKing]
+                & ~_gameBoardData.PiecePosition[_activeSide.ToPiece(PieceType.Pawn)];
 
             validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
 
@@ -1341,7 +1365,7 @@ namespace ChessPlatform
             InitializeValidMovesAndState(out validMoveMap, out state);
             validMoves = validMoveMap.AsReadOnly();
 
-            zobristKey = _gameBoardData.ZobristKey
+            zobristKey = _gameBoardData.PiecePosition.ZobristKey
                 ^ ZobristHashHelper.GetCastlingHash(_castlingOptions)
                 ^ (ShouldIncludeEnPassantHash(_enPassantCaptureInfo, validMoves)
                     ? ZobristHashHelper.GetEnPassantHash(
@@ -1404,25 +1428,27 @@ namespace ChessPlatform
             out int halfMovesBy50MoveRule,
             out int fullMoveIndex)
         {
-            _gameBoardData.SetupNewPiece(Piece.WhiteRook, "a1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteKnight, "b1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteBishop, "c1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteQueen, "d1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteKing, "e1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteBishop, "f1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteKnight, "g1");
-            _gameBoardData.SetupNewPiece(Piece.WhiteRook, "h1");
-            Square.GenerateRank(1).DoForEach(square => _gameBoardData.SetupNewPiece(Piece.WhitePawn, square));
+            _gameBoardData.PiecePosition.SetupNewPiece("a1", Piece.WhiteRook);
+            _gameBoardData.PiecePosition.SetupNewPiece("b1", Piece.WhiteKnight);
+            _gameBoardData.PiecePosition.SetupNewPiece("c1", Piece.WhiteBishop);
+            _gameBoardData.PiecePosition.SetupNewPiece("d1", Piece.WhiteQueen);
+            _gameBoardData.PiecePosition.SetupNewPiece("e1", Piece.WhiteKing);
+            _gameBoardData.PiecePosition.SetupNewPiece("f1", Piece.WhiteBishop);
+            _gameBoardData.PiecePosition.SetupNewPiece("g1", Piece.WhiteKnight);
+            _gameBoardData.PiecePosition.SetupNewPiece("h1", Piece.WhiteRook);
+            Square.GenerateRank(1)
+                .DoForEach(square => _gameBoardData.PiecePosition.SetupNewPiece(square, Piece.WhitePawn));
 
-            Square.GenerateRank(6).DoForEach(square => _gameBoardData.SetupNewPiece(Piece.BlackPawn, square));
-            _gameBoardData.SetupNewPiece(Piece.BlackRook, "a8");
-            _gameBoardData.SetupNewPiece(Piece.BlackKnight, "b8");
-            _gameBoardData.SetupNewPiece(Piece.BlackBishop, "c8");
-            _gameBoardData.SetupNewPiece(Piece.BlackQueen, "d8");
-            _gameBoardData.SetupNewPiece(Piece.BlackKing, "e8");
-            _gameBoardData.SetupNewPiece(Piece.BlackBishop, "f8");
-            _gameBoardData.SetupNewPiece(Piece.BlackKnight, "g8");
-            _gameBoardData.SetupNewPiece(Piece.BlackRook, "h8");
+            Square.GenerateRank(6)
+                .DoForEach(square => _gameBoardData.PiecePosition.SetupNewPiece(square, Piece.BlackPawn));
+            _gameBoardData.PiecePosition.SetupNewPiece("a8", Piece.BlackRook);
+            _gameBoardData.PiecePosition.SetupNewPiece("b8", Piece.BlackKnight);
+            _gameBoardData.PiecePosition.SetupNewPiece("c8", Piece.BlackBishop);
+            _gameBoardData.PiecePosition.SetupNewPiece("d8", Piece.BlackQueen);
+            _gameBoardData.PiecePosition.SetupNewPiece("e8", Piece.BlackKing);
+            _gameBoardData.PiecePosition.SetupNewPiece("f8", Piece.BlackBishop);
+            _gameBoardData.PiecePosition.SetupNewPiece("g8", Piece.BlackKnight);
+            _gameBoardData.PiecePosition.SetupNewPiece("h8", Piece.BlackRook);
 
             activeSide = GameSide.White;
             castlingOptions = CastlingOptions.All;
@@ -1450,7 +1476,7 @@ namespace ChessPlatform
             }
 
             var pieceDataSnippet = fenSnippets[0];
-            _gameBoardData.SetupByFenSnippet(pieceDataSnippet);
+            _gameBoardData.PiecePosition.SetupByFenSnippet(pieceDataSnippet);
 
             var activeSideSnippet = fenSnippets[1];
             if (!ChessConstants.FenSnippetToGameSideMap.TryGetValue(activeSideSnippet, out activeSide))

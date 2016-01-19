@@ -409,7 +409,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             return ChessConstants
                 .PieceTypesExceptNone
-                .ToDictionary(Factotum.Identity, item => board.GetSquares(item.ToPiece(side)).Length);
+                .ToDictionary(Factotum.Identity, item => board[item.ToPiece(side)].GetBitSetCount());
         }
 
         private string GetPlayerPieceAdvantage(GameSide side)
