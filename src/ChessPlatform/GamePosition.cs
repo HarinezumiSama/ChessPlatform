@@ -48,9 +48,9 @@ namespace ChessPlatform
 
         #endregion
 
-        #region Public Properties
+        #region Protected Properties
 
-        public abstract PiecePosition PiecePosition
+        protected abstract PiecePosition PiecePosition
         {
             get;
         }
@@ -357,9 +357,9 @@ namespace ChessPlatform
                 return result;
             }
 
-            var bitboard = PiecePosition[PieceType.Bishop.ToPiece(attackingSide)];
+            var bishops = PiecePosition[PieceType.Bishop.ToPiece(attackingSide)];
 
-            var opponentSlidingDiagonallyPieces = queens | bitboard;
+            var opponentSlidingDiagonallyPieces = queens | bishops;
 
             var slidingDiagonallyAttackers =
                 GetSlidingAttackers(
