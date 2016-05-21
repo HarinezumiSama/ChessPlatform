@@ -148,13 +148,13 @@ namespace ChessPlatform.Engine
         private int GetCaptureOrPromotionValue(
             [NotNull] GameBoard board,
             [NotNull] GameMove move,
-            GameMoveInfo moveInfo)
+            GameMoveFlags moveFlags)
         {
-            var result = moveInfo.IsAnyCapture
+            var result = moveFlags.IsAnyCapture()
                 ? _evaluator.ComputeStaticExchangeEvaluationScore(board, move.To, move)
                 : 0;
 
-            if (moveInfo.IsPawnPromotion)
+            if (moveFlags.IsPawnPromotion())
             {
                 result += Evaluator.GetMaterialWeight(move.PromotionResult)
                     - Evaluator.GetMaterialWeight(PieceType.Pawn);
@@ -187,16 +187,16 @@ namespace ChessPlatform.Engine
                 return resultList.ToArray();
             }
 
-            var remainingMoves = new Dictionary<GameMove, GameMoveInfo>(board.ValidMoves);
+            var remainingMoves = new Dictionary<GameMove, GameMoveFlags>(board.ValidMoves);
 
             var entryProbe = _transpositionTable?.Probe(board.ZobristKey);
             var ttBestMove = entryProbe?.BestMove;
             if (ttBestMove != null)
             {
-                GameMoveInfo moveInfo;
-                if (remainingMoves.TryGetValue(ttBestMove, out moveInfo))
+                GameMoveFlags moveFlags;
+                if (remainingMoves.TryGetValue(ttBestMove, out moveFlags))
                 {
-                    resultList.Add(new OrderedMove(ttBestMove, moveInfo));
+                    resultList.Add(new OrderedMove(ttBestMove, moveFlags));
                     remainingMoves.Remove(ttBestMove);
                 }
             }
@@ -341,7 +341,7 @@ namespace ChessPlatform.Engine
             {
                 _gameControlInfo.CheckInterruptions();
 
-                if (movePair.Value.IsAnyCapture)
+                if (movePair.Value.IsAnyCapture())
                 {
                     var seeScore = _evaluator.ComputeStaticExchangeEvaluationScore(
                         board,
@@ -635,7 +635,7 @@ namespace ChessPlatform.Engine
                     }
                 }
 
-                if (LocalHelper.IsQuietMove(orderedMove.MoveInfo))
+                if (LocalHelper.IsQuietMove(orderedMove.MoveFlags))
                 {
                     processedQuietMoves.Add(move);
                 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ChessPlatform.Internal
+namespace ChessPlatform
 {
     [Flags]
     public enum GameMoveFlags

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
 using Omnifactotum.Annotations;
 
@@ -57,17 +55,17 @@ namespace ChessPlatform.Tests
                 var pieceMoveInfo = gameBoard.ValidMoves[actualValidMove];
 
                 Assert.That(
-                    pieceMoveInfo.IsAnyCapture,
+                    pieceMoveInfo.IsAnyCapture(),
                     Is.EqualTo(gameBoard.IsCapturingMove(actualValidMove)));
 
                 Assert.That(
                     gameBoard[actualValidMove.To].GetSide(),
                     Is.EqualTo(
-                        pieceMoveInfo.IsRegularCapture && !pieceMoveInfo.IsEnPassantCapture
+                        pieceMoveInfo.IsRegularCapture() && !pieceMoveInfo.IsEnPassantCapture()
                             ? gameBoard.ActiveSide.Invert()
                             : (GameSide?)null));
 
-                if (pieceMoveInfo.IsEnPassantCapture)
+                if (pieceMoveInfo.IsEnPassantCapture())
                 {
                     Assert.That(
                         gameBoard[actualValidMove.From],
@@ -77,11 +75,11 @@ namespace ChessPlatform.Tests
                 }
 
                 Assert.That(
-                    pieceMoveInfo.IsPawnPromotion,
+                    pieceMoveInfo.IsPawnPromotion(),
                     Is.EqualTo(gameBoard.IsPawnPromotionMove(actualValidMove)));
 
                 Assert.That(
-                    pieceMoveInfo.IsPawnPromotion,
+                    pieceMoveInfo.IsPawnPromotion(),
                     Is.EqualTo(actualValidMove.PromotionResult != PieceType.None));
             }
         }

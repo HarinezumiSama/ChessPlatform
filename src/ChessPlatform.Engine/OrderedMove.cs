@@ -6,14 +6,21 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
+    //// TODO [vmcl] Re-use GameMoveData instead of OrderedMove - ?
+
     internal struct OrderedMove
     {
         #region Constructors
 
-        public OrderedMove([NotNull] GameMove move, GameMoveInfo moveInfo)
+        public OrderedMove([NotNull] GameMove move, GameMoveFlags moveFlags)
         {
+            if (move == null)
+            {
+                throw new ArgumentNullException(nameof(move));
+            }
+
             Move = move;
-            MoveInfo = moveInfo;
+            MoveFlags = moveFlags;
         }
 
         #endregion
@@ -28,7 +35,7 @@ namespace ChessPlatform.Engine
             get;
         }
 
-        public GameMoveInfo MoveInfo
+        public GameMoveFlags MoveFlags
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -41,7 +48,7 @@ namespace ChessPlatform.Engine
 
         public override string ToString()
         {
-            return $@"{{ {Move} {MoveInfo.Flags} }}";
+            return $@"{{ {Move} {MoveFlags} }}";
         }
 
         #endregion

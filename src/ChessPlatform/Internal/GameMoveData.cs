@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Linq;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
@@ -9,10 +8,15 @@ namespace ChessPlatform.Internal
     {
         #region Constructors
 
-        internal GameMoveData([NotNull] GameMove move, GameMoveInfo moveInfo)
+        internal GameMoveData([NotNull] GameMove move, GameMoveFlags moveFlags)
         {
+            if (move == null)
+            {
+                throw new ArgumentNullException(nameof(move));
+            }
+
             Move = move;
-            MoveInfo = moveInfo;
+            MoveFlags = moveFlags;
         }
 
         #endregion
@@ -25,7 +29,7 @@ namespace ChessPlatform.Internal
             get;
         }
 
-        public GameMoveInfo MoveInfo
+        public GameMoveFlags MoveFlags
         {
             [DebuggerStepThrough]
             get;
@@ -37,7 +41,7 @@ namespace ChessPlatform.Internal
 
         public override string ToString()
         {
-            return $@"{Move} : {MoveInfo}";
+            return $@"{Move} : {MoveFlags}";
         }
 
         #endregion

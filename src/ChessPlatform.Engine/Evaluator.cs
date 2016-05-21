@@ -754,7 +754,7 @@ namespace ChessPlatform.Engine
         {
             var result = board
                 .ValidMoves
-                .Where(pair => pair.Key.To == square && pair.Value.IsAnyCapture)
+                .Where(pair => pair.Key.To == square && pair.Value.IsAnyCapture())
                 .Select(pair => pair.Key)
                 .OrderBy(move => GetMaterialWeight(board[move.From].GetPieceType()))
                 .ThenByDescending(move => GetMaterialWeight(move.PromotionResult))

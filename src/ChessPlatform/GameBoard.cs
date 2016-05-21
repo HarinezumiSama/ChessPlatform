@@ -34,7 +34,7 @@ namespace ChessPlatform
         [CanBeNull]
         private readonly EnPassantCaptureInfo _enPassantCaptureInfo;
 
-        private readonly ReadOnlyDictionary<GameMove, GameMoveInfo> _validMoves;
+        private readonly ReadOnlyDictionary<GameMove, GameMoveFlags> _validMoves;
         private readonly int _halfMoveCountBy50MoveRule;
         private readonly int _fullMoveIndex;
         private readonly string _resultString;
@@ -246,7 +246,7 @@ namespace ChessPlatform
             }
         }
 
-        public ReadOnlyDictionary<GameMove, GameMoveInfo> ValidMoves
+        public ReadOnlyDictionary<GameMove, GameMoveFlags> ValidMoves
         {
             [DebuggerStepThrough]
             get
@@ -596,7 +596,7 @@ namespace ChessPlatform
                 throw new InvalidOperationException($@"Invalid SAN move format: '{sanMoveText}'.");
             }
 
-            KeyValuePair<GameMove, GameMoveInfo>[] filteredPairs;
+            KeyValuePair<GameMove, GameMoveFlags>[] filteredPairs;
 
             var moveNotation = match.Groups[SanMoveHelper.MoveNotationGroupName].Value;
             switch (moveNotation)
@@ -646,7 +646,7 @@ namespace ChessPlatform
                                     && pair.Key.PromotionResult == sanMove.Promotion
                                     && (!sanMove.FromFile.HasValue || pair.Key.From.File == sanMove.FromFile.Value)
                                     && (!sanMove.FromRank.HasValue || pair.Key.From.Rank == sanMove.FromRank.Value)
-                                    && pair.Value.IsAnyCapture == sanMove.IsCapture)
+                                    && pair.Value.IsAnyCapture() == sanMove.IsCapture)
                         .ToArray();
 
                     break;
@@ -725,13 +725,12 @@ namespace ChessPlatform
             var promotionResult = isPawnPromotion ? ChessHelper.DefaultPromotion : PieceType.None;
             var basicMove = new GameMove(sourceSquare, targetSquare, promotionResult);
 
-            var pieceMoveInfo = new GameMoveInfo(moveFlags);
-            addMoveData.ValidMoves.Add(basicMove, pieceMoveInfo);
+            addMoveData.ValidMoves.Add(basicMove, moveFlags);
 
             if (isPawnPromotion)
             {
                 ChessHelper.NonDefaultPromotions.Select(basicMove.MakePromotion).DoForEach(
-                    move => addMoveData.ValidMoves.Add(move, pieceMoveInfo));
+                    move => addMoveData.ValidMoves.Add(move, moveFlags));
             }
         }
 
@@ -770,7 +769,7 @@ namespace ChessPlatform
                     continue;
                 }
 
-                if (!isInCheck && potentialMoveData.MoveInfo.IsKingCastling)
+                if (!isInCheck && potentialMoveData.MoveFlags.IsKingCastling())
                 {
                     var castlingInfo = gameBoardData.CheckCastlingMove(potentialMoveData.Move);
                     if (gameBoardData.IsUnderAttack(castlingInfo.PassedSquare, oppositeSide))
@@ -779,7 +778,7 @@ namespace ChessPlatform
                     }
                 }
 
-                addMoveData.ValidMoves.Add(potentialMoveData.Move, potentialMoveData.MoveInfo);
+                addMoveData.ValidMoves.Add(potentialMoveData.Move, potentialMoveData.MoveFlags);
             }
         }
 
@@ -830,7 +829,7 @@ namespace ChessPlatform
                     continue;
                 }
 
-                addMoveData.ValidMoves.Add(move, moveData.MoveInfo);
+                addMoveData.ValidMoves.Add(move, moveData.MoveFlags);
             }
         }
 
@@ -985,7 +984,7 @@ namespace ChessPlatform
                     }
                 }
 
-                addMoveData.ValidMoves.Add(gameMoveData.Move, gameMoveData.MoveInfo);
+                addMoveData.ValidMoves.Add(gameMoveData.Move, gameMoveData.MoveFlags);
             }
         }
 
@@ -1039,12 +1038,12 @@ namespace ChessPlatform
                 ulong enPassantCaptureCount = 0;
                 foreach (var validMove in validMoves)
                 {
-                    if (validMove.Value.IsAnyCapture)
+                    if (validMove.Value.IsAnyCapture())
                     {
                         captureCount++;
                     }
 
-                    if (validMove.Value.IsEnPassantCapture)
+                    if (validMove.Value.IsEnPassantCapture())
                     {
                         enPassantCaptureCount++;
                     }
@@ -1135,7 +1134,7 @@ namespace ChessPlatform
 
         private static bool ShouldIncludeEnPassantHash(
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
-            [NotNull] ReadOnlyDictionary<GameMove, GameMoveInfo> validMoves)
+            [NotNull] ReadOnlyDictionary<GameMove, GameMoveFlags> validMoves)
         {
             if (enPassantCaptureInfo == null)
             {
@@ -1143,7 +1142,7 @@ namespace ChessPlatform
             }
 
             var result = validMoves.Any(
-                pair => pair.Value.IsEnPassantCapture && pair.Key.To == enPassantCaptureInfo.CaptureSquare);
+                pair => pair.Value.IsEnPassantCapture() && pair.Key.To == enPassantCaptureInfo.CaptureSquare);
 
             return result;
         }
@@ -1242,14 +1241,14 @@ namespace ChessPlatform
             {
                 var move = pair.Key;
                 var expectedIsPawnPromotion = _gameBoardData.IsPawnPromotion(move.From, move.To);
-                if (pair.Value.IsPawnPromotion != expectedIsPawnPromotion)
+                if (pair.Value.IsPawnPromotion() != expectedIsPawnPromotion)
                 {
                     throw new ChessPlatformException(
                         $@"The move '{move}' is inconsistent with respect to its pawn promotion state.");
                 }
 
                 var expectedIsRegularCapture = _gameBoardData.PiecePosition[move.To] != Piece.None;
-                if (pair.Value.IsRegularCapture != expectedIsRegularCapture)
+                if (pair.Value.IsRegularCapture() != expectedIsRegularCapture)
                 {
                     throw new ChessPlatformException(
                         $@"The move '{move}' is inconsistent with respect to its capture state.");
@@ -1259,14 +1258,14 @@ namespace ChessPlatform
                     move.From,
                     move.To,
                     _enPassantCaptureInfo);
-                if (pair.Value.IsEnPassantCapture != expectedIsEnPassantCapture)
+                if (pair.Value.IsEnPassantCapture() != expectedIsEnPassantCapture)
                 {
                     throw new ChessPlatformException(
                         $@"The move '{move}' is inconsistent with respect to its en passant capture state.");
                 }
 
                 var expectedIsKingCastling = _gameBoardData.CheckCastlingMove(move) != null;
-                if (pair.Value.IsKingCastling != expectedIsKingCastling)
+                if (pair.Value.IsKingCastling() != expectedIsKingCastling)
                 {
                     throw new ChessPlatformException(
                         $@"The move '{move}' is inconsistent with respect to its king castling state.");
@@ -1275,7 +1274,7 @@ namespace ChessPlatform
         }
 
         private void InitializeValidMovesAndState(
-            out Dictionary<GameMove, GameMoveInfo> validMoves,
+            out Dictionary<GameMove, GameMoveFlags> validMoves,
             out GameState state)
         {
             var activeKing = _activeSide.ToPiece(PieceType.King);
@@ -1292,7 +1291,7 @@ namespace ChessPlatform
                 & ~_gameBoardData.PiecePosition[activeKing]
                 & ~_gameBoardData.PiecePosition[_activeSide.ToPiece(PieceType.Pawn)];
 
-            validMoves = new Dictionary<GameMove, GameMoveInfo>(ValidMoveCapacity);
+            validMoves = new Dictionary<GameMove, GameMoveFlags>(ValidMoveCapacity);
 
             var addMoveData = new AddMoveData(
                 _gameBoardData,
@@ -1352,7 +1351,7 @@ namespace ChessPlatform
 
         private void FinishInitialization(
             bool forceValidation,
-            out ReadOnlyDictionary<GameMove, GameMoveInfo> validMoves,
+            out ReadOnlyDictionary<GameMove, GameMoveFlags> validMoves,
             out GameState state,
             out AutoDrawType autoDrawType,
             out string resultString,
@@ -1361,7 +1360,7 @@ namespace ChessPlatform
         {
             Validate(forceValidation);
 
-            Dictionary<GameMove, GameMoveInfo> validMoveMap;
+            Dictionary<GameMove, GameMoveFlags> validMoveMap;
             InitializeValidMovesAndState(out validMoveMap, out state);
             validMoves = validMoveMap.AsReadOnly();
 
@@ -1540,13 +1539,13 @@ namespace ChessPlatform
         }
 
         [NotNull]
-        private KeyValuePair<GameMove, GameMoveInfo>[] FindCastlingMoveInternal(bool kingSide)
+        private KeyValuePair<GameMove, GameMoveFlags>[] FindCastlingMoveInternal(bool kingSide)
         {
             var castlingOptions = kingSide ? CastlingOptions.KingSideMask : CastlingOptions.QueenSideMask;
 
             var result = ValidMoves
                 .Where(
-                    pair => pair.Value.IsKingCastling && (CheckCastlingMove(pair.Key).Option & castlingOptions) != 0)
+                    pair => pair.Value.IsKingCastling() && (CheckCastlingMove(pair.Key).Option & castlingOptions) != 0)
                 .ToArray();
 
             return result;
@@ -1655,7 +1654,7 @@ namespace ChessPlatform
 
             public AddMoveData(
                 [NotNull] GameBoardData gameBoardData,
-                [NotNull] IDictionary<GameMove, GameMoveInfo> validMovesReference,
+                [NotNull] IDictionary<GameMove, GameMoveFlags> validMovesReference,
                 [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
                 GameSide activeSide,
                 CastlingOptions castlingOptions,
@@ -1683,7 +1682,7 @@ namespace ChessPlatform
             }
 
             [NotNull]
-            public IDictionary<GameMove, GameMoveInfo> ValidMoves
+            public IDictionary<GameMove, GameMoveFlags> ValidMoves
             {
                 get;
             }

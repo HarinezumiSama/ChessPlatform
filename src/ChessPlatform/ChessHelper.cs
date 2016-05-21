@@ -323,15 +323,15 @@ namespace ChessPlatform
 
             #endregion
 
-            GameMoveInfo moveInfo;
-            if (!board.ValidMoves.TryGetValue(move, out moveInfo))
+            GameMoveFlags moveFlags;
+            if (!board.ValidMoves.TryGetValue(move, out moveFlags))
             {
                 throw new ArgumentException($@"Invalid move {move} for the board '{board.GetFen()}'.", nameof(move));
             }
 
             var resultBuilder = new StringBuilder();
 
-            if (moveInfo.IsKingCastling)
+            if (moveFlags.IsKingCastling())
             {
                 var castlingInfo = board.CheckCastlingMove(move).EnsureNotNull();
                 var isKingSide = (castlingInfo.Option & CastlingOptions.KingSideMask) != 0;
@@ -348,7 +348,7 @@ namespace ChessPlatform
 
                 if (pieceType == PieceType.Pawn)
                 {
-                    if (moveInfo.IsAnyCapture)
+                    if (moveFlags.IsAnyCapture())
                     {
                         resultBuilder.Append(move.From.FileChar);
                     }
@@ -386,7 +386,7 @@ namespace ChessPlatform
                     }
                 }
 
-                if (moveInfo.IsAnyCapture)
+                if (moveFlags.IsAnyCapture())
                 {
                     resultBuilder.Append(ChessConstants.CaptureChar);
                 }
@@ -394,7 +394,7 @@ namespace ChessPlatform
                 resultBuilder.Append(move.To);
             }
 
-            if (moveInfo.IsPawnPromotion)
+            if (moveFlags.IsPawnPromotion())
             {
                 resultBuilder.Append(ChessConstants.PromotionPrefixChar);
                 resultBuilder.Append(move.PromotionResult.GetFenChar());

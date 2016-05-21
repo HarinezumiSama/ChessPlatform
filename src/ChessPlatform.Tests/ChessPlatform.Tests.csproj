@@ -67,6 +67,7 @@
     <Compile Include="GameBoardTestHelper.cs" />
     <Compile Include="GameBoardTests.cs" />
     <Compile Include="BitboardTests.cs" />
+    <Compile Include="GameMoveFlagsExtensionsTests.cs" />
     <Compile Include="GameMoveTests.cs" />
     <Compile Include="PgnGameSerializerTests.cs" />
     <Compile Include="GameSideExtensionsTests.cs" />

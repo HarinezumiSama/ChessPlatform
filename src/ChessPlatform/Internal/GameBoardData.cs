@@ -826,18 +826,17 @@ namespace ChessPlatform.Internal
                     new Square(targetSquareIndex - moveOffset),
                     new Square(targetSquareIndex));
 
-                var moveInfo = new GameMoveInfo(moveFlags);
                 if (isPawnPromotion)
                 {
                     var promotionMoves = move.MakeAllPromotions();
                     foreach (var promotionMove in promotionMoves)
                     {
-                        resultMoves.Add(new GameMoveData(promotionMove, moveInfo));
+                        resultMoves.Add(new GameMoveData(promotionMove, moveFlags));
                     }
                 }
                 else
                 {
-                    resultMoves.Add(new GameMoveData(move, moveInfo));
+                    resultMoves.Add(new GameMoveData(move, moveFlags));
                 }
             }
         }
@@ -886,13 +885,12 @@ namespace ChessPlatform.Internal
             Bitboard destinationsBitboard,
             GameMoveFlags moveFlags)
         {
-            var moveInfo = new GameMoveInfo(moveFlags);
             while (destinationsBitboard.IsAny)
             {
                 var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
 
                 var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
-                resultMoves.Add(new GameMoveData(move, moveInfo));
+                resultMoves.Add(new GameMoveData(move, moveFlags));
             }
         }
 
@@ -915,7 +913,7 @@ namespace ChessPlatform.Internal
                 return;
             }
 
-            var moveData = new GameMoveData(info.KingMove, new GameMoveInfo(GameMoveFlags.IsKingCastling));
+            var moveData = new GameMoveData(info.KingMove, GameMoveFlags.IsKingCastling);
             resultMoves.Add(moveData);
         }
 
@@ -1288,7 +1286,7 @@ namespace ChessPlatform.Internal
                             if (shouldGenerateQuiets)
                             {
                                 var move = new GameMove(sourceSquare, current.GetFirstSquare());
-                                resultMoves.Add(new GameMoveData(move, new GameMoveInfo(GameMoveFlags.None)));
+                                resultMoves.Add(new GameMoveData(move, GameMoveFlags.None));
                             }
 
                             continue;
@@ -1300,7 +1298,7 @@ namespace ChessPlatform.Internal
                             {
                                 var move = new GameMove(sourceSquare, current.GetFirstSquare());
                                 resultMoves.Add(
-                                    new GameMoveData(move, new GameMoveInfo(GameMoveFlags.IsRegularCapture)));
+                                    new GameMoveData(move, GameMoveFlags.IsRegularCapture));
                             }
                         }
 

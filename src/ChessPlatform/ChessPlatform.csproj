@@ -84,7 +84,7 @@
     <Compile Include="GamePlay\EvaluationScore.cs" />
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
     <Compile Include="PiecePosition.cs" />
-    <Compile Include="Internal\GameMoveFlagsExtensions.cs" />
+    <Compile Include="GameMoveFlagsExtensions.cs" />
     <Compile Include="Internal\GameMoveData.cs" />
     <Compile Include="Internal\GeneratedMoveTypes.cs" />
     <Compile Include="Internal\GeneratedMoveTypesExtensions.cs" />
@@ -135,7 +135,7 @@
     <Compile Include="GameState.cs" />
     <Compile Include="GameStateExtensions.cs" />
     <Compile Include="Internal\MovePieceData.cs" />
-    <Compile Include="Internal\GameMoveFlags.cs" />
+    <Compile Include="GameMoveFlags.cs" />
     <Compile Include="PerftFlags.cs" />
     <Compile Include="PerftResult.cs" />
     <Compile Include="Piece.cs" />
@@ -145,7 +145,6 @@
     <Compile Include="GameSideExtensions.cs" />
     <Compile Include="GameMove.cs" />
     <Compile Include="GameSide.cs" />
-    <Compile Include="GameMoveInfo.cs" />
     <Compile Include="PieceType.cs" />
     <Compile Include="PieceTypeExtensions.cs" />
     <Compile Include="PieceTypeMask.cs" />

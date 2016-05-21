@@ -15,9 +15,9 @@ namespace ChessPlatform.Engine
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsQuietMove(GameMoveInfo moveInfo)
+        public static bool IsQuietMove(GameMoveFlags moveFlags)
         {
-            return !moveInfo.IsAnyCapture && !moveInfo.IsPawnPromotion;
+            return !moveFlags.IsAnyCapture() && !moveFlags.IsPawnPromotion();
         }
 
         #endregion

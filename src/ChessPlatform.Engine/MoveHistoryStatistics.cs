@@ -77,8 +77,8 @@ namespace ChessPlatform.Engine
                 return;
             }
 
-            GameMoveInfo moveInfo;
-            if (!board.ValidMoves.TryGetValue(move, out moveInfo) || !LocalHelper.IsQuietMove(moveInfo))
+            GameMoveFlags moveFlags;
+            if (!board.ValidMoves.TryGetValue(move, out moveFlags) || !LocalHelper.IsQuietMove(moveFlags))
             {
                 return;
             }
@@ -105,7 +105,7 @@ namespace ChessPlatform.Engine
 
         public void AddKillerMoves(
             int plyDistance,
-            [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
+            [NotNull] Dictionary<GameMove, GameMoveFlags> remainingMoves,
             [NotNull] List<OrderedMove> resultList)
         {
             if (!DepthRange.Contains(plyDistance))
@@ -219,17 +219,17 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void AddSingleKillerMove(
             [CanBeNull] GameMove killerMove,
-            [NotNull] Dictionary<GameMove, GameMoveInfo> remainingMoves,
+            [NotNull] Dictionary<GameMove, GameMoveFlags> remainingMoves,
             [NotNull] List<OrderedMove> resultList)
         {
-            GameMoveInfo moveInfo;
-            if (killerMove == null || !remainingMoves.TryGetValue(killerMove, out moveInfo)
-                || !LocalHelper.IsQuietMove(moveInfo))
+            GameMoveFlags moveFlags;
+            if (killerMove == null || !remainingMoves.TryGetValue(killerMove, out moveFlags)
+                || !LocalHelper.IsQuietMove(moveFlags))
             {
                 return;
             }
 
-            var orderedMove = new OrderedMove(killerMove, moveInfo);
+            var orderedMove = new OrderedMove(killerMove, moveFlags);
             resultList.Add(orderedMove);
             remainingMoves.Remove(killerMove);
         }
