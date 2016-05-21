@@ -112,7 +112,7 @@ namespace ChessPlatform.Tests
                 var bitboard = gameBoard.GetBitboard(expectedPiece);
 
                 Assert.That(
-                    (bitboard & square.Bitboard).IsExactlyOneBitSet(),
+                    (bitboard & square.Bitboard).IsExactlyOneSquare(),
                     Is.True,
                     $@"Bitboard for '{expectedPiece}' at '{square}' is invalid.");
 

@@ -33,17 +33,7 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         public Square(int squareIndex)
         {
-            #region Argument Check
-
-            if (IsInvalidSquareIndex(squareIndex))
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(squareIndex),
-                    squareIndex,
-                    $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
-            }
-
-            #endregion
+            EnsureValidSquareIndex(squareIndex);
 
             SquareIndex = squareIndex;
         }
@@ -314,9 +304,15 @@ namespace ChessPlatform
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static bool IsInvalidSquareIndex(int squareIndex)
+        internal static void EnsureValidSquareIndex(int squareIndex)
         {
-            return (squareIndex & ~ChessConstants.MaxSquareIndex) != 0;
+            if (IsInvalidSquareIndex(squareIndex))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(squareIndex),
+                    squareIndex,
+                    $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
+            }
         }
 
         [DebuggerNonUserCode]
@@ -336,6 +332,13 @@ namespace ChessPlatform
         #endregion
 
         #region Private Methods
+
+        [DebuggerNonUserCode]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsInvalidSquareIndex(int squareIndex)
+        {
+            return (squareIndex & ~ChessConstants.MaxSquareIndex) != 0;
+        }
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

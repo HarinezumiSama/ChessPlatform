@@ -441,13 +441,13 @@ namespace ChessPlatform.Internal
                 return;
             }
 
-            if (!king.IsExactlyOneBitSet())
+            if (!king.IsExactlyOneSquare())
             {
                 throw new ChessPlatformException(
-                    $@"There are multiple {kingPiece.GetDescription()} pieces ({king.GetBitSetCount()}) on the board.");
+                    $@"There are multiple {kingPiece.GetDescription()} pieces ({king.GetSquareCount()}) on the board.");
             }
 
-            var kingSquareIndex = king.FindFirstBitSetIndex();
+            var kingSquareIndex = king.FindFirstSquareIndex();
             var sourceSquare = new Square(kingSquareIndex);
             var directTargets = KingAttacksOrMoves[kingSquareIndex] & target;
 
@@ -516,7 +516,7 @@ namespace ChessPlatform.Internal
 
             while (knights.IsAny)
             {
-                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref knights);
+                var sourceSquareIndex = Bitboard.PopFirstSquareIndex(ref knights);
                 var moves = KnightAttacksOrMoves[sourceSquareIndex];
                 var movesOnTarget = moves & actualTarget;
                 if (movesOnTarget.IsNone)
@@ -792,8 +792,8 @@ namespace ChessPlatform.Internal
             var currentValue = attackingSlidingPieces.InternalValue;
             while (currentValue != Bitboard.NoneValue)
             {
-                var attackerBitboard = Bitboard.PopFirstBitSetInternal(ref currentValue);
-                var attackerSquareIndex = Bitboard.FindFirstBitSetIndexInternal(attackerBitboard);
+                var attackerBitboard = Bitboard.PopFirstSquareBitboardInternal(ref currentValue);
+                var attackerSquareIndex = Bitboard.FindFirstSquareIndexInternal(attackerBitboard);
                 var connection = GetConnection(targetSquareIndex, attackerSquareIndex);
                 if ((emptySquareBitboard & connection) != connection)
                 {
@@ -820,7 +820,7 @@ namespace ChessPlatform.Internal
 
             while (destinationsBitboard.IsAny)
             {
-                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
+                var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
 
                 var move = new GameMove(
                     new Square(targetSquareIndex - moveOffset),
@@ -887,7 +887,7 @@ namespace ChessPlatform.Internal
         {
             while (destinationsBitboard.IsAny)
             {
-                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
+                var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
 
                 var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
                 resultMoves.Add(new GameMoveData(move, moveFlags));
@@ -931,17 +931,17 @@ namespace ChessPlatform.Internal
             var current = potentialPinners;
             while (current.IsAny)
             {
-                var attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref current);
+                var attackerSquareIndex = Bitboard.PopFirstSquareIndex(ref current);
                 var connection = GetConnection(squareIndex, attackerSquareIndex);
 
                 var pinned = ownPieces & connection;
                 var enemiesOnConnection = enemyPieces & connection;
-                if (enemiesOnConnection.IsAny || !pinned.IsExactlyOneBitSet())
+                if (enemiesOnConnection.IsAny || !pinned.IsExactlyOneSquare())
                 {
                     continue;
                 }
 
-                var pinnedSquareIndex = pinned.FindFirstBitSetIndex();
+                var pinnedSquareIndex = pinned.FindFirstSquareIndex();
                 pinLimitations[pinnedSquareIndex] = connection | Bitboard.FromSquareIndex(attackerSquareIndex);
             }
         }
@@ -1061,7 +1061,7 @@ namespace ChessPlatform.Internal
                     var connection = Bitboard.None;
                     while ((current = current.Shift(direction)).IsAny)
                     {
-                        var anotherSquareIndex = current.FindFirstBitSetIndex();
+                        var anotherSquareIndex = current.FindFirstSquareIndex();
                         var index = GetConnectionIndex(squareIndex, anotherSquareIndex);
                         var reverseIndex = GetConnectionIndex(anotherSquareIndex, squareIndex);
                         result[index] = result[reverseIndex] = connection;
@@ -1271,7 +1271,7 @@ namespace ChessPlatform.Internal
 
             while (pieces.IsAny)
             {
-                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref pieces);
+                var sourceSquareIndex = Bitboard.PopFirstSquareIndex(ref pieces);
                 var sourceBitboard = Bitboard.FromSquareIndex(sourceSquareIndex);
                 var sourceSquare = new Square(sourceSquareIndex);
 

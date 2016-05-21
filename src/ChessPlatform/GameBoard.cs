@@ -853,7 +853,7 @@ namespace ChessPlatform
             var currentCapturingBitboard = capturingBitboard;
             while (currentCapturingBitboard.IsAny)
             {
-                var squareIndex = Bitboard.PopFirstBitSetIndex(ref currentCapturingBitboard);
+                var squareIndex = Bitboard.PopFirstSquareIndex(ref currentCapturingBitboard);
                 var capturingSourceSquare = new Square(squareIndex);
 
                 if (!IsValidMoveByPinning(pinLimitations, capturingSourceSquare, checkAttackSquare))
@@ -1160,7 +1160,7 @@ namespace ChessPlatform
             {
                 const int ExpectedCount = 1;
 
-                var count = _gameBoardData.PiecePosition[king].GetBitSetCount();
+                var count = _gameBoardData.PiecePosition[king].GetSquareCount();
                 if (count != ExpectedCount)
                 {
                     throw new ChessPlatformException(
@@ -1180,7 +1180,7 @@ namespace ChessPlatform
                     .PieceTypesExceptNone
                     .ToDictionary(
                         Factotum.Identity,
-                        item => _gameBoardData.PiecePosition[item.ToPiece(side)].GetBitSetCount());
+                        item => _gameBoardData.PiecePosition[item.ToPiece(side)].GetSquareCount());
 
                 var allCount = pieceToCountMap.Values.Sum();
                 var pawnCount = pieceToCountMap[PieceType.Pawn];
@@ -1283,7 +1283,7 @@ namespace ChessPlatform
 
             var attackersBitboard = _gameBoardData.GetAttackers(activeKingSquare, oppositeSide);
             var isInCheck = attackersBitboard.IsAny;
-            var isInDoubleCheck = isInCheck && !attackersBitboard.IsExactlyOneBitSet();
+            var isInDoubleCheck = isInCheck && !attackersBitboard.IsExactlyOneSquare();
 
             var pinLimitations = _gameBoardData.GetPinLimitations(activeKingSquare.SquareIndex, oppositeSide);
 

@@ -11,7 +11,7 @@ namespace ChessPlatform
     {
         #region Constants and Fields
 
-        public const int NoBitSetIndex = -1;
+        public const int NoSquareIndex = -1;
 
         public static readonly Bitboard None = new Bitboard(NoneValue);
 
@@ -241,19 +241,19 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int PopFirstBitSetIndex(ref Bitboard bitboard)
+        public static int PopFirstSquareIndex(ref Bitboard bitboard)
         {
             var value = bitboard.InternalValue;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
-            return FindFirstBitSetIndexInternal(value);
+            return FindFirstSquareIndexInternal(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Bitboard PopFirstBitSet(ref Bitboard bitboard)
+        public static Bitboard PopFirstSquareBitboard(ref Bitboard bitboard)
         {
             var value = bitboard.InternalValue;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
-            return new Bitboard(IsolateFirstBitSetInternal(value));
+            return new Bitboard(IsolateFirstSquareBitboardInternal(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -277,21 +277,21 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int FindFirstBitSetIndex()
+        public int FindFirstSquareIndex()
         {
-            return FindFirstBitSetIndexInternal(InternalValue);
+            return FindFirstSquareIndexInternal(InternalValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsExactlyOneBitSet()
+        public bool IsExactlyOneSquare()
         {
-            return InternalValue != NoneValue && IsolateFirstBitSetInternal(InternalValue) == InternalValue;
+            return InternalValue != NoneValue && IsolateFirstSquareBitboardInternal(InternalValue) == InternalValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Bitboard IsolateFirstBitSet()
+        public Bitboard IsolateFirstSquare()
         {
-            return new Bitboard(IsolateFirstBitSetInternal(InternalValue));
+            return new Bitboard(IsolateFirstSquareBitboardInternal(InternalValue));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -307,7 +307,7 @@ namespace ChessPlatform
             var currentValue = InternalValue;
 
             int index;
-            while ((index = FindFirstBitSetIndexInternal(currentValue)) >= 0)
+            while ((index = FindFirstSquareIndexInternal(currentValue)) >= 0)
             {
                 resultList.Add(new Square(index));
                 currentValue &= ~(1UL << index);
@@ -324,16 +324,16 @@ namespace ChessPlatform
                 throw new InvalidOperationException("The bitboard represents no squares.");
             }
 
-            var squareIndex = FindFirstBitSetIndex();
+            var squareIndex = FindFirstSquareIndex();
             return new Square(squareIndex);
         }
 
-        public int GetBitSetCount()
+        public int GetSquareCount()
         {
             var result = 0;
 
             var currentValue = InternalValue;
-            while (PopFirstBitSetIndexInternal(ref currentValue) >= 0)
+            while (PopFirstSquareIndexInternal(ref currentValue) >= 0)
             {
                 result++;
             }
@@ -358,6 +358,8 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong FromSquareIndexInternal(int squareIndex)
         {
+            Square.EnsureValidSquareIndex(squareIndex);
+
             return 1UL << squareIndex;
         }
 
@@ -396,39 +398,39 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int PopFirstBitSetIndexInternal(ref ulong bitboard)
+        internal static int PopFirstSquareIndexInternal(ref ulong bitboard)
         {
             var value = bitboard;
             bitboard = unchecked(value & (value - 1));
-            return FindFirstBitSetIndexInternal(value);
+            return FindFirstSquareIndexInternal(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ulong IsolateFirstBitSetInternal(ulong value)
+        internal static ulong IsolateFirstSquareBitboardInternal(ulong value)
         {
             return unchecked(value & (ulong)(-(long)value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ulong PopFirstBitSetInternal(ref ulong bitboard)
+        internal static ulong PopFirstSquareBitboardInternal(ref ulong bitboard)
         {
             var value = bitboard;
             bitboard = unchecked(value & (value - 1));
-            return IsolateFirstBitSetInternal(value);
+            return IsolateFirstSquareBitboardInternal(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static int FindFirstBitSetIndexInternal(ulong value)
+        internal static int FindFirstSquareIndexInternal(ulong value)
         {
             if (value == NoneValue)
             {
-                return NoBitSetIndex;
+                return NoSquareIndex;
             }
 
             const long Debruijn64 = 0x03F79D71B4CB0A89L;
             const int MagicShift = 58;
 
-            var isolatedBit = IsolateFirstBitSetInternal(value);
+            var isolatedBit = IsolateFirstSquareBitboardInternal(value);
             return Index64[unchecked(isolatedBit * Debruijn64) >> MagicShift];
         }
 

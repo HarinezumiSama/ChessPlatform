@@ -16,7 +16,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestBitboardConstants()
         {
-            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
+            Assert.That(Bitboard.NoSquareIndex, Is.LessThan(0));
             Assert.That(Bitboard.None.Value, Is.EqualTo(0L));
             Assert.That(Bitboard.Everything.Value, Is.EqualTo(~0L));
         }
@@ -51,23 +51,23 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestFindFirstBitSetWhenNoBitsAreSet()
+        public void TestFindFirstSquareIndexWhenNoBitsAreSet()
         {
-            Assert.That(Bitboard.NoBitSetIndex, Is.LessThan(0));
+            Assert.That(Bitboard.NoSquareIndex, Is.LessThan(0));
 
             var bitboard = new Bitboard(0L);
-            var actualResult = bitboard.FindFirstBitSetIndex();
-            Assert.That(actualResult, Is.EqualTo(Bitboard.NoBitSetIndex));
+            var actualResult = bitboard.FindFirstSquareIndex();
+            Assert.That(actualResult, Is.EqualTo(Bitboard.NoSquareIndex));
         }
 
         [Test]
-        public void TestFindFirstBitSetWhenSingleBitIsSet()
+        public void TestFindFirstSquareIndexWhenSingleBitIsSet()
         {
             for (var index = 0; index < ChessConstants.SquareCount; index++)
             {
                 var value = 1L << index;
                 var bitboard = new Bitboard(value);
-                var actualResult = bitboard.FindFirstBitSetIndex();
+                var actualResult = bitboard.FindFirstSquareIndex();
                 Assert.That(actualResult, Is.EqualTo(index), "Failed for the bit {0}", index);
             }
         }
@@ -75,10 +75,10 @@ namespace ChessPlatform.Tests
         [Test]
         [TestCase((1L << 0) | (1L << 17), 0)]
         [TestCase((1L << 49) | (1L << 23), 23)]
-        public void TestFindFirstBitSetWhenMultipleBitsAreSet(long value, int expectedResult)
+        public void TestFindFirstSquareIndexWhenMultipleBitsAreSet(long value, int expectedResult)
         {
             var bitboard = new Bitboard(value);
-            var actualResult = bitboard.FindFirstBitSetIndex();
+            var actualResult = bitboard.FindFirstSquareIndex();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }
 
@@ -90,7 +90,7 @@ namespace ChessPlatform.Tests
         [TestCase((1L << 49) | (1L << 23), new[] { 49, 23 })]
         [TestCase((1L << 1) | (1L << 59), new[] { 1, 59 })]
         [TestCase((1L << 2) | (1L << 11) | (1L << 34), new[] { 2, 11, 34 })]
-        public void TestGetSquaresAndGetFirstSquareAndGetBitSetCountAndIsExactlyOneBitSet(
+        public void TestGetSquaresAndGetFirstSquareAndGetSquareCountAndIsExactlyOneSquare(
             long value,
             params int[] expectedIndexesResult)
         {
@@ -107,8 +107,8 @@ namespace ChessPlatform.Tests
             var bitboard = new Bitboard(value);
 
             Assert.That(bitboard.GetSquares(), Is.EquivalentTo(expectedGetSquares));
-            Assert.That(bitboard.GetBitSetCount(), Is.EqualTo(expectedGetBitSetCount));
-            Assert.That(bitboard.IsExactlyOneBitSet(), Is.EqualTo(expectedIsExactlyOneBitSet));
+            Assert.That(bitboard.GetSquareCount(), Is.EqualTo(expectedGetBitSetCount));
+            Assert.That(bitboard.IsExactlyOneSquare(), Is.EqualTo(expectedIsExactlyOneBitSet));
 
             Assert.That(
                 () => bitboard.GetFirstSquare().SquareIndex,
@@ -123,10 +123,10 @@ namespace ChessPlatform.Tests
         [TestCase(1L << 49, 1L << 49)]
         [TestCase((1L << 49) | (1L << 23), 1L << 23)]
         [TestCase((1L << 1) | (1L << 59), 1L << 1)]
-        public void TestIsolateFirstBitSet(long value, long expectedResult)
+        public void TestIsolateFirstSquare(long value, long expectedResult)
         {
             var bitboard = new Bitboard(value);
-            var result = bitboard.IsolateFirstBitSet().Value;
+            var result = bitboard.IsolateFirstSquare().Value;
             Assert.That(result, Is.EqualTo(expectedResult));
         }
 
@@ -237,7 +237,7 @@ namespace ChessPlatform.Tests
         }
 
         [Test]
-        public void TestPopFirstBitSetIndexAndPopFirstBitSet()
+        public void TestPopFirstSquareIndexAndPopFirstSquareBitboard()
         {
             const int Bit1 = 2;
             const int Bit2 = 23;
@@ -246,20 +246,20 @@ namespace ChessPlatform.Tests
             var bitboard1 = new Bitboard((1L << Bit1) | (1L << Bit2) | (1L << Bit3));
             var bitboard2 = bitboard1;
 
-            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit1));
-            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit1));
+            Assert.That(Bitboard.PopFirstSquareIndex(ref bitboard1), Is.EqualTo(Bit1));
+            Assert.That(Bitboard.PopFirstSquareBitboard(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit1));
 
-            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit2));
-            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit2));
+            Assert.That(Bitboard.PopFirstSquareIndex(ref bitboard1), Is.EqualTo(Bit2));
+            Assert.That(Bitboard.PopFirstSquareBitboard(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit2));
 
-            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bit3));
-            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit3));
+            Assert.That(Bitboard.PopFirstSquareIndex(ref bitboard1), Is.EqualTo(Bit3));
+            Assert.That(Bitboard.PopFirstSquareBitboard(ref bitboard2).InternalValue, Is.EqualTo(1UL << Bit3));
 
             Assert.That(bitboard1.IsNone, Is.True);
             Assert.That(bitboard2.IsNone, Is.True);
 
-            Assert.That(Bitboard.PopFirstBitSetIndex(ref bitboard1), Is.EqualTo(Bitboard.NoBitSetIndex));
-            Assert.That(Bitboard.PopFirstBitSet(ref bitboard2).InternalValue, Is.EqualTo(0UL));
+            Assert.That(Bitboard.PopFirstSquareIndex(ref bitboard1), Is.EqualTo(Bitboard.NoSquareIndex));
+            Assert.That(Bitboard.PopFirstSquareBitboard(ref bitboard2).InternalValue, Is.EqualTo(0UL));
 
             Assert.That(bitboard1.IsNone, Is.True);
             Assert.That(bitboard2.IsNone, Is.True);

@@ -154,7 +154,7 @@ namespace ChessPlatform
 
             while (knights.IsAny)
             {
-                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref knights);
+                var sourceSquareIndex = Bitboard.PopFirstSquareIndex(ref knights);
                 var moves = KnightAttacksOrMoves[sourceSquareIndex];
                 var movesOnTarget = moves & actualTarget;
                 if (movesOnTarget.IsNone)
@@ -278,7 +278,7 @@ namespace ChessPlatform
                     var connection = Bitboard.None;
                     while ((current = current.Shift(direction)).IsAny)
                     {
-                        var anotherSquareIndex = current.FindFirstBitSetIndex();
+                        var anotherSquareIndex = current.FindFirstSquareIndex();
                         var index = GetConnectionIndex(squareIndex, anotherSquareIndex);
                         var reverseIndex = GetConnectionIndex(anotherSquareIndex, squareIndex);
                         result[index] = result[reverseIndex] = connection;
@@ -324,8 +324,8 @@ namespace ChessPlatform
             var currentValue = attackingSlidingPieces.InternalValue;
             while (currentValue != Bitboard.NoneValue)
             {
-                var attackerBitboard = Bitboard.PopFirstBitSetInternal(ref currentValue);
-                var attackerSquareIndex = Bitboard.FindFirstBitSetIndexInternal(attackerBitboard);
+                var attackerBitboard = Bitboard.PopFirstSquareBitboardInternal(ref currentValue);
+                var attackerSquareIndex = Bitboard.FindFirstSquareIndexInternal(attackerBitboard);
                 var connection = GetConnectionInternal(targetSquareIndex, attackerSquareIndex);
                 if ((emptySquareBitboard & connection) != connection)
                 {
@@ -350,7 +350,7 @@ namespace ChessPlatform
         {
             while (destinationsBitboard.IsAny)
             {
-                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
+                var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
 
                 var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
                 resultMoves.Add(new GameMoveData(move, moveFlags));

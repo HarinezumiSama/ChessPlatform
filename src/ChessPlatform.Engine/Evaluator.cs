@@ -569,7 +569,7 @@ namespace ChessPlatform.Engine
             {
                 var pieceType = PhaseDeterminationPieceTypes[index];
                 var piece = pieceType.ToPiece(side);
-                var count = board.GetBitboard(piece).GetBitSetCount();
+                var count = board.GetBitboard(piece).GetSquareCount();
                 result += PieceTypeToMaterialWeightInMiddlegameMap[pieceType] * count;
             }
 
@@ -617,7 +617,7 @@ namespace ChessPlatform.Engine
                     continue;
                 }
 
-                var count = pawnsOnFile.GetBitSetCount();
+                var count = pawnsOnFile.GetSquareCount();
 
                 //// Extra pawns on files (double/triple/etc)
                 var extraCount = Math.Max(0, count - 1);
@@ -660,7 +660,7 @@ namespace ChessPlatform.Engine
 
                 var remainingBitboard = pieceBitboard;
                 int currentSquareIndex;
-                while ((currentSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingBitboard)) >= 0)
+                while ((currentSquareIndex = Bitboard.PopFirstSquareIndex(ref remainingBitboard)) >= 0)
                 {
                     result += materialWeight;
 
@@ -739,7 +739,7 @@ namespace ChessPlatform.Engine
 
             var remainingAttackers = allAttackersBitboard;
             int attackerSquareIndex;
-            while ((attackerSquareIndex = Bitboard.PopFirstBitSetIndex(ref remainingAttackers)) >= 0)
+            while ((attackerSquareIndex = Bitboard.PopFirstSquareIndex(ref remainingAttackers)) >= 0)
             {
                 var attackerSquare = new Square(attackerSquareIndex);
                 var score = GetKingTropismScore(board, attackerSquare, kingSquare);
