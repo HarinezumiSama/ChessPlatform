@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ChessPlatform.Internal;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -111,6 +112,69 @@ namespace ChessPlatform
             #endregion
 
             return GetConnectionInternal(squareIndex1, squareIndex2);
+        }
+
+        protected void GenerateKnightMoves(
+            [NotNull] ICollection<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes,
+            Bitboard target)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            var emptySquares = PiecePosition[Piece.None];
+            var enemies = PiecePosition[side.Invert()];
+
+            var internalTarget = Bitboard.None;
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+            {
+                internalTarget |= emptySquares;
+            }
+
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+            {
+                internalTarget |= enemies;
+            }
+
+            var actualTarget = target & internalTarget;
+            if (actualTarget.IsNone)
+            {
+                return;
+            }
+
+            var knightPiece = side.ToPiece(PieceType.Knight);
+            var knights = PiecePosition[knightPiece];
+
+            while (knights.IsAny)
+            {
+                var sourceSquareIndex = Bitboard.PopFirstBitSetIndex(ref knights);
+                var moves = KnightAttacksOrMoves[sourceSquareIndex];
+                var movesOnTarget = moves & actualTarget;
+                if (movesOnTarget.IsNone)
+                {
+                    continue;
+                }
+
+                var sourceSquare = new Square(sourceSquareIndex);
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+                {
+                    var captures = movesOnTarget & enemies;
+                    PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
+                }
+
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+                {
+                    var nonCaptures = movesOnTarget & emptySquares;
+                    PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
+                }
+            }
         }
 
         #endregion
@@ -276,6 +340,21 @@ namespace ChessPlatform
             }
 
             return result;
+        }
+
+        private static void PopulateSimpleMoves(
+            ICollection<GameMoveData> resultMoves,
+            Square sourceSquare,
+            Bitboard destinationsBitboard,
+            GameMoveFlags moveFlags)
+        {
+            while (destinationsBitboard.IsAny)
+            {
+                var targetSquareIndex = Bitboard.PopFirstBitSetIndex(ref destinationsBitboard);
+
+                var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
+                resultMoves.Add(new GameMoveData(move, moveFlags));
+            }
         }
 
         private Bitboard GetAttackersInternal(
