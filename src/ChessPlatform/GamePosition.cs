@@ -41,6 +41,7 @@ namespace ChessPlatform
         protected static readonly Bitboard[] DiagonallySlidingAttacks = InitializeDiagonallySlidingAttacks();
         protected static readonly Bitboard[] KnightAttacksOrMoves = InitializeKnightAttacksOrMoves();
         protected static readonly Bitboard[] KingAttacksOrMoves = InitializeKingAttacksOrMoves();
+        private static readonly InternalCastlingInfo[] KingCastlingInfos = InitializeKingCastlingInfos();
 
         protected static readonly Bitboard[] Connections = InitializeConnections();
 
@@ -114,7 +115,68 @@ namespace ChessPlatform
             return GetConnectionInternal(squareIndex1, squareIndex2);
         }
 
-        protected void GenerateKnightMoves(
+        protected void GeneratePotentialKingMoves(
+            [NotNull] ICollection<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes,
+            Bitboard target,
+            CastlingOptions allowedCastlingOptions)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            var kingPiece = side.ToPiece(PieceType.King);
+            var kings = PiecePosition[kingPiece];
+
+            while (kings.IsAny)
+            {
+                var kingSquareIndex = Bitboard.PopFirstSquareIndex(ref kings);
+
+                var sourceSquare = new Square(kingSquareIndex);
+                var moves = KingAttacksOrMoves[kingSquareIndex];
+                var movesOnTarget = moves & target;
+
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+                {
+                    var enemies = PiecePosition[side.Invert()];
+                    var captures = movesOnTarget & enemies;
+                    PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
+                }
+
+                if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+                {
+                    var emptySquares = PiecePosition[Piece.None];
+                    var nonCaptures = movesOnTarget & emptySquares;
+                    PopulateSimpleMoves(resultMoves, sourceSquare, nonCaptures, GameMoveFlags.None);
+
+                    var nonEmptySquares = ~emptySquares;
+
+                    PopulateKingCastlingMoves(
+                        resultMoves,
+                        sourceSquare,
+                        target,
+                        allowedCastlingOptions,
+                        nonEmptySquares,
+                        CastlingSide.KingSide.ToCastlingType(side));
+
+                    PopulateKingCastlingMoves(
+                        resultMoves,
+                        sourceSquare,
+                        target,
+                        allowedCastlingOptions,
+                        nonEmptySquares,
+                        CastlingSide.QueenSide.ToCastlingType(side));
+                }
+            }
+        }
+
+        protected void GeneratePotentialKnightMoves(
             [NotNull] ICollection<GameMoveData> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes,
@@ -177,9 +239,101 @@ namespace ChessPlatform
             }
         }
 
+        protected void GeneratePotentialPawnMoves(
+            [NotNull] ICollection<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes,
+            Bitboard target,
+            Bitboard enPassantCaptureTarget)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            var pawnPiece = side.ToPiece(PieceType.Pawn);
+            var pawns = PiecePosition[pawnPiece];
+            if (pawns.IsNone)
+            {
+                return;
+            }
+
+            var rank8 = side == GameSide.White ? Bitboards.Rank8 : Bitboards.Rank1;
+
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
+            {
+                var forwardDirection = side == GameSide.White ? ShiftDirection.North : ShiftDirection.South;
+                var emptySquares = PiecePosition[Piece.None];
+                var pushes = pawns.Shift(forwardDirection) & emptySquares;
+
+                var targetPushes = pushes & target;
+                if (targetPushes.IsAny)
+                {
+                    var nonPromotionPushes = targetPushes & ~rank8;
+                    PopulatePawnMoves(resultMoves, nonPromotionPushes, (int)forwardDirection, GameMoveFlags.None);
+
+                    var promotionPushes = targetPushes & rank8;
+                    PopulatePawnMoves(
+                        resultMoves,
+                        promotionPushes,
+                        (int)forwardDirection,
+                        GameMoveFlags.IsPawnPromotion);
+                }
+
+                if (pushes.IsAny)
+                {
+                    var rank3 = side == GameSide.White ? Bitboards.Rank3 : Bitboards.Rank6;
+                    var doublePushes = (pushes & rank3).Shift(forwardDirection) & emptySquares & target;
+                    PopulatePawnMoves(
+                        resultMoves,
+                        doublePushes,
+                        (int)forwardDirection << 1,
+                        GameMoveFlags.None);
+                }
+            }
+
+            if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
+            {
+                var enemies = PiecePosition[side.Invert()];
+                var enemyTargets = enemies & target;
+
+                var leftCaptureOffset = side == GameSide.White
+                    ? ShiftDirection.NorthWest
+                    : ShiftDirection.SouthEast;
+                PopulatePawnCaptures(
+                    resultMoves,
+                    pawns,
+                    enemyTargets,
+                    leftCaptureOffset,
+                    rank8,
+                    enPassantCaptureTarget);
+
+                var rightCaptureOffset = side == GameSide.White
+                    ? ShiftDirection.NorthEast
+                    : ShiftDirection.SouthWest;
+                PopulatePawnCaptures(
+                    resultMoves,
+                    pawns,
+                    enemyTargets,
+                    rightCaptureOffset,
+                    rank8,
+                    enPassantCaptureTarget);
+            }
+        }
+
         #endregion
 
         #region Private Methods
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
+        {
+            return (int)castlingType;
+        }
 
         private static Bitboard[] InitializeStraightSlidingAttacks()
         {
@@ -258,6 +412,24 @@ namespace ChessPlatform
                     .Aggregate(Bitboard.None, (current, bitboard) => current | bitboard);
 
                 result[squareIndex] = movesBitboard;
+            }
+
+            return result;
+        }
+
+        private static InternalCastlingInfo[] InitializeKingCastlingInfos()
+        {
+            var castlingTypes = EnumFactotum.GetAllValues<CastlingType>();
+
+            var result = new InternalCastlingInfo[(int)castlingTypes.Max() + 1];
+            foreach (var castlingType in castlingTypes)
+            {
+                var info = ChessHelper.CastlingTypeToInfoMap[castlingType];
+
+                var index = GetCastlingTypeArrayIndexInternal(castlingType);
+                result[index] = new InternalCastlingInfo(
+                    info.KingMove,
+                    new Bitboard(info.EmptySquares.Concat(info.PassedSquare.AsArray())));
             }
 
             return result;
@@ -355,6 +527,101 @@ namespace ChessPlatform
                 var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
                 resultMoves.Add(new GameMoveData(move, moveFlags));
             }
+        }
+
+        private static void PopulatePawnMoves(
+            ICollection<GameMoveData> resultMoves,
+            Bitboard destinationsBitboard,
+            int moveOffset,
+            GameMoveFlags moveFlags)
+        {
+            var isPawnPromotion = (moveFlags & GameMoveFlags.IsPawnPromotion) != 0;
+
+            while (destinationsBitboard.IsAny)
+            {
+                var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
+
+                var move = new GameMove(
+                    new Square(targetSquareIndex - moveOffset),
+                    new Square(targetSquareIndex));
+
+                if (isPawnPromotion)
+                {
+                    var promotionMoves = move.MakeAllPromotions();
+                    foreach (var promotionMove in promotionMoves)
+                    {
+                        resultMoves.Add(new GameMoveData(promotionMove, moveFlags));
+                    }
+                }
+                else
+                {
+                    resultMoves.Add(new GameMoveData(move, moveFlags));
+                }
+            }
+        }
+
+        private static void PopulatePawnCaptures(
+            ICollection<GameMoveData> resultMoves,
+            Bitboard pawns,
+            Bitboard enemies,
+            ShiftDirection captureDirection,
+            Bitboard rank8,
+            Bitboard enPassantCaptureTarget)
+        {
+            var captureTargets = pawns.Shift(captureDirection);
+
+            var enPassantCapture = captureTargets & enPassantCaptureTarget;
+            PopulatePawnMoves(
+                resultMoves,
+                enPassantCapture,
+                (int)captureDirection,
+                GameMoveFlags.IsEnPassantCapture);
+
+            var captures = captureTargets & enemies;
+            if (captures.IsNone)
+            {
+                return;
+            }
+
+            var nonPromotionCaptures = captures & ~rank8;
+            PopulatePawnMoves(
+                resultMoves,
+                nonPromotionCaptures,
+                (int)captureDirection,
+                GameMoveFlags.IsRegularCapture);
+
+            var promotionCaptures = captures & rank8;
+            PopulatePawnMoves(
+                resultMoves,
+                promotionCaptures,
+                (int)captureDirection,
+                GameMoveFlags.IsRegularCapture | GameMoveFlags.IsPawnPromotion);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void PopulateKingCastlingMoves(
+            ICollection<GameMoveData> resultMoves,
+            Square sourceSquare,
+            Bitboard target,
+            CastlingOptions allowedCastlingOptions,
+            Bitboard nonEmptySquares,
+            CastlingType castlingType)
+        {
+            var option = castlingType.ToOption();
+            if ((allowedCastlingOptions & option) == 0)
+            {
+                return;
+            }
+
+            var info = KingCastlingInfos[GetCastlingTypeArrayIndexInternal(castlingType)];
+            if (info.KingMove.From != sourceSquare || (info.ExpectedEmptySquares & nonEmptySquares).IsAny
+                || (info.KingMove.To.Bitboard & target).IsNone)
+            {
+                return;
+            }
+
+            var moveData = new GameMoveData(info.KingMove, GameMoveFlags.IsKingCastling);
+            resultMoves.Add(moveData);
         }
 
         private Bitboard GetAttackersInternal(

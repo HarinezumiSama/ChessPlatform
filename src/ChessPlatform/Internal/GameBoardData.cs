@@ -908,7 +908,7 @@ namespace ChessPlatform.Internal
             }
 
             var info = KingCastlingInfos[GetCastlingTypeArrayIndexInternal(castlingType)];
-            if (info.KingMove.From != sourceSquare || (nonEmptySquares & info.EmptySquares).IsAny)
+            if (info.KingMove.From != sourceSquare || (nonEmptySquares & info.ExpectedEmptySquares).IsAny)
             {
                 return;
             }
@@ -1306,39 +1306,6 @@ namespace ChessPlatform.Internal
                     }
                 }
             }
-        }
-
-        #endregion
-
-        #region InternalCastlingInfo Structure
-
-        internal struct InternalCastlingInfo
-        {
-            #region Constructors
-
-            public InternalCastlingInfo(GameMove kingMove, Bitboard emptySquares)
-            {
-                KingMove = kingMove.EnsureNotNull();
-                EmptySquares = emptySquares;
-            }
-
-            #endregion
-
-            #region Public Properties
-
-            public GameMove KingMove
-            {
-                [DebuggerStepThrough]
-                get;
-            }
-
-            public Bitboard EmptySquares
-            {
-                [DebuggerStepThrough]
-                get;
-            }
-
-            #endregion
         }
 
         #endregion
