@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using Omnifactotum.Annotations;
 
-namespace ChessPlatform.Internal
+namespace ChessPlatform
 {
-    internal struct GameMoveData
+    public struct GameMoveData
     {
         #region Constructors
 

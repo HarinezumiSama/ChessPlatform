@@ -86,7 +86,7 @@
     <Compile Include="GamePlay\EvaluationScoreExtensions.cs" />
     <Compile Include="PiecePosition.cs" />
     <Compile Include="GameMoveFlagsExtensions.cs" />
-    <Compile Include="Internal\GameMoveData.cs" />
+    <Compile Include="GameMoveData.cs" />
     <Compile Include="Internal\GeneratedMoveTypes.cs" />
     <Compile Include="Internal\GeneratedMoveTypesExtensions.cs" />
     <Compile Include="Internal\ZobristHashHelper.cs" />
@@ -119,6 +119,7 @@
     <Compile Include="ShiftDirection.cs" />
     <Compile Include="SquareExtensions.cs" />
     <Compile Include="SquareShift.cs" />
+    <Compile Include="StandardGamePosition.cs" />
     <Compile Include="Utilities\SquareDeterminant.cs" />
     <Compile Include="Utilities\SquareDictionary.cs" />
     <Compile Include="Internal\DebugConstants.cs" />

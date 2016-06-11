@@ -13,7 +13,7 @@ using Omnifactotum.Annotations;
 //// ReSharper disable SuggestBaseTypeForParameter - Using specific types (such as arrays) for speed optimization
 namespace ChessPlatform
 {
-    internal abstract class GamePosition
+    public abstract class GamePosition
     {
         #region Constants and Fields
 
