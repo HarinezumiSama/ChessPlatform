@@ -11,7 +11,6 @@ using Omnifactotum.Annotations;
 //// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
 //// ReSharper disable ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
 //// ReSharper disable SuggestBaseTypeForParameter - Using specific types (such as arrays) for speed optimization
-
 namespace ChessPlatform
 {
     internal abstract class GamePosition
@@ -53,6 +52,11 @@ namespace ChessPlatform
         #region Protected Properties
 
         protected abstract PiecePosition PiecePosition
+        {
+            get;
+        }
+
+        protected abstract long ZobristKey
         {
             get;
         }
@@ -323,6 +327,57 @@ namespace ChessPlatform
                     rank8,
                     enPassantCaptureTarget);
             }
+        }
+
+        protected void GeneratePotentialQueenMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Queen, QueenDirections);
+        }
+
+        protected void GeneratePotentialRookMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Rook, RookDirections);
+        }
+
+        protected void GeneratePotentialBishopMoves(
+            [NotNull] List<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes)
+        {
+            #region Argument Check
+
+            if (resultMoves == null)
+            {
+                throw new ArgumentNullException(nameof(resultMoves));
+            }
+
+            #endregion
+
+            GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Bishop, BishopDirections);
         }
 
         #endregion
@@ -718,6 +773,62 @@ namespace ChessPlatform
             result |= slidingDiagonallyAttackers;
 
             return result;
+        }
+
+        private void GenerateSlidingPieceMoves(
+            [NotNull] ICollection<GameMoveData> resultMoves,
+            GameSide side,
+            GeneratedMoveTypes moveTypes,
+            PieceType pieceType,
+            [NotNull] ShiftDirection[] directions)
+        {
+            var piece = pieceType.ToPiece(side);
+            var pieces = PiecePosition[piece];
+
+            var emptySquares = PiecePosition[Piece.None];
+            var enemies = PiecePosition[side.Invert()];
+
+            var shouldGenerateQuiets = moveTypes.IsAnySet(GeneratedMoveTypes.Quiet);
+            var shouldGenerateCaptures = moveTypes.IsAnySet(GeneratedMoveTypes.Capture);
+
+            //// TODO [vmcl] NEW-DESIGN: IDEA: Generate for all pieces rather for one by one
+            while (pieces.IsAny)
+            {
+                var sourceSquareIndex = Bitboard.PopFirstSquareIndex(ref pieces);
+                var sourceBitboard = Bitboard.FromSquareIndex(sourceSquareIndex);
+                var sourceSquare = new Square(sourceSquareIndex);
+
+                foreach (var direction in directions)
+                {
+                    var current = sourceBitboard;
+
+                    while ((current = current.Shift(direction)).IsAny)
+                    {
+                        if ((current & emptySquares).IsAny)
+                        {
+                            if (shouldGenerateQuiets)
+                            {
+                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
+                                resultMoves.Add(new GameMoveData(move, GameMoveFlags.None));
+                            }
+
+                            continue;
+                        }
+
+                        if ((current & enemies).IsAny)
+                        {
+                            if (shouldGenerateCaptures)
+                            {
+                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
+                                resultMoves.Add(
+                                    new GameMoveData(move, GameMoveFlags.IsRegularCapture));
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
         }
 
         #endregion
