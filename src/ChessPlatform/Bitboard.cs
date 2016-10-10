@@ -253,7 +253,7 @@ namespace ChessPlatform
         {
             var value = bitboard.InternalValue;
             bitboard = new Bitboard(unchecked(value & (value - 1)));
-            return new Bitboard(IsolateFirstSquareBitboardInternal(value));
+            return new Bitboard(IsolateFirstSquareInternal(value));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -285,13 +285,13 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsExactlyOneSquare()
         {
-            return InternalValue != NoneValue && IsolateFirstSquareBitboardInternal(InternalValue) == InternalValue;
+            return InternalValue != NoneValue && IsolateFirstSquareInternal(InternalValue) == InternalValue;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard IsolateFirstSquare()
         {
-            return new Bitboard(IsolateFirstSquareBitboardInternal(InternalValue));
+            return new Bitboard(IsolateFirstSquareInternal(InternalValue));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -406,8 +406,9 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static ulong IsolateFirstSquareBitboardInternal(ulong value)
+        internal static ulong IsolateFirstSquareInternal(ulong value)
         {
+            //// ReSharper disable once ArrangeRedundantParentheses
             return unchecked(value & (ulong)(-(long)value));
         }
 
@@ -416,7 +417,7 @@ namespace ChessPlatform
         {
             var value = bitboard;
             bitboard = unchecked(value & (value - 1));
-            return IsolateFirstSquareBitboardInternal(value);
+            return IsolateFirstSquareInternal(value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -430,7 +431,7 @@ namespace ChessPlatform
             const long Debruijn64 = 0x03F79D71B4CB0A89L;
             const int MagicShift = 58;
 
-            var isolatedBit = IsolateFirstSquareBitboardInternal(value);
+            var isolatedBit = IsolateFirstSquareInternal(value);
             return Index64[unchecked(isolatedBit * Debruijn64) >> MagicShift];
         }
 
