@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using ChessPlatform.Internal;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform
@@ -8,90 +10,272 @@ namespace ChessPlatform
     {
         #region Constructors
 
-        public StandardGamePosition()
+        private StandardGamePosition(
+            [NotNull] PiecePosition piecePosition,
+            GameSide activeSide,
+            int fullMoveIndex,
+            CastlingOptions castlingOptions,
+            EnPassantCaptureInfo2? enPassantCaptureInfo,
+            int halfMoveCountBy50MoveRule)
+            : base(piecePosition, activeSide, fullMoveIndex)
         {
-            throw new NotImplementedException();
+            if (piecePosition == null)
+            {
+                throw new ArgumentNullException(nameof(piecePosition));
+            }
+
+            if (halfMoveCountBy50MoveRule < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(halfMoveCountBy50MoveRule),
+                    halfMoveCountBy50MoveRule,
+                    @"The value cannot be negative.");
+            }
+
+            CastlingOptions = castlingOptions;
+            EnPassantCaptureInfo = enPassantCaptureInfo;
+            HalfMoveCountBy50MoveRule = halfMoveCountBy50MoveRule;
+
+            //// IMPORTANT: This Zobrist key algorithm is different from the one used in the Polyglot opening book (in the en-passant part)
+            ZobristKey = PiecePosition.ZobristKey
+                ^ ZobristHashHelper.GetCastlingHash(CastlingOptions)
+                ^ ZobristHashHelper.GetEnPassantHash(
+                    EnPassantCaptureInfo,
+                    PiecePosition[ActiveSide.ToPiece(PieceType.Pawn)])
+                ^ ZobristHashHelper.GetTurnHash(ActiveSide);
         }
 
         private StandardGamePosition([NotNull] StandardGamePosition other)
+            : base(other)
         {
             if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
 
-            throw new NotImplementedException();
+            CastlingOptions = other.CastlingOptions;
+            EnPassantCaptureInfo = other.EnPassantCaptureInfo;
+            HalfMoveCountBy50MoveRule = other.HalfMoveCountBy50MoveRule;
+            ZobristKey = other.ZobristKey;
         }
 
         #endregion
 
-        #region Protected Properties
+        #region Public Properties
 
-        protected override PiecePosition PiecePosition
+        public override long ZobristKey
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get;
         }
 
-        protected override long ZobristKey
+        public CastlingOptions CastlingOptions
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            get;
         }
+
+        public EnPassantCaptureInfo2? EnPassantCaptureInfo
+        {
+            get;
+        }
+
+        public int HalfMoveCountBy50MoveRule
+        {
+            get;
+        }
+
+        public int FullMoveCountBy50MoveRule => HalfMoveCountBy50MoveRule / 2;
 
         #endregion
 
         #region Public Methods
 
-        public static bool TryCreate([NotNull] string fen, out StandardGamePosition gamePosition)
+        public static bool TryCreate(
+            [NotNull] string fen,
+            out string errorMessage,
+            out StandardGamePosition result)
         {
-            if (fen == null)
+            string errorDetails;
+            if (TryCreateInternal(fen, out errorDetails, out result))
             {
-                throw new ArgumentNullException(nameof(fen));
+                errorMessage = null;
+                return true;
             }
 
-            throw new NotImplementedException();
+            errorMessage = $@"Invalid FEN for standard chess '{fen}':{Environment.NewLine}{errorDetails}";
+            return false;
+        }
+
+        public static bool TryCreate([NotNull] string fen, out StandardGamePosition gamePosition)
+        {
+            string errorDetails;
+            return TryCreateInternal(fen, out errorDetails, out gamePosition);
         }
 
         public static StandardGamePosition Create([NotNull] string fen)
         {
+            string errorMessage;
             StandardGamePosition gamePosition;
-            if (!TryCreate(fen, out gamePosition) || gamePosition == null)
+            if (!TryCreate(fen, out errorMessage, out gamePosition))
             {
-                throw new ArgumentException($@"Invalid FEN for standard chess: '{fen}'.", nameof(fen));
+                throw new ArgumentException(errorMessage, nameof(fen));
             }
 
-            return gamePosition;
+            return gamePosition.EnsureNotNull();
         }
 
-        public override GamePosition Copy()
+        public static StandardGamePosition CreateInitial() => Create(ChessConstants.DefaultInitialFen);
+
+        public override GamePosition Copy() => new StandardGamePosition(this);
+
+        public override bool IsSamePosition(GamePosition other) => IsSamePosition(other as StandardGamePosition);
+
+        public override GamePosition MakeMove(GameMove2 move)
         {
-            return new StandardGamePosition(this);
+            throw new NotImplementedException();
         }
 
-        public override bool IsSamePosition(GamePosition other)
+        public bool IsSamePosition(StandardGamePosition other)
         {
-            //// ReSharper disable once ConstantConditionalAccessQualifier
-            if (other?.GetType() != GetType())
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
+            if (other == null)
             {
                 return false;
             }
 
-            throw new NotImplementedException();
+            return ZobristKey == other.ZobristKey
+                && CastlingOptions == other.CastlingOptions
+                && ActiveSide == other.ActiveSide
+                && EnPassantCaptureInfo == other.EnPassantCaptureInfo
+                && PiecePosition.IsSamePosition(other.PiecePosition);
         }
 
-        public override GamePosition MakeMove(GameMove move)
+        #endregion
+
+        #region Private Methods
+
+        private static bool TryCreateInternal(
+            [NotNull] string fen,
+            out string errorDetails,
+            out StandardGamePosition result)
         {
-            if (move == null)
+            if (fen.IsNullOrWhiteSpace())
             {
-                throw new ArgumentNullException(nameof(move));
+                errorDetails = "The FEN cannot be empty.";
+                result = null;
+                return false;
             }
 
-            throw new NotImplementedException();
+            GameSide activeSide;
+            int halfMovesBy50MoveRule;
+            int fullMoveIndex;
+
+            var fenSnippets = fen
+                .Trim()
+                .Split(ChessConstants.FenSnippetSeparator.AsArray(), StringSplitOptions.None);
+            if (fenSnippets.Length != ChessConstants.FenSnippetCount)
+            {
+                errorDetails = "Invalid FEN format.";
+                result = null;
+                return false;
+            }
+
+            var piecePositionFen = fenSnippets[0];
+            PiecePosition piecePosition;
+            if (!PiecePosition.TryCreate(piecePositionFen, out piecePosition))
+            {
+                errorDetails = "Invalid position of pieces.";
+                result = null;
+                return false;
+            }
+
+            var activeSideSnippet = fenSnippets[1];
+            if (!ChessConstants.FenSnippetToGameSideMap.TryGetValue(activeSideSnippet, out activeSide))
+            {
+                errorDetails = "Invalid active side.";
+                result = null;
+                return false;
+            }
+
+            var castlingOptions = CastlingOptions.None;
+            var castlingOptionsSnippet = fenSnippets[2];
+            if (castlingOptionsSnippet != ChessConstants.NoneCastlingOptionsFenSnippet)
+            {
+                var castlingOptionsSnippetSet = castlingOptionsSnippet.ToHashSet();
+                foreach (var optionChar in castlingOptionsSnippetSet)
+                {
+                    CastlingOptions option;
+                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out option))
+                    {
+                        errorDetails = "Invalid castling options.";
+                        result = null;
+                        return false;
+                    }
+
+                    castlingOptions |= option;
+                }
+            }
+
+            EnPassantCaptureInfo2? enPassantCaptureInfo = null;
+            var enPassantCaptureTargetSnippet = fenSnippets[3];
+            if (enPassantCaptureTargetSnippet != ChessConstants.NoEnPassantCaptureFenSnippet)
+            {
+                const string InvalidEnPassant = "Invalid en-passant.";
+
+                var captureSquare = Square.TryFromAlgebraic(enPassantCaptureTargetSnippet);
+                if (!captureSquare.HasValue)
+                {
+                    errorDetails = InvalidEnPassant;
+                    result = null;
+                    return false;
+                }
+
+                var enPassantInfo =
+                    ChessConstants.GameSideToDoublePushInfoMap.Values.SingleOrDefault(
+                        obj => obj.CaptureTargetRank == captureSquare.Value.Rank);
+
+                if (enPassantInfo == null)
+                {
+                    errorDetails = InvalidEnPassant;
+                    result = null;
+                    return false;
+                }
+
+                enPassantCaptureInfo = new EnPassantCaptureInfo2(
+                    captureSquare.Value,
+                    new Square(captureSquare.Value.File, enPassantInfo.EndRank));
+            }
+
+            var halfMovesBy50MoveRuleSnippet = fenSnippets[4];
+            if (!ChessHelper.TryParseInt(halfMovesBy50MoveRuleSnippet, out halfMovesBy50MoveRule)
+                || halfMovesBy50MoveRule < 0)
+            {
+                errorDetails = "Invalid half move counter for the 50 move rule.";
+                result = null;
+                return false;
+            }
+
+            var fullMoveIndexSnippet = fenSnippets[5];
+            if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out fullMoveIndex) || fullMoveIndex <= 0)
+            {
+                errorDetails = "Invalid move index.";
+                result = null;
+                return false;
+            }
+
+            result = new StandardGamePosition(
+                piecePosition,
+                activeSide,
+                fullMoveIndex,
+                castlingOptions,
+                enPassantCaptureInfo,
+                halfMovesBy50MoveRule);
+
+            errorDetails = null;
+            return true;
         }
 
         #endregion

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ChessPlatform.Internal;
@@ -11,6 +10,7 @@ using Omnifactotum.Annotations;
 //// ReSharper disable ForCanBeConvertedToForeach - Using simpler loops for speed optimization
 //// ReSharper disable ReturnTypeCanBeEnumerable.Local - Using simpler types (such as arrays) for speed optimization
 //// ReSharper disable SuggestBaseTypeForParameter - Using specific types (such as arrays) for speed optimization
+
 namespace ChessPlatform
 {
     public abstract class GamePosition
@@ -49,14 +49,61 @@ namespace ChessPlatform
 
         #endregion
 
-        #region Protected Properties
+        #region Constructors
 
-        protected abstract PiecePosition PiecePosition
+        protected GamePosition([NotNull] PiecePosition piecePosition, GameSide activeSide, int fullMoveIndex)
+        {
+            if (piecePosition == null)
+            {
+                throw new ArgumentNullException(nameof(piecePosition));
+            }
+
+            if (fullMoveIndex <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(fullMoveIndex),
+                    fullMoveIndex,
+                    @"The value must be positive.");
+            }
+
+            PiecePosition = piecePosition;
+            ActiveSide = activeSide;
+            FullMoveIndex = fullMoveIndex;
+        }
+
+        protected GamePosition([NotNull] GamePosition other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            var otherType = other.GetType();
+            if (otherType != GetType())
+            {
+                throw new ArgumentException($@"Invalid object type '{otherType.GetFullName()}'.", nameof(other));
+            }
+
+            PiecePosition = other.PiecePosition.Copy();
+            ActiveSide = other.ActiveSide;
+            FullMoveIndex = other.FullMoveIndex;
+        }
+
+        #endregion
+
+        #region Public Properties
+
+        public abstract long ZobristKey
         {
             get;
         }
 
-        protected abstract long ZobristKey
+        public GameSide ActiveSide
+        {
+            get;
+        }
+
+        public int FullMoveIndex
         {
             get;
         }
@@ -87,7 +134,16 @@ namespace ChessPlatform
             return attackers.IsAny;
         }
 
-        public abstract GamePosition MakeMove([NotNull] GameMove move);
+        public abstract GamePosition MakeMove(GameMove2 move);
+
+        #endregion
+
+        #region Protected Properties
+
+        protected PiecePosition PiecePosition
+        {
+            get;
+        }
 
         #endregion
 

@@ -935,6 +935,27 @@ namespace ChessPlatform.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static long GetEnPassantHash(EnPassantCaptureInfo2? info, Bitboard activeSidePawns)
+        {
+            if (!info.HasValue)
+            {
+                return 0;
+            }
+
+            var targetPieceSquare = info.Value.TargetPieceSquare;
+
+            var adjacentPawnsBitboard = EnPassantAdjacentPawnsBitboardMap[targetPieceSquare];
+            if ((adjacentPawnsBitboard & activeSidePawns).IsNone)
+            {
+                return 0;
+            }
+
+            var file = targetPieceSquare.File;
+            var result = (long)Randoms[RandomsEnPassantOffset + file];
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetTurnHash(GameSide activeSide)
         {
             return activeSide == GameSide.White ? (long)Randoms[RandomsTurnOffset] : 0L;

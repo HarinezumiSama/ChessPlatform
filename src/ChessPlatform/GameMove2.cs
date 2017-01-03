@@ -7,7 +7,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public sealed class GameMove : IEquatable<GameMove>
+    public struct GameMove2 : IEquatable<GameMove2>
     {
         #region Constants and Fields
 
@@ -41,9 +41,9 @@ namespace ChessPlatform
         #region Constructors
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GameMove"/> class.
+        ///     Initializes a new instance of the <see cref="GameMove2"/> class.
         /// </summary>
-        public GameMove(Square from, Square to, PieceType promotionResult)
+        public GameMove2(Square from, Square to, PieceType promotionResult)
         {
             From = from;
             To = to;
@@ -53,9 +53,9 @@ namespace ChessPlatform
         }
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="GameMove"/> class.
+        ///     Initializes a new instance of the <see cref="GameMove2"/> class.
         /// </summary>
-        public GameMove(Square from, Square to)
+        public GameMove2(Square from, Square to)
             : this(from, to, PieceType.None)
         {
             // Nothing to do
@@ -87,35 +87,22 @@ namespace ChessPlatform
 
         #region Operators
 
-        public static bool operator ==(GameMove left, GameMove right) => Equals(left, right);
+        public static bool operator ==(GameMove2 left, GameMove2 right) => Equals(left, right);
 
-        public static bool operator !=(GameMove left, GameMove right) => !(left == right);
+        public static bool operator !=(GameMove2 left, GameMove2 right) => !(left == right);
 
         [DebuggerNonUserCode]
-        public static implicit operator GameMove(string stringNotation) => FromStringNotation(stringNotation);
+        public static implicit operator GameMove2(string stringNotation) => FromStringNotation(stringNotation);
 
         #endregion
 
         #region Public Methods
 
-        public static bool Equals(GameMove left, GameMove right)
-        {
-            if (ReferenceEquals(left, right))
-            {
-                return true;
-            }
-
-            if (ReferenceEquals(left, null) || ReferenceEquals(right, null))
-            {
-                return false;
-            }
-
-            return left.From == right.From && left.To == right.To && left.PromotionResult == right.PromotionResult;
-        }
+        public static bool Equals(GameMove2 left, GameMove2 right)
+            => left.From == right.From && left.To == right.To && left.PromotionResult == right.PromotionResult;
 
         [DebuggerNonUserCode]
-        [NotNull]
-        public static GameMove FromStringNotation([NotNull] string stringNotation)
+        public static GameMove2 FromStringNotation([NotNull] string stringNotation)
         {
             #region Argument Check
 
@@ -142,7 +129,7 @@ namespace ChessPlatform
                     ? char.ToUpperInvariant(promotionGroup.Value.Single()).ToPieceType()
                     : PieceType.None;
 
-                return new GameMove(Square.FromAlgebraic(from), Square.FromAlgebraic(to), pieceType);
+                return new GameMove2(Square.FromAlgebraic(@from), Square.FromAlgebraic(to), pieceType);
             }
 
             throw new ArgumentException(
@@ -150,23 +137,19 @@ namespace ChessPlatform
                 nameof(stringNotation));
         }
 
-        public override bool Equals(object obj) => Equals(obj as GameMove);
+        public override bool Equals(object obj) => obj is GameMove2 && Equals((GameMove2)obj);
 
         public override int GetHashCode() => _hashCode;
 
         public override string ToString() => ToString(false);
 
         public string ToString(bool renderCaptureSign)
-        {
-            var result = $@"{From}{(renderCaptureSign ? ChessConstants.CaptureCharString : string.Empty)}{To}{
+            => $@"{From}{(renderCaptureSign ? ChessConstants.CaptureCharString : string.Empty)}{To}{
                 (PromotionResult == PieceType.None
                     ? string.Empty
                     : ChessConstants.PromotionPrefixCharString + PromotionResult.GetFenChar())}";
 
-            return result;
-        }
-
-        public GameMove MakePromotion(PieceType promotionResult)
+        public GameMove2 MakePromotion(PieceType promotionResult)
         {
             #region Argument Check
 
@@ -179,17 +162,22 @@ namespace ChessPlatform
 
             #endregion
 
-            return new GameMove(From, To, promotionResult);
+            return new GameMove2(From, To, promotionResult);
         }
 
-        public GameMove[] MakeAllPromotions()
-            => ChessConstants.ValidPromotions.Select(item => new GameMove(From, To, item)).ToArray();
+        public GameMove2[] MakeAllPromotions()
+        {
+            var from = From;
+            var to = To;
+
+            return ChessConstants.ValidPromotions.Select(item => new GameMove2(from, to, item)).ToArray();
+        }
 
         #endregion
 
-        #region IEquatable<GameMove> Members
+        #region IEquatable<GameMove2> Members
 
-        public bool Equals(GameMove other) => Equals(this, other);
+        public bool Equals(GameMove2 other) => Equals(this, other);
 
         #endregion
     }

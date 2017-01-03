@@ -99,10 +99,19 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        public override string ToString()
+        public static bool TryCreate([NotNull] string piecePositionFen, out PiecePosition result)
         {
-            return this.GetFenSnippet();
+            result = new PiecePosition();
+            if (result.TrySetupByFenSnippet(piecePositionFen))
+            {
+                return true;
+            }
+
+            result = null;
+            return false;
         }
+
+        public override string ToString() => this.GetFenSnippet();
 
         public void EnsureConsistency()
         {
@@ -114,10 +123,7 @@ namespace ChessPlatform
             EnsureConsistencyInternal();
         }
 
-        public PiecePosition Copy()
-        {
-            return new PiecePosition(this);
-        }
+        public PiecePosition Copy() => new PiecePosition(this);
 
         public bool IsSamePosition([NotNull] PiecePosition other)
         {
@@ -198,69 +204,17 @@ namespace ChessPlatform
             SetPiece(square, piece);
         }
 
-        public void SetupByFenSnippet(string fenSnippet)
+        #endregion
+
+        #region Internal Methods
+
+        internal void SetupByFenSnippet(string piecePositionFen)
         {
-            #region Argument Check
+            const string InvalidFenMessage = "Invalid piece position FEN.";
 
-            if (string.IsNullOrWhiteSpace(fenSnippet))
+            if (!TrySetupByFenSnippet(piecePositionFen))
             {
-                throw new ArgumentException(
-                    @"The value can be neither empty nor whitespace-only string nor null.",
-                    nameof(fenSnippet));
-            }
-
-            #endregion
-
-            const string InvalidFenMessage = "Invalid FEN.";
-
-            var currentRank = ChessConstants.RankCount - 1;
-            var currentFile = 0;
-            foreach (var ch in fenSnippet)
-            {
-                if (ch == ChessConstants.FenRankSeparator)
-                {
-                    if (currentFile != ChessConstants.FileCount)
-                    {
-                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                    }
-
-                    currentFile = 0;
-                    currentRank--;
-
-                    if (currentRank < 0)
-                    {
-                        throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                    }
-
-                    continue;
-                }
-
-                if (currentFile >= ChessConstants.FileCount)
-                {
-                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                }
-
-                Piece piece;
-                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
-                {
-                    var square = new Square(currentFile, currentRank);
-                    SetupNewPiece(square, piece);
-                    currentFile++;
-                    continue;
-                }
-
-                var emptySquareCount = byte.Parse(new string(ch, 1));
-                if (emptySquareCount == 0)
-                {
-                    throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
-                }
-
-                currentFile += emptySquareCount;
-            }
-
-            if (currentFile != ChessConstants.FileCount)
-            {
-                throw new ArgumentException(InvalidFenMessage, nameof(fenSnippet));
+                throw new ArgumentException(InvalidFenMessage, nameof(piecePositionFen));
             }
         }
 
@@ -269,16 +223,10 @@ namespace ChessPlatform
         #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetPieceArrayIndex(Piece piece)
-        {
-            return (int)piece;
-        }
+        private static int GetPieceArrayIndex(Piece piece) => (int)piece;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetGameSideArrayIndex(GameSide side)
-        {
-            return (int)side;
-        }
+        private static int GetGameSideArrayIndex(GameSide side) => (int)side;
 
         private static long ComputeZobristKey([NotNull] Piece[] pieces)
         {
@@ -340,10 +288,68 @@ namespace ChessPlatform
         }
 
         private Bitboard GetEntireSideBitboardNonCached(GameSide side)
-        {
-            return ChessConstants.GameSideToPiecesMap[side].Aggregate(
+            => ChessConstants.GameSideToPiecesMap[side].Aggregate(
                 Bitboard.None,
                 (accumulator, piece) => accumulator | this[piece]);
+
+        private bool TrySetupByFenSnippet([NotNull] string piecePositionFen)
+        {
+            if (piecePositionFen.IsNullOrWhiteSpace())
+            {
+                return false;
+            }
+
+            var currentRank = ChessConstants.RankCount - 1;
+            var currentFile = 0;
+            foreach (var ch in piecePositionFen)
+            {
+                if (ch == ChessConstants.FenRankSeparator)
+                {
+                    if (currentFile != ChessConstants.FileCount)
+                    {
+                        return false;
+                    }
+
+                    currentFile = 0;
+                    currentRank--;
+
+                    if (currentRank < 0)
+                    {
+                        return false;
+                    }
+
+                    continue;
+                }
+
+                if (currentFile >= ChessConstants.FileCount)
+                {
+                    return false;
+                }
+
+                Piece piece;
+                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
+                {
+                    var square = new Square(currentFile, currentRank);
+                    SetupNewPiece(square, piece);
+                    currentFile++;
+                    continue;
+                }
+
+                var emptySquareCount = byte.Parse(new string(ch, 1));
+                if (emptySquareCount == 0)
+                {
+                    return false;
+                }
+
+                currentFile += emptySquareCount;
+            }
+
+            if (currentFile != ChessConstants.FileCount)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         #endregion
