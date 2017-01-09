@@ -66,6 +66,7 @@
     <Compile Include="EnPassantCaptureInfo2.cs" />
     <Compile Include="GameMove2.cs" />
     <Compile Include="GamePosition.cs" />
+    <Compile Include="GamePositionExtensions.cs" />
     <Compile Include="Internal\InternalCastlingInfo.cs" />
     <Compile Include="PiecePositionExtensions.cs" />
     <Compile Include="GameBoardExtensions.cs" />

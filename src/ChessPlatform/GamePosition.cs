@@ -112,10 +112,7 @@ namespace ChessPlatform
 
         #region Public Methods
 
-        public override string ToString()
-        {
-            return PiecePosition.GetFenSnippet();
-        }
+        public override string ToString() => PiecePosition.GetFenSnippet();
 
         public abstract GamePosition Copy();
 
@@ -123,9 +120,7 @@ namespace ChessPlatform
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Bitboard GetAttackers(Square targetSquare, GameSide attackingSide)
-        {
-            return GetAttackersInternal(targetSquare, attackingSide, false);
-        }
+            => GetAttackersInternal(targetSquare, attackingSide, false);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsUnderAttack(Square targetSquare, GameSide attackingSide)
@@ -135,15 +130,6 @@ namespace ChessPlatform
         }
 
         public abstract GamePosition MakeMove(GameMove2 move);
-
-        #endregion
-
-        #region Protected Properties
-
-        protected PiecePosition PiecePosition
-        {
-            get;
-        }
 
         #endregion
 
@@ -438,13 +424,19 @@ namespace ChessPlatform
 
         #endregion
 
+        #region Protected Internal Properties
+
+        protected internal PiecePosition PiecePosition
+        {
+            get;
+        }
+
+        #endregion
+
         #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
-        {
-            return (int)castlingType;
-        }
+        private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType) => (int)castlingType;
 
         private static Bitboard[] InitializeStraightSlidingAttacks()
         {
@@ -576,9 +568,7 @@ namespace ChessPlatform
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetConnectionIndex(int squareIndex1, int squareIndex2)
-        {
-            return squareIndex1 + squareIndex2 * ChessConstants.SquareCount;
-        }
+            => squareIndex1 + squareIndex2 * ChessConstants.SquareCount;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Bitboard GetConnectionInternal(int squareIndex1, int squareIndex2)

@@ -36,7 +36,7 @@ namespace ChessPlatform
             EnPassantCaptureInfo = enPassantCaptureInfo;
             HalfMoveCountBy50MoveRule = halfMoveCountBy50MoveRule;
 
-            //// IMPORTANT: This Zobrist key algorithm is different from the one used in the Polyglot opening book (in the en-passant part)
+            //// TODO [vmcl] IMPORTANT: This Zobrist key algorithm is different from the one used in the Polyglot opening book (in the en-passant part)
             ZobristKey = PiecePosition.ZobristKey
                 ^ ZobristHashHelper.GetCastlingHash(CastlingOptions)
                 ^ ZobristHashHelper.GetEnPassantHash(
