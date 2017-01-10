@@ -174,6 +174,38 @@ namespace ChessPlatform
                         "d8")
                 });
 
+        public static readonly ReadOnlyCollection<CastlingInfo2> AllCastlingInfos2 =
+            new ReadOnlyCollection<CastlingInfo2>(
+                new[]
+                {
+                    new CastlingInfo2(
+                        CastlingType.WhiteKingSide,
+                        new GameMove2(WhiteKingInitialSquare, "g1"),
+                        new GameMove2("h1", "f1"),
+                        "f1",
+                        "g1"),
+                    new CastlingInfo2(
+                        CastlingType.WhiteQueenSide,
+                        new GameMove2(WhiteKingInitialSquare, "c1"),
+                        new GameMove2("a1", "d1"),
+                        "b1",
+                        "c1",
+                        "d1"),
+                    new CastlingInfo2(
+                        CastlingType.BlackKingSide,
+                        new GameMove2(BlackKingInitialSquare, "g8"),
+                        new GameMove2("h8", "f8"),
+                        "f8",
+                        "g8"),
+                    new CastlingInfo2(
+                        CastlingType.BlackQueenSide,
+                        new GameMove2(BlackKingInitialSquare, "c8"),
+                        new GameMove2("a8", "d8"),
+                        "b8",
+                        "c8",
+                        "d8")
+                });
+
         internal const int MaxPieceCountPerSide = 16;
         internal const int MaxPawnCountPerSide = 8;
 

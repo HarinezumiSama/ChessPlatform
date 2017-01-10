@@ -59,14 +59,18 @@
     </Compile>
     <Compile Include="AutoDrawType.cs" />
     <Compile Include="Bitboards.cs" />
+    <Compile Include="CastlingInfo2.cs" />
     <Compile Include="CastlingSideExtensions.cs" />
     <Compile Include="CastlingType.cs" />
     <Compile Include="CastlingSide.cs" />
     <Compile Include="CastlingTypeExtensions.cs" />
     <Compile Include="EnPassantCaptureInfo2.cs" />
     <Compile Include="GameMove2.cs" />
+    <Compile Include="GameMove2Extensions.cs" />
+    <Compile Include="GameMoveData2.cs" />
     <Compile Include="GamePosition.cs" />
     <Compile Include="GamePositionExtensions.cs" />
+    <Compile Include="Internal\InternalCastlingInfo2.cs" />
     <Compile Include="Internal\InternalCastlingInfo.cs" />
     <Compile Include="PiecePositionExtensions.cs" />
     <Compile Include="GameBoardExtensions.cs" />

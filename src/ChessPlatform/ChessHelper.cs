@@ -26,6 +26,9 @@ namespace ChessPlatform
         public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
 
+        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo2> CastlingTypeToInfoMap2 =
+            ChessConstants.AllCastlingInfos2.ToDictionary(obj => obj.CastlingType).AsReadOnly();
+
         public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, CastlingInfo>
             CastlingOptionToInfoMap =
                 ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();

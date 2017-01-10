@@ -9,45 +9,30 @@ namespace ChessPlatform
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsAnySet(this GameMoveFlags value, GameMoveFlags flags)
-        {
-            return (value & flags) != 0;
-        }
+        public static bool IsAnySet(this GameMoveFlags value, GameMoveFlags flags) => (value & flags) != 0;
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsPawnPromotion(this GameMoveFlags value)
-        {
-            return value.IsAnySet(GameMoveFlags.IsPawnPromotion);
-        }
+        public static bool IsPawnPromotion(this GameMoveFlags value) => value.IsAnySet(GameMoveFlags.IsPawnPromotion);
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsRegularCapture(this GameMoveFlags value)
-        {
-            return value.IsAnySet(GameMoveFlags.IsRegularCapture);
-        }
+            => value.IsAnySet(GameMoveFlags.IsRegularCapture);
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnPassantCapture(this GameMoveFlags value)
-        {
-            return value.IsAnySet(GameMoveFlags.IsEnPassantCapture);
-        }
+            => value.IsAnySet(GameMoveFlags.IsEnPassantCapture);
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAnyCapture(this GameMoveFlags value)
-        {
-            return value.IsAnySet(GameMoveFlags.IsRegularCapture | GameMoveFlags.IsEnPassantCapture);
-        }
+            => value.IsAnySet(GameMoveFlags.IsRegularCapture | GameMoveFlags.IsEnPassantCapture);
 
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsKingCastling(this GameMoveFlags value)
-        {
-            return value.IsAnySet(GameMoveFlags.IsKingCastling);
-        }
+        public static bool IsKingCastling(this GameMoveFlags value) => value.IsAnySet(GameMoveFlags.IsKingCastling);
 
         #endregion
     }

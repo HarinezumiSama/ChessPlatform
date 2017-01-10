@@ -1,20 +1,13 @@
-﻿using System;
-using System.Diagnostics;
-using Omnifactotum.Annotations;
+﻿using System.Diagnostics;
 
 namespace ChessPlatform
 {
-    public struct GameMoveData
+    public struct GameMoveData2
     {
         #region Constructors
 
-        internal GameMoveData([NotNull] GameMove move, GameMoveFlags moveFlags)
+        internal GameMoveData2(GameMove2 move, GameMoveFlags moveFlags)
         {
-            if (move == null)
-            {
-                throw new ArgumentNullException(nameof(move));
-            }
-
             Move = move;
             MoveFlags = moveFlags;
         }
@@ -23,7 +16,7 @@ namespace ChessPlatform
 
         #region Public Properties
 
-        public GameMove Move
+        public GameMove2 Move
         {
             [DebuggerStepThrough]
             get;

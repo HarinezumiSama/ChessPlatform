@@ -40,7 +40,7 @@ namespace ChessPlatform
         protected static readonly Bitboard[] DiagonallySlidingAttacks = InitializeDiagonallySlidingAttacks();
         protected static readonly Bitboard[] KnightAttacksOrMoves = InitializeKnightAttacksOrMoves();
         protected static readonly Bitboard[] KingAttacksOrMoves = InitializeKingAttacksOrMoves();
-        private static readonly InternalCastlingInfo[] KingCastlingInfos = InitializeKingCastlingInfos();
+        private static readonly InternalCastlingInfo2[] KingCastlingInfos = InitializeKingCastlingInfos();
 
         protected static readonly Bitboard[] Connections = InitializeConnections();
 
@@ -162,7 +162,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialKingMoves(
-            [NotNull] ICollection<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes,
             Bitboard target,
@@ -223,7 +223,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialKnightMoves(
-            [NotNull] ICollection<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes,
             Bitboard target)
@@ -286,7 +286,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialPawnMoves(
-            [NotNull] ICollection<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes,
             Bitboard target,
@@ -372,7 +372,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialQueenMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] List<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
@@ -389,7 +389,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialRookMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] List<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
@@ -406,7 +406,7 @@ namespace ChessPlatform
         }
 
         protected void GeneratePotentialBishopMoves(
-            [NotNull] List<GameMoveData> resultMoves,
+            [NotNull] List<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
@@ -520,17 +520,17 @@ namespace ChessPlatform
             return result;
         }
 
-        private static InternalCastlingInfo[] InitializeKingCastlingInfos()
+        private static InternalCastlingInfo2[] InitializeKingCastlingInfos()
         {
             var castlingTypes = EnumFactotum.GetAllValues<CastlingType>();
 
-            var result = new InternalCastlingInfo[(int)castlingTypes.Max() + 1];
+            var result = new InternalCastlingInfo2[(int)castlingTypes.Max() + 1];
             foreach (var castlingType in castlingTypes)
             {
-                var info = ChessHelper.CastlingTypeToInfoMap[castlingType];
+                var info = ChessHelper.CastlingTypeToInfoMap2[castlingType];
 
                 var index = GetCastlingTypeArrayIndexInternal(castlingType);
-                result[index] = new InternalCastlingInfo(
+                result[index] = new InternalCastlingInfo2(
                     info.KingMove,
                     new Bitboard(info.EmptySquares.Concat(info.PassedSquare.AsArray())));
             }
@@ -616,7 +616,7 @@ namespace ChessPlatform
         }
 
         private static void PopulateSimpleMoves(
-            ICollection<GameMoveData> resultMoves,
+            ICollection<GameMoveData2> resultMoves,
             Square sourceSquare,
             Bitboard destinationsBitboard,
             GameMoveFlags moveFlags)
@@ -625,13 +625,13 @@ namespace ChessPlatform
             {
                 var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
 
-                var move = new GameMove(sourceSquare, new Square(targetSquareIndex));
-                resultMoves.Add(new GameMoveData(move, moveFlags));
+                var move = new GameMove2(sourceSquare, new Square(targetSquareIndex));
+                resultMoves.Add(new GameMoveData2(move, moveFlags));
             }
         }
 
         private static void PopulatePawnMoves(
-            ICollection<GameMoveData> resultMoves,
+            ICollection<GameMoveData2> resultMoves,
             Bitboard destinationsBitboard,
             int moveOffset,
             GameMoveFlags moveFlags)
@@ -642,7 +642,7 @@ namespace ChessPlatform
             {
                 var targetSquareIndex = Bitboard.PopFirstSquareIndex(ref destinationsBitboard);
 
-                var move = new GameMove(
+                var move = new GameMove2(
                     new Square(targetSquareIndex - moveOffset),
                     new Square(targetSquareIndex));
 
@@ -651,18 +651,18 @@ namespace ChessPlatform
                     var promotionMoves = move.MakeAllPromotions();
                     foreach (var promotionMove in promotionMoves)
                     {
-                        resultMoves.Add(new GameMoveData(promotionMove, moveFlags));
+                        resultMoves.Add(new GameMoveData2(promotionMove, moveFlags));
                     }
                 }
                 else
                 {
-                    resultMoves.Add(new GameMoveData(move, moveFlags));
+                    resultMoves.Add(new GameMoveData2(move, moveFlags));
                 }
             }
         }
 
         private static void PopulatePawnCaptures(
-            ICollection<GameMoveData> resultMoves,
+            ICollection<GameMoveData2> resultMoves,
             Bitboard pawns,
             Bitboard enemies,
             ShiftDirection captureDirection,
@@ -701,7 +701,7 @@ namespace ChessPlatform
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PopulateKingCastlingMoves(
-            ICollection<GameMoveData> resultMoves,
+            ICollection<GameMoveData2> resultMoves,
             Square sourceSquare,
             Bitboard target,
             CastlingOptions allowedCastlingOptions,
@@ -721,7 +721,7 @@ namespace ChessPlatform
                 return;
             }
 
-            var moveData = new GameMoveData(info.KingMove, GameMoveFlags.IsKingCastling);
+            var moveData = new GameMoveData2(info.KingMove, GameMoveFlags.IsKingCastling);
             resultMoves.Add(moveData);
         }
 
@@ -822,7 +822,7 @@ namespace ChessPlatform
         }
 
         private void GenerateSlidingPieceMoves(
-            [NotNull] ICollection<GameMoveData> resultMoves,
+            [NotNull] ICollection<GameMoveData2> resultMoves,
             GameSide side,
             GeneratedMoveTypes moveTypes,
             PieceType pieceType,
@@ -854,8 +854,8 @@ namespace ChessPlatform
                         {
                             if (shouldGenerateQuiets)
                             {
-                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
-                                resultMoves.Add(new GameMoveData(move, GameMoveFlags.None));
+                                var move = new GameMove2(sourceSquare, current.GetFirstSquare());
+                                resultMoves.Add(new GameMoveData2(move, GameMoveFlags.None));
                             }
 
                             continue;
@@ -865,9 +865,9 @@ namespace ChessPlatform
                         {
                             if (shouldGenerateCaptures)
                             {
-                                var move = new GameMove(sourceSquare, current.GetFirstSquare());
+                                var move = new GameMove2(sourceSquare, current.GetFirstSquare());
                                 resultMoves.Add(
-                                    new GameMoveData(move, GameMoveFlags.IsRegularCapture));
+                                    new GameMoveData2(move, GameMoveFlags.IsRegularCapture));
                             }
                         }
 
