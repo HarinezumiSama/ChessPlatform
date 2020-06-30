@@ -71,18 +71,21 @@
                 VerticalAlignment="Top" Focusable="False">
             <Menu.Resources>
                 <Style TargetType="Image" BasedOn="{StaticResource NavigationItemImageStyle}" />
+                <Style TargetType="MenuItem">
+                    <Setter Property="InputGestureText" 
+                            Value="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}" />
+                    <!-- TODO: Remove explicit InputGestureText assignments -->
+                </Style>
             </Menu.Resources>
 
             <MenuItem Header="_Game">
-                <MenuItem Command="{x:Static commands:GameWindowCommands.NewGame}"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                <MenuItem Command="{x:Static commands:GameWindowCommands.NewGame}">
                     <MenuItem.Icon>
                         <Image
                                 Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/NewGame.Menu.png" />
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Command="{x:Static commands:GameWindowCommands.RequestMoveNow}"
-                        InputGestureText="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource KeyGestureConverter}}">
+                <MenuItem Command="{x:Static commands:GameWindowCommands.RequestMoveNow}">
                     <MenuItem.Icon>
                         <Image
                                 Source="pack://application:,,,/ChessPlatform.UI.Desktop;component/Resources/MoveNow.Menu.png" />

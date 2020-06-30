@@ -89,12 +89,12 @@ namespace ChessPlatform.UI.Desktop
 
         public static void ShowErrorDialog([CanBeNull] this Window owner, string text, string caption = null)
         {
-            ShowMessageDialog(owner, text, MessageBoxButton.OK, MessageBoxImage.Error);
+            ShowMessageDialog(owner, text, MessageBoxButton.OK, MessageBoxImage.Error, caption);
         }
 
         public static void ShowWarningDialog([CanBeNull] this Window owner, string text, string caption = null)
         {
-            ShowMessageDialog(owner, text, MessageBoxButton.OK, MessageBoxImage.Warning);
+            ShowMessageDialog(owner, text, MessageBoxButton.OK, MessageBoxImage.Warning, caption);
         }
 
         public static MessageBoxResult ShowYesNoDialog(
@@ -102,7 +102,7 @@ namespace ChessPlatform.UI.Desktop
             string text,
             string caption = null)
         {
-            return ShowMessageDialog(owner, text, MessageBoxButton.YesNo, MessageBoxImage.Question);
+            return ShowMessageDialog(owner, text, MessageBoxButton.YesNo, MessageBoxImage.Question, caption);
         }
 
         public static void ShowInfoPopup(
