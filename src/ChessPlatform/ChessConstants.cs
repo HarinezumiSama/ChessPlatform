@@ -41,7 +41,7 @@ namespace ChessPlatform
         public static readonly ValueRange<int> RankRange = ValueRange.Create(0, RankCount - 1);
 
         public static readonly ReadOnlySet<PieceType> ValidPromotions =
-            GetValidPromotions().ToHashSet().AsReadOnly();
+            OmnifactotumCollectionExtensions.ToHashSet(GetValidPromotions()).AsReadOnly();
 
         public static readonly ReadOnlyCollection<Piece> BothKings =
             new[] { Piece.WhiteKing, Piece.BlackKing }.AsReadOnly();
@@ -50,31 +50,31 @@ namespace ChessPlatform
             new[] { GameSide.White, GameSide.Black }.AsReadOnly();
 
         public static readonly ReadOnlySet<PieceType> PieceTypes =
-            EnumFactotum.GetAllValues<PieceType>().ToHashSet().AsReadOnly();
+            OmnifactotumCollectionExtensions.ToHashSet(EnumFactotum.GetAllValues<PieceType>()).AsReadOnly();
 
         public static readonly ReadOnlySet<PieceType> PieceTypesExceptNone =
-            PieceTypes.Where(item => item != PieceType.None).ToHashSet().AsReadOnly();
+            OmnifactotumCollectionExtensions.ToHashSet(PieceTypes.Where(item => item != PieceType.None)).AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<Piece>> GameSideToPiecesMap =
             GameSides
                 .ToDictionary(
                     Factotum.Identity,
                     side =>
-                        PieceTypes
-                            .Where(item => item != PieceType.None)
-                            .Select(item => item.ToPiece(side))
-                            .ToHashSet()
+                        OmnifactotumCollectionExtensions
+                            .ToHashSet(
+                                PieceTypes
+                                    .Where(item => item != PieceType.None)
+                                    .Select(item => item.ToPiece(side)))
                             .AsReadOnly())
                 .AsReadOnly();
 
         public static readonly ReadOnlySet<Piece> Pieces =
-            GameSides
-                .SelectMany(side => PieceTypes.Select(item => item.ToPiece(side)))
-                .ToHashSet()
+            OmnifactotumCollectionExtensions
+                .ToHashSet(GameSides.SelectMany(side => PieceTypes.Select(item => item.ToPiece(side))))
                 .AsReadOnly();
 
         public static readonly ReadOnlySet<Piece> PiecesExceptNone =
-            Pieces.Where(item => item != Piece.None).ToHashSet().AsReadOnly();
+            OmnifactotumCollectionExtensions.ToHashSet(Pieces.Where(item => item != Piece.None)).AsReadOnly();
 
         public static readonly Square WhiteKingInitialSquare = "e1";
         public static readonly Square BlackKingInitialSquare = "e8";

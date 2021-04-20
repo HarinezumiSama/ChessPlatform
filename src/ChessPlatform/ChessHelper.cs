@@ -43,14 +43,14 @@ namespace ChessPlatform
                     {
                         {
                             GameSide.White,
-                            new[] { CastlingOptions.WhiteKingSide, CastlingOptions.WhiteQueenSide }
-                                .ToHashSet()
+                            OmnifactotumCollectionExtensions
+                                .ToHashSet(new[] { CastlingOptions.WhiteKingSide, CastlingOptions.WhiteQueenSide })
                                 .AsReadOnly()
                         },
                         {
                             GameSide.Black,
-                            new[] { CastlingOptions.BlackKingSide, CastlingOptions.BlackQueenSide }
-                                .ToHashSet()
+                            OmnifactotumCollectionExtensions
+                                .ToHashSet(new[] { CastlingOptions.BlackKingSide, CastlingOptions.BlackQueenSide })
                                 .AsReadOnly()
                         }
                     });

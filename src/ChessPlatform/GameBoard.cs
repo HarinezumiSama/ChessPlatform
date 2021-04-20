@@ -1487,7 +1487,7 @@ namespace ChessPlatform
             var castlingOptionsSnippet = fenSnippets[2];
             if (castlingOptionsSnippet != ChessConstants.NoneCastlingOptionsFenSnippet)
             {
-                var castlingOptionsSnippetSet = castlingOptionsSnippet.ToHashSet();
+                var castlingOptionsSnippetSet = OmnifactotumCollectionExtensions.ToHashSet(castlingOptionsSnippet);
                 foreach (var optionChar in castlingOptionsSnippetSet)
                 {
                     CastlingOptions option;
