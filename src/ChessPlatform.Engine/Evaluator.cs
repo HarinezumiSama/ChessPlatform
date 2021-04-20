@@ -20,7 +20,7 @@ namespace ChessPlatform.Engine
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
 
-        ////private const int MidgameMaterialLimit = 5800;
+        ////private const int MiddlegameMaterialLimit = 5800;
         private const int EndgameMaterialLimit = 1470;
 
         //// ReSharper disable once RedundantExplicitArraySize - Used to ensure consistency

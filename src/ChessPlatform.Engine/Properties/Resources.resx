@@ -119,9 +119,9 @@
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="OpeningBook_Performance_Polyglot" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\openingbook.performance.polyglot.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\OpeningBook.Performance.Polyglot.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="OpeningBook_Varied_Polyglot" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\resources\openingbook.varied.polyglot.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>..\Resources\OpeningBook.Varied.Polyglot.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

@@ -29,7 +29,7 @@ namespace ChessPlatform.Engine
 
         #region Public Properties
 
-        //// ReSharper disable once ConvertToAutoProperty - entry fields are made aligned 
+        //// ReSharper disable once ConvertToAutoProperty - entry fields are made aligned
         public TranspositionTableEntry Entry1
         {
             [DebuggerStepThrough]
@@ -47,7 +47,7 @@ namespace ChessPlatform.Engine
             }
         }
 
-        //// ReSharper disable once ConvertToAutoProperty - entry fields are made aligned 
+        //// ReSharper disable once ConvertToAutoProperty - entry fields are made aligned
         public TranspositionTableEntry Entry2
         {
             [DebuggerStepThrough]

@@ -17,7 +17,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
         private StatusLabelTextConverter()
         {
-            // Nothing to do            
+            // Nothing to do
         }
 
         #endregion
