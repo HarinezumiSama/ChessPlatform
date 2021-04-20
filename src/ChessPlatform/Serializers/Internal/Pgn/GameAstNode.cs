@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Irony.Ast;
+﻿using Irony.Ast;
 using Irony.Parsing;
 
 namespace ChessPlatform.Serializers.Internal.Pgn

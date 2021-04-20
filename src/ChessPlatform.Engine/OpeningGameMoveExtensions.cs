@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine

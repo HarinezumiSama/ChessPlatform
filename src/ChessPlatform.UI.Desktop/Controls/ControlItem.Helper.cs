@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ChessPlatform.UI.Desktop.Controls
+﻿namespace ChessPlatform.UI.Desktop.Controls
 {
     internal static class ControlItem
     {

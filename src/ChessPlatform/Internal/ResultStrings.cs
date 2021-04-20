@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ChessPlatform.Internal
+﻿namespace ChessPlatform.Internal
 {
     internal static class ResultStrings
     {

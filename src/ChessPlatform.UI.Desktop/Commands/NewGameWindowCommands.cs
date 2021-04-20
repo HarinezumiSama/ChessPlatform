@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 namespace ChessPlatform.UI.Desktop.Commands
 {

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ChessPlatform.GamePlay
+﻿namespace ChessPlatform.GamePlay
 {
     public enum GameResult
     {

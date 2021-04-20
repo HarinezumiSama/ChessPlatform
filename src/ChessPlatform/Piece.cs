@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using ChessPlatform.Internal;
+﻿using ChessPlatform.Internal;
 
 namespace ChessPlatform
 {

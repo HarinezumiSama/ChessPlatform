@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using ChessPlatform.GamePlay;
 using ChessPlatform.UI.Desktop.ViewModels;
 using Omnifactotum.Annotations;

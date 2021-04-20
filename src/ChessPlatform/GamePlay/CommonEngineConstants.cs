@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
-
-namespace ChessPlatform.GamePlay
+﻿namespace ChessPlatform.GamePlay
 {
     public static class CommonEngineConstants
     {

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using ChessPlatform.Serializers;
 using ChessPlatform.Tests.Properties;
 using NUnit.Framework;

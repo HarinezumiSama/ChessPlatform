@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using NUnit.Framework;
 
 namespace ChessPlatform.Tests

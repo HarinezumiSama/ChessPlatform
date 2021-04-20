@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ChessPlatform
+﻿namespace ChessPlatform
 {
     public static class PieceTypeMask
     {

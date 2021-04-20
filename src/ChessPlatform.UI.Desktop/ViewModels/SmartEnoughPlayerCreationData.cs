@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
 using Omnifactotum;

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace ChessPlatform.UI.Desktop
+﻿namespace ChessPlatform.UI.Desktop
 {
     internal enum SquareMode
     {

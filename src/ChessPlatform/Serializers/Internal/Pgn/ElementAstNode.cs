@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Irony.Ast;
 using Irony.Parsing;
 using Omnifactotum.Annotations;
