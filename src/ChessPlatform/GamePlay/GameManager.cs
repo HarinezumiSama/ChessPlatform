@@ -44,16 +44,6 @@ namespace ChessPlatform.GamePlay
             [NotNull] IChessPlayer black,
             [NotNull] GameBoard gameBoard)
         {
-            if (white is null)
-            {
-                throw new ArgumentNullException(nameof(white));
-            }
-
-            if (black is null)
-            {
-                throw new ArgumentNullException(nameof(black));
-            }
-
             if (gameBoard is null)
             {
                 throw new ArgumentNullException(nameof(gameBoard));
@@ -61,8 +51,8 @@ namespace ChessPlatform.GamePlay
 
             _instanceIndex = Interlocked.Increment(ref _instanceCounter);
 
-            White = white;
-            Black = black;
+            White = white ?? throw new ArgumentNullException(nameof(white));
+            Black = black ?? throw new ArgumentNullException(nameof(black));
             _gameBoards = new Stack<GameBoard>(gameBoard.GetHistory());
 
             _thread = new Thread(ExecuteGame)

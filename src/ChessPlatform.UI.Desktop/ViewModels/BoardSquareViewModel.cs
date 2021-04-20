@@ -16,12 +16,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         internal BoardSquareViewModel(GameWindowViewModel parentViewModel, Square square)
         {
-            if (parentViewModel is null)
-            {
-                throw new ArgumentNullException(nameof(parentViewModel));
-            }
-
-            _parentViewModel = parentViewModel;
+            _parentViewModel = parentViewModel ?? throw new ArgumentNullException(nameof(parentViewModel));
             Square = square;
 
             SubscribeToChangeOf(() => Piece, OnPieceChanged);

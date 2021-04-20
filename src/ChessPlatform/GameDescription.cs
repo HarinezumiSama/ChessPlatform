@@ -12,11 +12,6 @@ namespace ChessPlatform
             [NotNull] GameBoard initialBoard,
             [NotNull] IReadOnlyList<GameMove> moves)
         {
-            if (initialBoard is null)
-            {
-                throw new ArgumentNullException(nameof(initialBoard));
-            }
-
             if (moves is null)
             {
                 throw new ArgumentNullException(nameof(moves));
@@ -27,7 +22,7 @@ namespace ChessPlatform
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
 
-            InitialBoard = initialBoard;
+            InitialBoard = initialBoard ?? throw new ArgumentNullException(nameof(initialBoard));
             Moves = moves.ToArray().AsReadOnly();
             FinalBoard = IterateAndValidateMoves(initialBoard, moves);
         }

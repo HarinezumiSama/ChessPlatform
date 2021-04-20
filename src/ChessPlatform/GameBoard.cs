@@ -128,12 +128,7 @@ namespace ChessPlatform
         /// </summary>
         private GameBoard([NotNull] GameBoard previousBoard, [CanBeNull] GameMove move)
         {
-            if (previousBoard is null)
-            {
-                throw new ArgumentNullException(nameof(previousBoard));
-            }
-
-            PreviousBoard = previousBoard;
+            PreviousBoard = previousBoard ?? throw new ArgumentNullException(nameof(previousBoard));
             _validateAfterMove = previousBoard._validateAfterMove;
             _gameBoardData = previousBoard._gameBoardData.Copy();
             _activeSide = previousBoard._activeSide.Invert();

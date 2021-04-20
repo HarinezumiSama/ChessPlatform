@@ -13,11 +13,6 @@ namespace ChessPlatform.Internal
             [CanBeNull] GameMove castlingRookMove,
             [CanBeNull] Square? enPassantCapturedPieceSquare)
         {
-            if (move is null)
-            {
-                throw new ArgumentNullException(nameof(move));
-            }
-
             if (movedPiece == Piece.None)
             {
                 throw new ArgumentException("Invalid moved piece.", nameof(movedPiece));
@@ -33,7 +28,7 @@ namespace ChessPlatform.Internal
                 throw new ArgumentException("Castling and capture could not occur simultaneously.");
             }
 
-            Move = move;
+            Move = move ?? throw new ArgumentNullException(nameof(move));
             MovedPiece = movedPiece;
             CapturedPiece = capturedPiece;
             CastlingRookMove = castlingRookMove;

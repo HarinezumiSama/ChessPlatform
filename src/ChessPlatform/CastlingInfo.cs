@@ -24,11 +24,6 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(kingMove));
             }
 
-            if (rookMove is null)
-            {
-                throw new ArgumentNullException(nameof(rookMove));
-            }
-
             if (emptySquares is null)
             {
                 throw new ArgumentNullException(nameof(emptySquares));
@@ -46,7 +41,7 @@ namespace ChessPlatform
             CastlingSide = castlingType.GetSide();
             Option = castlingType.ToOption();
             KingMove = kingMove;
-            RookMove = rookMove;
+            RookMove = rookMove ?? throw new ArgumentNullException(nameof(rookMove));
             EmptySquares = emptySquares.AsReadOnly();
             PassedSquare = new Square((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
             GameSide = Option.IsAnySet(CastlingOptions.WhiteMask) ? GameSide.White : GameSide.Black;

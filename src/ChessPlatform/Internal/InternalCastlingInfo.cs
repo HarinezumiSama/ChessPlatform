@@ -8,12 +8,7 @@ namespace ChessPlatform.Internal
     {
         public InternalCastlingInfo([NotNull] GameMove kingMove, Bitboard expectedEmptySquares)
         {
-            if (kingMove is null)
-            {
-                throw new ArgumentNullException(nameof(kingMove));
-            }
-
-            KingMove = kingMove;
+            KingMove = kingMove ?? throw new ArgumentNullException(nameof(kingMove));
             ExpectedEmptySquares = expectedEmptySquares;
         }
 

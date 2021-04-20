@@ -24,11 +24,6 @@ namespace ChessPlatform.Engine
             int threadCount,
             [NotNull] ICollection<Func<TResult>> tasks)
         {
-            if (gameControlInfo is null)
-            {
-                throw new ArgumentNullException(nameof(gameControlInfo));
-            }
-
             if (threadCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -48,7 +43,7 @@ namespace ChessPlatform.Engine
             }
 
             _syncLock = new object();
-            _gameControlInfo = gameControlInfo;
+            _gameControlInfo = gameControlInfo ?? throw new ArgumentNullException(nameof(gameControlInfo));
             _taskSlots = tasks.Select(obj => new TaskSlot(obj)).ToArray();
             _threads = Enumerable.Range(1, threadCount).Select(index => CreateThread(index, threadCount)).ToArray();
             _exceptions = new List<Exception>();

@@ -47,11 +47,6 @@ namespace ChessPlatform
 
         protected GamePosition([NotNull] PiecePosition piecePosition, GameSide activeSide, int fullMoveIndex)
         {
-            if (piecePosition is null)
-            {
-                throw new ArgumentNullException(nameof(piecePosition));
-            }
-
             if (fullMoveIndex <= 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -60,7 +55,7 @@ namespace ChessPlatform
                     @"The value must be positive.");
             }
 
-            PiecePosition = piecePosition;
+            PiecePosition = piecePosition ?? throw new ArgumentNullException(nameof(piecePosition));
             ActiveSide = activeSide;
             FullMoveIndex = fullMoveIndex;
         }

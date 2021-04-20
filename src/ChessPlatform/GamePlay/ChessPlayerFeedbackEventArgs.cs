@@ -13,11 +13,6 @@ namespace ChessPlatform.GamePlay
             int maxDepth,
             [NotNull] VariationLine variation)
         {
-            if (board is null)
-            {
-                throw new ArgumentNullException(nameof(board));
-            }
-
             if (depth <= 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -42,16 +37,11 @@ namespace ChessPlatform.GamePlay
                     $@"{nameof(depth)} must not be greater than {nameof(maxDepth)} ({maxDepth}).");
             }
 
-            if (variation is null)
-            {
-                throw new ArgumentNullException(nameof(variation));
-            }
-
             Side = side;
-            Board = board;
+            Board = board ?? throw new ArgumentNullException(nameof(board));
             Depth = depth;
             MaxDepth = maxDepth;
-            Variation = variation;
+            Variation = variation ?? throw new ArgumentNullException(nameof(variation));
         }
 
         public GameSide Side

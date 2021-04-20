@@ -116,18 +116,8 @@ namespace ChessPlatform.Engine
 
         internal Evaluator([NotNull] GameControlInfo gameControlInfo, [NotNull] BoardHelper boardHelper)
         {
-            if (gameControlInfo is null)
-            {
-                throw new ArgumentNullException(nameof(gameControlInfo));
-            }
-
-            if (boardHelper is null)
-            {
-                throw new ArgumentNullException(nameof(boardHelper));
-            }
-
-            _gameControlInfo = gameControlInfo;
-            _boardHelper = boardHelper;
+            _gameControlInfo = gameControlInfo ?? throw new ArgumentNullException(nameof(gameControlInfo));
+            _boardHelper = boardHelper ?? throw new ArgumentNullException(nameof(boardHelper));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

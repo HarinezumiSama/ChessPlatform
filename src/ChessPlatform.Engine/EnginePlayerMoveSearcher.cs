@@ -49,11 +49,6 @@ namespace ChessPlatform.Engine
             bool useMultipleProcessors,
             [NotNull] MoveHistoryStatistics moveHistoryStatistics)
         {
-            if (rootBoard is null)
-            {
-                throw new ArgumentNullException(nameof(rootBoard));
-            }
-
             if (plyDepth < CommonEngineConstants.MaxPlyDepthLowerLimit)
             {
                 throw new ArgumentOutOfRangeException(
@@ -62,24 +57,14 @@ namespace ChessPlatform.Engine
                     $@"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
-            if (gameControlInfo is null)
-            {
-                throw new ArgumentNullException(nameof(gameControlInfo));
-            }
-
-            if (moveHistoryStatistics is null)
-            {
-                throw new ArgumentNullException(nameof(moveHistoryStatistics));
-            }
-
-            _rootBoard = rootBoard;
+            _rootBoard = rootBoard ?? throw new ArgumentNullException(nameof(rootBoard));
             _plyDepth = plyDepth;
             _boardHelper = boardHelper;
             _transpositionTable = transpositionTable;
             _previousIterationVariationLineCache = previousIterationVariationLineCache;
-            _gameControlInfo = gameControlInfo;
+            _gameControlInfo = gameControlInfo ?? throw new ArgumentNullException(nameof(gameControlInfo));
             _useMultipleProcessors = useMultipleProcessors;
-            _moveHistoryStatistics = moveHistoryStatistics;
+            _moveHistoryStatistics = moveHistoryStatistics ?? throw new ArgumentNullException(nameof(moveHistoryStatistics));
             _evaluator = new Evaluator(gameControlInfo, boardHelper);
 
             VariationLineCache = new VariationLineCache(rootBoard);
