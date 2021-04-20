@@ -487,7 +487,7 @@ namespace ChessPlatform.Engine
                     && board.CanMakeNullMove
                     && board.HasNonPawnMaterial(board.ActiveSide))
                 {
-                    //// TODO [vmcl] IDEA (board.HasNonPawnMaterial): Check also that non-pawn pieces have at least one legal move (to avoid zugzwang more thoroughly)
+                    //// TODO [HarinezumiSama] IDEA (board.HasNonPawnMaterial): Check also that non-pawn pieces have at least one legal move (to avoid zugzwang more thoroughly)
 
                     var staticEvaluation = _evaluator.EvaluatePositionScore(board);
                     if (staticEvaluation.Value >= localBeta.Value)

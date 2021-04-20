@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ChessPlatform.Internal
 {
-    //// TODO [vmcl] NEW-DESIGN: Include GeneratedMoveTypes.Check for generating checks separately
+    //// TODO [HarinezumiSama] NEW-DESIGN: Include GeneratedMoveTypes.Check for generating checks separately
     [Flags]
     public enum GeneratedMoveTypes
     {

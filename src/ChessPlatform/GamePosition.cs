@@ -783,7 +783,7 @@ namespace ChessPlatform
             var shouldGenerateQuiets = moveTypes.IsAnySet(GeneratedMoveTypes.Quiet);
             var shouldGenerateCaptures = moveTypes.IsAnySet(GeneratedMoveTypes.Capture);
 
-            //// TODO [vmcl] NEW-DESIGN: IDEA: Generate for all pieces rather for one by one
+            //// TODO [HarinezumiSama] NEW-DESIGN: IDEA: Generate for all pieces rather for one by one
             while (pieces.IsAny)
             {
                 var sourceSquareIndex = Bitboard.PopFirstSquareIndex(ref pieces);

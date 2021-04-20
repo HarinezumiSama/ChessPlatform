@@ -6,7 +6,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
-    //// TODO [vmcl] Re-use GameMoveData instead of OrderedMove - ?
+    //// TODO [HarinezumiSama] Re-use GameMoveData instead of OrderedMove - ?
 
     internal struct OrderedMove
     {

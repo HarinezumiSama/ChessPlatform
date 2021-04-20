@@ -218,7 +218,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var isUnderCheck = currentGameBoard != null && currentGameBoard.State.IsAnyCheck()
                 && Piece == currentGameBoard.ActiveSide.ToPiece(PieceType.King);
 
-            //// TODO [vmcl] Move the choice of a color to UIHelper
+            //// TODO [HarinezumiSama] Move the choice of a color to UIHelper
 
             Brush borderBrush;
             if (isUnderCheck)

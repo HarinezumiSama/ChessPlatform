@@ -320,7 +320,7 @@ namespace ChessPlatform
 
             try
             {
-                //// TODO [vmcl] Create FEN verification which is NOT exception based
+                //// TODO [HarinezumiSama] Create FEN verification which is NOT exception based
                 // ReSharper disable once ObjectCreationAsStatement
                 new GameBoard(fen);
             }
@@ -784,7 +784,7 @@ namespace ChessPlatform
             var checkingPiece = gameBoardData.PiecePosition[checkAttackSquare];
             var activeKingBitboard = gameBoardData.PiecePosition[activeKing];
 
-            //// TODO [vmcl] Generate attacker moves (this will eliminate some extra checks)
+            //// TODO [HarinezumiSama] Generate attacker moves (this will eliminate some extra checks)
             var capturingBitboard = gameBoardData.GetAttackers(checkAttackSquare, addMoveData.ActiveSide)
                 & ~activeKingBitboard;
 
@@ -1165,7 +1165,7 @@ namespace ChessPlatform
                 }
             }
 
-            //// TODO [vmcl] (*) Other verifications
+            //// TODO [HarinezumiSama] (*) Other verifications
         }
 
         private void ValidateValidMoves()

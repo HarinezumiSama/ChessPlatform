@@ -250,7 +250,7 @@ namespace ChessPlatform.Internal
             switch (pieceType)
             {
                 case PieceType.Knight:
-                    //// TODO [vmcl] Use bitboard instead of squares
+                    //// TODO [HarinezumiSama] Use bitboard instead of squares
                     var result = ChessHelper.GetKnightMoveSquares(sourceSquare)
                         .Where(square => PiecePosition[square].GetSide() != pieceSide)
                         .ToArray();
