@@ -2,7 +2,7 @@
 
 namespace ChessPlatform
 {
-    public struct GameMoveData2
+    public readonly struct GameMoveData2
     {
         internal GameMoveData2(GameMove2 move, GameMoveFlags moveFlags)
         {

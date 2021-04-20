@@ -4,7 +4,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Internal
 {
-    internal struct InternalCastlingInfo
+    internal readonly struct InternalCastlingInfo
     {
         public InternalCastlingInfo([NotNull] GameMove kingMove, Bitboard expectedEmptySquares)
         {

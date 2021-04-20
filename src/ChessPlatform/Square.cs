@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
-    public struct Square : IEquatable<Square>
+    public readonly struct Square : IEquatable<Square>
     {
         private static readonly string[] StringRepresentations = Enumerable
             .Range(0, ChessConstants.SquareCount)

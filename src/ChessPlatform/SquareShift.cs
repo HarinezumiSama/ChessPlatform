@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ChessPlatform
 {
-    public struct SquareShift
+    public readonly struct SquareShift
     {
         public SquareShift(int fileOffset, int rankOffset)
         {

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 namespace ChessPlatform
 {
     [DebuggerDisplay("{ToString(),nq}")]
-    public struct Bitboard : IEquatable<Bitboard>
+    public readonly struct Bitboard : IEquatable<Bitboard>
     {
         public const int NoSquareIndex = -1;
 

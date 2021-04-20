@@ -2,7 +2,7 @@
 
 namespace ChessPlatform.Internal
 {
-    internal struct InternalCastlingInfo2
+    internal readonly struct InternalCastlingInfo2
     {
         public InternalCastlingInfo2(GameMove2 kingMove, Bitboard expectedEmptySquares)
         {

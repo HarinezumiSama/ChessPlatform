@@ -1,6 +1,6 @@
 ﻿namespace ChessPlatform.Internal
 {
-    internal struct MovePieceData
+    internal readonly struct MovePieceData
     {
         internal MovePieceData(Piece movedPiece, Piece capturedPiece)
         {

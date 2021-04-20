@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace ChessPlatform.UI.Desktop
 {
-    internal struct SquareColors
+    internal readonly struct SquareColors
     {
         internal SquareColors(Color darkSquareColor, Color lightSquareColor)
             : this()

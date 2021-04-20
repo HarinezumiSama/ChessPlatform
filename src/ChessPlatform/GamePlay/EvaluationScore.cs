@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace ChessPlatform.GamePlay
 {
     [DebuggerDisplay(@"{ToString(),nq}")]
-    public struct EvaluationScore
+    public readonly struct EvaluationScore
     {
         public const int ZeroValue = 0;
         public const int MateValue = 1000000000;

@@ -123,10 +123,8 @@ namespace ChessPlatform.Engine
             return openingBook;
         }
 
-        [DebuggerDisplay(
-            "{GetType().Name,nq}: Key = {Key.ToString(\"X16\"),nq}, Move = {Move}, Weight = {Weight}, Learn = {Learn}"
-            )]
-        private struct BookEntry
+        [DebuggerDisplay("{GetType().Name,nq}: Key = {Key.ToString(\"X16\"),nq}, Move = {Move}, Weight = {Weight}, Learn = {Learn}")]
+        private readonly struct BookEntry
         {
             public const int DataLength = 16;
 

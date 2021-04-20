@@ -8,7 +8,7 @@ namespace ChessPlatform
 {
     //// ReSharper disable once UseNameofExpression - False positive
     [DebuggerDisplay("{ToString(),nq}")]
-    public struct EnPassantCaptureInfo2 : IEquatable<EnPassantCaptureInfo2>
+    public readonly struct EnPassantCaptureInfo2 : IEquatable<EnPassantCaptureInfo2>
     {
         internal EnPassantCaptureInfo2(Square captureSquare, Square targetPieceSquare)
         {

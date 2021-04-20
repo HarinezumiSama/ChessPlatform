@@ -7,7 +7,7 @@ namespace ChessPlatform.Engine
 {
     //// TODO [HarinezumiSama] Re-use GameMoveData instead of OrderedMove - ?
 
-    internal struct OrderedMove
+    internal readonly struct OrderedMove
     {
         public OrderedMove([NotNull] GameMove move, GameMoveFlags moveFlags)
         {

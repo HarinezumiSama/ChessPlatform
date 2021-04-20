@@ -4,7 +4,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public struct GameMoveData
+    public readonly struct GameMoveData
     {
         internal GameMoveData([NotNull] GameMove move, GameMoveFlags moveFlags)
         {

@@ -6,7 +6,7 @@ using Omnifactotum.Annotations;
 
 namespace ChessPlatform
 {
-    public struct GameMove2 : IEquatable<GameMove2>
+    public readonly struct GameMove2 : IEquatable<GameMove2>
     {
         private const string FromGroupName = "from";
         private const string ToGroupName = "to";

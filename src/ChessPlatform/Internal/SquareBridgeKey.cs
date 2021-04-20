@@ -4,7 +4,7 @@ using Omnifactotum;
 
 namespace ChessPlatform.Internal
 {
-    internal struct SquareBridgeKey : IEquatable<SquareBridgeKey>
+    internal readonly struct SquareBridgeKey : IEquatable<SquareBridgeKey>
     {
         private readonly int _hashCode;
 
