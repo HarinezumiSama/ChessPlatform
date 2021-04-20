@@ -9,8 +9,6 @@ namespace ChessPlatform
 {
     public static class PieceTypeExtensions
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static PieceType EnsureDefined(this PieceType pieceType)
         {
@@ -61,7 +59,5 @@ namespace ChessPlatform
         {
             return ((int)pieceType & (int)PieceTypeMask.Sliding) == (int)PieceTypeMask.Sliding;
         }
-
-        #endregion
     }
 }

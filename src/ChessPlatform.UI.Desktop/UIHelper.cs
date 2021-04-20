@@ -14,8 +14,6 @@ namespace ChessPlatform.UI.Desktop
 {
     internal static class UIHelper
     {
-        #region Constants and Fields
-
         public static readonly string KingSymbol = "\x265A";
 
         public static readonly ReadOnlyDictionary<PieceType, string> PieceToSymbolMap =
@@ -47,10 +45,6 @@ namespace ChessPlatform.UI.Desktop
 
         private static readonly string EntryAssemblyName =
             (Assembly.GetEntryAssembly() ?? typeof(UIHelper).Assembly).GetName().Name;
-
-        #endregion
-
-        #region Public Methods
 
         public static Brush GetSquareBrush(Square square, SquareMode squareMode)
         {
@@ -112,8 +106,6 @@ namespace ChessPlatform.UI.Desktop
             Action popupOpened = null,
             Action popupClosed = null)
         {
-            #region Argument Check
-
             if (popupElement == null)
             {
                 throw new ArgumentNullException(nameof(popupElement));
@@ -125,8 +117,6 @@ namespace ChessPlatform.UI.Desktop
                     @"The value can be neither empty or whitespace-only string nor null.",
                     nameof(text));
             }
-
-            #endregion
 
             var popupTextBlock = new TextBlock
             {
@@ -198,23 +188,15 @@ namespace ChessPlatform.UI.Desktop
 
         public static void ClearGrid([NotNull] this Grid grid)
         {
-            #region Argument Check
-
             if (grid == null)
             {
                 throw new ArgumentNullException(nameof(grid));
             }
 
-            #endregion
-
             grid.Children.Clear();
             grid.ColumnDefinitions.Clear();
             grid.RowDefinitions.Clear();
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static Color GetSquareColor(Square square, SquareMode squareMode)
         {
@@ -222,7 +204,5 @@ namespace ChessPlatform.UI.Desktop
             var isDarkSquare = square.IsDark();
             return squareColors[isDarkSquare];
         }
-
-        #endregion
     }
 }

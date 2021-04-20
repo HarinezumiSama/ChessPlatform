@@ -6,8 +6,6 @@ namespace ChessPlatform
 {
     public static class CastlingTypeExtensions
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static CastlingOptions ToOption(this CastlingType castlingType)
         {
@@ -20,7 +18,5 @@ namespace ChessPlatform
             //// ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
             return (CastlingSide)unchecked((int)castlingType & 1);
         }
-
-        #endregion
     }
 }

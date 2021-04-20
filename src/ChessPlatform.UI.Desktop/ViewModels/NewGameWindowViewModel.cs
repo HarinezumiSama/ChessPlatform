@@ -8,13 +8,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal sealed class NewGameWindowViewModel : ViewModelBase
     {
-        #region Constants and Fields
-
         private string _fen;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="NewGameWindowViewModel"/> class.
@@ -24,10 +18,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             WhitePlayerViewModel = new PlayerChoiceControlViewModel(GameSide.White);
             BlackPlayerViewModel = new PlayerChoiceControlViewModel(GameSide.Black);
         }
-
-        #endregion
-
-        #region Public Properties
 
         [ValidatableMember]
         public PlayerChoiceControlViewModel WhitePlayerViewModel
@@ -70,10 +60,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public bool IsFenDefault => Fen == ChessConstants.DefaultInitialFen;
 
-        #endregion
-
-        #region FenConstraint Class
-
         private sealed class FenConstraint : TypedMemberConstraintBase<string>
         {
             protected override void ValidateTypedValue(
@@ -90,7 +76,5 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
             }
         }
-
-        #endregion
     }
 }

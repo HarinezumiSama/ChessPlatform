@@ -8,8 +8,6 @@ namespace ChessPlatform.GamePlay
 {
     public abstract class ChessPlayerBase : IChessPlayer
     {
-        #region Constructors and Destructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="ChessPlayerBase"/> class.
         /// </summary>
@@ -23,10 +21,6 @@ namespace ChessPlatform.GamePlay
             Dispose(false);
         }
 
-        #endregion
-
-        #region IChessPlayer Members
-
         public event EventHandler<ChessPlayerFeedbackEventArgs> FeedbackProvided;
 
         public GameSide Side
@@ -38,8 +32,6 @@ namespace ChessPlatform.GamePlay
 
         public Task<VariationLine> CreateGetMoveTask(GetMoveRequest request)
         {
-            #region Argument Check
-
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
@@ -58,16 +50,10 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentException("There are no valid moves.", nameof(request));
             }
 
-            #endregion
-
             var result = new Task<VariationLine>(() => DoGetMove(request), request.CancellationToken);
             OnGetMoveTaskCreated(result, request.CancellationToken);
             return result;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected void OnFeedbackProvided(ChessPlayerFeedbackEventArgs args)
         {
@@ -89,16 +75,10 @@ namespace ChessPlatform.GamePlay
             // Nothing to do
         }
 
-        #endregion
-
-        #region IDisposable Members
-
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
-        #endregion
     }
 }

@@ -12,8 +12,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class SquareTests
     {
-        #region Tests
-
         [Test]
         public void TestConstructionBySquareIndex()
         {
@@ -222,16 +220,10 @@ namespace ChessPlatform.Tests
             }
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static string GetSquareString(int file, int rank)
         {
             return
                 $@"{(char)('a' + (file - ChessConstants.FileRange.Lower))}{rank - ChessConstants.RankRange.Lower + 1}";
         }
-
-        #endregion
     }
 }

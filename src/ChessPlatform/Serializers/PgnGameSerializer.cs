@@ -10,8 +10,6 @@ namespace ChessPlatform.Serializers
 {
     public sealed class PgnGameSerializer : GameSerializer
     {
-        #region Protected Methods
-
         protected override void ExecuteSerialize(ICollection<GameDescription> gameDescriptions, TextWriter writer)
         {
             throw new NotImplementedException();
@@ -64,7 +62,5 @@ namespace ChessPlatform.Serializers
 
             return resultList.ToArray();
         }
-
-        #endregion
     }
 }

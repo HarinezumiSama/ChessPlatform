@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameMoveFlagsExtensionsTests
     {
-        #region Tests
-
         [Test]
         [TestCase(GameMoveFlags.None, GameMoveFlags.None, false)]
         [TestCase(GameMoveFlags.IsPawnPromotion, GameMoveFlags.None, false)]
@@ -99,7 +97,5 @@ namespace ChessPlatform.Tests
         {
             Assert.That(value.IsKingCastling(), Is.EqualTo(expectedResult));
         }
-
-        #endregion
     }
 }

@@ -9,14 +9,8 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameMoveTests
     {
-        #region Constants and Fields
-
         private static readonly PieceType[] ValidPromotionArguments =
             ChessConstants.ValidPromotions.Concat(PieceType.None.AsArray()).ToArray();
-
-        #endregion
-
-        #region Tests
 
         [Test]
         public void TestConstruction()
@@ -107,14 +101,8 @@ namespace ChessPlatform.Tests
             }
         }
 
-        #endregion
-
-        #region FromStringNotationCases Class
-
         public sealed class FromStringNotationCases : IEnumerable<TestCaseData>
         {
-            #region IEnumerable<TestCaseData> Members
-
             public IEnumerator<TestCaseData> GetEnumerator()
             {
                 yield return new FromStringNotationCaseData("a1-c2", "a1", "c2", PieceType.None);
@@ -136,26 +124,14 @@ namespace ChessPlatform.Tests
                 yield return new FromStringNotationCaseData("b2B1n", "b2", "b1", PieceType.Knight);
             }
 
-            #endregion
-
-            #region IEnumerable Members
-
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region EqualityCases Class
 
         public sealed class EqualityCases : IEnumerable<TestCaseData>
         {
-            #region IEnumerable<TestCaseData> Members
-
             public IEnumerator<TestCaseData> GetEnumerator()
             {
                 yield return new TestCaseData("a1-g7", new GameMove("a1", "g7"), true);
@@ -164,26 +140,14 @@ namespace ChessPlatform.Tests
                 yield return new TestCaseData("c2xb1=B", new GameMove("c2", "b1", PieceType.Rook), false);
             }
 
-            #endregion
-
-            #region IEnumerable Members
-
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region FromStringNotationCaseData Class
 
         private sealed class FromStringNotationCaseData : TestCaseData
         {
-            #region Constructors
-
             /// <summary>
             ///     Initializes a new instance of the <see cref="FromStringNotationCaseData"/> class.
             /// </summary>
@@ -196,10 +160,6 @@ namespace ChessPlatform.Tests
             {
                 // Nothing to do
             }
-
-            #endregion
         }
-
-        #endregion
     }
 }

@@ -12,8 +12,6 @@ namespace ChessPlatform.Engine
 
     internal sealed class TranspositionTable : IDisposable
     {
-        #region Constants and Fields
-
         private const long MegaByte = 1L << 20;
 
         internal static readonly int BucketSizeInBytes = Marshal.SizeOf<TranspositionTableBucket>();
@@ -26,10 +24,6 @@ namespace ChessPlatform.Engine
         private long _hitCount;
         private long _saveCount;
 
-        #endregion
-
-        #region Constructors
-
         public TranspositionTable(int sizeInMegaBytes)
         {
             _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
@@ -38,27 +32,15 @@ namespace ChessPlatform.Engine
             Resize(sizeInMegaBytes);
         }
 
-        #endregion
-
-        #region Public Properties
-
         public long ProbeCount => _probeCount;
 
         public long HitCount => _hitCount;
 
         public long SaveCount => _saveCount;
 
-        #endregion
-
-        #region Internal Properties
-
         internal uint Version => _version;
 
         internal int BucketCount => _buckets?.Length ?? 0;
-
-        #endregion
-
-        #region Public Methods
 
         public void Clear()
         {
@@ -103,8 +85,6 @@ namespace ChessPlatform.Engine
 
         public void Resize(int sizeInMegaBytes)
         {
-            #region Argument Check
-
             if (!SizeInMegaBytesRange.Contains(sizeInMegaBytes))
             {
                 throw new ArgumentOutOfRangeException(
@@ -113,8 +93,6 @@ namespace ChessPlatform.Engine
                     $@"The value is out of the valid range ({SizeInMegaBytesRange.Lower:#,##0} .. {
                         SizeInMegaBytesRange.Upper:#,##0}).");
             }
-
-            #endregion
 
             EnsureNotDisposed();
 
@@ -250,10 +228,6 @@ namespace ChessPlatform.Engine
             Interlocked.Increment(ref _saveCount);
         }
 
-        #endregion
-
-        #region IDisposable Members
-
         public void Dispose()
         {
             if (_isDisposed)
@@ -267,10 +241,6 @@ namespace ChessPlatform.Engine
             Array.Resize(ref _buckets, 0);
             _buckets = null;
         }
-
-        #endregion
-
-        #region Private Methods
 
         private void EnsureNotDisposed()
         {
@@ -297,7 +267,5 @@ namespace ChessPlatform.Engine
         {
             _buckets.Initialize();
         }
-
-        #endregion
     }
 }

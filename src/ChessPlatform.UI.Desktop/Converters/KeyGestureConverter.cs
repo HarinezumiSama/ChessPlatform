@@ -11,8 +11,6 @@ namespace ChessPlatform.UI.Desktop.Converters
 {
     public sealed class KeyGestureConverter : IValueConverter
     {
-        #region IValueConverter Members
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (targetType != typeof(string))
@@ -50,10 +48,6 @@ namespace ChessPlatform.UI.Desktop.Converters
             throw new NotSupportedException();
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static object GetStringRepresentation(IEnumerable collection)
         {
             var result = collection
@@ -65,7 +59,5 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             return result;
         }
-
-        #endregion
     }
 }

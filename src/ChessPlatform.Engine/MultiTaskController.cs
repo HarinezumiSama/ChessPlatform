@@ -9,8 +9,6 @@ namespace ChessPlatform.Engine
 {
     internal sealed class MultiTaskController<TResult>
     {
-        #region Constants and Fields
-
         private const string ThisTypeName = nameof(MultiTaskController<TResult>);
 
         private readonly object _syncLock;
@@ -21,17 +19,11 @@ namespace ChessPlatform.Engine
         private InternalState _state;
         private int _taskIndex;
 
-        #endregion
-
-        #region Constructors
-
         public MultiTaskController(
             [NotNull] GameControlInfo gameControlInfo,
             int threadCount,
             [NotNull] ICollection<Func<TResult>> tasks)
         {
-            #region Argument Check
-
             if (gameControlInfo == null)
             {
                 throw new ArgumentNullException(nameof(gameControlInfo));
@@ -55,8 +47,6 @@ namespace ChessPlatform.Engine
                 throw new ArgumentException(@"The collection contains a null element.", nameof(tasks));
             }
 
-            #endregion
-
             _syncLock = new object();
             _gameControlInfo = gameControlInfo;
             _taskSlots = tasks.Select(obj => new TaskSlot(obj)).ToArray();
@@ -66,10 +56,6 @@ namespace ChessPlatform.Engine
             _state = InternalState.Ready;
             _taskIndex = 0;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public TResult[] GetResults()
         {
@@ -143,10 +129,6 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        #endregion
-
-        #region Private Methods
-
         private Thread CreateThread(int index, int threadCount)
         {
             var thread = new Thread(ExecuteThreadWork)
@@ -219,20 +201,12 @@ namespace ChessPlatform.Engine
             }
         }
 
-        #endregion
-
-        #region InternalState Enumeration
-
         private enum InternalState
         {
             Ready,
             Running,
             Finished
         }
-
-        #endregion
-
-        #region TaskSlot Class
 
         private sealed class TaskSlot
         {
@@ -258,7 +232,5 @@ namespace ChessPlatform.Engine
                 set;
             }
         }
-
-        #endregion
     }
 }

@@ -9,17 +9,11 @@ namespace ChessPlatform.Serializers.Internal.Pgn
     [DebuggerDisplay("[{GetType().Name,nq}] Text = {Text}")]
     public abstract class TextAstNodeBase : AstNodeBase
     {
-        #region Protected Properties
-
         public string Text
         {
             get;
             private set;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected sealed override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
@@ -31,7 +25,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         {
             return tokenText;
         }
-
-        #endregion
     }
 }

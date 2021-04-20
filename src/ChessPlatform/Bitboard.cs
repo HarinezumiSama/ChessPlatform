@@ -9,8 +9,6 @@ namespace ChessPlatform
     [DebuggerDisplay("{ToString(),nq}")]
     public struct Bitboard : IEquatable<Bitboard>
     {
-        #region Constants and Fields
-
         public const int NoSquareIndex = -1;
 
         public static readonly Bitboard None = new Bitboard(NoneValue);
@@ -91,10 +89,6 @@ namespace ChessPlatform
 
         #endregion
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="Bitboard"/> structure
         ///     using the specified value.
@@ -110,14 +104,10 @@ namespace ChessPlatform
         /// </summary>
         public Bitboard(IEnumerable<Square> squares)
         {
-            #region Argument Check
-
             if (squares == null)
             {
                 throw new ArgumentNullException(nameof(squares));
             }
-
-            #endregion
 
             InternalValue = squares.Aggregate(
                 NoneValue,
@@ -132,10 +122,6 @@ namespace ChessPlatform
         {
             InternalValue = value;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public long Value
         {
@@ -167,20 +153,12 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region Internal Properties
-
         internal ulong InternalValue
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        #endregion
-
-        #region Operators
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Bitboard left, Bitboard right)
@@ -223,10 +201,6 @@ namespace ChessPlatform
         {
             return new Bitboard(left.InternalValue ^ right.InternalValue);
         }
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(Bitboard left, Bitboard right)
@@ -341,19 +315,11 @@ namespace ChessPlatform
             return result;
         }
 
-        #endregion
-
-        #region IEquatable<Bitboard> Members
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Bitboard other)
         {
             return Equals(this, other);
         }
-
-        #endregion
-
-        #region Internal Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ulong FromSquareIndexInternal(int squareIndex)
@@ -434,7 +400,5 @@ namespace ChessPlatform
             var isolatedBit = IsolateFirstSquareInternal(value);
             return Index64[unchecked(isolatedBit * Debruijn64) >> MagicShift];
         }
-
-        #endregion
     }
 }

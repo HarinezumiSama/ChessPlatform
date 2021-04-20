@@ -9,8 +9,6 @@ namespace ChessPlatform
 {
     public sealed class GameMove : IEquatable<GameMove>
     {
-        #region Constants and Fields
-
         private const string FromGroupName = "from";
         private const string ToGroupName = "to";
         private const string PromotionGroupName = "promo";
@@ -36,10 +34,6 @@ namespace ChessPlatform
 
         private readonly int _hashCode;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameMove"/> class.
         /// </summary>
@@ -61,10 +55,6 @@ namespace ChessPlatform
             // Nothing to do
         }
 
-        #endregion
-
-        #region Public Properties
-
         public Square From
         {
             [DebuggerStepThrough]
@@ -83,20 +73,12 @@ namespace ChessPlatform
             get;
         }
 
-        #endregion
-
-        #region Operators
-
         public static bool operator ==(GameMove left, GameMove right) => Equals(left, right);
 
         public static bool operator !=(GameMove left, GameMove right) => !(left == right);
 
         [DebuggerNonUserCode]
         public static implicit operator GameMove(string stringNotation) => FromStringNotation(stringNotation);
-
-        #endregion
-
-        #region Public Methods
 
         public static bool Equals(GameMove left, GameMove right)
         {
@@ -117,14 +99,10 @@ namespace ChessPlatform
         [NotNull]
         public static GameMove FromStringNotation([NotNull] string stringNotation)
         {
-            #region Argument Check
-
             if (stringNotation == null)
             {
                 throw new ArgumentNullException(nameof(stringNotation));
             }
-
-            #endregion
 
             foreach (var stringPatternRegex in StringPatternRegexes)
             {
@@ -168,8 +146,6 @@ namespace ChessPlatform
 
         public GameMove MakePromotion(PieceType promotionResult)
         {
-            #region Argument Check
-
             if (!ChessConstants.ValidPromotions.Contains(promotionResult))
             {
                 throw new ArgumentException(
@@ -177,20 +153,12 @@ namespace ChessPlatform
                     nameof(promotionResult));
             }
 
-            #endregion
-
             return new GameMove(From, To, promotionResult);
         }
 
         public GameMove[] MakeAllPromotions()
             => ChessConstants.ValidPromotions.Select(item => new GameMove(From, To, item)).ToArray();
 
-        #endregion
-
-        #region IEquatable<GameMove> Members
-
         public bool Equals(GameMove other) => Equals(this, other);
-
-        #endregion
     }
 }

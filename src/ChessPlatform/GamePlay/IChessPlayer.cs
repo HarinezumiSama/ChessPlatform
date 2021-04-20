@@ -7,13 +7,7 @@ namespace ChessPlatform.GamePlay
 {
     public interface IChessPlayer : IDisposable
     {
-        #region Events
-
         event EventHandler<ChessPlayerFeedbackEventArgs> FeedbackProvided;
-
-        #endregion
-
-        #region Properties
 
         GameSide Side
         {
@@ -25,12 +19,6 @@ namespace ChessPlatform.GamePlay
             get;
         }
 
-        #endregion
-
-        #region Methods
-
         Task<VariationLine> CreateGetMoveTask([NotNull] GetMoveRequest request);
-
-        #endregion
     }
 }

@@ -15,8 +15,6 @@ namespace ChessPlatform.Internal
 {
     internal sealed class GameBoardData
     {
-        #region Constants and Fields
-
         private static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
         private static readonly ShiftDirection[] QueenDirections = AllDirections;
 
@@ -49,10 +47,6 @@ namespace ChessPlatform.Internal
 
         private readonly Stack<MakeMoveData> _undoMoveDatas;
 
-        #endregion
-
-        #region Constructors
-
         internal GameBoardData()
         {
             PiecePosition = new PiecePosition();
@@ -61,31 +55,19 @@ namespace ChessPlatform.Internal
 
         private GameBoardData([NotNull] GameBoardData other)
         {
-            #region Argument Check
-
             if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
 
-            #endregion
-
             PiecePosition = other.PiecePosition.Copy();
             _undoMoveDatas = new Stack<MakeMoveData>();
         }
-
-        #endregion
-
-        #region Public Properties
 
         public PiecePosition PiecePosition
         {
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public override string ToString()
         {
@@ -99,14 +81,10 @@ namespace ChessPlatform.Internal
 
         public bool IsSamePosition([NotNull] GameBoardData other)
         {
-            #region Argument Check
-
             if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
-
-            #endregion
 
             return PiecePosition.IsSamePosition(other.PiecePosition);
         }
@@ -114,14 +92,10 @@ namespace ChessPlatform.Internal
         [CanBeNull]
         public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var piece = PiecePosition[move.From];
             var side = piece.GetSide();
@@ -203,14 +177,10 @@ namespace ChessPlatform.Internal
             [NotNull] IEnumerable<Square> targetSquares,
             GameSide attackingSide)
         {
-            #region Argument Check
-
             if (targetSquares == null)
             {
                 throw new ArgumentNullException(nameof(targetSquares));
             }
-
-            #endregion
 
             var result = targetSquares.Any(targetSquare => IsUnderAttack(targetSquare, attackingSide));
             return result;
@@ -340,14 +310,10 @@ namespace ChessPlatform.Internal
             Bitboard enPassantCaptureTarget,
             Bitboard target)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var pawnPiece = side.ToPiece(PieceType.Pawn);
             var pawns = PiecePosition[pawnPiece];
@@ -425,14 +391,10 @@ namespace ChessPlatform.Internal
             CastlingOptions allowedCastlingOptions,
             Bitboard target)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var kingPiece = side.ToPiece(PieceType.King);
             var king = PiecePosition[kingPiece];
@@ -482,14 +444,10 @@ namespace ChessPlatform.Internal
             GeneratedMoveTypes moveTypes,
             Bitboard target)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var emptySquares = PiecePosition[Piece.None];
             var enemies = PiecePosition[side.Invert()];
@@ -544,14 +502,10 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Queen, QueenDirections);
         }
@@ -561,14 +515,10 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Rook, RookDirections);
         }
@@ -578,21 +528,13 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
 
-            #endregion
-
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Bishop, BishopDirections);
         }
-
-        #endregion
-
-        #region Internal Methods
 
         internal MakeMoveData MakeMove(
             [NotNull] GameMove move,
@@ -600,8 +542,6 @@ namespace ChessPlatform.Internal
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             ref CastlingOptions castlingOptions)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -612,8 +552,6 @@ namespace ChessPlatform.Internal
             {
                 throw new ArgumentException($@"Invalid move '{move}' in the position.", nameof(move));
             }
-
-            #endregion
 
             GameMove castlingRookMove = null;
             Square? enPassantCapturedPieceSquare = null;
@@ -761,10 +699,6 @@ namespace ChessPlatform.Internal
 
             PiecePosition.EnsureConsistency();
         }
-
-        #endregion
-
-        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType)
@@ -1092,14 +1026,10 @@ namespace ChessPlatform.Internal
 
         private MovePieceData MovePieceInternal(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var movedPiece = PiecePosition.SetPiece(move.From, Piece.None);
             if (movedPiece == Piece.None)
@@ -1307,7 +1237,5 @@ namespace ChessPlatform.Internal
                 }
             }
         }
-
-        #endregion
     }
 }

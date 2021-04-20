@@ -7,8 +7,6 @@ namespace ChessPlatform
 {
     public static class Bitboards
     {
-        #region Constants and Fields
-
         public static readonly Bitboard Rank1 = new Bitboard(Square.GenerateRank(0));
         public static readonly Bitboard Rank2 = new Bitboard(Square.GenerateRank(1));
         public static readonly Bitboard Rank3 = new Bitboard(Square.GenerateRank(2));
@@ -70,7 +68,5 @@ namespace ChessPlatform
 
         internal static readonly ulong FileAValue = FileA.InternalValue;
         internal static readonly ulong FileHValue = FileH.InternalValue;
-
-        #endregion
     }
 }

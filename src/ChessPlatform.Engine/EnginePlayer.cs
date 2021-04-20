@@ -14,8 +14,6 @@ namespace ChessPlatform.Engine
 {
     public sealed class EnginePlayer : ChessPlayerBase
     {
-        #region Constants and Fields
-
         private static readonly string PlayerName =
             $@"{typeof(ChessPlayerBase).Assembly.GetName().Name}:{typeof(EnginePlayer).GetQualifiedName()}";
 
@@ -29,15 +27,9 @@ namespace ChessPlatform.Engine
         [CanBeNull]
         private readonly TranspositionTable _transpositionTable;
 
-        #endregion
-
-        #region Constructors
-
         public EnginePlayer(GameSide side, [NotNull] EnginePlayerParameters parameters)
             : base(side)
         {
-            #region Argument Check
-
             if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
@@ -59,8 +51,6 @@ namespace ChessPlatform.Engine
                     @"The time per move, if specified, must be positive.");
             }
 
-            #endregion
-
             _openingBookRandom = new Random();
             MaxPlyDepth = parameters.MaxPlyDepth;
             _openingBook = parameters.UseOpeningBook ? PolyglotOpeningBook.Varied : null;
@@ -71,10 +61,6 @@ namespace ChessPlatform.Engine
                 ? new TranspositionTable(parameters.TranspositionTableSizeInMegaBytes)
                 : null;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public override string Name
         {
@@ -90,10 +76,6 @@ namespace ChessPlatform.Engine
             [DebuggerStepThrough]
             get;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected override VariationLine DoGetMove(GetMoveRequest request)
         {
@@ -262,10 +244,6 @@ namespace ChessPlatform.Engine
             _transpositionTable?.Dispose();
         }
 
-        #endregion
-
-        #region Private Methods
-
         private void DoGetMoveInternal(
             [NotNull] GameBoard board,
             [NotNull] GameControlInfo gameControlInfo,
@@ -367,24 +345,14 @@ namespace ChessPlatform.Engine
             }
         }
 
-        #endregion
-
-        #region BestMoveData Class
-
         private sealed class BestMoveData
         {
-            #region Constructors
-
             internal BestMoveData(VariationLine variation, long nodeCount, int plyDepth)
             {
                 Variation = variation.EnsureNotNull();
                 NodeCount = nodeCount;
                 PlyDepth = plyDepth;
             }
-
-            #endregion
-
-            #region Public Properties
 
             public int PlyDepth
             {
@@ -401,18 +369,10 @@ namespace ChessPlatform.Engine
                 get;
             }
 
-            #endregion
-
-            #region Public Methods
-
             public override string ToString()
             {
                 return this.ToPropertyString();
             }
-
-            #endregion
         }
-
-        #endregion
     }
 }

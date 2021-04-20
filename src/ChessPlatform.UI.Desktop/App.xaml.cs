@@ -15,13 +15,7 @@ namespace ChessPlatform.UI.Desktop
     /// </summary>
     public partial class App
     {
-        #region Constants and Fields
-
         public static readonly string Title = $@"Chess Platform UI for Desktop {ChessHelper.PlatformVersion}";
-
-        #endregion
-
-        #region Internal Methods
 
         internal static void ProcessUnhandledException(Exception exception)
         {
@@ -33,10 +27,6 @@ namespace ChessPlatform.UI.Desktop
             var eventArgs = new UnhandledExceptionEventArgs(exception, false);
             OnUnhandledException(AppDomain.CurrentDomain, eventArgs);
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -73,10 +63,6 @@ namespace ChessPlatform.UI.Desktop
 
             base.OnExit(e);
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
@@ -129,7 +115,5 @@ namespace ChessPlatform.UI.Desktop
 
             task.Start();
         }
-
-        #endregion
     }
 }

@@ -7,8 +7,6 @@ namespace ChessPlatform.GamePlay
     [Serializable]
     public sealed class MoveNowRequestedException : Exception
     {
-        #region Constructors
-
         internal MoveNowRequestedException()
         {
             // Nothing to do
@@ -19,7 +17,5 @@ namespace ChessPlatform.GamePlay
         {
             // Nothing to do
         }
-
-        #endregion
     }
 }

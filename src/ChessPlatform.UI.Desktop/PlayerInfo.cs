@@ -10,34 +10,20 @@ namespace ChessPlatform.UI.Desktop
         where TPlayer : class, IChessPlayer
         where TCreationData : PlayerCreationData
     {
-        #region Constants and Fields
-
         private readonly Func<GameSide, TCreationData, TPlayer> _createPlayer;
-
-        #endregion
-
-        #region Constructors
 
         public PlayerInfo(
             [CanBeNull] TCreationData initialCreationData,
             [NotNull] Func<GameSide, TCreationData, TPlayer> createPlayer)
         {
-            #region Argument Check
-
             if (createPlayer == null)
             {
                 throw new ArgumentNullException(nameof(createPlayer));
             }
 
-            #endregion
-
             CreationData = initialCreationData;
             _createPlayer = createPlayer;
         }
-
-        #endregion
-
-        #region Public Properties
 
         [CanBeNull]
         public TCreationData CreationData
@@ -45,19 +31,11 @@ namespace ChessPlatform.UI.Desktop
             get;
         }
 
-        #endregion
-
-        #region Public Methods
-
         [NotNull]
         public TPlayer CreatePlayer(GameSide side)
         {
             return _createPlayer(side, CreationData).EnsureNotNull();
         }
-
-        #endregion
-
-        #region IPlayerInfo Members
 
         PlayerCreationData IPlayerInfo.CreationData => CreationData;
 
@@ -65,7 +43,5 @@ namespace ChessPlatform.UI.Desktop
         {
             return CreatePlayer(side);
         }
-
-        #endregion
     }
 }

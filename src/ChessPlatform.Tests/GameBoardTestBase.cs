@@ -6,13 +6,7 @@ namespace ChessPlatform.Tests
 {
     public abstract class GameBoardTestBase
     {
-        #region Constants and Fields
-
         protected const bool PerformInternalBoardValidation = true;
-
-        #endregion
-
-        #region Protected Methods
 
         protected static void AssertBaseProperties(
             [NotNull] GameBoard gameBoard,
@@ -125,10 +119,6 @@ namespace ChessPlatform.Tests
             }
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static void AssertEnPassantCaptureInfo(
             EnPassantCaptureInfo actualEnPassantCaptureInfo,
             EnPassantCaptureInfo expectedEnPassantCaptureInfo)
@@ -151,7 +141,5 @@ namespace ChessPlatform.Tests
                 Is.EqualTo(expectedEnPassantCaptureInfo.TargetPieceSquare),
                 "Target piece Square.");
         }
-
-        #endregion
     }
 }

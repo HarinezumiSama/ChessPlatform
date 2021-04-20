@@ -8,8 +8,6 @@ namespace ChessPlatform.UI.Desktop.Converters
 {
     internal sealed class PlayerDataPropertyGridVisibilityConverter : IValueConverter
     {
-        #region IValueConverter Members
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value == null ? Visibility.Hidden : Visibility.Visible;
@@ -19,7 +17,5 @@ namespace ChessPlatform.UI.Desktop.Converters
         {
             throw new NotSupportedException();
         }
-
-        #endregion
     }
 }

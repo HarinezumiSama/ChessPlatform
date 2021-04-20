@@ -12,8 +12,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal sealed class SmartEnoughPlayerCreationData : PlayerCreationData
     {
-        #region Constants and Fields
-
         private static readonly ValueRange<int> MaxPlyDepthRange =
             ValueRange.Create(
                 CommonEngineConstants.MaxPlyDepthLowerLimit,
@@ -30,10 +28,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private bool _useTranspositionTable;
         private int? _transpositionTableSizeInMegaBytes;
 
-        #endregion
-
-        #region Constructors
-
         public SmartEnoughPlayerCreationData()
         {
             MaxPlyDepth = CommonEngineConstants.MaxPlyDepthUpperLimit;
@@ -43,10 +37,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             UseTranspositionTable = true;
             TranspositionTableSizeInMegaBytes = 1024;
         }
-
-        #endregion
-
-        #region Public Properties
 
         [DisplayName(@"1. Max Time per Move")]
         [MemberConstraint(typeof(MaxTimePerMoveConstraint))]
@@ -177,10 +167,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        #endregion
-
-        #region MaxPlyDepthConstraint Class
-
         private sealed class MaxPlyDepthConstraint : TypedMemberConstraintBase<int?>
         {
             protected override void ValidateTypedValue(
@@ -204,10 +190,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        #endregion
-
-        #region MaxTimePerMoveConstraint Class
-
         private sealed class MaxTimePerMoveConstraint : TypedMemberConstraintBase<TimeSpan?>
         {
             protected override void ValidateTypedValue(
@@ -224,10 +206,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
             }
         }
-
-        #endregion
-
-        #region TranspositionTableSizeConstraint Class
 
         private sealed class TranspositionTableSizeConstraint : TypedMemberConstraintBase<int?>
         {
@@ -253,7 +231,5 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
             }
         }
-
-        #endregion
     }
 }

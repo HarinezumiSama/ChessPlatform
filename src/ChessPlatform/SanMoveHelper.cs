@@ -6,8 +6,6 @@ namespace ChessPlatform
 {
     internal static class SanMoveHelper
     {
-        #region Constants and Fields
-
         private static readonly string ShortCastlingPattern = Regex.Escape(ShortCastlingSymbol);
         private static readonly string LongCastlingPattern = Regex.Escape(LongCastlingSymbol);
 
@@ -44,7 +42,5 @@ namespace ChessPlatform
         private const string RankPattern = "[12345678]";
         private const string PiecePattern = "[KQRBNP]"; // Though not recommended, P may be used for pawn
         private const string PromotionPattern = "[QRBN]";
-
-        #endregion
     }
 }

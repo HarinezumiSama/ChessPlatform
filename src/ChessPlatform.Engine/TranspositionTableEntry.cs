@@ -10,15 +10,9 @@ namespace ChessPlatform.Engine
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
     internal struct TranspositionTableEntry
     {
-        #region Constants and Fields
-
         private readonly ushort _bestMoveEncoded;
         private readonly int _scoreValue;
         private readonly int _localScoreValue;
-
-        #endregion
-
-        #region Constructors
 
         public TranspositionTableEntry(
             long key,
@@ -42,10 +36,6 @@ namespace ChessPlatform.Engine
             Depth = depth;
             Version = 0;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public long Key
         {
@@ -88,7 +78,5 @@ namespace ChessPlatform.Engine
             get;
             internal set;
         }
-
-        #endregion
     }
 }

@@ -12,8 +12,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class TranspositionTableRelatedTests
     {
-        #region Tests
-
         [Test]
         public void TestTranspositionTableEntrySize()
         {
@@ -128,10 +126,6 @@ namespace ChessPlatform.Tests
             Assert.That(foundEntry2.HasValue, Is.False);
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static void GetAndAssertStructureSize<T>(int expectedSize)
             where T : struct
         {
@@ -139,7 +133,5 @@ namespace ChessPlatform.Tests
             Console.WriteLine($@"{typeof(T).GetQualifiedName()} size: {size} bytes.");
             Assert.That(size, Is.EqualTo(expectedSize));
         }
-
-        #endregion
     }
 }

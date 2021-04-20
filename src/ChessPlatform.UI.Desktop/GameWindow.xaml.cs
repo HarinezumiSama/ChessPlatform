@@ -23,17 +23,11 @@ namespace ChessPlatform.UI.Desktop
     /// </summary>
     internal sealed partial class GameWindow
     {
-        #region Constants and Fields
-
         private static readonly GridLength StarGridLength = new GridLength(1d, GridUnitType.Star);
 
         private bool _canExecuteCopyFenToClipboard;
         private bool _canExecuteCopyHistoryToClipboard;
         private Popup _promotionPopup;
-
-        #endregion
-
-        #region Constructors
 
         public GameWindow()
         {
@@ -54,20 +48,12 @@ namespace ChessPlatform.UI.Desktop
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
 
-        #endregion
-
-        #region Protected Methods
-
         protected override void OnInitialized(EventArgs e)
         {
             base.OnInitialized(e);
 
             ViewModel.Play();
         }
-
-        #endregion
-
-        #region Private Methods: General
 
         private static Square? GetSquare(object element)
         {
@@ -419,10 +405,6 @@ namespace ChessPlatform.UI.Desktop
             _promotionPopup.IsOpen = false;
         }
 
-        #endregion
-
-        #region Private Methods: Event Handlers
-
         private void OnCurrentGameBoardChanged(object sender, EventArgs e)
         {
             var popupControl = BoardGridBorder;
@@ -677,7 +659,5 @@ namespace ChessPlatform.UI.Desktop
         {
             e.CanExecute = ViewModel.CanRequestMoveNow;
         }
-
-        #endregion
     }
 }

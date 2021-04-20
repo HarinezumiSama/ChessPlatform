@@ -10,8 +10,6 @@ namespace ChessPlatform.Engine
 
     internal struct OrderedMove
     {
-        #region Constructors
-
         public OrderedMove([NotNull] GameMove move, GameMoveFlags moveFlags)
         {
             if (move == null)
@@ -22,10 +20,6 @@ namespace ChessPlatform.Engine
             Move = move;
             MoveFlags = moveFlags;
         }
-
-        #endregion
-
-        #region Public Properties
 
         [NotNull]
         public GameMove Move
@@ -42,15 +36,9 @@ namespace ChessPlatform.Engine
             get;
         }
 
-        #endregion
-
-        #region Public Methods
-
         public override string ToString()
         {
             return $@"{{ {Move} {MoveFlags} }}";
         }
-
-        #endregion
     }
 }

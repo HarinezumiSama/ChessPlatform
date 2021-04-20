@@ -19,8 +19,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal sealed class GameWindowViewModel : ViewModelBase
     {
-        #region Constants and Fields
-
         private readonly TaskScheduler _taskScheduler;
         private readonly HashSet<Square> _validMoveTargetSquaresInternal;
         private readonly Timer _timeUpdateTimer;
@@ -40,10 +38,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private string _whiteLastMoveElapsedString;
         private string _blackLastMoveElapsedString;
         private bool _shouldShowPlayersTimers;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameWindowViewModel"/> class.
@@ -79,10 +73,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 ViewModelHelper.CreateGuiHumanChessPlayerInfo(),
                 ViewModelHelper.CreateGuiHumanChessPlayerInfo());
         }
-
-        #endregion
-
-        #region Public Properties
 
         [NotNull]
         public ReadOnlyDictionary<Square, BoardSquareViewModel> SquareViewModels
@@ -251,10 +241,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string LowerPlayerLastMoveElapsed
             => IsReversedView ? _blackLastMoveElapsedString : _whiteLastMoveElapsedString;
 
-        #endregion
-
-        #region Internal Properties
-
         [NotNull]
         internal ReadOnlySet<Square> ValidMoveTargetSquares
         {
@@ -267,10 +253,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             get;
             private set;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public void ResetSelectionMode()
         {
@@ -292,16 +274,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             [NotNull] IPlayerInfo whitePlayerInfo,
             [NotNull] IPlayerInfo blackPlayerInfo)
         {
-            #region Argument Check
-
             if (!GameBoard.IsValidFen(fen))
             {
                 throw new ArgumentException(
                     @"The specified FEN has invalid format or represents an invalid position.",
                     nameof(fen));
             }
-
-            #endregion
 
             Factotum.DisposeAndNull(ref _gameManager);
 
@@ -342,14 +320,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void MakeMove(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var activeHumanPlayer = GetActiveHumanPlayer();
             if (activeHumanPlayer == null)
@@ -388,10 +362,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _whitePlayerFeedback = _blackPlayerFeedback = null;
             AffectPlayerInfo();
         }
-
-        #endregion
-
-        #region Private Methods: Regular
 
         private static void ExecuteGarbageCollection()
         {
@@ -743,10 +713,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaisePropertyChanged(() => CanRequestMoveNow);
         }
 
-        #endregion
-
-        #region Private Methods: Event Handlers
-
         private static void GameManager_UnhandledExceptionOccurred(
             object sender,
             ThreadExceptionEventArgs eventArgs)
@@ -868,7 +834,5 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 AffectPlayerInfo();
             }
         }
-
-        #endregion
     }
 }

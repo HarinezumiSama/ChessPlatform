@@ -6,8 +6,6 @@ namespace ChessPlatform.UI.Desktop.Commands
 {
     internal static class NewGameWindowCommands
     {
-        #region Constants and Fields
-
         public static readonly RoutedUICommand Start = new RoutedUICommand(
             "Start",
             "Start",
@@ -17,7 +15,5 @@ namespace ChessPlatform.UI.Desktop.Commands
             "Cancel",
             "Cancel",
             typeof(NewGameWindowCommands));
-
-        #endregion
     }
 }

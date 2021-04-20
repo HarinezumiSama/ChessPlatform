@@ -9,8 +9,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class PgnGameSerializerTests
     {
-        #region Tests
-
         [Test]
         public void TestDeserialize()
         {
@@ -28,7 +26,5 @@ namespace ChessPlatform.Tests
             Assert.That(gameDescription.Moves.Count, Is.EqualTo(ExpectedMoveCount));
             Assert.That(gameDescription.FinalBoard.GetFen(), Is.EqualTo(ExpectedFinalFen));
         }
-
-        #endregion
     }
 }

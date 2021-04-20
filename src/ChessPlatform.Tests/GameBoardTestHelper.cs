@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
 {
     internal static class GameBoardTestHelper
     {
-        #region Public Methods
-
         public static GameBoard MakeMultipleMoves(
             [NotNull] this GameBoard gameBoard,
             [CanBeNull] Action<GameBoard, string> makeAssertion,
@@ -43,7 +41,5 @@ namespace ChessPlatform.Tests
         {
             return MakeMultipleMoves(gameBoard, null, moves);
         }
-
-        #endregion
     }
 }

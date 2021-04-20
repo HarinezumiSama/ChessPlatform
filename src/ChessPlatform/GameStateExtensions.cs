@@ -6,8 +6,6 @@ namespace ChessPlatform
 {
     public static class GameStateExtensions
     {
-        #region Public Methods
-
         /// <summary>
         ///     Determines whether the specified state indicates a check (but not a checkmate).
         /// </summary>
@@ -55,7 +53,5 @@ namespace ChessPlatform
         {
             return state == GameState.Checkmate || state == GameState.Stalemate;
         }
-
-        #endregion
     }
 }

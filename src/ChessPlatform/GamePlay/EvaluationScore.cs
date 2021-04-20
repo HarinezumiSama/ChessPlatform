@@ -9,8 +9,6 @@ namespace ChessPlatform.GamePlay
     [DebuggerDisplay(@"{ToString(),nq}")]
     public struct EvaluationScore
     {
-        #region Constants and Fields
-
         public const int ZeroValue = 0;
         public const int MateValue = 1000000000;
         public const int PositiveInfinityValue = checked(MateValue + 1);
@@ -21,10 +19,6 @@ namespace ChessPlatform.GamePlay
         public static readonly EvaluationScore PositiveInfinity = new EvaluationScore(PositiveInfinityValue);
         public static readonly EvaluationScore NegativeInfinity = new EvaluationScore(NegativeInfinityValue);
 
-        #endregion
-
-        #region Constructors
-
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public EvaluationScore(int value)
@@ -32,20 +26,12 @@ namespace ChessPlatform.GamePlay
             Value = value;
         }
 
-        #endregion
-
-        #region Public Properties
-
         public int Value
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        #endregion
-
-        #region Operators
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -68,16 +54,10 @@ namespace ChessPlatform.GamePlay
             return new EvaluationScore(left.Value - right.Value);
         }
 
-        #endregion
-
-        #region Public Methods
-
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EvaluationScore CreateCheckmatingScore(int plyDistance)
         {
-            #region Argument Check
-
             if (plyDistance < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -85,8 +65,6 @@ namespace ChessPlatform.GamePlay
                     plyDistance,
                     @"The value cannot be negative.");
             }
-
-            #endregion
 
             return new EvaluationScore(MateValue - plyDistance);
         }
@@ -95,8 +73,6 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EvaluationScore CreateGettingCheckmatedScore(int plyDistance)
         {
-            #region Argument Check
-
             if (plyDistance < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -104,8 +80,6 @@ namespace ChessPlatform.GamePlay
                     plyDistance,
                     @"The value cannot be negative.");
             }
-
-            #endregion
 
             return new EvaluationScore(-MateValue + plyDistance);
         }
@@ -129,7 +103,5 @@ namespace ChessPlatform.GamePlay
         {
             return Value.ToString(CultureInfo.InvariantCulture);
         }
-
-        #endregion
     }
 }

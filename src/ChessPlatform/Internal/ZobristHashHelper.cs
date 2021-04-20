@@ -8,8 +8,6 @@ namespace ChessPlatform.Internal
 {
     internal static class ZobristHashHelper
     {
-        #region Constants and Fields
-
         private const int RandomsLength = 781;
 
         private const int RandomsPieceOffset = 0;
@@ -859,10 +857,6 @@ namespace ChessPlatform.Internal
                 { GetSquare("h5"), GetBitboard("g5") }
             };
 
-        #endregion
-
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetPieceHash(Square square, Piece piece)
         {
@@ -961,10 +955,6 @@ namespace ChessPlatform.Internal
             return activeSide == GameSide.White ? (long)Randoms[RandomsTurnOffset] : 0L;
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static ulong[] EnsureLength(int expectedLength, [NotNull] ulong[] array)
         {
             if (array == null)
@@ -990,20 +980,14 @@ namespace ChessPlatform.Internal
 
         private static Bitboard GetBitboard([NotNull] params string[] squares)
         {
-            #region Argument Check
-
             if (squares == null)
             {
                 throw new ArgumentNullException(nameof(squares));
             }
 
-            #endregion
-
             return squares.Aggregate(
                 Bitboard.None,
                 (accumulator, square) => accumulator ^ GetSquare(square).Bitboard);
         }
-
-        #endregion
     }
 }

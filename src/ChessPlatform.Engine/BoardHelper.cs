@@ -10,22 +10,12 @@ namespace ChessPlatform.Engine
 {
     internal sealed class BoardHelper
     {
-        #region Constants and Fields
-
         private long _localMoveCount;
         private long _totalMoveCount;
-
-        #endregion
-
-        #region Public Properties
 
         public long LocalMoveCount => _localMoveCount;
 
         public long TotalMoveCount => _totalMoveCount;
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public GameBoard MakeMove([NotNull] GameBoard board, [NotNull] GameMove move)
@@ -47,10 +37,6 @@ namespace ChessPlatform.Engine
             _localMoveCount = 0;
         }
 
-        #endregion
-
-        #region Private Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private GameBoard MakeMoveInternal([NotNull] GameBoard board, [CanBeNull] GameMove move)
         {
@@ -58,7 +44,5 @@ namespace ChessPlatform.Engine
             Interlocked.Increment(ref _totalMoveCount);
             return move == null ? board.MakeNullMove() : board.MakeMove(move);
         }
-
-        #endregion
     }
 }

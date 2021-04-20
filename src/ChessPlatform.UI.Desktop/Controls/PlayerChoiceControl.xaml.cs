@@ -9,13 +9,9 @@ namespace ChessPlatform.UI.Desktop.Controls
     /// </summary>
     public sealed partial class PlayerChoiceControl
     {
-        #region Constructors
-
         public PlayerChoiceControl()
         {
             InitializeComponent();
         }
-
-        #endregion
     }
 }

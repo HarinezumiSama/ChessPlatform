@@ -7,12 +7,8 @@ namespace ChessPlatform.Internal
 {
     internal static class GameBoardDataExtensions
     {
-        #region Public Methods
-
         public static void GetFenSnippet(this GameBoardData gameBoardData, StringBuilder resultBuilder)
         {
-            #region Argument Check
-
             if (gameBoardData == null)
             {
                 throw new ArgumentNullException(nameof(gameBoardData));
@@ -22,8 +18,6 @@ namespace ChessPlatform.Internal
             {
                 throw new ArgumentNullException(nameof(resultBuilder));
             }
-
-            #endregion
 
             var emptySquareCount = new ValueContainer<int>(0);
             Action writeEmptySquareCount =
@@ -68,7 +62,5 @@ namespace ChessPlatform.Internal
             GetFenSnippet(gameBoardData, resultBuilder);
             return resultBuilder.ToString();
         }
-
-        #endregion
     }
 }

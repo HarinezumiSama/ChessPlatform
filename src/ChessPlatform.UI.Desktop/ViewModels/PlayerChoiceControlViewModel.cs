@@ -12,8 +12,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal sealed class PlayerChoiceControlViewModel : ViewModelBase
     {
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="PlayerChoiceControlViewModel"/> class.
         /// </summary>
@@ -52,10 +50,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaiseSelectedPlayerControlItemChanged();
         }
 
-        #endregion
-
-        #region Public Properties
-
         public GameSide PlayerSide
         {
             get;
@@ -70,10 +64,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public ControlItem<IPlayerInfo> SelectedPlayerControlItem
             => (ControlItem<IPlayerInfo>)PlayerControlItems.CurrentItem;
 
-        #endregion
-
-        #region Private Methods
-
         private void RaiseSelectedPlayerControlItemChanged()
         {
             RaisePropertyChanged(() => SelectedPlayerControlItem);
@@ -84,14 +74,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaiseSelectedPlayerControlItemChanged();
         }
 
-        #endregion
-
-        #region ValidPlayerSettingsConstraint Class
-
         private sealed class ValidPlayerSettingsConstraint : TypedMemberConstraintBase<ControlItem<IPlayerInfo>>
         {
-            #region Protected Methods
-
             protected override void ValidateTypedValue(
                 ObjectValidatorContext validatorContext,
                 MemberConstraintValidationContext memberContext,
@@ -115,10 +99,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                         error => AddError(validatorContext, error.Context, error.ErrorMessage));
                 }
             }
-
-            #endregion
         }
-
-        #endregion
     }
 }

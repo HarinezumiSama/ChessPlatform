@@ -14,8 +14,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class EnginePlayerTests
     {
-        #region Tests
-
         [Test]
         [TestCase(2, "d8f6")]
         [TestCase(3, "a5c6")]
@@ -59,10 +57,6 @@ namespace ChessPlatform.Tests
 
             ExecuteTestForFenAndDepth(Fen, maxPlyDepth, expectedBestMove);
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static void ExecuteTestForFenAndDepth(
             string fen,
@@ -117,7 +111,5 @@ namespace ChessPlatform.Tests
                 Assert.That(principalVariationInfo.FirstMove, Is.EqualTo(expectedBestMove));
             }
         }
-
-        #endregion
     }
 }

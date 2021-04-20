@@ -7,42 +7,26 @@ namespace ChessPlatform.Internal
     [AttributeUsage(AttributeTargets.Field)]
     internal sealed class FenCharAttribute : Attribute
     {
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="FenCharAttribute"/> class.
         /// </summary>
         public FenCharAttribute(char baseFenChar)
         {
-            #region Argument Check
-
             if (!char.IsLetter(baseFenChar))
             {
                 throw new ArgumentException("The FEN character must be a letter.", nameof(baseFenChar));
             }
 
-            #endregion
-
             BaseFenChar = baseFenChar;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public char BaseFenChar
         {
             get;
         }
 
-        #endregion
-
-        #region Internal Methods
-
         internal static char? TryGet(FieldInfo enumValueFieldInfo)
         {
-            #region Argument Check
-
             if (enumValueFieldInfo == null)
             {
                 throw new ArgumentNullException(nameof(enumValueFieldInfo));
@@ -52,8 +36,6 @@ namespace ChessPlatform.Internal
             {
                 throw new ArgumentException("Invalid field.", nameof(enumValueFieldInfo));
             }
-
-            #endregion
 
             var attribute = enumValueFieldInfo.GetSingleOrDefaultCustomAttribute<FenCharAttribute>(false);
             return attribute?.BaseFenChar;
@@ -82,7 +64,5 @@ namespace ChessPlatform.Internal
 
             return intermediateResult.Value;
         }
-
-        #endregion
     }
 }

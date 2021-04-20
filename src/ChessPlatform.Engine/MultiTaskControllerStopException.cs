@@ -7,8 +7,6 @@ namespace ChessPlatform.Engine
     [Serializable]
     internal sealed class MultiTaskControllerStopException : Exception
     {
-        #region Constructors
-
         public MultiTaskControllerStopException()
         {
             // Nothing to do
@@ -19,7 +17,5 @@ namespace ChessPlatform.Engine
         {
             // Nothing to do
         }
-
-        #endregion
     }
 }

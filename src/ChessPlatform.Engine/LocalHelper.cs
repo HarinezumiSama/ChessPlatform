@@ -6,8 +6,6 @@ namespace ChessPlatform.Engine
 {
     internal static class LocalHelper
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetTimestamp()
         {
@@ -19,7 +17,5 @@ namespace ChessPlatform.Engine
         {
             return !moveFlags.IsAnyCapture() && !moveFlags.IsPawnPromotion();
         }
-
-        #endregion
     }
 }

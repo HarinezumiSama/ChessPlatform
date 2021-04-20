@@ -9,8 +9,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
     [DebuggerDisplay("[{GetType().Name,nq}] Name = {Name.Text}, Value = {Value.Text}")]
     public sealed class TagPairAstNode : AstNodeBase
     {
-        #region Public Properties
-
         public TagNameAstNode Name
         {
             get;
@@ -23,10 +21,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             private set;
         }
 
-        #endregion
-
-        #region Protected Methods
-
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
             AssertChildCount(parseNode, 2);
@@ -34,7 +28,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             Name = GetChildNode<TagNameAstNode>(parseNode, 0);
             Value = GetChildNode<TagValueAstNode>(parseNode, 1);
         }
-
-        #endregion
     }
 }

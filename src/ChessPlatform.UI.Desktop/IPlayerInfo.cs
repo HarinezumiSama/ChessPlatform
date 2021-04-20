@@ -6,21 +6,13 @@ namespace ChessPlatform.UI.Desktop
 {
     internal interface IPlayerInfo
     {
-        #region Properties
-
         [CanBeNull]
         PlayerCreationData CreationData
         {
             get;
         }
 
-        #endregion
-
-        #region Methods
-
         [NotNull]
         IChessPlayer CreatePlayer(GameSide side);
-
-        #endregion
     }
 }

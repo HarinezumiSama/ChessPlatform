@@ -7,8 +7,6 @@ namespace ChessPlatform
 {
     public static class CastlingOptionsExtensions
     {
-        #region Public Methods
-
         public static string GetFenSnippet(this CastlingOptions castlingOptions)
         {
             if (castlingOptions == CastlingOptions.None)
@@ -29,7 +27,5 @@ namespace ChessPlatform
 
             return resultBuilder.ToString();
         }
-
-        #endregion
     }
 }

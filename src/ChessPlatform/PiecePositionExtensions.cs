@@ -7,12 +7,8 @@ namespace ChessPlatform
 {
     public static class PiecePositionExtensions
     {
-        #region Public Methods
-
         public static void GetFenSnippet([NotNull] this PiecePosition position, [NotNull] StringBuilder resultBuilder)
         {
-            #region Argument Check
-
             if (position == null)
             {
                 throw new ArgumentNullException(nameof(position));
@@ -22,8 +18,6 @@ namespace ChessPlatform
             {
                 throw new ArgumentNullException(nameof(resultBuilder));
             }
-
-            #endregion
 
             var emptySquareCount = new ValueContainer<int>(0);
             Action writeEmptySquareCount =
@@ -68,7 +62,5 @@ namespace ChessPlatform
             GetFenSnippet(position, resultBuilder);
             return resultBuilder.ToString();
         }
-
-        #endregion
     }
 }

@@ -8,8 +8,6 @@ namespace ChessPlatform
 {
     public sealed class StandardGamePosition : GamePosition
     {
-        #region Constructors
-
         private StandardGamePosition(
             [NotNull] PiecePosition piecePosition,
             GameSide activeSide,
@@ -59,10 +57,6 @@ namespace ChessPlatform
             ZobristKey = other.ZobristKey;
         }
 
-        #endregion
-
-        #region Public Properties
-
         public override long ZobristKey
         {
             get;
@@ -84,10 +78,6 @@ namespace ChessPlatform
         }
 
         public int FullMoveCountBy50MoveRule => HalfMoveCountBy50MoveRule / 2;
-
-        #endregion
-
-        #region Public Methods
 
         public static bool TryCreate(
             [NotNull] string fen,
@@ -152,10 +142,6 @@ namespace ChessPlatform
                 && EnPassantCaptureInfo == other.EnPassantCaptureInfo
                 && PiecePosition.IsSamePosition(other.PiecePosition);
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static bool TryCreateInternal(
             [NotNull] string fen,
@@ -277,7 +263,5 @@ namespace ChessPlatform
             errorDetails = null;
             return true;
         }
-
-        #endregion
     }
 }

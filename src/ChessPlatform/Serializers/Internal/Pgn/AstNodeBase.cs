@@ -9,13 +9,9 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     public abstract class AstNodeBase : IAstNodeInit
     {
-        #region IAstNodeInit Members
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void IAstNodeInit.Init(AstContext context, ParseTreeNode parseNode)
         {
-            #region Argument Check
-
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
@@ -26,14 +22,8 @@ namespace ChessPlatform.Serializers.Internal.Pgn
                 throw new ArgumentNullException(nameof(parseNode));
             }
 
-            #endregion
-
             Initialize(context, parseNode);
         }
-
-        #endregion
-
-        #region Protected Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static void AssertChildCount([NotNull] ParseTreeNode parseNode, int expectedChildCount)
@@ -85,7 +75,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         }
 
         protected abstract void Initialize([NotNull] AstContext context, [NotNull] ParseTreeNode parseNode);
-
-        #endregion
     }
 }

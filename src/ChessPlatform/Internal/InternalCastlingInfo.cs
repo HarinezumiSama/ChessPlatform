@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Linq;
 using Omnifactotum.Annotations;
@@ -7,8 +7,6 @@ namespace ChessPlatform.Internal
 {
     internal struct InternalCastlingInfo
     {
-        #region Constructors
-
         public InternalCastlingInfo([NotNull] GameMove kingMove, Bitboard expectedEmptySquares)
         {
             if (kingMove == null)
@@ -19,10 +17,6 @@ namespace ChessPlatform.Internal
             KingMove = kingMove;
             ExpectedEmptySquares = expectedEmptySquares;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public GameMove KingMove
         {
@@ -35,7 +29,5 @@ namespace ChessPlatform.Internal
             [DebuggerStepThrough]
             get;
         }
-
-        #endregion
     }
 }

@@ -7,13 +7,7 @@ namespace ChessPlatform
 {
     public static class GameMove2Extensions
     {
-        #region Constants and Fields
-
         private const string MoveSeparator = ", ";
-
-        #endregion
-
-        #region Public Methods
 
         public static string ToUciNotation(this GameMove2 move)
         {
@@ -33,8 +27,6 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this ICollection<GameMove2> moves)
         {
-            #region Argument Check
-
             if (moves == null)
             {
                 throw new ArgumentNullException(nameof(moves));
@@ -45,11 +37,7 @@ namespace ChessPlatform
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
 
-            #endregion
-
             return moves.Select(ToUciNotation).Join(MoveSeparator);
         }
-
-        #endregion
     }
 }

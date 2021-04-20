@@ -16,8 +16,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameBoardMoveGeneratorTests : GameBoardTestBase
     {
-        #region Constants and Fields
-
         private static readonly ReadOnlyDictionary<PerftPosition, string> PerftPositionToFenMap =
             new ReadOnlyDictionary<PerftPosition, string>(
                 new Dictionary<PerftPosition, string>
@@ -68,10 +66,6 @@ namespace ChessPlatform.Tests
                     }
                 });
 
-        #endregion
-
-        #region SetUp/TearDown
-
         [TestFixtureSetUp]
         public void TestFixtureSetUp()
         {
@@ -80,10 +74,6 @@ namespace ChessPlatform.Tests
             var coreAssemblyName = typeof(GameBoard).Assembly.GetName();
             Console.WriteLine($@"*** {coreAssemblyName.Name} assembly version: {coreAssemblyName.Version}");
         }
-
-        #endregion
-
-        #region Tests
 
         [Test]
         [TestCase(-1)]
@@ -283,10 +273,6 @@ bestmove h6d2 ponder c4c5
             */
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static void AssertPerftResult(PerftResult actualResult, ExpectedPerftResult expectedResult)
         {
             Assert.That(actualResult, Is.Not.Null);
@@ -328,10 +314,6 @@ bestmove h6d2 ponder c4c5
             }
         }
 
-        #endregion
-
-        #region PerftPosition Enumeration
-
         /// <summary>
         ///     Positions from http://chessprogramming.wikispaces.com/Perft+Results
         /// </summary>
@@ -350,18 +332,10 @@ bestmove h6d2 ponder c4c5
             KingAndBishops
         }
 
-        #endregion
-
-        #region ExpectedPerftResult Class
-
         public sealed class ExpectedPerftResult
         {
-            #region Constructors
-
             internal ExpectedPerftResult(int depth, ulong nodeCount)
             {
-                #region Argument Check
-
                 if (depth < 0)
                 {
                     throw new ArgumentOutOfRangeException(
@@ -370,15 +344,9 @@ bestmove h6d2 ponder c4c5
                         @"The value cannot be negative.");
                 }
 
-                #endregion
-
                 Depth = depth;
                 NodeCount = nodeCount;
             }
-
-            #endregion
-
-            #region Public Properties
 
             public int Depth
             {
@@ -414,10 +382,6 @@ bestmove h6d2 ponder c4c5
                 set;
             }
 
-            #endregion
-
-            #region Public Methods
-
             public override string ToString()
             {
                 var resultBuilder = new StringBuilder();
@@ -438,10 +402,6 @@ bestmove h6d2 ponder c4c5
                 return resultBuilder.ToString();
             }
 
-            #endregion
-
-            #region Private Methods
-
             private void WriteProperty<T>(
                 [NotNull] StringBuilder stringBuilder,
                 [NotNull] Expression<Func<ExpectedPerftResult, T?>> expression)
@@ -459,18 +419,10 @@ bestmove h6d2 ponder c4c5
                     Factotum.For<ExpectedPerftResult>.GetPropertyName(expression),
                     value.Value);
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region TestPerftCaseData Class
 
         public sealed class TestPerftCaseData : TestCaseData
         {
-            #region Constructors
-
             internal TestPerftCaseData(
                 PerftPosition position,
                 [NotNull] ExpectedPerftResult expectedResult,
@@ -483,10 +435,6 @@ bestmove h6d2 ponder c4c5
                 ExpectedResult = expectedResult;
                 EnableParallelism = enableParallelism;
             }
-
-            #endregion
-
-            #region Public Properties
 
             public PerftPosition Position
             {
@@ -503,27 +451,15 @@ bestmove h6d2 ponder c4c5
                 get;
             }
 
-            #endregion
-
-            #region Public Methods
-
             public new TestPerftCaseData MakeExplicit(string reason)
             {
                 base.MakeExplicit(reason);
                 return this;
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region TestPerftCases Class
 
         public sealed class TestPerftCases : IEnumerable<TestCaseData>
         {
-            #region IEnumerable<TestCaseData> Members
-
             public IEnumerator<TestCaseData> GetEnumerator()
             {
                 var cases = GetCases()
@@ -539,18 +475,10 @@ bestmove h6d2 ponder c4c5
                 return cases.GetEnumerator();
             }
 
-            #endregion
-
-            #region IEnumerable Members
-
             IEnumerator IEnumerable.GetEnumerator()
             {
                 return GetEnumerator();
             }
-
-            #endregion
-
-            #region Private Methods
 
             private static IEnumerable<TestPerftCaseData> GetCases()
             {
@@ -932,10 +860,6 @@ bestmove h6d2 ponder c4c5
 
                 #endregion
             }
-
-            #endregion
         }
-
-        #endregion
     }
 }

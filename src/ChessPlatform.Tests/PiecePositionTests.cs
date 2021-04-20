@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class PiecePositionTests
     {
-        #region Tests
-
         [Test]
         public void TestConstruction()
         {
@@ -54,10 +52,6 @@ namespace ChessPlatform.Tests
             }
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static void AssertEmptyPosition(PiecePosition position)
         {
             foreach (var side in ChessConstants.GameSides)
@@ -76,7 +70,5 @@ namespace ChessPlatform.Tests
                 Assert.That(position[square], Is.EqualTo(Piece.None));
             }
         }
-
-        #endregion
     }
 }

@@ -5,32 +5,18 @@ namespace ChessPlatform.GamePlay
 {
     internal sealed class GameControl : IGameControl
     {
-        #region Constants and Fields
-
         private readonly object _syncLock;
-
-        #endregion
-
-        #region Constructors
 
         public GameControl()
         {
             _syncLock = new object();
         }
 
-        #endregion
-
-        #region Public Properties
-
         public bool IsMoveNowRequested
         {
             get;
             private set;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public void RequestMoveNow()
         {
@@ -39,10 +25,6 @@ namespace ChessPlatform.GamePlay
                 IsMoveNowRequested = true;
             }
         }
-
-        #endregion
-
-        #region IGameControl Members
 
         public void ThrowIfMoveNowIsRequested()
         {
@@ -55,7 +37,5 @@ namespace ChessPlatform.GamePlay
                 }
             }
         }
-
-        #endregion
     }
 }

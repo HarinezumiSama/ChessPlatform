@@ -8,8 +8,6 @@ namespace ChessPlatform
     [CLSCompliant(false)]
     public sealed class PerftResult
     {
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="PerftResult"/> class.
         /// </summary>
@@ -24,8 +22,6 @@ namespace ChessPlatform
             ulong? checkCount,
             ulong? checkmateCount)
         {
-            #region Argument Check
-
             if (depth < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -47,8 +43,6 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(dividedMoves));
             }
 
-            #endregion
-
             Flags = flags;
             Depth = depth;
             Elapsed = elapsed;
@@ -62,10 +56,6 @@ namespace ChessPlatform
             var totalSeconds = elapsed.TotalSeconds;
             NodesPerSecond = checked((ulong)(totalSeconds.IsZero() ? 0 : nodeCount / totalSeconds));
         }
-
-        #endregion
-
-        #region Public Properties
 
         public PerftFlags Flags
         {
@@ -117,15 +107,9 @@ namespace ChessPlatform
             get;
         }
 
-        #endregion
-
-        #region Public Methods
-
         public override string ToString()
         {
             return $@"{{Perft({Depth}) = {NodeCount} [{Elapsed}, {NodesPerSecond} nps]}}";
         }
-
-        #endregion
     }
 }

@@ -6,8 +6,6 @@ namespace ChessPlatform
 {
     public struct GameMoveData
     {
-        #region Constructors
-
         internal GameMoveData([NotNull] GameMove move, GameMoveFlags moveFlags)
         {
             if (move == null)
@@ -18,10 +16,6 @@ namespace ChessPlatform
             Move = move;
             MoveFlags = moveFlags;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public GameMove Move
         {
@@ -35,12 +29,6 @@ namespace ChessPlatform
             get;
         }
 
-        #endregion
-
-        #region Public Methods
-
         public override string ToString() => $@"{Move} : {MoveFlags}";
-
-        #endregion
     }
 }

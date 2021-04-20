@@ -7,8 +7,6 @@ namespace ChessPlatform.UI.Desktop.Controls
 {
     internal sealed class ControlItem<T> : IEquatable<ControlItem<T>>
     {
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="ControlItem{T}"/> class
         ///     using the specified value and text.
@@ -29,10 +27,6 @@ namespace ChessPlatform.UI.Desktop.Controls
             // Nothing to do
         }
 
-        #endregion
-
-        #region Public Properties
-
         [CanBeNull]
         public T Value
         {
@@ -44,10 +38,6 @@ namespace ChessPlatform.UI.Desktop.Controls
         {
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public override bool Equals(object obj)
         {
@@ -64,10 +54,6 @@ namespace ChessPlatform.UI.Desktop.Controls
             return Text;
         }
 
-        #endregion
-
-        #region IEquatable<ControlItem<T>> Members
-
         public bool Equals(ControlItem<T> other)
         {
             if (ReferenceEquals(this, other))
@@ -82,7 +68,5 @@ namespace ChessPlatform.UI.Desktop.Controls
 
             return EqualityComparer<T>.Default.Equals(Value, other.Value);
         }
-
-        #endregion
     }
 }

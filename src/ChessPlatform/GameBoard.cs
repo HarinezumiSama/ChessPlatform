@@ -12,8 +12,6 @@ namespace ChessPlatform
 {
     public sealed class GameBoard
     {
-        #region Constants and Fields
-
         private const int ThreefoldCount = 3;
         private const int ValidMoveCapacity = 64;
         private const int PotentialMoveListCapacity = 512;
@@ -41,10 +39,6 @@ namespace ChessPlatform
         private readonly bool _validateAfterMove;
         private readonly ReadOnlyDictionary<long, int> _repetitions;
         private readonly long _zobristKey;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GameBoard"/> class
@@ -99,16 +93,12 @@ namespace ChessPlatform
         /// </summary>
         public GameBoard([NotNull] string fen, bool validateAfterMove)
         {
-            #region Argument Check
-
             if (string.IsNullOrWhiteSpace(fen))
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
                     nameof(fen));
             }
-
-            #endregion
 
             _validateAfterMove = validateAfterMove;
             _gameBoardData = new GameBoardData();
@@ -138,14 +128,10 @@ namespace ChessPlatform
         /// </summary>
         private GameBoard([NotNull] GameBoard previousBoard, [CanBeNull] GameMove move)
         {
-            #region Argument Check
-
             if (previousBoard == null)
             {
                 throw new ArgumentNullException(nameof(previousBoard));
             }
-
-            #endregion
 
             PreviousBoard = previousBoard;
             _validateAfterMove = previousBoard._validateAfterMove;
@@ -189,10 +175,6 @@ namespace ChessPlatform
                 out _repetitions,
                 out _zobristKey);
         }
-
-        #endregion
-
-        #region Public Properties
 
         public string ResultString
         {
@@ -319,10 +301,6 @@ namespace ChessPlatform
 
         public long ZobristKey => _zobristKey;
 
-        #endregion
-
-        #region Internal Properties
-
         internal int HalfMoveCountBy50MoveRule
         {
             [DebuggerStepThrough]
@@ -331,10 +309,6 @@ namespace ChessPlatform
                 return _halfMoveCountBy50MoveRule;
             }
         }
-
-        #endregion
-
-        #region Public Methods
 
         [DebuggerStepThrough]
         public static bool IsValidFen(string fen)
@@ -368,8 +342,6 @@ namespace ChessPlatform
         [CLSCompliant(false)]
         public PerftResult Perft(int depth, PerftFlags flags)
         {
-            #region Argument Check
-
             if (depth < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -377,8 +349,6 @@ namespace ChessPlatform
                     depth,
                     @"The value cannot be negative.");
             }
-
-            #endregion
 
             var perftData = new PerftData();
             var includeDivideMap = flags.HasFlag(PerftFlags.IncludeDivideMap);
@@ -410,8 +380,6 @@ namespace ChessPlatform
 
         public GameBoard MakeMove([NotNull] GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -421,8 +389,6 @@ namespace ChessPlatform
             {
                 throw new ArgumentException($@"The move '{move}' is not valid.", nameof(move));
             }
-
-            #endregion
 
             return new GameBoard(this, move);
         }
@@ -488,14 +454,10 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsValidMove(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             return _validMoves.ContainsKey(move);
         }
@@ -503,14 +465,10 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPawnPromotionMove(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var result = _gameBoardData.IsPawnPromotion(move.From, move.To);
             return result;
@@ -518,14 +476,10 @@ namespace ChessPlatform
 
         public bool IsCapturingMove(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             if (_gameBoardData.IsEnPassantCapture(move.From, move.To, _enPassantCaptureInfo))
             {
@@ -543,14 +497,10 @@ namespace ChessPlatform
 
         public CastlingInfo CheckCastlingMove(GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             return ValidMoves.ContainsKey(move) ? _gameBoardData.CheckCastlingMove(move) : null;
         }
@@ -579,16 +529,12 @@ namespace ChessPlatform
         [NotNull]
         public GameMove ParseSanMove([NotNull] string sanMoveText)
         {
-            #region Argument Check
-
             if (string.IsNullOrWhiteSpace(sanMoveText))
             {
                 throw new ArgumentException(
                     @"The value can be neither empty nor whitespace-only string nor null.",
                     nameof(sanMoveText));
             }
-
-            #endregion
 
             var match = SanMoveHelper.SanMoveRegex.Match(sanMoveText);
             if (!match.Success)
@@ -670,14 +616,10 @@ namespace ChessPlatform
 
         public bool IsSamePosition([NotNull] GameBoard otherBoard)
         {
-            #region Argument Check
-
             if (otherBoard == null)
             {
                 throw new ArgumentNullException(nameof(otherBoard));
             }
-
-            #endregion
 
             return ReferenceEquals(this, otherBoard) ||
                 (_zobristKey == otherBoard._zobristKey
@@ -686,10 +628,6 @@ namespace ChessPlatform
                     && _enPassantCaptureInfo == otherBoard._enPassantCaptureInfo
                     && _gameBoardData.IsSamePosition(otherBoard._gameBoardData));
         }
-
-        #endregion
-
-        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ClearPotentialMoveDatas()
@@ -1551,22 +1489,12 @@ namespace ChessPlatform
             return result;
         }
 
-        #endregion
-
-        #region PerftData Class
-
         private sealed class PerftData
         {
-            #region Constructors
-
             public PerftData()
             {
                 DividedMoves = new Dictionary<GameMove, ulong>();
             }
-
-            #endregion
-
-            #region Public Properties
 
             public ulong NodeCount
             {
@@ -1603,10 +1531,6 @@ namespace ChessPlatform
                 get;
             }
 
-            #endregion
-
-            #region Operators
-
             public static PerftData operator +(PerftData left, PerftData right)
             {
                 return new PerftData
@@ -1619,20 +1543,12 @@ namespace ChessPlatform
                 };
             }
 
-            #endregion
-
-            #region Public Methods
-
             public void Include(PerftData other)
             {
-                #region Argument Check
-
                 if (other == null)
                 {
                     throw new ArgumentNullException(nameof(other));
                 }
-
-                #endregion
 
                 CaptureCount += other.CaptureCount;
                 CheckCount += other.CheckCount;
@@ -1640,18 +1556,10 @@ namespace ChessPlatform
                 EnPassantCaptureCount += other.EnPassantCaptureCount;
                 NodeCount += other.NodeCount;
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region AddMoveData Class
 
         private sealed class AddMoveData
         {
-            #region Constructors
-
             public AddMoveData(
                 [NotNull] GameBoardData gameBoardData,
                 [NotNull] IDictionary<GameMove, GameMoveFlags> validMovesReference,
@@ -1670,10 +1578,6 @@ namespace ChessPlatform
                 PinLimitations = pinLimitations.EnsureNotNull();
                 ActivePiecesExceptKingAndPawnsBitboard = activePiecesExceptKingAndPawnsBitboard;
             }
-
-            #endregion
-
-            #region Public Properties
 
             [NotNull]
             public GameBoardData GameBoardData
@@ -1718,13 +1622,7 @@ namespace ChessPlatform
             {
                 get;
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region SanMove Structure
 
         internal struct SanMove
         {
@@ -1776,7 +1674,5 @@ namespace ChessPlatform
                 set;
             }
         }
-
-        #endregion
     }
 }

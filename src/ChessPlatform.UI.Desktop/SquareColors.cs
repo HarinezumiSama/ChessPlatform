@@ -7,18 +7,12 @@ namespace ChessPlatform.UI.Desktop
 {
     internal struct SquareColors
     {
-        #region Constructors
-
         internal SquareColors(Color darkSquareColor, Color lightSquareColor)
             : this()
         {
             DarkSquareColor = darkSquareColor;
             LightSquareColor = lightSquareColor;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public Color this[bool isDark]
         {
@@ -38,7 +32,5 @@ namespace ChessPlatform.UI.Desktop
         {
             get;
         }
-
-        #endregion
     }
 }

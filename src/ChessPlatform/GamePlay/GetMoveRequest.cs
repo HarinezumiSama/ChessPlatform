@@ -7,15 +7,11 @@ namespace ChessPlatform.GamePlay
 {
     public sealed class GetMoveRequest
     {
-        #region Constructors
-
         public GetMoveRequest(
             [NotNull] GameBoard board,
             CancellationToken cancellationToken,
             [NotNull] IGameControl gameControl)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
@@ -26,16 +22,10 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(gameControl));
             }
 
-            #endregion
-
             Board = board;
             CancellationToken = cancellationToken;
             GameControl = gameControl;
         }
-
-        #endregion
-
-        #region Public Properties
 
         [NotNull]
         public GameBoard Board
@@ -53,7 +43,5 @@ namespace ChessPlatform.GamePlay
         {
             get;
         }
-
-        #endregion
     }
 }

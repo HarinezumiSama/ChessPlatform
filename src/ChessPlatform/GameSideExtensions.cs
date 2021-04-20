@@ -8,8 +8,6 @@ namespace ChessPlatform
 {
     public static class GameSideExtensions
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static GameSide EnsureDefined(this GameSide side)
         {
@@ -41,7 +39,5 @@ namespace ChessPlatform
         {
             return ChessConstants.GameSideToFenSnippetMap[side];
         }
-
-        #endregion
     }
 }

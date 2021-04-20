@@ -7,8 +7,6 @@ namespace ChessPlatform.GamePlay
 {
     public sealed class ChessPlayerFeedbackEventArgs
     {
-        #region Constructors
-
         public ChessPlayerFeedbackEventArgs(
             GameSide side,
             [NotNull] GameBoard board,
@@ -16,8 +14,6 @@ namespace ChessPlatform.GamePlay
             int maxDepth,
             [NotNull] VariationLine variation)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
@@ -52,18 +48,12 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(variation));
             }
 
-            #endregion
-
             Side = side;
             Board = board;
             Depth = depth;
             MaxDepth = maxDepth;
             Variation = variation;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public GameSide Side
         {
@@ -96,7 +86,5 @@ namespace ChessPlatform.GamePlay
             [DebuggerStepThrough]
             get;
         }
-
-        #endregion
     }
 }

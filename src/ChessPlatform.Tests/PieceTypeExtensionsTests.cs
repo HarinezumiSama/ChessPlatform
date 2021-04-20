@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class PieceTypeExtensionsTests
     {
-        #region Tests
-
         [Test]
         [TestCase(PieceType.None, GameSide.White, Piece.None)]
         [TestCase(PieceType.None, GameSide.Black, Piece.None)]
@@ -19,7 +17,5 @@ namespace ChessPlatform.Tests
             var piece = pieceType.ToPiece(side);
             Assert.That(piece, Is.EqualTo(expectedPiece));
         }
-
-        #endregion
     }
 }

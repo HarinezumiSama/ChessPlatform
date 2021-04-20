@@ -8,8 +8,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameSideExtensionsTests
     {
-        #region Tests
-
         [Test]
         public void TestEnsureDefined()
         {
@@ -36,7 +34,5 @@ namespace ChessPlatform.Tests
             var piece = side.ToPiece(pieceType);
             Assert.That(piece, Is.EqualTo(expectedPiece));
         }
-
-        #endregion
     }
 }

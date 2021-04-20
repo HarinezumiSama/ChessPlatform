@@ -9,13 +9,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 {
     internal sealed class DebugConverter : IValueConverter
     {
-        #region Constants and Fields
-
         private readonly string _asString;
-
-        #endregion
-
-        #region Constructors
 
         public DebugConverter()
             : this(null)
@@ -37,18 +31,10 @@ namespace ChessPlatform.UI.Desktop.Converters
             _asString = stringBuilder.ToString();
         }
 
-        #endregion
-
-        #region Public Properties
-
         public string Name
         {
             get;
         }
-
-        #endregion
-
-        #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -60,15 +46,9 @@ namespace ChessPlatform.UI.Desktop.Converters
             return value;
         }
 
-        #endregion
-
-        #region Public Methods
-
         public override string ToString()
         {
             return _asString;
         }
-
-        #endregion
     }
 }

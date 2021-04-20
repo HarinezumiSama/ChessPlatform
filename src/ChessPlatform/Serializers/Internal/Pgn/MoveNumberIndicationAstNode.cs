@@ -11,23 +11,13 @@ namespace ChessPlatform.Serializers.Internal.Pgn
     [DebuggerDisplay("[{GetType().Name,nq}] MoveNumber = {MoveNumber}")]
     public sealed class MoveNumberIndicationAstNode : AstNodeBase
     {
-        #region Constants and Fields
-
         private static readonly Regex MoveNumberRegex = new Regex(@"\d+", RegexOptions.Compiled);
-
-        #endregion
-
-        #region Public Properties
 
         public int MoveNumber
         {
             get;
             private set;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
@@ -40,7 +30,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 
             MoveNumber = int.Parse(match.Value, NumberStyles.Integer, CultureInfo.InvariantCulture);
         }
-
-        #endregion
     }
 }

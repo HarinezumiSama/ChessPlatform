@@ -9,13 +9,7 @@ namespace ChessPlatform.Engine
 {
     public static class TranspositionTableHelper
     {
-        #region Constants and Fields
-
         public static readonly ValueRange<int> SizeInMegaBytesRange = ValueRange.Create(1, 127 * 1024);
-
-        #endregion
-
-        #region Internal Methods
 
         //// ReSharper disable once InconsistentNaming
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,7 +24,5 @@ namespace ChessPlatform.Engine
         {
             return score.ToRelative(plyDistance);
         }
-
-        #endregion
     }
 }

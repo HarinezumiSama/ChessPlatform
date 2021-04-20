@@ -8,8 +8,6 @@ namespace ChessPlatform.Utilities
 {
     public sealed class SquareDictionary<TValue> : FixedSizeDictionary<Square, TValue, SquareDeterminant>
     {
-        #region Constructors
-
         public SquareDictionary()
         {
             // Nothing to do
@@ -26,7 +24,5 @@ namespace ChessPlatform.Utilities
         {
             // Nothing to do
         }
-
-        #endregion
     }
 }

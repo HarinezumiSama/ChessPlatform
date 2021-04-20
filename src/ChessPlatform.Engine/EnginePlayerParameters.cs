@@ -1,12 +1,10 @@
-using System;
+﻿using System;
 using System.Linq;
 
 namespace ChessPlatform.Engine
 {
     public sealed class EnginePlayerParameters
     {
-        #region Public Properties
-
         public bool UseOpeningBook
         {
             get;
@@ -42,7 +40,5 @@ namespace ChessPlatform.Engine
             get;
             set;
         }
-
-        #endregion
     }
 }

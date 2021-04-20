@@ -8,8 +8,6 @@ namespace ChessPlatform
 {
     public static class GamePositionExtensions
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAnyUnderAttack(
             [NotNull] this GamePosition gamePosition,
@@ -44,7 +42,5 @@ namespace ChessPlatform
             var kingSquares = gamePosition.PiecePosition[king].GetSquares();
             return gamePosition.IsAnyUnderAttack(kingSquares, attackingSide);
         }
-
-        #endregion
     }
 }

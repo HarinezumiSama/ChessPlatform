@@ -5,8 +5,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     public static class TagNames
     {
-        #region Constants and Fields
-
         public const string Event = "Event";
         public const string Site = "Site";
         public const string Date = "Date";
@@ -59,7 +57,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         public const string Annotator = "Annotator";
         public const string Mode = "Mode";
         public const string PlyCount = "PlyCount";
-
-        #endregion
     }
 }

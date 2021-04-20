@@ -10,17 +10,11 @@ namespace ChessPlatform
     [DebuggerDisplay("{ToString(),nq}")]
     public struct EnPassantCaptureInfo2 : IEquatable<EnPassantCaptureInfo2>
     {
-        #region Constructors
-
         internal EnPassantCaptureInfo2(Square captureSquare, Square targetPieceSquare)
         {
             CaptureSquare = captureSquare;
             TargetPieceSquare = targetPieceSquare;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public Square CaptureSquare
         {
@@ -31,10 +25,6 @@ namespace ChessPlatform
         {
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals(EnPassantCaptureInfo2 left, EnPassantCaptureInfo2 right)
@@ -48,23 +38,13 @@ namespace ChessPlatform
         public override string ToString()
             => $@"{{ {nameof(CaptureSquare)} = {CaptureSquare}, {nameof(TargetPieceSquare)} = {TargetPieceSquare} }}";
 
-        #endregion
-
-        #region Operators
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(EnPassantCaptureInfo2 left, EnPassantCaptureInfo2 right) => Equals(left, right);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(EnPassantCaptureInfo2 left, EnPassantCaptureInfo2 right) => !Equals(left, right);
 
-        #endregion
-
-        #region IEquatable<EnPassantCaptureData> Members
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(EnPassantCaptureInfo2 other) => Equals(this, other);
-
-        #endregion
     }
 }

@@ -8,8 +8,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     public sealed class ElementAstNode : AstNodeBase
     {
-        #region Public Properties
-
         public ElementType? ElementType
         {
             get;
@@ -40,10 +38,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             private set;
         }
 
-        #endregion
-
-        #region Protected Methods
-
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
             AssertChildCount(parseNode, 1);
@@ -69,10 +63,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             }
         }
 
-        #endregion
-
-        #region Private Methods
-
         private void SetElementTypeIfNodeNotNull([CanBeNull] AstNodeBase node, ElementType elementType)
         {
             if (node != null)
@@ -80,7 +70,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
                 ElementType = elementType;
             }
         }
-
-        #endregion
     }
 }

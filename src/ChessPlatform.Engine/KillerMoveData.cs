@@ -9,8 +9,6 @@ namespace ChessPlatform.Engine
     [DebuggerDisplay("[{GetType().Name,nq}] Primary = {Primary}, Secondary = {Secondary}")]
     internal struct KillerMoveData
     {
-        #region Public Properties
-
         [CanBeNull]
         public GameMove Primary
         {
@@ -35,21 +33,13 @@ namespace ChessPlatform.Engine
             private set;
         }
 
-        #endregion
-
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RecordKiller([NotNull] GameMove killerMove)
         {
-            #region Argument Check
-
             if (killerMove == null)
             {
                 throw new ArgumentNullException(nameof(killerMove));
             }
-
-            #endregion
 
             if (Primary != killerMove)
             {
@@ -57,7 +47,5 @@ namespace ChessPlatform.Engine
                 Primary = killerMove;
             }
         }
-
-        #endregion
     }
 }

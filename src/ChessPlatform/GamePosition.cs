@@ -15,8 +15,6 @@ namespace ChessPlatform
 {
     public abstract class GamePosition
     {
-        #region Constants and Fields
-
         protected static readonly ShiftDirection[] AllDirections = EnumFactotum.GetAllValues<ShiftDirection>();
         protected static readonly ShiftDirection[] QueenDirections = AllDirections;
 
@@ -46,10 +44,6 @@ namespace ChessPlatform
 
         protected static readonly Bitboard[] DefaultPinLimitations =
             Enumerable.Repeat(Bitboard.Everything, ChessConstants.SquareCount).ToArray();
-
-        #endregion
-
-        #region Constructors
 
         protected GamePosition([NotNull] PiecePosition piecePosition, GameSide activeSide, int fullMoveIndex)
         {
@@ -89,10 +83,6 @@ namespace ChessPlatform
             FullMoveIndex = other.FullMoveIndex;
         }
 
-        #endregion
-
-        #region Public Properties
-
         public abstract long ZobristKey
         {
             get;
@@ -107,10 +97,6 @@ namespace ChessPlatform
         {
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public override string ToString() => PiecePosition.GetFenSnippet();
 
@@ -131,15 +117,9 @@ namespace ChessPlatform
 
         public abstract GamePosition MakeMove(GameMove2 move);
 
-        #endregion
-
-        #region Protected Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static Bitboard GetConnection(int squareIndex1, int squareIndex2)
         {
-            #region Argument Check
-
             if (squareIndex1 < 0 || squareIndex1 > ChessConstants.MaxSquareIndex)
             {
                 throw new ArgumentOutOfRangeException(
@@ -156,8 +136,6 @@ namespace ChessPlatform
                     $@"The value is out of the valid range ({0} .. {ChessConstants.MaxSquareIndex}).");
             }
 
-            #endregion
-
             return GetConnectionInternal(squareIndex1, squareIndex2);
         }
 
@@ -168,14 +146,10 @@ namespace ChessPlatform
             Bitboard target,
             CastlingOptions allowedCastlingOptions)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var kingPiece = side.ToPiece(PieceType.King);
             var kings = PiecePosition[kingPiece];
@@ -228,14 +202,10 @@ namespace ChessPlatform
             GeneratedMoveTypes moveTypes,
             Bitboard target)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var emptySquares = PiecePosition[Piece.None];
             var enemies = PiecePosition[side.Invert()];
@@ -292,14 +262,10 @@ namespace ChessPlatform
             Bitboard target,
             Bitboard enPassantCaptureTarget)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             var pawnPiece = side.ToPiece(PieceType.Pawn);
             var pawns = PiecePosition[pawnPiece];
@@ -376,14 +342,10 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Queen, QueenDirections);
         }
@@ -393,14 +355,10 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
-
-            #endregion
 
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Rook, RookDirections);
         }
@@ -410,30 +368,18 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            #region Argument Check
-
             if (resultMoves == null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
 
-            #endregion
-
             GenerateSlidingPieceMoves(resultMoves, side, moveTypes, PieceType.Bishop, BishopDirections);
         }
-
-        #endregion
-
-        #region Protected Internal Properties
 
         protected internal PiecePosition PiecePosition
         {
             get;
         }
-
-        #endregion
-
-        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetCastlingTypeArrayIndexInternal(CastlingType castlingType) => (int)castlingType;
@@ -876,7 +822,5 @@ namespace ChessPlatform
                 }
             }
         }
-
-        #endregion
     }
 }

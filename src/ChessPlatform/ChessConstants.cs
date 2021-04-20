@@ -11,8 +11,6 @@ namespace ChessPlatform
 {
     public static class ChessConstants
     {
-        #region Constants and Fields
-
         public const int FileCount = 8;
         public const int MaxFileIndex = FileCount - 1;
 
@@ -215,15 +213,9 @@ namespace ChessPlatform
         internal const char FenRankSeparator = '/';
         internal const string FenSnippetSeparator = " ";
 
-        #endregion
-
-        #region Internal Methods
-
         internal static PieceType[] GetValidPromotions()
         {
             return new[] { PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight };
         }
-
-        #endregion
     }
 }

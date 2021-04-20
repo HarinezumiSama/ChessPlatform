@@ -8,16 +8,12 @@ namespace ChessPlatform
 {
     public sealed class CastlingInfo2
     {
-        #region Constructors
-
         internal CastlingInfo2(
             CastlingType castlingType,
             GameMove2 kingMove,
             GameMove2 rookMove,
             [NotNull] params Square[] emptySquares)
         {
-            #region Argument Check
-
             castlingType.EnsureDefined();
 
             if (emptySquares == null)
@@ -33,8 +29,6 @@ namespace ChessPlatform
                     nameof(kingMove));
             }
 
-            #endregion
-
             CastlingType = castlingType;
             CastlingSide = castlingType.GetSide();
             Option = castlingType.ToOption();
@@ -44,10 +38,6 @@ namespace ChessPlatform
             PassedSquare = new Square((kingMove.From.SquareIndex + kingMove.To.SquareIndex) / 2);
             GameSide = Option.IsAnySet(CastlingOptions.WhiteMask) ? GameSide.White : GameSide.Black;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public CastlingType CastlingType
         {
@@ -97,13 +87,7 @@ namespace ChessPlatform
             get;
         }
 
-        #endregion
-
-        #region Public Methods
-
         public override string ToString()
             => $@"[{GetType().GetQualifiedName()}] {GameSide} {CastlingSide}: {KingMove}";
-
-        #endregion
     }
 }

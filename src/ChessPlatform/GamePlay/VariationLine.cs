@@ -11,15 +11,9 @@ namespace ChessPlatform.GamePlay
     [DebuggerDisplay(@"{ToString(),nq}")]
     public sealed class VariationLine
     {
-        #region Constants and Fields
-
         public static readonly VariationLine Zero = new VariationLine(EvaluationScore.Zero);
 
         private readonly List<GameMove> _movesInternal;
-
-        #endregion
-
-        #region Constructors
 
         [DebuggerNonUserCode]
         public VariationLine(EvaluationScore value)
@@ -30,8 +24,6 @@ namespace ChessPlatform.GamePlay
 
         private VariationLine(EvaluationScore value, EvaluationScore? localValue)
         {
-            #region Argument Check
-
             if (value.Value.Abs() > EvaluationScore.MateValue)
             {
                 throw new ArgumentOutOfRangeException(
@@ -40,8 +32,6 @@ namespace ChessPlatform.GamePlay
                     $@"The score value is out of the valid range [{-EvaluationScore.MateValue:#,##0} .. {
                         EvaluationScore.MateValue:#,##0}].");
             }
-
-            #endregion
 
             _movesInternal = new List<GameMove>();
             Value = value;
@@ -56,8 +46,6 @@ namespace ChessPlatform.GamePlay
             [NotNull] ICollection<GameMove> successiveMoves)
             : this(value, localValue)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -67,8 +55,6 @@ namespace ChessPlatform.GamePlay
             {
                 throw new ArgumentNullException(nameof(successiveMoves));
             }
-
-            #endregion
 
             _movesInternal.Add(move);
             _movesInternal.AddRange(successiveMoves);
@@ -80,21 +66,13 @@ namespace ChessPlatform.GamePlay
             [NotNull] ICollection<GameMove> moves)
             : this(value, localValue)
         {
-            #region Argument Check
-
             if (moves == null)
             {
                 throw new ArgumentNullException(nameof(moves));
             }
 
-            #endregion
-
             _movesInternal.AddRange(moves);
         }
-
-        #endregion
-
-        #region Public Properties
 
         public EvaluationScore Value
         {
@@ -126,23 +104,15 @@ namespace ChessPlatform.GamePlay
 
         public string LocalValueString => LocalValue?.ToString() ?? "null";
 
-        #endregion
-
-        #region Operators
-
         [DebuggerNonUserCode]
         [NotNull]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator -([NotNull] VariationLine operand)
         {
-            #region Argument Check
-
             if (operand == null)
             {
                 throw new ArgumentNullException(nameof(operand));
             }
-
-            #endregion
 
             return new VariationLine(-operand.Value, -operand.LocalValue, operand._movesInternal);
         }
@@ -154,8 +124,6 @@ namespace ChessPlatform.GamePlay
             [NotNull] GameMove move,
             [NotNull] VariationLine operand)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -166,8 +134,6 @@ namespace ChessPlatform.GamePlay
                 throw new ArgumentNullException(nameof(operand));
             }
 
-            #endregion
-
             return new VariationLine(operand.Value, operand.LocalValue, move, operand._movesInternal);
         }
 
@@ -176,14 +142,10 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator +([NotNull] VariationLine left, EvaluationScore right)
         {
-            #region Argument Check
-
             if (left == null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
-
-            #endregion
 
             return new VariationLine(left.Value + right, left.LocalValue, left._movesInternal);
         }
@@ -193,21 +155,13 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator -([NotNull] VariationLine left, EvaluationScore right)
         {
-            #region Argument Check
-
             if (left == null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            #endregion
-
             return new VariationLine(left.Value - right, left.LocalValue, left._movesInternal);
         }
-
-        #endregion
-
-        #region Public Methods
 
         [DebuggerNonUserCode]
         public override string ToString()
@@ -219,14 +173,10 @@ namespace ChessPlatform.GamePlay
         [DebuggerNonUserCode]
         public string ToStandardAlgebraicNotationString([NotNull] GameBoard board)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             var movesString = board.GetStandardAlgebraicNotation(_movesInternal);
 
@@ -247,7 +197,5 @@ namespace ChessPlatform.GamePlay
 
             return new VariationLine(Value, localValue, _movesInternal);
         }
-
-        #endregion
     }
 }

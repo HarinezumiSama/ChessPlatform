@@ -14,18 +14,12 @@ namespace ChessPlatform
 {
     public sealed class PiecePosition
     {
-        #region Constants and Fields
-
         private static readonly int PieceArrayLength = ChessConstants.Pieces.Max(item => (int)item) + 1;
         private static readonly int GameSideArrayLength = ChessConstants.GameSides.Max(item => (int)item) + 1;
 
         private readonly Piece[] _pieces;
         private readonly Bitboard[] _pieceBitboards;
         private readonly Bitboard[] _sideBitboards;
-
-        #endregion
-
-        #region Constructors
 
         public PiecePosition()
         {
@@ -40,24 +34,16 @@ namespace ChessPlatform
 
         private PiecePosition([NotNull] PiecePosition other)
         {
-            #region Argument Check
-
             if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
-
-            #endregion
 
             _pieces = other._pieces.Copy();
             _pieceBitboards = other._pieceBitboards.Copy();
             _sideBitboards = other._sideBitboards.Copy();
             ZobristKey = other.ZobristKey;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public long ZobristKey
         {
@@ -95,10 +81,6 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region Public Methods
-
         public static bool TryCreate([NotNull] string piecePositionFen, out PiecePosition result)
         {
             result = new PiecePosition();
@@ -127,14 +109,10 @@ namespace ChessPlatform
 
         public bool IsSamePosition([NotNull] PiecePosition other)
         {
-            #region Argument Check
-
             if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
-
-            #endregion
 
             var length = _pieceBitboards.Length;
             if (length != other._pieceBitboards.Length)
@@ -185,14 +163,10 @@ namespace ChessPlatform
 
         public void SetupNewPiece(Square square, Piece piece)
         {
-            #region Argument Check
-
             if (piece == Piece.None)
             {
                 throw new ArgumentException($@"Must be a specific piece rather than {Piece.None}.", nameof(piece));
             }
-
-            #endregion
 
             var existingPiece = this[square];
             if (existingPiece != Piece.None)
@@ -204,10 +178,6 @@ namespace ChessPlatform
             SetPiece(square, piece);
         }
 
-        #endregion
-
-        #region Internal Methods
-
         internal void SetupByFenSnippet(string piecePositionFen)
         {
             const string InvalidFenMessage = "Invalid piece position FEN.";
@@ -217,10 +187,6 @@ namespace ChessPlatform
                 throw new ArgumentException(InvalidFenMessage, nameof(piecePositionFen));
             }
         }
-
-        #endregion
-
-        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetPieceArrayIndex(Piece piece) => (int)piece;
@@ -351,7 +317,5 @@ namespace ChessPlatform
 
             return true;
         }
-
-        #endregion
     }
 }

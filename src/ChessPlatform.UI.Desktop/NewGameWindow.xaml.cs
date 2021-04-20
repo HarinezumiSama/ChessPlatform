@@ -12,8 +12,6 @@ namespace ChessPlatform.UI.Desktop
     /// </summary>
     internal partial class NewGameWindow
     {
-        #region Constructors
-
         public NewGameWindow()
         {
             InitializeComponent();
@@ -27,10 +25,6 @@ namespace ChessPlatform.UI.Desktop
                 : ChessConstants.DefaultInitialFen;
         }
 
-        #endregion
-
-        #region Public Properties
-
         [NotNull]
         public IPlayerInfo WhitePlayer
             => ViewModel.WhitePlayerViewModel.SelectedPlayerControlItem.EnsureNotNull().Value.EnsureNotNull();
@@ -38,10 +32,6 @@ namespace ChessPlatform.UI.Desktop
         [NotNull]
         public IPlayerInfo BlackPlayer
             => ViewModel.BlackPlayerViewModel.SelectedPlayerControlItem.EnsureNotNull().Value.EnsureNotNull();
-
-        #endregion
-
-        #region Private Methods: Event Handlers
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -80,7 +70,5 @@ namespace ChessPlatform.UI.Desktop
         {
             ViewModel.Fen = Clipboard.GetText();
         }
-
-        #endregion
     }
 }

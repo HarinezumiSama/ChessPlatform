@@ -9,17 +9,11 @@ namespace ChessPlatform
     [DebuggerDisplay("{ToString(),nq}")]
     public sealed class EnPassantCaptureInfo : IEquatable<EnPassantCaptureInfo>
     {
-        #region Constructors
-
         internal EnPassantCaptureInfo(Square captureSquare, Square targetPieceSquare)
         {
             CaptureSquare = captureSquare;
             TargetPieceSquare = targetPieceSquare;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public Square CaptureSquare
         {
@@ -30,10 +24,6 @@ namespace ChessPlatform
         {
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Equals([CanBeNull] EnPassantCaptureInfo left, [CanBeNull] EnPassantCaptureInfo right)
@@ -70,10 +60,6 @@ namespace ChessPlatform
                     } }}";
         }
 
-        #endregion
-
-        #region Operators
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==([CanBeNull] EnPassantCaptureInfo left, [CanBeNull] EnPassantCaptureInfo right)
         {
@@ -86,16 +72,10 @@ namespace ChessPlatform
             return !Equals(left, right);
         }
 
-        #endregion
-
-        #region IEquatable<EnPassantCaptureInfo> Members
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals([CanBeNull] EnPassantCaptureInfo other)
         {
             return Equals(this, other);
         }
-
-        #endregion
     }
 }

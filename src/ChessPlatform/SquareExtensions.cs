@@ -10,12 +10,8 @@ namespace ChessPlatform
     /// </summary>
     public static class SquareExtensions
     {
-        #region Public Methods
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDark(this Square square) => ((square.File + square.Rank) & 0x1) == 0;
-
-        #endregion
     }
 }

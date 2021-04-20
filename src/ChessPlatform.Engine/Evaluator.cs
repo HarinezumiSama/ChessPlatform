@@ -15,8 +15,6 @@ namespace ChessPlatform.Engine
 {
     internal sealed class Evaluator
     {
-        #region Constants and Static Fields
-
         private const int KingTropismNormingFactor = 14;
         private const int KingTropismRelativeFactor = 5;
 
@@ -111,23 +109,13 @@ namespace ChessPlatform.Engine
         private static readonly EnumFixedSizeDictionary<PieceType, int> PieceTypeToKingTropismWeightMap =
             CreatePieceTypeToKingTropismWeightMap();
 
-        #endregion
-
-        #region Fields
-
         private readonly GameControlInfo _gameControlInfo;
 
         //// ReSharper disable once NotAccessedField.Local - To be used in EvaluateMobility
         private readonly BoardHelper _boardHelper;
 
-        #endregion
-
-        #region Constructors
-
         internal Evaluator([NotNull] GameControlInfo gameControlInfo, [NotNull] BoardHelper boardHelper)
         {
-            #region Argument Check
-
             if (gameControlInfo == null)
             {
                 throw new ArgumentNullException(nameof(gameControlInfo));
@@ -138,15 +126,9 @@ namespace ChessPlatform.Engine
                 throw new ArgumentNullException(nameof(boardHelper));
             }
 
-            #endregion
-
             _gameControlInfo = gameControlInfo;
             _boardHelper = boardHelper;
         }
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int GetMaterialWeight(PieceType pieceType, GamePhase gamePhase = GamePhase.Middlegame)
@@ -171,14 +153,10 @@ namespace ChessPlatform.Engine
 
         public EvaluationScore EvaluatePositionScore([NotNull] GameBoard board)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             _gameControlInfo.CheckInterruptions();
 
@@ -224,14 +202,10 @@ namespace ChessPlatform.Engine
             Square square,
             [CanBeNull] GameMove move)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             _gameControlInfo.CheckInterruptions();
 
@@ -255,10 +229,6 @@ namespace ChessPlatform.Engine
 
             return result;
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static Bitboard GetAdjacentFilesBitboard(int index)
         {
@@ -325,8 +295,6 @@ namespace ChessPlatform.Engine
 
         private static SquareDictionary<int> ToSquareWeightMap(GameSide side, int[,] weights)
         {
-            #region Argument Check
-
             if (weights == null)
             {
                 throw new ArgumentNullException(nameof(weights));
@@ -336,8 +304,6 @@ namespace ChessPlatform.Engine
             {
                 throw new ArgumentException(@"Invalid array length.", nameof(weights));
             }
-
-            #endregion
 
             var result = new SquareDictionary<int>();
 
@@ -762,7 +728,5 @@ namespace ChessPlatform.Engine
 
             return result;
         }
-
-        #endregion
     }
 }

@@ -7,24 +7,14 @@ namespace ChessPlatform.Internal
 {
     internal struct SquareBridgeKey : IEquatable<SquareBridgeKey>
     {
-        #region Constants and Fields
-
         private readonly int _hashCode;
-
-        #endregion
-
-        #region Constructors
 
         internal SquareBridgeKey(Square first, Square second)
         {
-            #region Argument Check
-
             if (first == second)
             {
                 throw new ArgumentException("Squares cannot be the same.");
             }
-
-            #endregion
 
             if (first.SquareIndex > second.SquareIndex)
             {
@@ -37,10 +27,6 @@ namespace ChessPlatform.Internal
             _hashCode = (First.SquareIndex << 8) | second.SquareIndex;
         }
 
-        #endregion
-
-        #region Public Properties
-
         public Square First
         {
             [DebuggerStepThrough]
@@ -52,10 +38,6 @@ namespace ChessPlatform.Internal
             [DebuggerStepThrough]
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public override bool Equals(object obj)
         {
@@ -72,15 +54,9 @@ namespace ChessPlatform.Internal
             return $@"{{{First}:{Second}}}";
         }
 
-        #endregion
-
-        #region IEquatable<SquareBridgeKey> Members
-
         public bool Equals(SquareBridgeKey other)
         {
             return other.First == First && other.Second == Second;
         }
-
-        #endregion
     }
 }

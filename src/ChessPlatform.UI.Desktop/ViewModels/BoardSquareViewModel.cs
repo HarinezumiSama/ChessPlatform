@@ -7,8 +7,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal sealed class BoardSquareViewModel : ViewModelBase
     {
-        #region Constants and Fields
-
         private readonly GameWindowViewModel _parentViewModel;
 
         private Brush _background;
@@ -17,20 +15,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private string _text;
         private Brush _borderBrush;
 
-        #endregion
-
-        #region Constructors
-
         internal BoardSquareViewModel(GameWindowViewModel parentViewModel, Square square)
         {
-            #region Argument Check
-
             if (parentViewModel == null)
             {
                 throw new ArgumentNullException(nameof(parentViewModel));
             }
-
-            #endregion
 
             _parentViewModel = parentViewModel;
             Square = square;
@@ -52,10 +42,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             UpdatePiece(true);
             UpdateBorderBrush(true);
         }
-
-        #endregion
-
-        #region Public Properties
 
         public Square Square
         {
@@ -155,10 +141,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 RaisePropertyChanged(() => BorderBrush);
             }
         }
-
-        #endregion
-
-        #region Private Methods
 
         private void SetPieceInternal(Piece value, bool forceRaiseEvent)
         {
@@ -283,7 +265,5 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             UpdateBackground();
         }
-
-        #endregion
     }
 }

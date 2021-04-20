@@ -7,8 +7,6 @@ namespace ChessPlatform
 {
     public static class PieceExtensions
     {
-        #region Public Methods
-
         /// <summary>
         ///     Returns the game side of the specified piece, or <c>null</c> if the piece is
         ///     <see cref="Piece.None"/>, that is, represents an empty square.
@@ -69,7 +67,5 @@ namespace ChessPlatform
 
             return $@"{side.Value} {pieceType}";
         }
-
-        #endregion
     }
 }

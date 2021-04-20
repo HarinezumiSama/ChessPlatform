@@ -11,8 +11,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class BitboardTests
     {
-        #region Tests
-
         [Test]
         public void TestBitboardConstants()
         {
@@ -471,7 +469,5 @@ namespace ChessPlatform.Tests
             var ratio = (double)bitboardStopwatch.ElapsedTicks / valueStopwatch.ElapsedTicks;
             Console.WriteLine(@"Ratio: {0}", ratio);
         }
-
-        #endregion
     }
 }

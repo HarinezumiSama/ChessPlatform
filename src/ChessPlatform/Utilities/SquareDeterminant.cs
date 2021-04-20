@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Omnifactotum;
@@ -7,8 +7,6 @@ namespace ChessPlatform.Utilities
 {
     public sealed class SquareDeterminant : FixedSizeDictionaryDeterminant<Square>
     {
-        #region Public Properties
-
         public override int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -17,10 +15,6 @@ namespace ChessPlatform.Utilities
                 return ChessConstants.SquareCount;
             }
         }
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetIndex(Square key)
@@ -33,7 +27,5 @@ namespace ChessPlatform.Utilities
         {
             return new Square(index);
         }
-
-        #endregion
     }
 }

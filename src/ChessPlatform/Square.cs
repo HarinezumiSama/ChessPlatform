@@ -8,8 +8,6 @@ namespace ChessPlatform
 {
     public struct Square : IEquatable<Square>
     {
-        #region Constants and Fields
-
         private static readonly string[] StringRepresentations = Enumerable
             .Range(0, ChessConstants.SquareCount)
             .Select(
@@ -21,10 +19,6 @@ namespace ChessPlatform
             .Range(0, ChessConstants.SquareCount)
             .Select(Bitboard.FromSquareIndex)
             .ToArray();
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Square"/> structure
@@ -45,8 +39,6 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         public Square(int file, int rank)
         {
-            #region Argument Check
-
             if ((file & ~ChessConstants.MaxFileIndex) != 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -63,14 +55,8 @@ namespace ChessPlatform
                     $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
 
-            #endregion
-
             SquareIndex = (rank << 3) | file;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public int SquareIndex
         {
@@ -129,10 +115,6 @@ namespace ChessPlatform
             }
         }
 
-        #endregion
-
-        #region Operators
-
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static implicit operator Square(string algebraicNotation)
@@ -165,10 +147,6 @@ namespace ChessPlatform
                 ? new Square(file, rank)
                 : default(Square?);
         }
-
-        #endregion
-
-        #region Public Methods
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -209,8 +187,6 @@ namespace ChessPlatform
 
         public static Square[] GenerateFile(int file)
         {
-            #region Argument Check
-
             if (!ChessConstants.FileRange.Contains(file))
             {
                 throw new ArgumentOutOfRangeException(
@@ -218,8 +194,6 @@ namespace ChessPlatform
                     file,
                     $@"The value is out of the valid range {ChessConstants.FileRange}.");
             }
-
-            #endregion
 
             return Enumerable
                 .Range(0, ChessConstants.RankCount)
@@ -241,8 +215,6 @@ namespace ChessPlatform
 
         public static Square[] GenerateRank(int rank)
         {
-            #region Argument Check
-
             if (!ChessConstants.RankRange.Contains(rank))
             {
                 throw new ArgumentOutOfRangeException(
@@ -250,8 +222,6 @@ namespace ChessPlatform
                     rank,
                     $@"The value is out of the valid range {ChessConstants.RankRange}.");
             }
-
-            #endregion
 
             return Enumerable
                 .Range(0, ChessConstants.FileCount)
@@ -261,14 +231,10 @@ namespace ChessPlatform
 
         public static Square[] GenerateRanks(params int[] ranks)
         {
-            #region Argument Check
-
             if (ranks == null)
             {
                 throw new ArgumentNullException(nameof(ranks));
             }
-
-            #endregion
 
             return ranks.SelectMany(GenerateRank).Distinct().ToArray();
         }
@@ -288,19 +254,11 @@ namespace ChessPlatform
             return SquareIndex;
         }
 
-        #endregion
-
-        #region IEquatable<Square> Members
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(Square other)
         {
             return Equals(this, other);
         }
-
-        #endregion
-
-        #region Internal Methods
 
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -329,10 +287,6 @@ namespace ChessPlatform
             return checked(rank - '1');
         }
 
-        #endregion
-
-        #region Private Methods
-
         [DebuggerNonUserCode]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool IsInvalidSquareIndex(int squareIndex)
@@ -355,7 +309,5 @@ namespace ChessPlatform
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static char GetRankChar(int rank) => (char)('1' + rank);
-
-        #endregion
     }
 }

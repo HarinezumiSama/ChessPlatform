@@ -8,31 +8,17 @@ namespace ChessPlatform.Engine
 {
     internal sealed class VariationLineCache
     {
-        #region Constants and Fields
-
         private readonly Dictionary<GameMove, VariationLine> _cache;
-
-        #endregion
-
-        #region Constants and Fields
 
         public VariationLineCache([NotNull] GameBoard board)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
 
-            #endregion
-
             _cache = board.ValidMoves.ToDictionary(pair => pair.Key, pair => (VariationLine)null);
         }
-
-        #endregion
-
-        #region Public Properties
 
         public VariationLine this[[NotNull] GameMove move]
         {
@@ -43,8 +29,6 @@ namespace ChessPlatform.Engine
 
             set
             {
-                #region Argument Check
-
                 if (move == null)
                 {
                     throw new ArgumentNullException(nameof(move));
@@ -54,8 +38,6 @@ namespace ChessPlatform.Engine
                 {
                     throw new ArgumentNullException(nameof(value));
                 }
-
-                #endregion
 
                 var variationLine = _cache[move];
                 if (variationLine != null)
@@ -67,10 +49,6 @@ namespace ChessPlatform.Engine
             }
         }
 
-        #endregion
-
-        #region Public Methods
-
         public IOrderedEnumerable<KeyValuePair<GameMove, VariationLine>> GetOrderedByScore()
         {
             return _cache
@@ -78,7 +56,5 @@ namespace ChessPlatform.Engine
                 .ThenByDescending(pair => pair.Value.LocalValue?.Value)
                 .ThenBy(pair => pair.Key.GetHashCode());
         }
-
-        #endregion
     }
 }

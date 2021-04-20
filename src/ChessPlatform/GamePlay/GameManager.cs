@@ -13,8 +13,6 @@ namespace ChessPlatform.GamePlay
 {
     public sealed class GameManager : IDisposable
     {
-        #region Constants and Fields
-
         private const string ThisTypeName = nameof(GameManager);
 
         private static readonly string ThisTypeFullName = typeof(GameManager).GetFullName();
@@ -41,17 +39,11 @@ namespace ChessPlatform.GamePlay
         private GameResult? _result;
         private AutoDrawType _autoDrawType;
 
-        #endregion
-
-        #region Constructors
-
         public GameManager(
             [NotNull] IChessPlayer white,
             [NotNull] IChessPlayer black,
             [NotNull] GameBoard gameBoard)
         {
-            #region Argument Check
-
             if (white == null)
             {
                 throw new ArgumentNullException(nameof(white));
@@ -66,8 +58,6 @@ namespace ChessPlatform.GamePlay
             {
                 throw new ArgumentNullException(nameof(gameBoard));
             }
-
-            #endregion
 
             _instanceIndex = Interlocked.Increment(ref _instanceCounter);
 
@@ -103,19 +93,11 @@ namespace ChessPlatform.GamePlay
             // Nothing to do
         }
 
-        #endregion
-
-        #region Events
-
         public event EventHandler GameBoardChanged;
 
         public event EventHandler PlayerThinkingStarted;
 
         public event ThreadExceptionEventHandler UnhandledExceptionOccurred;
-
-        #endregion
-
-        #region Public Properties
 
         public IChessPlayer White
         {
@@ -185,10 +167,6 @@ namespace ChessPlatform.GamePlay
             }
         }
 
-        #endregion
-
-        #region Public Methods
-
         public void Play()
         {
             lock (_syncLock)
@@ -237,14 +215,10 @@ namespace ChessPlatform.GamePlay
 
         public bool CanUndoLastMoves(int moveCount)
         {
-            #region Argument Check
-
             if (moveCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(moveCount), moveCount, @"The value must be positive.");
             }
-
-            #endregion
 
             lock (_syncLock)
             {
@@ -256,14 +230,10 @@ namespace ChessPlatform.GamePlay
 
         public bool UndoLastMoves(int moveCount)
         {
-            #region Argument Check
-
             if (moveCount <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(moveCount), moveCount, @"The value must be positive.");
             }
-
-            #endregion
 
             lock (_syncLock)
             {
@@ -303,10 +273,6 @@ namespace ChessPlatform.GamePlay
             }
         }
 
-        #endregion
-
-        #region IDisposable Members
-
         public void Dispose()
         {
             if (_isDisposed)
@@ -343,10 +309,6 @@ namespace ChessPlatform.GamePlay
 
             _thread.Join();
         }
-
-        #endregion
-
-        #region Private Methods
 
         private void EnsureNotDisposed()
         {
@@ -593,19 +555,9 @@ namespace ChessPlatform.GamePlay
             AsyncFactotum.ExecuteAsync(() => handler(this, eventArgs));
         }
 
-        #endregion
-
-        #region GetMoveState Class
-
         private sealed class GetMoveState
         {
-            #region Constants and Fields
-
             private readonly CancellationTokenSource _cancellationTokenSource;
-
-            #endregion
-
-            #region Constructors
 
             public GetMoveState(GameManagerState state, [NotNull] GameBoard activeBoard)
             {
@@ -614,10 +566,6 @@ namespace ChessPlatform.GamePlay
                 ActiveBoard = activeBoard.EnsureNotNull();
                 IsCancelled = new SyncValueContainer<bool>();
             }
-
-            #endregion
-
-            #region Public Properties
 
             public GameManagerState State
             {
@@ -643,20 +591,12 @@ namespace ChessPlatform.GamePlay
                 get;
             }
 
-            #endregion
-
-            #region Public Methods
-
             public void Cancel()
             {
                 IsCancelled.Value = true; // MUST be set before cancelling task via CTS
 
                 _cancellationTokenSource.Cancel();
             }
-
-            #endregion
         }
-
-        #endregion
     }
 }

@@ -6,21 +6,13 @@ namespace ChessPlatform.Engine
 {
     internal static class PrimeNumberHelper
     {
-        #region Constants and Fields
-
         private const int BasicPrimeUpperBound = 10000;
         private const int MinUpperBound = 2;
 
         private static readonly int[] BasicOddPrimeNumbers = ComputeBasicOddPrimeNumbers();
 
-        #endregion
-
-        #region Public Methods
-
         public static int FindPrimeNotGreaterThanSpecified(int upperBound)
         {
-            #region Argument Check
-
             if (upperBound < MinUpperBound)
             {
                 throw new ArgumentOutOfRangeException(
@@ -28,8 +20,6 @@ namespace ChessPlatform.Engine
                     upperBound,
                     $@"The value must be at least {MinUpperBound}.");
             }
-
-            #endregion
 
             if (upperBound <= MinUpperBound)
             {
@@ -76,10 +66,6 @@ namespace ChessPlatform.Engine
             return knownLast;
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static int[] ComputeBasicOddPrimeNumbers()
         {
             var oddPrimes = new List<int> { 3 };
@@ -110,7 +96,5 @@ namespace ChessPlatform.Engine
 
             return oddPrimes.ToArray();
         }
-
-        #endregion
     }
 }

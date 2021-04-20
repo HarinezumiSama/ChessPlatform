@@ -10,15 +10,9 @@ namespace ChessPlatform.UI.Desktop
 {
     internal sealed class GuiHumanChessPlayer : ChessPlayerBase
     {
-        #region Constants and Fields
-
         private readonly object _syncLock = new object();
         private bool _isAwaitingMove;
         private GameMove _move;
-
-        #endregion
-
-        #region Constructors
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="GuiHumanChessPlayer"/> class.
@@ -29,43 +23,23 @@ namespace ChessPlatform.UI.Desktop
             // Nothing to do
         }
 
-        #endregion
-
-        #region Events
-
         public event EventHandler MoveRequested;
 
         public event EventHandler MoveRequestCancelled;
 
-        #endregion
-
-        #region Public Properties
-
         public override string Name => "Human Player";
-
-        #endregion
-
-        #region Public Methods
 
         public override string ToString()
         {
             return $@"{{ {GetType().GetQualifiedName()} : {Side.GetName()} }}";
         }
 
-        #endregion
-
-        #region Internal Methods
-
         internal void ApplyMove([NotNull] GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             lock (_syncLock)
             {
@@ -78,10 +52,6 @@ namespace ChessPlatform.UI.Desktop
                 _isAwaitingMove = false;
             }
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected override VariationLine DoGetMove(GetMoveRequest request)
         {
@@ -124,10 +94,6 @@ namespace ChessPlatform.UI.Desktop
                 TaskContinuationOptions.OnlyOnCanceled);
         }
 
-        #endregion
-
-        #region Private Methods
-
         private void RaiseMoveRequestedAsync()
         {
             var handler = MoveRequested;
@@ -149,7 +115,5 @@ namespace ChessPlatform.UI.Desktop
 
             Task.Factory.StartNew(() => handler(this, EventArgs.Empty));
         }
-
-        #endregion
     }
 }

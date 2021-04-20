@@ -6,8 +6,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     internal sealed class PgnGrammar : Grammar
     {
-        #region Constructors
-
         public PgnGrammar()
         {
             var pgnDatabase = new NonTerminal("PGN-database", typeof(DatabaseAstNode));
@@ -74,7 +72,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             Root = pgnDatabase;
             LanguageFlags = LanguageFlags.CreateAst;
         }
-
-        #endregion
     }
 }

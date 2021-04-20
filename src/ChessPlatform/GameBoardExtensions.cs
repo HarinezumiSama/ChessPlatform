@@ -7,19 +7,13 @@ namespace ChessPlatform
 {
     public static class GameBoardExtensions
     {
-        #region Public Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasNonPawnMaterial([NotNull] this GameBoard board, GameSide side)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             var nonPawnBitboard = board.GetBitboard(side)
                 & ~board.GetBitboard(side.ToPiece(PieceType.King))
@@ -27,7 +21,5 @@ namespace ChessPlatform
 
             return nonPawnBitboard.IsAny;
         }
-
-        #endregion
     }
 }

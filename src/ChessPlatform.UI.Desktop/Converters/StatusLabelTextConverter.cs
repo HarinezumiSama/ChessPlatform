@@ -7,27 +7,15 @@ namespace ChessPlatform.UI.Desktop.Converters
 {
     internal sealed class StatusLabelTextConverter : IValueConverter
     {
-        #region Constants and Fields
-
         public static readonly StatusLabelTextConverter Instance = new StatusLabelTextConverter();
-
-        #endregion
-
-        #region Constructors
 
         private StatusLabelTextConverter()
         {
             // Nothing to do
         }
 
-        #endregion
-
-        #region IValueConverter Members
-
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            #region Argument Check
-
             if (targetType == null)
             {
                 throw new ArgumentNullException(nameof(targetType));
@@ -37,8 +25,6 @@ namespace ChessPlatform.UI.Desktop.Converters
             {
                 throw new ArgumentException($@"Invalid target type ({targetType.GetFullName()}).", nameof(targetType));
             }
-
-            #endregion
 
             var gameBoard = value as GameBoard;
             if (gameBoard == null)
@@ -58,7 +44,5 @@ namespace ChessPlatform.UI.Desktop.Converters
         {
             throw new NotSupportedException();
         }
-
-        #endregion
     }
 }

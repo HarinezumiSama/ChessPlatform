@@ -7,8 +7,6 @@ namespace ChessPlatform.UI.Desktop.Converters
 {
     internal sealed class RatioDoubleConverter : IValueConverter
     {
-        #region Constructors
-
         public RatioDoubleConverter(double ratio)
         {
             Ratio = ratio;
@@ -20,19 +18,11 @@ namespace ChessPlatform.UI.Desktop.Converters
             // Nothing to do
         }
 
-        #endregion
-
-        #region Public Properties
-
         public double Ratio
         {
             get;
             set;
         }
-
-        #endregion
-
-        #region IValueConverter Members
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -58,7 +48,5 @@ namespace ChessPlatform.UI.Desktop.Converters
 
             return ((double)value) / Ratio;
         }
-
-        #endregion
     }
 }

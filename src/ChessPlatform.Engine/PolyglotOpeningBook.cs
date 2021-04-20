@@ -15,8 +15,6 @@ namespace ChessPlatform.Engine
 {
     public sealed class PolyglotOpeningBook : IOpeningBook
     {
-        #region Constants and Fields
-
         private static readonly OpeningGameMove[] NoMoves = new OpeningGameMove[0];
 
         private static readonly Lazy<PolyglotOpeningBook> PerformanceInstance = Lazy.Create(
@@ -29,14 +27,8 @@ namespace ChessPlatform.Engine
 
         private readonly Dictionary<long, BookEntry[]> _entryMap;
 
-        #endregion
-
-        #region Constructors
-
         public PolyglotOpeningBook([NotNull] Stream stream)
         {
-            #region Argument Check
-
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
@@ -46,8 +38,6 @@ namespace ChessPlatform.Engine
             {
                 throw new ArgumentException(@"The stream cannot be read.", nameof(stream));
             }
-
-            #endregion
 
             var capacity = 128; // Guesstimate
             if (stream.CanSeek)
@@ -84,28 +74,16 @@ namespace ChessPlatform.Engine
                 .ToDictionary(grouping => grouping.Key, grouping => grouping.ToArray());
         }
 
-        #endregion
-
-        #region Public Properties
-
         public static PolyglotOpeningBook Performance => PerformanceInstance.Value;
 
         public static PolyglotOpeningBook Varied => VariedInstance.Value;
 
-        #endregion
-
-        #region IOpeningBook Members
-
         public OpeningGameMove[] FindPossibleMoves(GameBoard board)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             var key = board.ZobristKey;
             var entries = _entryMap.GetValueOrDefault(key);
@@ -119,10 +97,6 @@ namespace ChessPlatform.Engine
 
             return result;
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static PolyglotOpeningBook InitializeBook(
             [NotNull] Expression<Func<byte[]>> streamDataGetter)
@@ -148,10 +122,6 @@ namespace ChessPlatform.Engine
 
             return openingBook;
         }
-
-        #endregion
-
-        #region BookEntry Structure
 
         [DebuggerDisplay(
             "{GetType().Name,nq}: Key = {Key.ToString(\"X16\"),nq}, Move = {Move}, Weight = {Weight}, Learn = {Learn}"
@@ -277,7 +247,5 @@ namespace ChessPlatform.Engine
                 return result;
             }
         }
-
-        #endregion
     }
 }

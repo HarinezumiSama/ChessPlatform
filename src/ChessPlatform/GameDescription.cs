@@ -8,14 +8,10 @@ namespace ChessPlatform
 {
     public sealed class GameDescription
     {
-        #region Constructors
-
         public GameDescription(
             [NotNull] GameBoard initialBoard,
             [NotNull] IReadOnlyList<GameMove> moves)
         {
-            #region Argument Check
-
             if (initialBoard == null)
             {
                 throw new ArgumentNullException(nameof(initialBoard));
@@ -31,8 +27,6 @@ namespace ChessPlatform
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
 
-            #endregion
-
             InitialBoard = initialBoard;
             Moves = moves.ToArray().AsReadOnly();
             FinalBoard = IterateAndValidateMoves(initialBoard, moves);
@@ -40,24 +34,16 @@ namespace ChessPlatform
 
         public GameDescription([NotNull] GameBoard finalBoard)
         {
-            #region Argument Check
-
             if (finalBoard == null)
             {
                 throw new ArgumentNullException(nameof(finalBoard));
             }
-
-            #endregion
 
             var tuple = PopMoves(finalBoard);
             InitialBoard = tuple.Item1;
             Moves = tuple.Item2.AsReadOnly();
             FinalBoard = finalBoard;
         }
-
-        #endregion
-
-        #region Public Properties
 
         [NotNull]
         public GameBoard InitialBoard
@@ -76,10 +62,6 @@ namespace ChessPlatform
         {
             get;
         }
-
-        #endregion
-
-        #region Private Methods
 
         private static GameBoard IterateAndValidateMoves(
             [NotNull] GameBoard initialBoard,
@@ -118,7 +100,5 @@ namespace ChessPlatform
 
             return Tuple.Create(currentBoard, moveStack.ToArray());
         }
-
-        #endregion
     }
 }

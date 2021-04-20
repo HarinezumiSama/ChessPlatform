@@ -5,21 +5,11 @@ namespace ChessPlatform
 {
     public sealed class DoublePushInfo
     {
-        #region Constants and Fields
-
         private const int Difference = 2;
-
-        #endregion
-
-        #region Constructors
 
         internal DoublePushInfo(GameSide side)
         {
-            #region Argument Check
-
             side.EnsureDefined();
-
-            #endregion
 
             bool isWhite;
             switch (side)
@@ -43,10 +33,6 @@ namespace ChessPlatform
             CaptureTargetRank = (StartRank + EndRank) / 2;
         }
 
-        #endregion
-
-        #region Public Properties
-
         public GameSide Side
         {
             get;
@@ -66,7 +52,5 @@ namespace ChessPlatform
         {
             get;
         }
-
-        #endregion
     }
 }

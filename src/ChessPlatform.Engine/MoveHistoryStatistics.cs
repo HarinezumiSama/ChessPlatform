@@ -14,8 +14,6 @@ namespace ChessPlatform.Engine
 {
     internal sealed class MoveHistoryStatistics
     {
-        #region Constants and Fields
-
         public const int MinDepth = 1;
         public const int MaxDepth = CommonEngineConstants.MaxPlyDepthUpperLimit;
 
@@ -27,10 +25,6 @@ namespace ChessPlatform.Engine
         private readonly KillerMoveData[] _killerMoveDatas;
         private readonly int[] _historyTable;
 
-        #endregion
-
-        #region Constructors
-
         public MoveHistoryStatistics()
         {
             _syncLock = new object();
@@ -39,10 +33,6 @@ namespace ChessPlatform.Engine
             _historyTable = new int[PieceCount * ChessConstants.SquareCount];
         }
 
-        #endregion
-
-        #region Public Methods
-
         public void RecordCutOffMove(
             [NotNull] GameBoard board,
             [NotNull] GameMove move,
@@ -50,8 +40,6 @@ namespace ChessPlatform.Engine
             int remainingDepth,
             [CanBeNull] ICollection<GameMove> previousQueitMoves)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
@@ -69,8 +57,6 @@ namespace ChessPlatform.Engine
                     plyDistance,
                     $@"The value is out of the valid range ({MinDepth} .. {MaxDepth}).");
             }
-
-            #endregion
 
             if (board.State.IsAnyCheck() || remainingDepth <= 0)
             {
@@ -125,8 +111,6 @@ namespace ChessPlatform.Engine
 
         public int GetHistoryValue([NotNull] GameBoard board, [NotNull] GameMove move)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
@@ -136,8 +120,6 @@ namespace ChessPlatform.Engine
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var piece = board[move.From];
             var to = move.To;
@@ -206,10 +188,6 @@ namespace ChessPlatform.Engine
             return result;
         }
 
-        #endregion
-
-        #region Private Methods
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetHistoryTableOffset(Piece piece, Square square)
         {
@@ -240,7 +218,5 @@ namespace ChessPlatform.Engine
             var historyTableOffset = GetHistoryTableOffset(board[move.From], move.To);
             _historyTable[historyTableOffset] += bonus;
         }
-
-        #endregion
     }
 }

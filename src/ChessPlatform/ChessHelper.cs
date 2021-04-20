@@ -14,8 +14,6 @@ namespace ChessPlatform
 {
     public static class ChessHelper
     {
-        #region Constants and Fields
-
         public const double DefaultZeroTolerance = 1E-7d;
 
         public static readonly string PlatformVersion = typeof(ChessHelper)
@@ -147,10 +145,6 @@ namespace ChessPlatform
                 FenRankRegexSnippet),
             RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
-        #endregion
-
-        #region Public Methods
-
         public static bool IsZero(this double value, double tolerance = DefaultZeroTolerance)
         {
             return Math.Abs(value) <= DefaultZeroTolerance;
@@ -179,14 +173,10 @@ namespace ChessPlatform
             [NotNull] this GameBoard board,
             [NotNull] ICollection<GameMove> moves)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
-
-            #endregion
 
             var resultBuilder = new StringBuilder();
 
@@ -207,14 +197,10 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this GameMove move)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             var isPromotion = move.PromotionResult != PieceType.None;
 
@@ -232,8 +218,6 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this ICollection<GameMove> moves)
         {
-            #region Argument Check
-
             if (moves == null)
             {
                 throw new ArgumentNullException(nameof(moves));
@@ -244,28 +228,18 @@ namespace ChessPlatform
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
 
-            #endregion
-
             return moves.Select(ToUciNotation).Join(MoveSeparator);
         }
 
         public static Square[] GetOnboardSquares(Square square, IEnumerable<SquareShift> shifts)
         {
-            #region Argument Check
-
             if (shifts == null)
             {
                 throw new ArgumentNullException(nameof(shifts));
             }
 
-            #endregion
-
             return shifts.Select(shift => square + shift).Where(p => p.HasValue).Select(p => p.Value).ToArray();
         }
-
-        #endregion
-
-        #region Internal Methods
 
         internal static Square[] GetKnightMoveSquares(Square square)
         {
@@ -279,8 +253,6 @@ namespace ChessPlatform
 
         internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
         {
-            #region Argument Check
-
             if (hashSet == null)
             {
                 throw new ArgumentNullException(nameof(hashSet));
@@ -290,8 +262,6 @@ namespace ChessPlatform
             {
                 throw new ArgumentNullException(nameof(collection));
             }
-
-            #endregion
 
             collection.DoForEach(item => hashSet.Add(item));
         }
@@ -312,8 +282,6 @@ namespace ChessPlatform
             [NotNull] GameMove move,
             [NotNull] out GameBoard nextBoard)
         {
-            #region Argument Check
-
             if (board == null)
             {
                 throw new ArgumentNullException(nameof(board));
@@ -323,8 +291,6 @@ namespace ChessPlatform
             {
                 throw new ArgumentNullException(nameof(move));
             }
-
-            #endregion
 
             GameMoveFlags moveFlags;
             if (!board.ValidMoves.TryGetValue(move, out moveFlags))
@@ -416,10 +382,6 @@ namespace ChessPlatform
             return resultBuilder.ToString();
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static Square[] GetKnightMoveSquaresNonCached(Square square)
         {
             return GetOnboardSquares(square, KnightAttackOrMoveOffsets);
@@ -477,7 +439,5 @@ namespace ChessPlatform
 
             return resultMap.AsReadOnly();
         }
-
-        #endregion
     }
 }

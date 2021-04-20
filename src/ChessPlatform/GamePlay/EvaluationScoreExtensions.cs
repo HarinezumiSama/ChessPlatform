@@ -7,14 +7,8 @@ namespace ChessPlatform.GamePlay
 {
     public static class EvaluationScoreExtensions
     {
-        #region Constants and Fields
-
         private const int MateScoreLowerBound =
             EvaluationScore.MateValue - CommonEngineConstants.MaxPlyDepthUpperLimit;
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAnyMate(this EvaluationScore evaluationScore)
@@ -69,7 +63,5 @@ namespace ChessPlatform.GamePlay
                 ? new EvaluationScore(score.Value - plyDistance)
                 : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value + plyDistance) : score);
         }
-
-        #endregion
     }
 }

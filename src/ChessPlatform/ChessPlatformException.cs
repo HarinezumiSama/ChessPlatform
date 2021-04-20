@@ -7,8 +7,6 @@ namespace ChessPlatform
     [Serializable]
     public sealed class ChessPlatformException : Exception
     {
-        #region Constructors
-
         internal ChessPlatformException(string message)
             : base(message)
         {
@@ -27,15 +25,9 @@ namespace ChessPlatform
             // Nothing to do
         }
 
-        #endregion
-
-        #region Internal Methods
-
         internal static ChessPlatformException CreateInconsistentStateError()
         {
             return new ChessPlatformException("Inconsistent state of the piece data.");
         }
-
-        #endregion
     }
 }

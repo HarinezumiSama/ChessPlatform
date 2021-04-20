@@ -16,8 +16,6 @@ namespace ChessPlatform.Engine
 {
     internal sealed class EnginePlayerMoveSearcher
     {
-        #region Constants and Fields
-
         private const int QuiesceDepth = -1;
 
         private const int MaxDepthExtension = 6;
@@ -37,10 +35,6 @@ namespace ChessPlatform.Engine
         private readonly MoveHistoryStatistics _moveHistoryStatistics;
         private readonly Evaluator _evaluator;
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="EnginePlayerMoveSearcher"/> class
         ///     using the specified parameters.
@@ -55,8 +49,6 @@ namespace ChessPlatform.Engine
             bool useMultipleProcessors,
             [NotNull] MoveHistoryStatistics moveHistoryStatistics)
         {
-            #region Argument Check
-
             if (rootBoard == null)
             {
                 throw new ArgumentNullException(nameof(rootBoard));
@@ -80,8 +72,6 @@ namespace ChessPlatform.Engine
                 throw new ArgumentNullException(nameof(moveHistoryStatistics));
             }
 
-            #endregion
-
             _rootBoard = rootBoard;
             _plyDepth = plyDepth;
             _boardHelper = boardHelper;
@@ -94,10 +84,6 @@ namespace ChessPlatform.Engine
 
             VariationLineCache = new VariationLineCache(rootBoard);
         }
-
-        #endregion
-
-        #region Public Properties
 
         public long NodeCount
         {
@@ -115,10 +101,6 @@ namespace ChessPlatform.Engine
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get;
         }
-
-        #endregion
-
-        #region Public Methods
 
         public VariationLine GetBestMove()
         {
@@ -139,10 +121,6 @@ namespace ChessPlatform.Engine
 
             return result;
         }
-
-        #endregion
-
-        #region Private Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int GetCaptureOrPromotionValue(
@@ -416,8 +394,6 @@ namespace ChessPlatform.Engine
             bool skipHeuristicPruning,
             int totalDepthExtension)
         {
-            #region Argument Check
-
             if (plyDistance <= 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -425,8 +401,6 @@ namespace ChessPlatform.Engine
                     plyDistance,
                     @"The value must be positive.");
             }
-
-            #endregion
 
             _gameControlInfo.CheckInterruptions();
 
@@ -795,7 +769,5 @@ namespace ChessPlatform.Engine
 
             return bestVariation;
         }
-
-        #endregion
     }
 }

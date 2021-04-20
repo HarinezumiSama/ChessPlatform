@@ -7,8 +7,6 @@ namespace ChessPlatform.Serializers
 {
     public sealed class FenGameSerializer : GameSerializer
     {
-        #region Protected Methods
-
         protected override void ExecuteSerialize(ICollection<GameDescription> gameDescriptions, TextWriter writer)
         {
             //// ReSharper disable once LoopCanBePartlyConvertedToQuery
@@ -35,7 +33,5 @@ namespace ChessPlatform.Serializers
 
             return gameDescriptions.ToArray();
         }
-
-        #endregion
     }
 }

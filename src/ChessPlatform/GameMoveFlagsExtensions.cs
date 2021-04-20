@@ -5,8 +5,6 @@ namespace ChessPlatform
 {
     public static class GameMoveFlagsExtensions
     {
-        #region Public Methods
-
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAnySet(this GameMoveFlags value, GameMoveFlags flags) => (value & flags) != 0;
@@ -33,7 +31,5 @@ namespace ChessPlatform
         [DebuggerStepThrough]
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsKingCastling(this GameMoveFlags value) => value.IsAnySet(GameMoveFlags.IsKingCastling);
-
-        #endregion
     }
 }

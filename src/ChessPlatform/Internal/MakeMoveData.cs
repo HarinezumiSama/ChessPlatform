@@ -7,8 +7,6 @@ namespace ChessPlatform.Internal
 {
     internal sealed class MakeMoveData
     {
-        #region Constructors
-
         internal MakeMoveData(
             [NotNull] GameMove move,
             Piece movedPiece,
@@ -16,8 +14,6 @@ namespace ChessPlatform.Internal
             [CanBeNull] GameMove castlingRookMove,
             [CanBeNull] Square? enPassantCapturedPieceSquare)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -38,8 +34,6 @@ namespace ChessPlatform.Internal
                 throw new ArgumentException("Castling and capture could not occur simultaneously.");
             }
 
-            #endregion
-
             Move = move;
             MovedPiece = movedPiece;
             CapturedPiece = capturedPiece;
@@ -47,10 +41,6 @@ namespace ChessPlatform.Internal
 
             CapturedPieceSquare = enPassantCapturedPieceSquare ?? move.To;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public GameMove Move
         {
@@ -77,10 +67,6 @@ namespace ChessPlatform.Internal
             get;
         }
 
-        #endregion
-
-        #region Internal Properties
-
         internal bool ShouldKeepCountingBy50MoveRule
         {
             [DebuggerNonUserCode]
@@ -89,7 +75,5 @@ namespace ChessPlatform.Internal
                 return MovedPiece.GetPieceType() != PieceType.Pawn && CapturedPiece == Piece.None;
             }
         }
-
-        #endregion
     }
 }

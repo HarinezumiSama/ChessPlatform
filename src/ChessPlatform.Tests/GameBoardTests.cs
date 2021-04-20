@@ -9,8 +9,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class GameBoardTests : GameBoardTestBase
     {
-        #region Tests
-
         [Test]
         public void TestDefaultConstruction()
         {
@@ -522,10 +520,6 @@ namespace ChessPlatform.Tests
             Assert.That(threefoldContinuedBoard.GetAutoDrawType(), Is.EqualTo(AutoDrawType.ThreefoldRepetition));
         }
 
-        #endregion
-
-        #region Private Methods
-
         private static void AssertDefaultInitialBoard(GameBoard gameBoard)
         {
             Assert.That(gameBoard, Is.Not.Null);
@@ -715,7 +709,5 @@ namespace ChessPlatform.Tests
 
             AssertNoValidMoves(gameBoard3W);
         }
-
-        #endregion
     }
 }

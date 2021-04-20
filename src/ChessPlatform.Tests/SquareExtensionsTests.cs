@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class SquareExtensionsTests
     {
-        #region Tests
-
         [Test]
         public void TestIsDark()
         {
@@ -27,7 +25,5 @@ namespace ChessPlatform.Tests
                     $@"Failed for {nameof(Square.SquareIndex)} = {square.SquareIndex}.");
             }
         }
-
-        #endregion
     }
 }

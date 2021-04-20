@@ -7,8 +7,6 @@ namespace ChessPlatform.Tests
     [TestFixture]
     public sealed class ChessHelperTests
     {
-        #region Tests
-
         [Test]
         public void TestGetPlatformVersion()
         {
@@ -140,7 +138,5 @@ namespace ChessPlatform.Tests
             var actualResult = moves.ToUciNotation();
             Assert.That(actualResult, Is.EqualTo("a1c2, f2f4, b7b8n, f2e1q"));
         }
-
-        #endregion
     }
 }

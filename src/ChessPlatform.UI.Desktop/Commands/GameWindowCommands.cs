@@ -6,8 +6,6 @@ namespace ChessPlatform.UI.Desktop.Commands
 {
     internal static class GameWindowCommands
     {
-        #region Constants and Fields
-
         public static readonly RoutedUICommand NewGame = new RoutedUICommand(
             "_New Game...",
             nameof(NewGame),
@@ -65,7 +63,5 @@ namespace ChessPlatform.UI.Desktop.Commands
             nameof(RequestMoveNow),
             typeof(GameWindowCommands),
             new InputGestureCollection { new KeyGesture(Key.M, ModifierKeys.Control), new KeyGesture(Key.F5) });
-
-        #endregion
     }
 }

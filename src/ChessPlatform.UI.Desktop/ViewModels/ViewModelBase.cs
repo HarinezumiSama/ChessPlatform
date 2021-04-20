@@ -12,17 +12,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 {
     internal abstract class ViewModelBase : INotifyPropertyChanged
     {
-        #region Constants and Fields
-
         private const string InvalidExpressionMessageAutoFormat =
             "Invalid expression (must be a getter of a property of the type '{0}'): {{ {1} }}.";
 
         private readonly Dispatcher _dispatcher;
         private readonly Dictionary<string, List<EventHandler>> _propertyChangedSubscriptionsDictionary;
-
-        #endregion
-
-        #region Constructors
 
         protected ViewModelBase()
         {
@@ -30,28 +24,16 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _propertyChangedSubscriptionsDictionary = new Dictionary<string, List<EventHandler>>();
         }
 
-        #endregion
-
-        #region INotifyPropertyChanged Members
-
         public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region Public Methods
 
         public void SubscribeToChangeOf<TProperty>(
             Expression<Func<TProperty>> propertyGetterExpression,
             EventHandler handler)
         {
-            #region Argument Check
-
             if (handler == null)
             {
                 throw new ArgumentNullException(nameof(handler));
             }
-
-            #endregion
 
             var propertyName = GetPropertyName(propertyGetterExpression);
 
@@ -69,10 +51,6 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         {
             return Validate().IsObjectValid;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         [NotifyPropertyChangedInvocator]
         protected void RaisePropertyChanged<TProperty>(Expression<Func<TProperty>> propertyGetterExpression)
@@ -110,20 +88,12 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
         }
 
-        #endregion
-
-        #region Private Methods
-
         private string GetPropertyName<TProperty>(Expression<Func<TProperty>> propertyGetterExpression)
         {
-            #region Argument Check
-
             if (propertyGetterExpression == null)
             {
                 throw new ArgumentNullException(nameof(propertyGetterExpression));
             }
-
-            #endregion
 
             var thisType = GetType();
 
@@ -163,7 +133,5 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             return propertyInfo.EnsureNotNull().Name;
         }
-
-        #endregion
     }
 }

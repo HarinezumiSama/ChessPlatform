@@ -9,23 +9,13 @@ namespace ChessPlatform.Engine
 {
     internal sealed class GameControlInfo
     {
-        #region Constants and Fields
-
         private Func<Exception> _customInterruptionFactory;
-
-        #endregion
-
-        #region Constructors
 
         public GameControlInfo([NotNull] IGameControl gameControl, CancellationToken cancellationToken)
         {
             GameControl = gameControl.EnsureNotNull();
             CancellationToken = cancellationToken;
         }
-
-        #endregion
-
-        #region Public Properties
 
         public IGameControl GameControl
         {
@@ -44,10 +34,6 @@ namespace ChessPlatform.Engine
         }
 
         public bool IsCustomInterruptionRequested => _customInterruptionFactory != null;
-
-        #endregion
-
-        #region Public Methods
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AllowMoveNow()
@@ -79,7 +65,5 @@ namespace ChessPlatform.Engine
                 GameControl.ThrowIfMoveNowIsRequested();
             }
         }
-
-        #endregion
     }
 }

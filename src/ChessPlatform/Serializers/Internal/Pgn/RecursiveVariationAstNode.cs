@@ -7,17 +7,11 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     public sealed class RecursiveVariationAstNode : AstNodeBase
     {
-        #region Public Properties
-
         public ElementSequenceAstNode ElementSequence
         {
             get;
             private set;
         }
-
-        #endregion
-
-        #region Protected Methods
 
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
@@ -25,7 +19,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 
             ElementSequence = GetChildNode<ElementSequenceAstNode>(parseNode, 0);
         }
-
-        #endregion
     }
 }

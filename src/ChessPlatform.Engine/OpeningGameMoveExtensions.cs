@@ -6,14 +6,10 @@ namespace ChessPlatform.Engine
 {
     public static class OpeningGameMoveExtensions
     {
-        #region Public Methods
-
         public static string ToStandardAlgebraicNotation(
             [NotNull] this OpeningGameMove move,
             [NotNull] GameBoard board)
         {
-            #region Argument Check
-
             if (move == null)
             {
                 throw new ArgumentNullException(nameof(move));
@@ -24,12 +20,8 @@ namespace ChessPlatform.Engine
                 throw new ArgumentNullException(nameof(board));
             }
 
-            #endregion
-
             var notation = move.Move.ToStandardAlgebraicNotation(board);
             return $@"{notation} (W:{move.Weight})";
         }
-
-        #endregion
     }
 }

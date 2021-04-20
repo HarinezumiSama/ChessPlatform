@@ -7,8 +7,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
 {
     public sealed class GameAstNode : AstNodeBase
     {
-        #region Public Properties
-
         public MovetextSectionAstNode MovetextSection
         {
             get;
@@ -21,10 +19,6 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             private set;
         }
 
-        #endregion
-
-        #region Protected Methods
-
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
             AssertChildCount(parseNode, 2);
@@ -32,7 +26,5 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             TagSection = GetChildNode<TagSectionAstNode>(parseNode, 0);
             MovetextSection = GetChildNode<MovetextSectionAstNode>(parseNode, 1);
         }
-
-        #endregion
     }
 }
