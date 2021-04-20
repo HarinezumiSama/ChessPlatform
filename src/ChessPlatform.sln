@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29326.143
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform", "ChessPlatform\ChessPlatform.csproj", "{AA84E743-3651-4436-BD27-CDD81D525D3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Tests", "ChessPlatform.Tests\ChessPlatform.Tests.csproj", "{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}"
