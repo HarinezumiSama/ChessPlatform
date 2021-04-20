@@ -1,0 +1,15 @@
+**/.out/*
+**/.temp/*
+**/obj/*
+**/packages/*
+**/.vs/*
+**/_ReSharper*/*
+*.suo
+*.*proj.user
+*.DotSettings.user
+*.Publish.xml
+*.wbk
+~$*.doc
+*.pfx
+StyleCop.Cache
+Generated.*
