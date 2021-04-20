@@ -35,10 +35,6 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Omnifactotum, Version=0.3.0.119, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
-      <HintPath>..\packages\Omnifactotum.0.3.0.119\lib\net40-Client\Omnifactotum.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -91,9 +87,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
     <None Include="Resources\OpeningBook.Performance.Polyglot.bin" />
     <None Include="Resources\OpeningBook.Varied.Polyglot.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Omnifactotum">
+      <Version>0.3.0.119</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

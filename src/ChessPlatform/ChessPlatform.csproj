@@ -39,14 +39,6 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
-      <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Omnifactotum, Version=0.3.0.119, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
-      <HintPath>..\packages\Omnifactotum.0.3.0.119\lib\net40-Client\Omnifactotum.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -164,9 +156,13 @@
     <Compile Include="Internal\ResultStrings.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="Irony">
+      <Version>0.9.1</Version>
+    </PackageReference>
+    <PackageReference Include="Omnifactotum">
+      <Version>0.3.0.119</Version>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

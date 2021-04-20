@@ -39,18 +39,6 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Omnifactotum, Version=0.3.0.119, Culture=neutral, PublicKeyToken=463364b83539fcba, processorArchitecture=MSIL">
-      <HintPath>..\packages\Omnifactotum.0.3.0.119\lib\net40-Client\Omnifactotum.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Omnifactotum.NUnit, Version=0.1.0.2, Culture=neutral, PublicKeyToken=7d0a892e0ba77d43, processorArchitecture=MSIL">
-      <HintPath>..\packages\Omnifactotum.NUnit.0.1.0.2\lib\net40\Omnifactotum.NUnit.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
@@ -85,9 +73,6 @@
     <Compile Include="TranspositionTableRelatedTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\ChessPlatform.Engine\ChessPlatform.Engine.csproj">
       <Project>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</Project>
       <Name>ChessPlatform.Engine</Name>
@@ -103,6 +88,11 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Omnifactotum.NUnit">
+      <Version>0.1.0.2</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
