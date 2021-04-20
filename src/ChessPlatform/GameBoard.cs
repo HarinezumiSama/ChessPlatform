@@ -179,10 +179,7 @@ namespace ChessPlatform
         public string ResultString
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _resultString;
-            }
+            get => _resultString;
         }
 
         [CanBeNull]
@@ -195,64 +192,43 @@ namespace ChessPlatform
         public GameSide ActiveSide
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _activeSide;
-            }
+            get => _activeSide;
         }
 
         public GameState State
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _state;
-            }
+            get => _state;
         }
 
         public CastlingOptions CastlingOptions
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _castlingOptions;
-            }
+            get => _castlingOptions;
         }
 
         public EnPassantCaptureInfo EnPassantCaptureInfo
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _enPassantCaptureInfo;
-            }
+            get => _enPassantCaptureInfo;
         }
 
         public ReadOnlyDictionary<GameMove, GameMoveFlags> ValidMoves
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _validMoves;
-            }
+            get => _validMoves;
         }
 
         public int FullMoveCountBy50MoveRule
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _halfMoveCountBy50MoveRule / 2;
-            }
+            get => _halfMoveCountBy50MoveRule / 2;
         }
 
         public int FullMoveIndex
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _fullMoveIndex;
-            }
+            get => _fullMoveIndex;
         }
 
         public GameMove PreviousMove
@@ -273,30 +249,21 @@ namespace ChessPlatform
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _gameBoardData.PiecePosition[square];
-            }
+            get => _gameBoardData.PiecePosition[square];
         }
 
         public Bitboard this[Piece piece]
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _gameBoardData.PiecePosition[piece];
-            }
+            get => _gameBoardData.PiecePosition[piece];
         }
 
         public Bitboard this[GameSide side]
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _gameBoardData.PiecePosition[side];
-            }
+            get => _gameBoardData.PiecePosition[side];
         }
 
         public long ZobristKey => _zobristKey;
@@ -304,10 +271,7 @@ namespace ChessPlatform
         internal int HalfMoveCountBy50MoveRule
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _halfMoveCountBy50MoveRule;
-            }
+            get => _halfMoveCountBy50MoveRule;
         }
 
         [DebuggerStepThrough]

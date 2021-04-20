@@ -28,17 +28,11 @@ namespace ChessPlatform.Engine
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _entry1;
-            }
+            get => _entry1;
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set
-            {
-                _entry1 = value;
-            }
+            set => _entry1 = value;
         }
 
         //// ReSharper disable once ConvertToAutoProperty - entry fields are made aligned
@@ -46,17 +40,11 @@ namespace ChessPlatform.Engine
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _entry2;
-            }
+            get => _entry2;
 
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            set
-            {
-                _entry2 = value;
-            }
+            set => _entry2 = value;
         }
     }
 }

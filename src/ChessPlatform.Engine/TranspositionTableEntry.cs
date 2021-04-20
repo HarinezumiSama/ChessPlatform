@@ -46,15 +46,12 @@ namespace ChessPlatform.Engine
         public GameMove BestMove
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _bestMoveEncoded == 0
-                    ? null
-                    : new GameMove(
-                        new Square((_bestMoveEncoded >> 9) & ChessConstants.MaxSquareIndex),
-                        new Square((_bestMoveEncoded >> 3) & ChessConstants.MaxSquareIndex),
-                        (PieceType)(_bestMoveEncoded & 0x7));
-            }
+            get => _bestMoveEncoded == 0
+                ? null
+                : new GameMove(
+                    new Square((_bestMoveEncoded >> 9) & ChessConstants.MaxSquareIndex),
+                    new Square((_bestMoveEncoded >> 3) & ChessConstants.MaxSquareIndex),
+                    (PieceType)(_bestMoveEncoded & 0x7));
         }
 
         public EvaluationScore Score => new EvaluationScore(_scoreValue);

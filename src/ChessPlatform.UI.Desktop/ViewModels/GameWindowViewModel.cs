@@ -84,10 +84,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public GameWindowSelectionMode SelectionMode
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _selectionMode;
-            }
+            get => _selectionMode;
 
             private set
             {
@@ -105,10 +102,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public GameBoard CurrentGameBoard
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _currentGameBoard;
-            }
+            get => _currentGameBoard;
 
             private set
             {
@@ -125,10 +119,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public Square? CurrentTargetSquare
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _currentTargetSquare;
-            }
+            get => _currentTargetSquare;
 
             set
             {
@@ -154,10 +145,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool IsReversedView
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _isReversedView;
-            }
+            get => _isReversedView;
 
             set
             {
@@ -174,10 +162,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool ShouldShowPlayerFeedback
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _shouldShowPlayerFeedback;
-            }
+            get => _shouldShowPlayerFeedback;
 
             set
             {
@@ -194,10 +179,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool ShouldShowPlayersTimers
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _shouldShowPlayersTimers;
-            }
+            get => _shouldShowPlayersTimers;
 
             set
             {

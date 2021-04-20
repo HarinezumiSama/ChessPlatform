@@ -55,30 +55,21 @@ namespace ChessPlatform
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _pieces[square.SquareIndex];
-            }
+            get => _pieces[square.SquareIndex];
         }
 
         public Bitboard this[Piece piece]
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _pieceBitboards[GetPieceArrayIndex(piece)];
-            }
+            get => _pieceBitboards[GetPieceArrayIndex(piece)];
         }
 
         public Bitboard this[GameSide side]
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _sideBitboards[GetGameSideArrayIndex(side)];
-            }
+            get => _sideBitboards[GetGameSideArrayIndex(side)];
         }
 
         public static bool TryCreate([NotNull] string piecePositionFen, out PiecePosition result)

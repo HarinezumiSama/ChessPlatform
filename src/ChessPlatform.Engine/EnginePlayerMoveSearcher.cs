@@ -89,10 +89,7 @@ namespace ChessPlatform.Engine
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return _boardHelper.LocalMoveCount;
-            }
+            get => _boardHelper.LocalMoveCount;
         }
 
         public VariationLineCache VariationLineCache

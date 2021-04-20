@@ -127,30 +127,21 @@ namespace ChessPlatform
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return (long)InternalValue;
-            }
+            get => (long)InternalValue;
         }
 
         public bool IsNone
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return InternalValue == NoneValue;
-            }
+            get => InternalValue == NoneValue;
         }
 
         public bool IsAny
         {
             [DebuggerNonUserCode]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return InternalValue != NoneValue;
-            }
+            get => InternalValue != NoneValue;
         }
 
         internal ulong InternalValue

@@ -10,10 +10,7 @@ namespace ChessPlatform.Utilities
         public override int Size
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return ChessConstants.SquareCount;
-            }
+            get => ChessConstants.SquareCount;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

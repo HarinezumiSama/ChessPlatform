@@ -580,10 +580,7 @@ namespace ChessPlatform.GamePlay
             public CancellationToken CancellationToken
             {
                 [DebuggerNonUserCode]
-                get
-                {
-                    return _cancellationTokenSource.Token;
-                }
+                get => _cancellationTokenSource.Token;
             }
 
             public SyncValueContainer<bool> IsCancelled

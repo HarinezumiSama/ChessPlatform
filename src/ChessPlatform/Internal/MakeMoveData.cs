@@ -70,10 +70,7 @@ namespace ChessPlatform.Internal
         internal bool ShouldKeepCountingBy50MoveRule
         {
             [DebuggerNonUserCode]
-            get
-            {
-                return MovedPiece.GetPieceType() != PieceType.Pawn && CapturedPiece == Piece.None;
-            }
+            get => MovedPiece.GetPieceType() != PieceType.Pawn && CapturedPiece == Piece.None;
         }
     }
 }

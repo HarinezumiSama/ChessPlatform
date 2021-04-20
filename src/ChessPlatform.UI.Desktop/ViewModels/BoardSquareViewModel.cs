@@ -51,10 +51,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public Brush Background
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _background;
-            }
+            get => _background;
 
             private set
             {
@@ -71,10 +68,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public Brush Foreground
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _foreground;
-            }
+            get => _foreground;
 
             private set
             {
@@ -91,10 +85,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string Text
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _text;
-            }
+            get => _text;
 
             private set
             {
@@ -111,24 +102,15 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public Piece Piece
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _piece;
-            }
+            get => _piece;
 
-            set
-            {
-                SetPieceInternal(value, false);
-            }
+            set => SetPieceInternal(value, false);
         }
 
         public Brush BorderBrush
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _borderBrush;
-            }
+            get => _borderBrush;
 
             private set
             {

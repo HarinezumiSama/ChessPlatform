@@ -22,10 +22,7 @@ namespace ChessPlatform.Engine
 
         public VariationLine this[[NotNull] GameMove move]
         {
-            get
-            {
-                return _cache[move];
-            }
+            get => _cache[move];
 
             set
             {

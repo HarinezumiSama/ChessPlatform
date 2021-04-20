@@ -65,10 +65,7 @@ namespace ChessPlatform.Engine
         public override string Name
         {
             [DebuggerStepThrough]
-            get
-            {
-                return PlayerName;
-            }
+            get => PlayerName;
         }
 
         public int MaxPlyDepth

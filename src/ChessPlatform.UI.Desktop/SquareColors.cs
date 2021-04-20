@@ -17,10 +17,7 @@ namespace ChessPlatform.UI.Desktop
         public Color this[bool isDark]
         {
             [DebuggerNonUserCode]
-            get
-            {
-                return isDark ? DarkSquareColor : LightSquareColor;
-            }
+            get => isDark ? DarkSquareColor : LightSquareColor;
         }
 
         public Color DarkSquareColor

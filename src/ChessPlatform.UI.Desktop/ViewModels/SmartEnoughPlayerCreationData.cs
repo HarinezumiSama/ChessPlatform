@@ -43,10 +43,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public TimeSpan? MaxTimePerMove
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _maxTimePerMove;
-            }
+            get => _maxTimePerMove;
 
             set
             {
@@ -65,10 +62,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public int? MaxPlyDepth
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _maxPlyDepth;
-            }
+            get => _maxPlyDepth;
 
             set
             {
@@ -86,10 +80,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool UseOpeningBook
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _useOpeningBook;
-            }
+            get => _useOpeningBook;
 
             set
             {
@@ -107,10 +98,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool UseMultipleProcessors
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _useMultipleProcessors;
-            }
+            get => _useMultipleProcessors;
 
             set
             {
@@ -128,10 +116,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool UseTranspositionTable
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _useTranspositionTable;
-            }
+            get => _useTranspositionTable;
 
             set
             {
@@ -150,10 +135,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public int? TranspositionTableSizeInMegaBytes
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _transpositionTableSizeInMegaBytes;
-            }
+            get => _transpositionTableSizeInMegaBytes;
 
             set
             {

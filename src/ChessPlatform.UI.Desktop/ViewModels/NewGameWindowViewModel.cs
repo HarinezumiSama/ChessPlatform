@@ -37,10 +37,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public string Fen
         {
             [DebuggerStepThrough]
-            get
-            {
-                return _fen;
-            }
+            get => _fen;
 
             set
             {

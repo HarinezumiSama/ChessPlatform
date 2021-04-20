@@ -69,50 +69,35 @@ namespace ChessPlatform
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return Bitboards[SquareIndex];
-            }
+            get => Bitboards[SquareIndex];
         }
 
         public int File
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return GetFile(SquareIndex);
-            }
+            get => GetFile(SquareIndex);
         }
 
         public int Rank
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return GetRank(SquareIndex);
-            }
+            get => GetRank(SquareIndex);
         }
 
         public char FileChar
         {
             [DebuggerStepThrough]
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get
-            {
-                return GetFileChar(File);
-            }
+            get => GetFileChar(File);
         }
 
         public char RankChar
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             [DebuggerStepThrough]
-            get
-            {
-                return GetRankChar(Rank);
-            }
+            get => GetRankChar(Rank);
         }
 
         [DebuggerNonUserCode]
