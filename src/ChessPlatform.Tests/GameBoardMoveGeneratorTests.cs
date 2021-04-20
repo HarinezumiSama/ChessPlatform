@@ -177,6 +177,8 @@ namespace ChessPlatform.Tests
                 Console.WriteLine();
             }
 
+            //// ReSharper disable CommentTypo
+
             /*
 *-------------------------------------------------------------*
 | Chess Platform UI for Desktop 0.1.0.312 (rev. ec3b5f331493) |
@@ -271,6 +273,8 @@ info depth 8 seldepth 12 multipv 1 score cp 262 nodes 8034 nps 446333 tbhits 0 t
 bestmove h6d2 ponder c4c5
 
             */
+
+            //// ReSharper restore CommentTypo
         }
 
         private static void AssertPerftResult(PerftResult actualResult, ExpectedPerftResult expectedResult)
