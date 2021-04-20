@@ -21,6 +21,7 @@
     <StartupObject>ChessPlatform.UI.Desktop.App</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <LangVersion>8.0</LangVersion>
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\AnyCpu\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -32,6 +33,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <LangVersion>8.0</LangVersion>
     <OutputPath>..\..\bin\AnyCpu\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
