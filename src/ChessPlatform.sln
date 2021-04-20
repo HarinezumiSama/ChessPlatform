@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChessPlatform.Engine", "Che
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{16BCA1B0-CA13-4F76-997D-603A68D1551A}"
 	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\.gitignore = ..\.gitignore
+		..\build.release.cmd = ..\build.release.cmd
+		ChessPlatform.sln.DotSettings = ChessPlatform.sln.DotSettings
 		..\Settings.StyleCop = ..\Settings.StyleCop
 	EndProjectSection
 EndProject
