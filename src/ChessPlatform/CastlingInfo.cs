@@ -19,17 +19,17 @@ namespace ChessPlatform
         {
             castlingType.EnsureDefined();
 
-            if (kingMove == null)
+            if (kingMove is null)
             {
                 throw new ArgumentNullException(nameof(kingMove));
             }
 
-            if (rookMove == null)
+            if (rookMove is null)
             {
                 throw new ArgumentNullException(nameof(rookMove));
             }
 
-            if (emptySquares == null)
+            if (emptySquares is null)
             {
                 throw new ArgumentNullException(nameof(emptySquares));
             }

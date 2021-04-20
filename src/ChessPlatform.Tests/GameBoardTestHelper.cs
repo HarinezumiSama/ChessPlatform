@@ -22,7 +22,7 @@ namespace ChessPlatform.Tests
                 Assert.That(move, Is.Not.Null, "The move at the index {0} is null.", index);
 
                 currentBoard = currentBoard.MakeMove(move);
-                if (makeAssertion == null)
+                if (makeAssertion is null)
                 {
                     continue;
                 }

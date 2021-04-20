@@ -339,7 +339,7 @@ namespace ChessPlatform.UI.Desktop
         private void MakeMove(GameMove move)
         {
             var currentGameBoard = ViewModel.CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 return;
             }
@@ -409,7 +409,7 @@ namespace ChessPlatform.UI.Desktop
             var popupControl = BoardGridBorder;
 
             var currentGameBoard = ViewModel.CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 return;
             }
@@ -574,7 +574,7 @@ namespace ChessPlatform.UI.Desktop
         private void CopyFenToClipboard_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             var currentGameBoard = ViewModel.CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 return;
             }
@@ -591,7 +591,7 @@ namespace ChessPlatform.UI.Desktop
         private void CopyFenToClipboard_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             var currentGameBoard = ViewModel.CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 e.CanExecute = false;
                 return;

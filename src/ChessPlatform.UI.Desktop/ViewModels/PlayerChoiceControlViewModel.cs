@@ -80,7 +80,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 MemberConstraintValidationContext memberContext,
                 ControlItem<IPlayerInfo> value)
             {
-                if (value?.Value == null)
+                if (value?.Value is null)
                 {
                     AddError(
                         validatorContext,

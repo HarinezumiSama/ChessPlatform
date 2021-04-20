@@ -26,7 +26,7 @@ namespace ChessPlatform.Internal
 
         internal static char? TryGet(FieldInfo enumValueFieldInfo)
         {
-            if (enumValueFieldInfo == null)
+            if (enumValueFieldInfo is null)
             {
                 throw new ArgumentNullException(nameof(enumValueFieldInfo));
             }

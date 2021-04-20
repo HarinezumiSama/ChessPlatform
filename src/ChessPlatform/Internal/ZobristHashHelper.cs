@@ -911,7 +911,7 @@ namespace ChessPlatform.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static long GetEnPassantHash([CanBeNull] EnPassantCaptureInfo info, Bitboard activeSidePawns)
         {
-            if (info == null)
+            if (info is null)
             {
                 return 0;
             }
@@ -957,7 +957,7 @@ namespace ChessPlatform.Internal
 
         private static ulong[] EnsureLength(int expectedLength, [NotNull] ulong[] array)
         {
-            if (array == null)
+            if (array is null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
@@ -980,7 +980,7 @@ namespace ChessPlatform.Internal
 
         private static Bitboard GetBitboard([NotNull] params string[] squares)
         {
-            if (squares == null)
+            if (squares is null)
             {
                 throw new ArgumentNullException(nameof(squares));
             }

@@ -44,17 +44,17 @@ namespace ChessPlatform.GamePlay
             [NotNull] IChessPlayer black,
             [NotNull] GameBoard gameBoard)
         {
-            if (white == null)
+            if (white is null)
             {
                 throw new ArgumentNullException(nameof(white));
             }
 
-            if (black == null)
+            if (black is null)
             {
                 throw new ArgumentNullException(nameof(black));
             }
 
-            if (gameBoard == null)
+            if (gameBoard is null)
             {
                 throw new ArgumentNullException(nameof(gameBoard));
             }
@@ -409,7 +409,7 @@ namespace ChessPlatform.GamePlay
                                 var moveState = _getMoveStateContainer.Value;
                                 _getMoveStateContainer.Value = null;
 
-                                if (moveState == null || moveState.IsCancelled.Value)
+                                if (moveState is null || moveState.IsCancelled.Value)
                                 {
                                     return;
                                 }
@@ -524,7 +524,7 @@ namespace ChessPlatform.GamePlay
         private void RaiseGameBoardChangedAsync()
         {
             var handler = GameBoardChanged;
-            if (handler == null)
+            if (handler is null)
             {
                 return;
             }
@@ -535,7 +535,7 @@ namespace ChessPlatform.GamePlay
         private void RaisePlayerThinkingStartedAsync()
         {
             var handler = PlayerThinkingStarted;
-            if (handler == null)
+            if (handler is null)
             {
                 return;
             }
@@ -546,7 +546,7 @@ namespace ChessPlatform.GamePlay
         private void RaiseUnhandledExceptionOccurredAsync(Exception exception)
         {
             var handler = UnhandledExceptionOccurred;
-            if (handler == null)
+            if (handler is null)
             {
                 return;
             }

@@ -35,7 +35,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RecordKiller([NotNull] GameMove killerMove)
         {
-            if (killerMove == null)
+            if (killerMove is null)
             {
                 throw new ArgumentNullException(nameof(killerMove));
             }

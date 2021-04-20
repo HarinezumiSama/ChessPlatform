@@ -17,7 +17,7 @@ namespace ChessPlatform.UI.Desktop
 
         internal static void ProcessUnhandledException(Exception exception)
         {
-            if (exception == null)
+            if (exception is null)
             {
                 return;
             }
@@ -67,7 +67,7 @@ namespace ChessPlatform.UI.Desktop
             Action action = () => OnUnhandledExceptionInternal(args);
 
             var dispatcher = Current?.Dispatcher;
-            if (dispatcher == null || dispatcher.CheckAccess())
+            if (dispatcher is null || dispatcher.CheckAccess())
             {
                 action();
                 return;

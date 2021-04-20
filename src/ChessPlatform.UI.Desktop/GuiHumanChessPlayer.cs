@@ -34,7 +34,7 @@ namespace ChessPlatform.UI.Desktop
 
         internal void ApplyMove([NotNull] GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -95,7 +95,7 @@ namespace ChessPlatform.UI.Desktop
         private void RaiseMoveRequestedAsync()
         {
             var handler = MoveRequested;
-            if (handler == null)
+            if (handler is null)
             {
                 return;
             }
@@ -106,7 +106,7 @@ namespace ChessPlatform.UI.Desktop
         private void RaiseMoveRequestCancelledAsync()
         {
             var handler = MoveRequestCancelled;
-            if (handler == null)
+            if (handler is null)
             {
                 return;
             }

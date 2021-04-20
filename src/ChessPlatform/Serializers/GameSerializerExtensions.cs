@@ -14,17 +14,17 @@ namespace ChessPlatform.Serializers
             [NotNull] ICollection<GameDescription> gameDescriptions,
             [NotNull] StringBuilder stringBuilder)
         {
-            if (serializer == null)
+            if (serializer is null)
             {
                 throw new ArgumentNullException(nameof(serializer));
             }
 
-            if (gameDescriptions == null)
+            if (gameDescriptions is null)
             {
                 throw new ArgumentNullException(nameof(gameDescriptions));
             }
 
-            if (stringBuilder == null)
+            if (stringBuilder is null)
             {
                 throw new ArgumentNullException(nameof(stringBuilder));
             }
@@ -39,12 +39,12 @@ namespace ChessPlatform.Serializers
             [NotNull] this GameSerializer serializer,
             [NotNull] ICollection<GameDescription> gameDescriptions)
         {
-            if (serializer == null)
+            if (serializer is null)
             {
                 throw new ArgumentNullException(nameof(serializer));
             }
 
-            if (gameDescriptions == null)
+            if (gameDescriptions is null)
             {
                 throw new ArgumentNullException(nameof(gameDescriptions));
             }
@@ -56,12 +56,12 @@ namespace ChessPlatform.Serializers
 
         public static GameDescription[] Deserialize([NotNull] this GameSerializer serializer, [NotNull] string data)
         {
-            if (serializer == null)
+            if (serializer is null)
             {
                 throw new ArgumentNullException(nameof(serializer));
             }
 
-            if (data == null)
+            if (data is null)
             {
                 throw new ArgumentNullException(nameof(data));
             }

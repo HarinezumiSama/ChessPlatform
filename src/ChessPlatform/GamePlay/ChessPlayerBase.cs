@@ -31,7 +31,7 @@ namespace ChessPlatform.GamePlay
 
         public Task<VariationLine> CreateGetMoveTask(GetMoveRequest request)
         {
-            if (request == null)
+            if (request is null)
             {
                 throw new ArgumentNullException(nameof(request));
             }

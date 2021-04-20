@@ -15,7 +15,7 @@ namespace ChessPlatform
         {
             castlingType.EnsureDefined();
 
-            if (emptySquares == null)
+            if (emptySquares is null)
             {
                 throw new ArgumentNullException(nameof(emptySquares));
             }

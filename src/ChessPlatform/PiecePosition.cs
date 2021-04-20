@@ -34,7 +34,7 @@ namespace ChessPlatform
 
         private PiecePosition([NotNull] PiecePosition other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
@@ -100,7 +100,7 @@ namespace ChessPlatform
 
         public bool IsSamePosition([NotNull] PiecePosition other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }

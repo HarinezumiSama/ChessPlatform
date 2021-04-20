@@ -15,7 +15,7 @@ namespace ChessPlatform.UI.Desktop.Converters
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (targetType == null)
+            if (targetType is null)
             {
                 throw new ArgumentNullException(nameof(targetType));
             }
@@ -26,7 +26,7 @@ namespace ChessPlatform.UI.Desktop.Converters
             }
 
             var gameBoard = value as GameBoard;
-            if (gameBoard == null)
+            if (gameBoard is null)
             {
                 return string.Empty;
             }

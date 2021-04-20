@@ -116,12 +116,12 @@ namespace ChessPlatform.Engine
 
         internal Evaluator([NotNull] GameControlInfo gameControlInfo, [NotNull] BoardHelper boardHelper)
         {
-            if (gameControlInfo == null)
+            if (gameControlInfo is null)
             {
                 throw new ArgumentNullException(nameof(gameControlInfo));
             }
 
-            if (boardHelper == null)
+            if (boardHelper is null)
             {
                 throw new ArgumentNullException(nameof(boardHelper));
             }
@@ -153,7 +153,7 @@ namespace ChessPlatform.Engine
 
         public EvaluationScore EvaluatePositionScore([NotNull] GameBoard board)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -202,7 +202,7 @@ namespace ChessPlatform.Engine
             Square square,
             [CanBeNull] GameMove move)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -210,7 +210,7 @@ namespace ChessPlatform.Engine
             _gameControlInfo.CheckInterruptions();
 
             var actualMove = move ?? GetCheapestAttackerMove(board, square);
-            if (actualMove == null)
+            if (actualMove is null)
             {
                 return 0;
             }
@@ -221,7 +221,7 @@ namespace ChessPlatform.Engine
 
             var result = weight - ComputeStaticExchangeEvaluationScore(currentBoard, square, null);
 
-            if (move == null && result < 0)
+            if (move is null && result < 0)
             {
                 // If it's not the analyzed move, then the side to move has an option to stand pat
                 result = 0;
@@ -295,7 +295,7 @@ namespace ChessPlatform.Engine
 
         private static SquareDictionary<int> ToSquareWeightMap(GameSide side, int[,] weights)
         {
-            if (weights == null)
+            if (weights is null)
             {
                 throw new ArgumentNullException(nameof(weights));
             }

@@ -17,7 +17,7 @@ namespace ChessPlatform
             int halfMoveCountBy50MoveRule)
             : base(piecePosition, activeSide, fullMoveIndex)
         {
-            if (piecePosition == null)
+            if (piecePosition is null)
             {
                 throw new ArgumentNullException(nameof(piecePosition));
             }
@@ -46,7 +46,7 @@ namespace ChessPlatform
         private StandardGamePosition([NotNull] StandardGamePosition other)
             : base(other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
@@ -131,7 +131,7 @@ namespace ChessPlatform
                 return true;
             }
 
-            if (other == null)
+            if (other is null)
             {
                 return false;
             }
@@ -223,7 +223,7 @@ namespace ChessPlatform
                     ChessConstants.GameSideToDoublePushInfoMap.Values.SingleOrDefault(
                         obj => obj.CaptureTargetRank == captureSquare.Value.Rank);
 
-                if (enPassantInfo == null)
+                if (enPassantInfo is null)
                 {
                     errorDetails = InvalidEnPassant;
                     result = null;

@@ -9,12 +9,12 @@ namespace ChessPlatform
     {
         public static void GetFenSnippet([NotNull] this PiecePosition position, [NotNull] StringBuilder resultBuilder)
         {
-            if (position == null)
+            if (position is null)
             {
                 throw new ArgumentNullException(nameof(position));
             }
 
-            if (resultBuilder == null)
+            if (resultBuilder is null)
             {
                 throw new ArgumentNullException(nameof(resultBuilder));
             }

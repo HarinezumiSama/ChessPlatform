@@ -9,12 +9,12 @@ namespace ChessPlatform.Engine
             [NotNull] this OpeningGameMove move,
             [NotNull] GameBoard board)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
 
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }

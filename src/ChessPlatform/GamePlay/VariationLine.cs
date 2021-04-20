@@ -46,12 +46,12 @@ namespace ChessPlatform.GamePlay
             [NotNull] ICollection<GameMove> successiveMoves)
             : this(value, localValue)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
 
-            if (successiveMoves == null)
+            if (successiveMoves is null)
             {
                 throw new ArgumentNullException(nameof(successiveMoves));
             }
@@ -66,7 +66,7 @@ namespace ChessPlatform.GamePlay
             [NotNull] ICollection<GameMove> moves)
             : this(value, localValue)
         {
-            if (moves == null)
+            if (moves is null)
             {
                 throw new ArgumentNullException(nameof(moves));
             }
@@ -109,7 +109,7 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator -([NotNull] VariationLine operand)
         {
-            if (operand == null)
+            if (operand is null)
             {
                 throw new ArgumentNullException(nameof(operand));
             }
@@ -124,12 +124,12 @@ namespace ChessPlatform.GamePlay
             [NotNull] GameMove move,
             [NotNull] VariationLine operand)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
 
-            if (operand == null)
+            if (operand is null)
             {
                 throw new ArgumentNullException(nameof(operand));
             }
@@ -142,7 +142,7 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator +([NotNull] VariationLine left, EvaluationScore right)
         {
-            if (left == null)
+            if (left is null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
@@ -155,7 +155,7 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VariationLine operator -([NotNull] VariationLine left, EvaluationScore right)
         {
-            if (left == null)
+            if (left is null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
@@ -173,7 +173,7 @@ namespace ChessPlatform.GamePlay
         [DebuggerNonUserCode]
         public string ToStandardAlgebraicNotationString([NotNull] GameBoard board)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }

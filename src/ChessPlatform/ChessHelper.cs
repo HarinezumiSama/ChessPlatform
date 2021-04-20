@@ -173,7 +173,7 @@ namespace ChessPlatform
             [NotNull] this GameBoard board,
             [NotNull] ICollection<GameMove> moves)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -197,7 +197,7 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -218,12 +218,12 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this ICollection<GameMove> moves)
         {
-            if (moves == null)
+            if (moves is null)
             {
                 throw new ArgumentNullException(nameof(moves));
             }
 
-            if (moves.Any(item => item == null))
+            if (moves.Any(item => item is null))
             {
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
@@ -233,7 +233,7 @@ namespace ChessPlatform
 
         public static Square[] GetOnboardSquares(Square square, IEnumerable<SquareShift> shifts)
         {
-            if (shifts == null)
+            if (shifts is null)
             {
                 throw new ArgumentNullException(nameof(shifts));
             }
@@ -253,12 +253,12 @@ namespace ChessPlatform
 
         internal static void AddRange<T>(this HashSet<T> hashSet, IEnumerable<T> collection)
         {
-            if (hashSet == null)
+            if (hashSet is null)
             {
                 throw new ArgumentNullException(nameof(hashSet));
             }
 
-            if (collection == null)
+            if (collection is null)
             {
                 throw new ArgumentNullException(nameof(collection));
             }
@@ -282,12 +282,12 @@ namespace ChessPlatform
             [NotNull] GameMove move,
             [NotNull] out GameBoard nextBoard)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }

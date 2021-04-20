@@ -38,7 +38,7 @@ namespace ChessPlatform.Engine
         {
             Interlocked.Increment(ref _localMoveCount);
             Interlocked.Increment(ref _totalMoveCount);
-            return move == null ? board.MakeNullMove() : board.MakeMove(move);
+            return move is null ? board.MakeNullMove() : board.MakeMove(move);
         }
     }
 }

@@ -55,7 +55,7 @@ namespace ChessPlatform.Internal
 
         private GameBoardData([NotNull] GameBoardData other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
@@ -81,7 +81,7 @@ namespace ChessPlatform.Internal
 
         public bool IsSamePosition([NotNull] GameBoardData other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
@@ -92,7 +92,7 @@ namespace ChessPlatform.Internal
         [CanBeNull]
         public EnPassantCaptureInfo GetEnPassantCaptureInfo([NotNull] GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -122,7 +122,7 @@ namespace ChessPlatform.Internal
             Square destination,
             EnPassantCaptureInfo enPassantCaptureInfo)
         {
-            if (enPassantCaptureInfo == null || enPassantCaptureInfo.CaptureSquare != destination)
+            if (enPassantCaptureInfo is null || enPassantCaptureInfo.CaptureSquare != destination)
             {
                 return false;
             }
@@ -177,7 +177,7 @@ namespace ChessPlatform.Internal
             [NotNull] IEnumerable<Square> targetSquares,
             GameSide attackingSide)
         {
-            if (targetSquares == null)
+            if (targetSquares is null)
             {
                 throw new ArgumentNullException(nameof(targetSquares));
             }
@@ -310,7 +310,7 @@ namespace ChessPlatform.Internal
             Bitboard enPassantCaptureTarget,
             Bitboard target)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -391,7 +391,7 @@ namespace ChessPlatform.Internal
             CastlingOptions allowedCastlingOptions,
             Bitboard target)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -444,7 +444,7 @@ namespace ChessPlatform.Internal
             GeneratedMoveTypes moveTypes,
             Bitboard target)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -502,7 +502,7 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -515,7 +515,7 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -528,7 +528,7 @@ namespace ChessPlatform.Internal
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -542,7 +542,7 @@ namespace ChessPlatform.Internal
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             ref CastlingOptions castlingOptions)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -568,7 +568,7 @@ namespace ChessPlatform.Internal
 
             if (isEnPassantCapture)
             {
-                if (enPassantCaptureInfo == null)
+                if (enPassantCaptureInfo is null)
                 {
                     throw ChessPlatformException.CreateInconsistentStateError();
                 }
@@ -1026,7 +1026,7 @@ namespace ChessPlatform.Internal
 
         private MovePieceData MovePieceInternal(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }

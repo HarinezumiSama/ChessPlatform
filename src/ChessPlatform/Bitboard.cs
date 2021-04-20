@@ -104,7 +104,7 @@ namespace ChessPlatform
         /// </summary>
         public Bitboard(IEnumerable<Square> squares)
         {
-            if (squares == null)
+            if (squares is null)
             {
                 throw new ArgumentNullException(nameof(squares));
             }

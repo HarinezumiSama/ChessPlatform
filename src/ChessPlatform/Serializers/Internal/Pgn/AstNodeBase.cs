@@ -12,12 +12,12 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void IAstNodeInit.Init(AstContext context, ParseTreeNode parseNode)
         {
-            if (context == null)
+            if (context is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (parseNode == null)
+            if (parseNode is null)
             {
                 throw new ArgumentNullException(nameof(parseNode));
             }
@@ -43,7 +43,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
             where TNode : AstNodeBase
         {
             var result = parseNode.EnsureNotNull().ChildNodes[index].AstNode as TNode;
-            if (result == null)
+            if (result is null)
             {
                 throw new InvalidOperationException(
                     $@"The child node at index {index} is expected to be of type '{

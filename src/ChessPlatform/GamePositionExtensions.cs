@@ -14,12 +14,12 @@ namespace ChessPlatform
             [NotNull] ICollection<Square> targetSquares,
             GameSide attackingSide)
         {
-            if (gamePosition == null)
+            if (gamePosition is null)
             {
                 throw new ArgumentNullException(nameof(gamePosition));
             }
 
-            if (targetSquares == null)
+            if (targetSquares is null)
             {
                 throw new ArgumentNullException(nameof(targetSquares));
             }
@@ -32,7 +32,7 @@ namespace ChessPlatform
 
         public static bool IsInCheck([NotNull] this GamePosition gamePosition, GameSide side)
         {
-            if (gamePosition == null)
+            if (gamePosition is null)
             {
                 throw new ArgumentNullException(nameof(gamePosition));
             }

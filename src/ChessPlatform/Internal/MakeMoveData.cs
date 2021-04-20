@@ -13,7 +13,7 @@ namespace ChessPlatform.Internal
             [CanBeNull] GameMove castlingRookMove,
             [CanBeNull] Square? enPassantCapturedPieceSquare)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }

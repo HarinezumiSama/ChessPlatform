@@ -38,7 +38,7 @@ namespace ChessPlatform.Serializers
             foreach (var game in games)
             {
                 var fen = game.TagSection.GetTagValue(TagNames.Fen);
-                var initialBoard = fen == null ? new GameBoard() : new GameBoard(fen, true);
+                var initialBoard = fen is null ? new GameBoard() : new GameBoard(fen, true);
 
                 var moves = new List<GameMove>(game.MovetextSection.ElementSequence.Elements.Length);
                 var currentBoard = initialBoard;

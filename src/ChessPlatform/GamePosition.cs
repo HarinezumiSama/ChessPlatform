@@ -47,7 +47,7 @@ namespace ChessPlatform
 
         protected GamePosition([NotNull] PiecePosition piecePosition, GameSide activeSide, int fullMoveIndex)
         {
-            if (piecePosition == null)
+            if (piecePosition is null)
             {
                 throw new ArgumentNullException(nameof(piecePosition));
             }
@@ -67,7 +67,7 @@ namespace ChessPlatform
 
         protected GamePosition([NotNull] GamePosition other)
         {
-            if (other == null)
+            if (other is null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
@@ -146,7 +146,7 @@ namespace ChessPlatform
             Bitboard target,
             CastlingOptions allowedCastlingOptions)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -202,7 +202,7 @@ namespace ChessPlatform
             GeneratedMoveTypes moveTypes,
             Bitboard target)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -262,7 +262,7 @@ namespace ChessPlatform
             Bitboard target,
             Bitboard enPassantCaptureTarget)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -342,7 +342,7 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -355,7 +355,7 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }
@@ -368,7 +368,7 @@ namespace ChessPlatform
             GameSide side,
             GeneratedMoveTypes moveTypes)
         {
-            if (resultMoves == null)
+            if (resultMoves is null)
             {
                 throw new ArgumentNullException(nameof(resultMoves));
             }

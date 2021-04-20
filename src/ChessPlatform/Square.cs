@@ -215,7 +215,7 @@ namespace ChessPlatform
 
         public static Square[] GenerateRanks(params int[] ranks)
         {
-            if (ranks == null)
+            if (ranks is null)
             {
                 throw new ArgumentNullException(nameof(ranks));
             }

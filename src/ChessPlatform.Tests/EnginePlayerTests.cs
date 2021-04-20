@@ -27,7 +27,7 @@ namespace ChessPlatform.Tests
         {
             const string Fen = "r1bqkbnr/pppp1ppp/4p3/n7/4P3/3B1N2/PPPP1PPP/RNBQK2R b KQkq - 3 4";
 
-            var expectedBestMove = expectedBestMoveString == null
+            var expectedBestMove = expectedBestMoveString is null
                 ? null
                 : GameMove.FromStringNotation(expectedBestMoveString);
 
@@ -49,7 +49,7 @@ namespace ChessPlatform.Tests
         {
             const string Fen = "rn3rk1/ppp2ppb/3qp2p/8/1b2P3/2Q3P1/PPPN1PBP/R1B2RK1 w - - 5 13";
 
-            var expectedBestMove = expectedBestMoveString == null
+            var expectedBestMove = expectedBestMoveString is null
                 ? null
                 : GameMove.FromStringNotation(expectedBestMoveString);
 

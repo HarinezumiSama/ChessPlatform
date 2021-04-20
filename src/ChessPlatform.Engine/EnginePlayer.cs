@@ -29,7 +29,7 @@ namespace ChessPlatform.Engine
         public EnginePlayer(GameSide side, [NotNull] EnginePlayerParameters parameters)
             : base(side)
         {
-            if (parameters == null)
+            if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
@@ -225,7 +225,7 @@ namespace ChessPlatform.Engine
             Trace.WriteLine(string.Empty);
             Trace.WriteLine(string.Empty);
 
-            if (principalVariationInfo == null)
+            if (principalVariationInfo is null)
             {
                 throw new InvalidOperationException("Could not determine the best move. (Has timeout expired?)");
             }

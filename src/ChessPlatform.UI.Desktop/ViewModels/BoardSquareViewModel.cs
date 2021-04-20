@@ -16,7 +16,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         internal BoardSquareViewModel(GameWindowViewModel parentViewModel, Square square)
         {
-            if (parentViewModel == null)
+            if (parentViewModel is null)
             {
                 throw new ArgumentNullException(nameof(parentViewModel));
             }
@@ -179,7 +179,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private void UpdatePiece(bool forceRaiseEvent)
         {
-            if (_parentViewModel.CurrentGameBoard == null)
+            if (_parentViewModel.CurrentGameBoard is null)
             {
                 return;
             }

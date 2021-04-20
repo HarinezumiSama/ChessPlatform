@@ -29,7 +29,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             Expression<Func<TProperty>> propertyGetterExpression,
             EventHandler handler)
         {
-            if (handler == null)
+            if (handler is null)
             {
                 throw new ArgumentNullException(nameof(handler));
             }
@@ -72,7 +72,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         protected void ExecuteOnDispatcher(Action action, DispatcherPriority priority = DispatcherPriority.Normal)
         {
-            if (action == null)
+            if (action is null)
             {
                 throw new ArgumentNullException(nameof(action));
             }
@@ -89,7 +89,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         private string GetPropertyName<TProperty>(Expression<Func<TProperty>> propertyGetterExpression)
         {
-            if (propertyGetterExpression == null)
+            if (propertyGetterExpression is null)
             {
                 throw new ArgumentNullException(nameof(propertyGetterExpression));
             }
@@ -97,7 +97,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var thisType = GetType();
 
             var memberExpression = propertyGetterExpression.Body as MemberExpression;
-            if ((memberExpression == null) || (memberExpression.NodeType != ExpressionType.MemberAccess))
+            if ((memberExpression is null) || (memberExpression.NodeType != ExpressionType.MemberAccess))
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
@@ -105,7 +105,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             }
 
             var propertyInfo = memberExpression.Member as PropertyInfo;
-            if (propertyInfo == null)
+            if (propertyInfo is null)
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
@@ -119,10 +119,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     nameof(propertyGetterExpression));
             }
 
-            if (memberExpression.Expression == null)
+            if (memberExpression.Expression is null)
             {
                 var accessor = propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true);
-                if ((accessor == null) || !accessor.IsStatic)
+                if ((accessor is null) || !accessor.IsStatic)
                 {
                     throw new ArgumentException(
                         string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),

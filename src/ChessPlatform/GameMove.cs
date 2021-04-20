@@ -86,7 +86,7 @@ namespace ChessPlatform
                 return true;
             }
 
-            if (ReferenceEquals(left, null) || ReferenceEquals(right, null))
+            if (left is null || right is null)
             {
                 return false;
             }
@@ -98,7 +98,7 @@ namespace ChessPlatform
         [NotNull]
         public static GameMove FromStringNotation([NotNull] string stringNotation)
         {
-            if (stringNotation == null)
+            if (stringNotation is null)
             {
                 throw new ArgumentNullException(nameof(stringNotation));
             }

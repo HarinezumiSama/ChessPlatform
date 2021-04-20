@@ -15,7 +15,7 @@ namespace ChessPlatform.UI.Desktop
             [CanBeNull] TCreationData initialCreationData,
             [NotNull] Func<GameSide, TCreationData, TPlayer> createPlayer)
         {
-            if (createPlayer == null)
+            if (createPlayer is null)
             {
                 throw new ArgumentNullException(nameof(createPlayer));
             }

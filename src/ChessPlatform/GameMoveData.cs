@@ -8,7 +8,7 @@ namespace ChessPlatform
     {
         internal GameMoveData([NotNull] GameMove move, GameMoveFlags moveFlags)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }

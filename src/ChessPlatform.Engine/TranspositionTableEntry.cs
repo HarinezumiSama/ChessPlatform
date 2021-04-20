@@ -22,7 +22,7 @@ namespace ChessPlatform.Engine
         {
             Key = key;
 
-            _bestMoveEncoded = (ushort)(bestMove == null
+            _bestMoveEncoded = (ushort)(bestMove is null
                 ? 0
                 : (bestMove.From.SquareIndex & ChessConstants.MaxSquareIndex) << 9
                     | (bestMove.To.SquareIndex & ChessConstants.MaxSquareIndex) << 3

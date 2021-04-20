@@ -123,7 +123,7 @@ namespace ChessPlatform.Tests
             EnPassantCaptureInfo actualEnPassantCaptureInfo,
             EnPassantCaptureInfo expectedEnPassantCaptureInfo)
         {
-            if (expectedEnPassantCaptureInfo == null)
+            if (expectedEnPassantCaptureInfo is null)
             {
                 Assert.That(actualEnPassantCaptureInfo, Is.Null);
                 return;

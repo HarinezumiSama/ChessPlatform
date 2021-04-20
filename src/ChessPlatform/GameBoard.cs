@@ -128,7 +128,7 @@ namespace ChessPlatform
         /// </summary>
         private GameBoard([NotNull] GameBoard previousBoard, [CanBeNull] GameMove move)
         {
-            if (previousBoard == null)
+            if (previousBoard is null)
             {
                 throw new ArgumentNullException(nameof(previousBoard));
             }
@@ -141,7 +141,7 @@ namespace ChessPlatform
 
             _fullMoveIndex = previousBoard._fullMoveIndex + (move != null && _activeSide == GameSide.White ? 1 : 0);
 
-            if (move == null)
+            if (move is null)
             {
                 _enPassantCaptureInfo = previousBoard._enPassantCaptureInfo;
                 PreviousMove = previousBoard.PreviousMove;
@@ -344,7 +344,7 @@ namespace ChessPlatform
 
         public GameBoard MakeMove([NotNull] GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -418,7 +418,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsValidMove(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -429,7 +429,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsPawnPromotionMove(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -440,7 +440,7 @@ namespace ChessPlatform
 
         public bool IsCapturingMove(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -461,7 +461,7 @@ namespace ChessPlatform
 
         public CastlingInfo CheckCastlingMove(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -580,7 +580,7 @@ namespace ChessPlatform
 
         public bool IsSamePosition([NotNull] GameBoard otherBoard)
         {
-            if (otherBoard == null)
+            if (otherBoard is null)
             {
                 throw new ArgumentNullException(nameof(otherBoard));
             }
@@ -596,7 +596,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void ClearPotentialMoveDatas()
         {
-            if (_potentialMoveDatas == null)
+            if (_potentialMoveDatas is null)
             {
                 _potentialMoveDatas = new List<GameMoveData>(PotentialMoveListCapacity);
             }
@@ -690,7 +690,7 @@ namespace ChessPlatform
 
             var gameBoardData = addMoveData.GameBoardData;
 
-            if (_initializeValidMovesAndStateWhenNotInCheckMoveDatas == null)
+            if (_initializeValidMovesAndStateWhenNotInCheckMoveDatas is null)
             {
                 _initializeValidMovesAndStateWhenNotInCheckMoveDatas =
                     new List<GameMoveData>(PotentialMoveListCapacity);
@@ -1038,7 +1038,7 @@ namespace ChessPlatform
             [CanBeNull] EnPassantCaptureInfo enPassantCaptureInfo,
             [NotNull] ReadOnlyDictionary<GameMove, GameMoveFlags> validMoves)
         {
-            if (enPassantCaptureInfo == null)
+            if (enPassantCaptureInfo is null)
             {
                 return false;
             }
@@ -1282,12 +1282,12 @@ namespace ChessPlatform
             }
             else
             {
-                if (PreviousBoard != null && PreviousBoard._repetitions == null)
+                if (PreviousBoard != null && PreviousBoard._repetitions is null)
                 {
                     throw new InvalidOperationException("Internal logic error: repetition map is not assigned.");
                 }
 
-                var repetitionMap = PreviousBoard == null
+                var repetitionMap = PreviousBoard is null
                     ? new Dictionary<long, int>()
                     : new Dictionary<long, int>(PreviousBoard._repetitions);
 
@@ -1416,7 +1416,7 @@ namespace ChessPlatform
                     ChessConstants.GameSideToDoublePushInfoMap.Values.SingleOrDefault(
                         obj => obj.CaptureTargetRank == captureSquare.Value.Rank);
 
-                if (enPassantInfo == null)
+                if (enPassantInfo is null)
                 {
                     throw new ArgumentException(InvalidFenMessage, nameof(fen));
                 }
@@ -1509,7 +1509,7 @@ namespace ChessPlatform
 
             public void Include(PerftData other)
             {
-                if (other == null)
+                if (other is null)
                 {
                     throw new ArgumentNullException(nameof(other));
                 }

@@ -29,7 +29,7 @@ namespace ChessPlatform.Engine
 
         public PolyglotOpeningBook([NotNull] Stream stream)
         {
-            if (stream == null)
+            if (stream is null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
@@ -80,7 +80,7 @@ namespace ChessPlatform.Engine
 
         public OpeningGameMove[] FindPossibleMoves(GameBoard board)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -172,7 +172,7 @@ namespace ChessPlatform.Engine
 
             public static BookEntry? ReadEntry([NotNull] Stream stream)
             {
-                if (_buffer == null)
+                if (_buffer is null)
                 {
                     _buffer = new byte[DataLength];
                 }

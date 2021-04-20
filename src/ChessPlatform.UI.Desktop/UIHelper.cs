@@ -73,7 +73,7 @@ namespace ChessPlatform.UI.Desktop
 
             var fullCaption = caption.IsNullOrWhiteSpace() ? title : $@"{caption} – {title}";
 
-            var result = window == null
+            var result = window is null
                 ? MessageBox.Show(text, fullCaption, button, icon)
                 : MessageBox.Show(window, text, fullCaption, button, icon);
 
@@ -105,7 +105,7 @@ namespace ChessPlatform.UI.Desktop
             Action popupOpened = null,
             Action popupClosed = null)
         {
-            if (popupElement == null)
+            if (popupElement is null)
             {
                 throw new ArgumentNullException(nameof(popupElement));
             }
@@ -187,7 +187,7 @@ namespace ChessPlatform.UI.Desktop
 
         public static void ClearGrid([NotNull] this Grid grid)
         {
-            if (grid == null)
+            if (grid is null)
             {
                 throw new ArgumentNullException(nameof(grid));
             }

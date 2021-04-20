@@ -12,7 +12,7 @@ namespace ChessPlatform.Engine
 
         public VariationLineCache([NotNull] GameBoard board)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -26,12 +26,12 @@ namespace ChessPlatform.Engine
 
             set
             {
-                if (move == null)
+                if (move is null)
                 {
                     throw new ArgumentNullException(nameof(move));
                 }
 
-                if (value == null)
+                if (value is null)
                 {
                     throw new ArgumentNullException(nameof(value));
                 }

@@ -12,17 +12,17 @@ namespace ChessPlatform
             [NotNull] GameBoard initialBoard,
             [NotNull] IReadOnlyList<GameMove> moves)
         {
-            if (initialBoard == null)
+            if (initialBoard is null)
             {
                 throw new ArgumentNullException(nameof(initialBoard));
             }
 
-            if (moves == null)
+            if (moves is null)
             {
                 throw new ArgumentNullException(nameof(moves));
             }
 
-            if (moves.Any(item => item == null))
+            if (moves.Any(item => item is null))
             {
                 throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
             }
@@ -34,7 +34,7 @@ namespace ChessPlatform
 
         public GameDescription([NotNull] GameBoard finalBoard)
         {
-            if (finalBoard == null)
+            if (finalBoard is null)
             {
                 throw new ArgumentNullException(nameof(finalBoard));
             }

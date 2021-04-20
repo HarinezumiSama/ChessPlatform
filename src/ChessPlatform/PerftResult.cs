@@ -37,7 +37,7 @@ namespace ChessPlatform
                     @"The value cannot be negative.");
             }
 
-            if (dividedMoves == null)
+            if (dividedMoves is null)
             {
                 throw new ArgumentNullException(nameof(dividedMoves));
             }

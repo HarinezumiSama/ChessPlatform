@@ -60,7 +60,7 @@ namespace ChessPlatform.UI.Desktop.Controls
                 return true;
             }
 
-            if (ReferenceEquals(other, null))
+            if (other is null)
             {
                 return false;
             }

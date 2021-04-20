@@ -12,17 +12,17 @@ namespace ChessPlatform.Serializers
             [NotNull] ICollection<GameDescription> gameDescriptions,
             [NotNull] TextWriter writer)
         {
-            if (gameDescriptions == null)
+            if (gameDescriptions is null)
             {
                 throw new ArgumentNullException(nameof(gameDescriptions));
             }
 
-            if (gameDescriptions.Any(item => item == null))
+            if (gameDescriptions.Any(item => item is null))
             {
                 throw new ArgumentException(@"The collection contains a null element.", nameof(gameDescriptions));
             }
 
-            if (writer == null)
+            if (writer is null)
             {
                 throw new ArgumentNullException(nameof(writer));
             }
@@ -32,7 +32,7 @@ namespace ChessPlatform.Serializers
 
         public GameDescription[] Deserialize([NotNull] TextReader reader)
         {
-            if (reader == null)
+            if (reader is null)
             {
                 throw new ArgumentNullException(nameof(reader));
             }

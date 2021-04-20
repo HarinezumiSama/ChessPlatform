@@ -11,12 +11,12 @@ namespace ChessPlatform.GamePlay
             CancellationToken cancellationToken,
             [NotNull] IGameControl gameControl)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (gameControl == null)
+            if (gameControl is null)
             {
                 throw new ArgumentNullException(nameof(gameControl));
             }

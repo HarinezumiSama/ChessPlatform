@@ -136,7 +136,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         [NotNull]
         public string MoveHistory => GetMoveHistory();
 
-        public bool IsComputerPlayerActive => GetActiveHumanPlayer() == null;
+        public bool IsComputerPlayerActive => GetActiveHumanPlayer() is null;
 
         public GameResult? GameManagerResult => _gameManager?.Result;
 
@@ -281,7 +281,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void Play()
         {
-            if (_gameManager == null)
+            if (_gameManager is null)
             {
                 throw new InvalidOperationException("Game Manager is not initialized.");
             }
@@ -302,13 +302,13 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
         public void MakeMove(GameMove move)
         {
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
 
             var activeHumanPlayer = GetActiveHumanPlayer();
-            if (activeHumanPlayer == null)
+            if (activeHumanPlayer is null)
             {
                 throw new InvalidOperationException("Human player is not active.");
             }
@@ -321,7 +321,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public bool CanUndoLastMove()
         {
             var gameManager = _gameManager;
-            if (gameManager == null)
+            if (gameManager is null)
             {
                 return false;
             }
@@ -333,7 +333,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         public void UndoLastMove()
         {
             var gameManager = _gameManager;
-            if (gameManager == null)
+            if (gameManager is null)
             {
                 return;
             }
@@ -367,7 +367,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private string GetPlayerPieceAdvantage(GameSide side)
         {
             var currentGameBoard = CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 return string.Empty;
             }
@@ -407,7 +407,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var humanChessPlayer = GetActiveHumanPlayer();
 
-            SelectionMode = humanChessPlayer == null || _gameManager == null
+            SelectionMode = humanChessPlayer is null || _gameManager is null
                 || _gameManager.State == GameManagerState.GameFinished
                 ? GameWindowSelectionMode.None
                 : GameWindowSelectionMode.Default;
@@ -416,7 +416,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         [CanBeNull]
         private IChessPlayer GetActivePlayer(GameManager gameManager)
         {
-            if (gameManager == null)
+            if (gameManager is null)
             {
                 return null;
             }
@@ -435,7 +435,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             _validMoveTargetSquaresInternal.Clear();
 
             var currentGameBoard = CurrentGameBoard;
-            if (currentGameBoard == null)
+            if (currentGameBoard is null)
             {
                 return;
             }
@@ -777,7 +777,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private void OnUpdatePlayersTimes(object state)
         {
             var gameManager = _gameManager;
-            if (gameManager == null)
+            if (gameManager is null)
             {
                 _whiteTotalElapsedString = null;
                 _blackTotalElapsedString = null;

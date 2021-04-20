@@ -24,7 +24,7 @@ namespace ChessPlatform.Engine
             int threadCount,
             [NotNull] ICollection<Func<TResult>> tasks)
         {
-            if (gameControlInfo == null)
+            if (gameControlInfo is null)
             {
                 throw new ArgumentNullException(nameof(gameControlInfo));
             }
@@ -37,12 +37,12 @@ namespace ChessPlatform.Engine
                     @"The value must be positive.");
             }
 
-            if (tasks == null)
+            if (tasks is null)
             {
                 throw new ArgumentNullException(nameof(tasks));
             }
 
-            if (tasks.Any(item => item == null))
+            if (tasks.Any(item => item is null))
             {
                 throw new ArgumentException(@"The collection contains a null element.", nameof(tasks));
             }

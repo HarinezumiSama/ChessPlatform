@@ -49,7 +49,7 @@ namespace ChessPlatform.Engine
             bool useMultipleProcessors,
             [NotNull] MoveHistoryStatistics moveHistoryStatistics)
         {
-            if (rootBoard == null)
+            if (rootBoard is null)
             {
                 throw new ArgumentNullException(nameof(rootBoard));
             }
@@ -62,12 +62,12 @@ namespace ChessPlatform.Engine
                     $@"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
-            if (gameControlInfo == null)
+            if (gameControlInfo is null)
             {
                 throw new ArgumentNullException(nameof(gameControlInfo));
             }
 
-            if (moveHistoryStatistics == null)
+            if (moveHistoryStatistics is null)
             {
                 throw new ArgumentNullException(nameof(moveHistoryStatistics));
             }
@@ -460,7 +460,7 @@ namespace ChessPlatform.Engine
                                 null);
                         }
 
-                        return move == null ? new VariationLine(ttScore) : move | new VariationLine(ttScore);
+                        return move is null ? new VariationLine(ttScore) : move | new VariationLine(ttScore);
                     }
                 }
                 else
@@ -564,7 +564,7 @@ namespace ChessPlatform.Engine
                 }
 
                 if (isPrincipalVariation
-                    && (variationLine == null || moveIndex == 0
+                    && (variationLine is null || moveIndex == 0
                         || (variationLine.Value.Value > localAlpha.Value
                             && variationLine.Value.Value < localBeta.Value)))
                 {
@@ -595,7 +595,7 @@ namespace ChessPlatform.Engine
                     break;
                 }
 
-                if (best == null || variationLine.Value.Value > best.Value.Value)
+                if (best is null || variationLine.Value.Value > best.Value.Value)
                 {
                     best = move | variationLine;
 

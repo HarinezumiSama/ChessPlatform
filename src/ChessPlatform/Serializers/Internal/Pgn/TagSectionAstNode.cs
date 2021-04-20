@@ -20,7 +20,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         [CanBeNull]
         public string GetTagValue([NotNull] string tagName)
         {
-            if (tagName == null)
+            if (tagName is null)
             {
                 throw new ArgumentNullException(nameof(tagName));
             }

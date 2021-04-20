@@ -40,12 +40,12 @@ namespace ChessPlatform.Engine
             int remainingDepth,
             [CanBeNull] ICollection<GameMove> previousQuietMoves)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -77,7 +77,7 @@ namespace ChessPlatform.Engine
 
                 UpdateHistoryTableUnsafe(board, move, moveBonus);
 
-                if (previousQuietMoves == null || previousQuietMoves.Count == 0)
+                if (previousQuietMoves is null || previousQuietMoves.Count == 0)
                 {
                     return;
                 }
@@ -111,12 +111,12 @@ namespace ChessPlatform.Engine
 
         public int GetHistoryValue([NotNull] GameBoard board, [NotNull] GameMove move)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
 
-            if (move == null)
+            if (move is null)
             {
                 throw new ArgumentNullException(nameof(move));
             }
@@ -139,7 +139,7 @@ namespace ChessPlatform.Engine
                 result = _killerMoveDatas
                     .Select(
                         (data, i) =>
-                            data.Primary == null
+                            data.Primary is null
                                 ? null
                                 : $@"  #{i + 1:D2} {{ {data.Primary}, {data.Secondary.ToStringSafely("<none>")} }}")
                     .Where(s => !s.IsNullOrEmpty())
@@ -201,7 +201,7 @@ namespace ChessPlatform.Engine
             [NotNull] List<OrderedMove> resultList)
         {
             GameMoveFlags moveFlags;
-            if (killerMove == null || !remainingMoves.TryGetValue(killerMove, out moveFlags)
+            if (killerMove is null || !remainingMoves.TryGetValue(killerMove, out moveFlags)
                 || !LocalHelper.IsQuietMove(moveFlags))
             {
                 return;

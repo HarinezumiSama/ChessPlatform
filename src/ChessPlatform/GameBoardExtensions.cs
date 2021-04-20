@@ -9,7 +9,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool HasNonPawnMaterial([NotNull] this GameBoard board, GameSide side)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }

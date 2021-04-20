@@ -8,12 +8,12 @@ namespace ChessPlatform.Internal
     {
         public static void GetFenSnippet(this GameBoardData gameBoardData, StringBuilder resultBuilder)
         {
-            if (gameBoardData == null)
+            if (gameBoardData is null)
             {
                 throw new ArgumentNullException(nameof(gameBoardData));
             }
 
-            if (resultBuilder == null)
+            if (resultBuilder is null)
             {
                 throw new ArgumentNullException(nameof(resultBuilder));
             }

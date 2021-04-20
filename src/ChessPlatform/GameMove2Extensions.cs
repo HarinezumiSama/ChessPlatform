@@ -27,7 +27,7 @@ namespace ChessPlatform
 
         public static string ToUciNotation([NotNull] this ICollection<GameMove2> moves)
         {
-            if (moves == null)
+            if (moves is null)
             {
                 throw new ArgumentNullException(nameof(moves));
             }

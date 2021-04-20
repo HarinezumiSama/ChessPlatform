@@ -13,7 +13,7 @@ namespace ChessPlatform.GamePlay
             int maxDepth,
             [NotNull] VariationLine variation)
         {
-            if (board == null)
+            if (board is null)
             {
                 throw new ArgumentNullException(nameof(board));
             }
@@ -42,7 +42,7 @@ namespace ChessPlatform.GamePlay
                     $@"{nameof(depth)} must not be greater than {nameof(maxDepth)} ({maxDepth}).");
             }
 
-            if (variation == null)
+            if (variation is null)
             {
                 throw new ArgumentNullException(nameof(variation));
             }

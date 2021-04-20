@@ -193,7 +193,7 @@ namespace ChessPlatform.Tests
             var resultBitboard = bitboard.Shift(direction);
             var resultValue = Bitboard.ShiftInternal(bitboard.InternalValue, direction);
 
-            if (expectedResultSquareNotation == null)
+            if (expectedResultSquareNotation is null)
             {
                 Assert.That(resultBitboard.IsNone, Is.True);
                 Assert.That(resultValue, Is.EqualTo(0UL));

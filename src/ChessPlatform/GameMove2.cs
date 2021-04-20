@@ -85,7 +85,7 @@ namespace ChessPlatform
         [DebuggerNonUserCode]
         public static GameMove2 FromStringNotation([NotNull] string stringNotation)
         {
-            if (stringNotation == null)
+            if (stringNotation is null)
             {
                 throw new ArgumentNullException(nameof(stringNotation));
             }
