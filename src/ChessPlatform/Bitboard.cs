@@ -224,7 +224,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
-            return obj is Bitboard && Equals((Bitboard)obj);
+            return obj is Bitboard bitboard && Equals(bitboard);
         }
 
         public override int GetHashCode()

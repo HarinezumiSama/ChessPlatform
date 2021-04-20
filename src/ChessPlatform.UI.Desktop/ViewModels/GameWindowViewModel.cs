@@ -75,11 +75,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         }
 
         [NotNull]
-        public ReadOnlyDictionary<Square, BoardSquareViewModel> SquareViewModels
-        {
-            get;
-            private set;
-        }
+        public ReadOnlyDictionary<Square, BoardSquareViewModel> SquareViewModels { get; }
 
         public GameWindowSelectionMode SelectionMode
         {
@@ -224,17 +220,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             => IsReversedView ? _blackLastMoveElapsedString : _whiteLastMoveElapsedString;
 
         [NotNull]
-        internal ReadOnlySet<Square> ValidMoveTargetSquares
-        {
-            get;
-            private set;
-        }
+        internal ReadOnlySet<Square> ValidMoveTargetSquares { get; }
 
-        internal Square? CurrentSourceSquare
-        {
-            get;
-            private set;
-        }
+        internal Square? CurrentSourceSquare { get; private set; }
 
         public void ResetSelectionMode()
         {

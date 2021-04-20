@@ -603,6 +603,7 @@ namespace ChessPlatform
         }
 
         private static bool IsValidMoveByPinning(
+            //// ReSharper disable once SuggestBaseTypeForParameter :: Performance critical code (trying to avoid virtual calls)
             Bitboard[] pinLimitations,
             Square sourceSquare,
             Square destinationSquare)

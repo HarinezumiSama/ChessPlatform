@@ -16,38 +16,28 @@ namespace ChessPlatform.UI.Desktop.Converters
             FalseValue = default(T);
         }
 
-        public T TrueValue
-        {
-            get;
-            set;
-        }
+        public T TrueValue { get; set; }
 
-        public T FalseValue
-        {
-            get;
-            set;
-        }
+        public T FalseValue { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is bool))
+            if (!(value is bool boolValue))
             {
-                throw new ArgumentException($@"The value must be {typeof(bool).Name}.", nameof(value));
+                throw new ArgumentException($@"The value must be {nameof(Boolean)}.", nameof(value));
             }
 
-            return (bool)value ? TrueValue : FalseValue;
+            return boolValue ? TrueValue : FalseValue;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is T))
+            if (!(value is T castValue))
             {
-                throw new ArgumentException(
-                    $@"The value must be {typeof(T).Name}.",
-                    nameof(value));
+                throw new ArgumentException($@"The value must be {typeof(T).Name}.", nameof(value));
             }
 
-            return EqualityComparer<T>.Default.Equals((T)value, TrueValue);
+            return EqualityComparer<T>.Default.Equals(castValue, TrueValue);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace ChessPlatform.Utilities
             // Nothing to do
         }
 
+        //// ReSharper disable once SuggestBaseTypeForParameter
         public SquareDictionary([NotNull] SquareDictionary<TValue> dictionary)
             : base(dictionary)
         {

@@ -162,8 +162,7 @@ namespace ChessPlatform
 
         public static string GetStandardAlgebraicNotation([NotNull] this GameBoard board, [NotNull] GameMove move)
         {
-            GameBoard nextBoard;
-            return GetStandardAlgebraicNotationInternal(board, move, out nextBoard);
+            return GetStandardAlgebraicNotationInternal(board, move, out _);
         }
 
         public static string ToStandardAlgebraicNotation([NotNull] this GameMove move, [NotNull] GameBoard board)

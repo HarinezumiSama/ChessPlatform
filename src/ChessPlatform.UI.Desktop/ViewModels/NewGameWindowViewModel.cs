@@ -18,18 +18,10 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         }
 
         [ValidatableMember]
-        public PlayerChoiceControlViewModel WhitePlayerViewModel
-        {
-            get;
-            private set;
-        }
+        public PlayerChoiceControlViewModel WhitePlayerViewModel { get; }
 
         [ValidatableMember]
-        public PlayerChoiceControlViewModel BlackPlayerViewModel
-        {
-            get;
-            private set;
-        }
+        public PlayerChoiceControlViewModel BlackPlayerViewModel { get; }
 
         [MemberConstraint(typeof(FenConstraint))]
         public string Fen

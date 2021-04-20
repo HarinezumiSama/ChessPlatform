@@ -97,8 +97,7 @@ namespace ChessPlatform
 
         public static bool TryCreate([NotNull] string fen, out StandardGamePosition gamePosition)
         {
-            string errorDetails;
-            return TryCreateInternal(fen, out errorDetails, out gamePosition);
+            return TryCreateInternal(fen, out _, out gamePosition);
         }
 
         public static StandardGamePosition Create([NotNull] string fen)

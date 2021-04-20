@@ -39,7 +39,7 @@ namespace ChessPlatform.Engine
                 throw new ArgumentOutOfRangeException(
                     nameof(parameters.MaxPlyDepth),
                     parameters.MaxPlyDepth,
-                    $"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
+                    $@"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
             if (parameters.MaxTimePerMove.HasValue && parameters.MaxTimePerMove.Value <= TimeSpan.Zero)
@@ -148,8 +148,8 @@ namespace ChessPlatform.Engine
                     when (ex.Flatten().InnerException is OperationCanceledException)
                 {
                     var operationCanceledException = (OperationCanceledException)ex.Flatten().InnerException;
-                    if (operationCanceledException.CancellationToken == internalCancellationToken
-                        || operationCanceledException.CancellationToken == request.CancellationToken)
+                    if (operationCanceledException?.CancellationToken == internalCancellationToken
+                        || operationCanceledException?.CancellationToken == request.CancellationToken)
                     {
                         Trace.WriteLine($@"[{currentMethodName}] The search has been canceled by the caller.");
                         request.CancellationToken.ThrowIfCancellationRequested();
@@ -243,6 +243,7 @@ namespace ChessPlatform.Engine
         private void DoGetMoveInternal(
             [NotNull] GameBoard board,
             [NotNull] GameControlInfo gameControlInfo,
+            //// ReSharper disable once SuggestBaseTypeForParameter :: Performance critical code (trying to avoid virtual calls)
             SyncValueContainer<BestMoveData> bestMoveContainer)
         {
             gameControlInfo.CheckInterruptions();

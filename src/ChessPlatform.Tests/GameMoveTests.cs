@@ -66,7 +66,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestFromStringNotationNegativeCases()
         {
-            Assert.That(() => GameMove.FromStringNotation(null), Throws.TypeOf<ArgumentNullException>());
+            Assert.That(() => GameMove.FromStringNotation(null!), Throws.TypeOf<ArgumentNullException>());
             Assert.That(() => GameMove.FromStringNotation("a2a1=q"), Throws.TypeOf<ArgumentException>());
             Assert.That(() => GameMove.FromStringNotation("a2-a1Q"), Throws.TypeOf<ArgumentException>());
         }

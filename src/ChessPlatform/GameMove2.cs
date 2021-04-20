@@ -106,7 +106,7 @@ namespace ChessPlatform
                     ? char.ToUpperInvariant(promotionGroup.Value.Single()).ToPieceType()
                     : PieceType.None;
 
-                return new GameMove2(Square.FromAlgebraic(@from), Square.FromAlgebraic(to), pieceType);
+                return new GameMove2(Square.FromAlgebraic(from), Square.FromAlgebraic(to), pieceType);
             }
 
             throw new ArgumentException(
@@ -114,7 +114,7 @@ namespace ChessPlatform
                 nameof(stringNotation));
         }
 
-        public override bool Equals(object obj) => obj is GameMove2 && Equals((GameMove2)obj);
+        public override bool Equals(object obj) => obj is GameMove2 move && Equals(move);
 
         public override int GetHashCode() => _hashCode;
 

@@ -241,7 +241,7 @@ namespace ChessPlatform.Engine
                 var rawPromotion = (rawMove >> 12) & 7;
                 var promotion = PromotionMapping[rawPromotion];
 
-                var result = new GameMove(@from, to, promotion);
+                var result = new GameMove(from, to, promotion);
                 return result;
             }
         }

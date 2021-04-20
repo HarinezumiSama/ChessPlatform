@@ -230,7 +230,7 @@ namespace ChessPlatform
 
         public override bool Equals(object obj)
         {
-            return obj is Square && Equals((Square)obj);
+            return obj is Square square && Equals(square);
         }
 
         public override int GetHashCode()

@@ -25,27 +25,27 @@ namespace ChessPlatform.UI.Desktop.Converters
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is double) || targetType != typeof(double))
+            if (targetType != typeof(double) || !(value is double doubleValue))
             {
-                throw new ArgumentException("Invalid argument(s).");
+                throw new ArgumentException(@"Invalid argument(s).");
             }
 
-            return (double)value * Ratio;
+            return doubleValue * Ratio;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is double) || targetType != typeof(double))
+            if (targetType != typeof(double) || !(value is double doubleValue))
             {
-                throw new ArgumentException("Invalid argument(s).");
+                throw new ArgumentException(@"Invalid argument(s).");
             }
 
             if (Ratio.IsZero())
             {
-                throw new InvalidOperationException("Unable to convert back since the ratio is zero.");
+                throw new InvalidOperationException(@"Unable to convert back since the ratio is zero.");
             }
 
-            return (double)value / Ratio;
+            return doubleValue / Ratio;
         }
     }
 }

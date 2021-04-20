@@ -14,6 +14,7 @@ namespace ChessPlatform
         public static CastlingSide GetSide(this CastlingType castlingType)
         {
             //// ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
+            //// ReSharper disable once RedundantOverflowCheckingContext
             return (CastlingSide)unchecked((int)castlingType & 1);
         }
     }

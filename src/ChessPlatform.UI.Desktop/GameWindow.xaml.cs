@@ -281,7 +281,7 @@ namespace ChessPlatform.UI.Desktop
                 PopupAnimation = PopupAnimation.None,
                 Focusable = true,
                 Opacity = 0d,
-                Child = popupContent,
+                Child = popupContent
             };
 
             _promotionPopup.PreviewKeyDown += PromotionPopup_PreviewKeyDown;

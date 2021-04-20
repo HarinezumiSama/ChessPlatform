@@ -40,7 +40,7 @@ namespace ChessPlatform.Internal
 
         public override bool Equals(object obj)
         {
-            return obj is SquareBridgeKey && Equals((SquareBridgeKey)obj);
+            return obj is SquareBridgeKey squareBridgeKey && Equals(squareBridgeKey);
         }
 
         public override int GetHashCode()

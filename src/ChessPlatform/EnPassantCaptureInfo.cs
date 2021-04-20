@@ -72,7 +72,7 @@ namespace ChessPlatform
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Equals([CanBeNull] EnPassantCaptureInfo other)
+        public bool Equals(EnPassantCaptureInfo other)
         {
             return Equals(this, other);
         }

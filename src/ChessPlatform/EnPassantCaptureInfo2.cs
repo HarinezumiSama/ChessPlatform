@@ -31,7 +31,7 @@ namespace ChessPlatform
             => left.CaptureSquare == right.CaptureSquare && left.TargetPieceSquare == right.TargetPieceSquare;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool Equals(object obj) => obj is EnPassantCaptureInfo2 && Equals((EnPassantCaptureInfo2)obj);
+        public override bool Equals(object obj) => obj is EnPassantCaptureInfo2 info && Equals(info);
 
         public override int GetHashCode() => CaptureSquare.GetHashCode();
 

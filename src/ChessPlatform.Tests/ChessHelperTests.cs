@@ -116,7 +116,7 @@ namespace ChessPlatform.Tests
         [TestCase("f2", "e1", PieceType.Queen, "f2e1q")]
         public void TestToUciNotation(string from, string to, PieceType promotionResult, string expectedResult)
         {
-            var move = new GameMove(Square.FromAlgebraic(@from), Square.FromAlgebraic(to), promotionResult);
+            var move = new GameMove(Square.FromAlgebraic(from), Square.FromAlgebraic(to), promotionResult);
             var actualResult = move.ToUciNotation();
             Assert.That(actualResult, Is.EqualTo(expectedResult));
         }

@@ -35,10 +35,7 @@ namespace ChessPlatform.Engine
             Version = 0;
         }
 
-        public long Key
-        {
-            get;
-        }
+        public long Key { get; }
 
         [CanBeNull]
         public GameMove BestMove
@@ -47,8 +44,8 @@ namespace ChessPlatform.Engine
             get => _bestMoveEncoded == 0
                 ? null
                 : new GameMove(
-                    new Square((_bestMoveEncoded >> 9) & ChessConstants.MaxSquareIndex),
-                    new Square((_bestMoveEncoded >> 3) & ChessConstants.MaxSquareIndex),
+                    new Square((_bestMoveEncoded >>  9) & ChessConstants.MaxSquareIndex),
+                    new Square((_bestMoveEncoded >>  3) & ChessConstants.MaxSquareIndex),
                     (PieceType)(_bestMoveEncoded & 0x7));
         }
 
@@ -56,22 +53,10 @@ namespace ChessPlatform.Engine
 
         public EvaluationScore LocalScore => new EvaluationScore(_localScoreValue);
 
-        public ScoreBound Bound
-        {
-            get;
-            private set;
-        }
+        public ScoreBound Bound { get; }
 
-        public int Depth
-        {
-            get;
-            private set;
-        }
+        public int Depth { get; }
 
-        public uint Version
-        {
-            get;
-            internal set;
-        }
+        public uint Version { get; internal set; }
     }
 }

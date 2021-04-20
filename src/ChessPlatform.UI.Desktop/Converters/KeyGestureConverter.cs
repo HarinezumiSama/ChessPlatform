@@ -52,7 +52,7 @@ namespace ChessPlatform.UI.Desktop.Converters
         {
             var result = collection
                 .OfType<KeyGesture>()
-                .Select(item => item.GetDisplayStringForCulture(CultureInfo.InvariantCulture))
+                .Select(item => item.GetDisplayStringForCulture(CultureInfo.InvariantCulture).AvoidNull())
                 .OrderBy(item => item.Length)
                 .ThenBy(Factotum.Identity)
                 .Join(" | ");
