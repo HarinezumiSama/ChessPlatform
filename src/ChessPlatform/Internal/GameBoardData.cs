@@ -145,8 +145,10 @@ namespace ChessPlatform.Internal
             var whitePawns = PiecePosition[Piece.WhitePawn];
             var blackPawns = PiecePosition[Piece.BlackPawn];
 
+            //// ReSharper disable ArrangeRedundantParentheses
             return ((fromBitboard & whitePawns).IsAny && (toBitboard & Bitboards.Rank8).IsAny)
                 || ((fromBitboard & blackPawns).IsAny && (toBitboard & Bitboards.Rank1).IsAny);
+            //// ReSharper restore ArrangeRedundantParentheses
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

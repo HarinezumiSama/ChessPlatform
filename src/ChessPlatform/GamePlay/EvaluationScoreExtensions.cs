@@ -49,6 +49,7 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EvaluationScore ToLocal(this EvaluationScore score, int plyDistance)
         {
+            //// ReSharper disable once ArrangeRedundantParentheses
             return score.IsCheckmating()
                 ? new EvaluationScore(score.Value + plyDistance)
                 : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value - plyDistance) : score);
@@ -57,6 +58,7 @@ namespace ChessPlatform.GamePlay
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EvaluationScore ToRelative(this EvaluationScore score, int plyDistance)
         {
+            //// ReSharper disable once ArrangeRedundantParentheses
             return score.IsCheckmating()
                 ? new EvaluationScore(score.Value - plyDistance)
                 : (score.IsGettingCheckmated() ? new EvaluationScore(score.Value + plyDistance) : score);

@@ -30,7 +30,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new ArgumentException("Invalid argument(s).");
             }
 
-            return ((double)value) * Ratio;
+            return (double)value * Ratio;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -45,7 +45,7 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new InvalidOperationException("Unable to convert back since the ratio is zero.");
             }
 
-            return ((double)value) / Ratio;
+            return (double)value / Ratio;
         }
     }
 }

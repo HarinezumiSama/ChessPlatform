@@ -548,6 +548,7 @@ namespace ChessPlatform.Engine
                             innerTotalDepthExtension);
                 }
 
+                //// ReSharper disable once ArrangeRedundantParentheses
                 if (isPrincipalVariation
                     && (variationLine is null || moveIndex == 0
                         || (variationLine.Value.Value > localAlpha.Value
@@ -606,6 +607,7 @@ namespace ChessPlatform.Engine
                     best.FirstMove,
                     best.Value.ConvertValueForTT(plyDistance),
                     localScore,
+                    //// ReSharper disable once ArrangeRedundantParentheses
                     best.Value.Value >= localBeta.Value
                         ? ScoreBound.Lower
                         : (isPrincipalVariation && bestMove != null ? ScoreBound.Exact : ScoreBound.Upper),

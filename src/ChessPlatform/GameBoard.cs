@@ -580,6 +580,7 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(otherBoard));
             }
 
+            //// ReSharper disable once ArrangeRedundantParentheses
             return ReferenceEquals(this, otherBoard) ||
                 (_zobristKey == otherBoard._zobristKey
                     && _castlingOptions == otherBoard._castlingOptions
@@ -1218,6 +1219,7 @@ namespace ChessPlatform
                     attackersBitboard);
             }
 
+            //// ReSharper disable once ArrangeRedundantParentheses
             state = validMoves.Count == 0
                 ? GameState.Checkmate
                 : (isInDoubleCheck ? GameState.DoubleCheck : GameState.Check);

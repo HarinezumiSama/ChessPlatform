@@ -203,8 +203,9 @@ namespace ChessPlatform
 
                 foreach (var currentPiece in ChessConstants.Pieces)
                 {
+                    var isSamePiece = piece == currentPiece;
                     var isSet = (this[currentPiece] & square.Bitboard).IsAny;
-                    if ((piece == currentPiece) != isSet)
+                    if (isSamePiece != isSet)
                     {
                         throw new ChessPlatformException(
                             $@"Bitboard inconsistency for the piece '{piece.GetName()}' at '{square}'.");

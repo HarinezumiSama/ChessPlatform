@@ -145,11 +145,13 @@ namespace ChessPlatform.Engine
             {
                 Interlocked.Increment(ref _hitCount);
 
+                //// ReSharper disable ArrangeRedundantParentheses
                 return match2
                     ? (entry1.Depth == entry2.Depth
                         ? (entry1.Version > entry2.Version ? entry1 : entry2)
                         : (entry1.Depth > entry2.Depth ? entry1 : entry2))
                     : entry1;
+                //// ReSharper restore ArrangeRedundantParentheses
             }
 
             if (match2)
@@ -252,7 +254,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private long GetIndexUnsafe(long key)
         {
-            return unchecked((long)(((ulong)key) % (ulong)_buckets.Length));
+            return unchecked((long)((ulong)key % (ulong)_buckets.Length));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

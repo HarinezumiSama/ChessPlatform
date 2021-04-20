@@ -97,7 +97,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             var thisType = GetType();
 
             var memberExpression = propertyGetterExpression.Body as MemberExpression;
-            if ((memberExpression is null) || (memberExpression.NodeType != ExpressionType.MemberAccess))
+            if (memberExpression is null || memberExpression.NodeType != ExpressionType.MemberAccess)
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
@@ -122,7 +122,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             if (memberExpression.Expression is null)
             {
                 var accessor = propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true);
-                if ((accessor is null) || !accessor.IsStatic)
+                if (accessor is null || !accessor.IsStatic)
                 {
                     throw new ArgumentException(
                         string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),

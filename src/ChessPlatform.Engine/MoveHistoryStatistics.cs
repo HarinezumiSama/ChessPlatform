@@ -191,7 +191,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetHistoryTableOffset(Piece piece, Square square)
         {
-            return ((int)piece) * ChessConstants.SquareCount + square.SquareIndex;
+            return (int)piece * ChessConstants.SquareCount + square.SquareIndex;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
