@@ -178,7 +178,7 @@ namespace ChessPlatform.Engine
             _lockSlim.EnterUpgradeableReadLock();
             try
             {
-                bool shouldOvewriteEntry1;
+                bool shouldOverwriteEntry1;
 
                 var index = GetIndexUnsafe(key);
                 var oldEntry1 = _buckets[index].Entry1;
@@ -186,27 +186,27 @@ namespace ChessPlatform.Engine
 
                 if (oldEntry1.Version == 0 || oldEntry1.Key == key)
                 {
-                    shouldOvewriteEntry1 = true;
+                    shouldOverwriteEntry1 = true;
                 }
                 else if (oldEntry2.Version == 0 || oldEntry2.Key == key)
                 {
-                    shouldOvewriteEntry1 = false;
+                    shouldOverwriteEntry1 = false;
                 }
                 else if ((oldEntry1.Version == _version || oldEntry1.Bound == ScoreBound.Exact)
                     == (oldEntry2.Version == _version || oldEntry2.Bound == ScoreBound.Exact))
                 {
-                    shouldOvewriteEntry1 = oldEntry1.Depth < oldEntry2.Depth;
+                    shouldOverwriteEntry1 = oldEntry1.Depth < oldEntry2.Depth;
                 }
                 else
                 {
-                    shouldOvewriteEntry1 = oldEntry1.Version != _version && oldEntry1.Bound != ScoreBound.Exact;
+                    shouldOverwriteEntry1 = oldEntry1.Version != _version && oldEntry1.Bound != ScoreBound.Exact;
                 }
 
                 _lockSlim.EnterWriteLock();
                 try
                 {
                     entry.Version = _version;
-                    if (shouldOvewriteEntry1)
+                    if (shouldOverwriteEntry1)
                     {
                         _buckets[index].Entry1 = entry;
                     }

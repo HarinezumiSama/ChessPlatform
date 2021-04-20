@@ -38,7 +38,7 @@ namespace ChessPlatform.Engine
             [NotNull] GameMove move,
             int plyDistance,
             int remainingDepth,
-            [CanBeNull] ICollection<GameMove> previousQueitMoves)
+            [CanBeNull] ICollection<GameMove> previousQuietMoves)
         {
             if (board == null)
             {
@@ -77,14 +77,14 @@ namespace ChessPlatform.Engine
 
                 UpdateHistoryTableUnsafe(board, move, moveBonus);
 
-                if (previousQueitMoves == null || previousQueitMoves.Count == 0)
+                if (previousQuietMoves == null || previousQuietMoves.Count == 0)
                 {
                     return;
                 }
 
-                foreach (var previousQueitMove in previousQueitMoves)
+                foreach (var previousQuietMove in previousQuietMoves)
                 {
-                    UpdateHistoryTableUnsafe(board, previousQueitMove, -moveBonus);
+                    UpdateHistoryTableUnsafe(board, previousQuietMove, -moveBonus);
                 }
             }
         }

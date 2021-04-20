@@ -30,7 +30,7 @@ namespace ChessPlatform
                 PromotionFenChars}])? $",
             BasicPatternRegexOptions);
 
-        private static readonly Regex[] StringPatternRegexes = { MainStringPatternRegex, UciStringPatternRegex };
+        private static readonly Regex[] StringPatternRegexs = { MainStringPatternRegex, UciStringPatternRegex };
 
         private readonly int _hashCode;
 
@@ -104,7 +104,7 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(stringNotation));
             }
 
-            foreach (var stringPatternRegex in StringPatternRegexes)
+            foreach (var stringPatternRegex in StringPatternRegexs)
             {
                 var match = stringPatternRegex.Match(stringNotation);
                 if (!match.Success)
