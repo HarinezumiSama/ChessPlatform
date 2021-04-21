@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Project>
+    <Target Name="CheckBuildPropertiesBeforeBuild" BeforeTargets="Clean;Build">
+        <!--<Message
+                Text="[$(MSBuildProjectName):$(TargetFramework):$(Configuration):$(Platform)] SolutionDir = &quot;$(SolutionDir)&quot;, SolutionName = &quot;$(SolutionName)&quot;"
+                Importance="high" />-->
+
+        <Message
+                Text="[$(MSBuildProjectName):$(TargetFramework):$(Configuration):$(Platform)] IsAppveyorBuild = &quot;$(IsAppveyorBuild)&quot;, InformationalVersion = &quot;$(InformationalVersion)&quot;"
+                Importance="high" />
+
+        <Error
+                Condition="'$(SolutionDir)' == '' Or '$(SolutionName)' == '' Or '$(SolutionDir)' == '*Undefined*' Or '$(SolutionName)' == '*Undefined*'"
+                Text="[$(MSBuildProjectName):$(TargetFramework):$(Configuration):$(Platform)] Individual projects cannot be built. Please build the entire solution. (SolutionDir = &quot;$(SolutionDir)&quot;, SolutionName = &quot;$(SolutionName)&quot;)" />
+    </Target>
+
+    <PropertyGroup>
+        <IsAppveyorBuild>false</IsAppveyorBuild>
+        <VersionPrereleaseId></VersionPrereleaseId>
+        <VersionBuildMetadataPrefix></VersionBuildMetadataPrefix>
+        <CI_BuildNumber>0</CI_BuildNumber>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <BuildDateYear>$([System.String]::Format("{0:yyyy}", $([System.DateTime]::Now)))</BuildDateYear>
+        <Version>0.4.0</Version>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(IsAppveyorBuild)' != 'true'">
+        <VersionPrereleaseId>-devBuild.$([System.Guid]::NewGuid().ToString('N').Substring(0, 8))</VersionPrereleaseId>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Authors>Vitalii Maklai</Authors>
+        <Company>$(Authors)</Company>
+        <Product>$(SolutionName)</Product>
+        <Description>$(Product): .NET based chess engine and GUI application</Description>
+        <Copyright>Copyright © Vitalii Maklai 2014-$(BuildDateYear)</Copyright>
+        <RepositoryUrl>https://github.com/HarinezumiSama/$(SolutionName)</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReleaseNotes></PackageReleaseNotes>
+        <PackageTags>chess;chess engine;chess gui;chess windows</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <__RootSolutionOutputPathBase>$(SolutionDir)\.out</__RootSolutionOutputPathBase>
+        <__RootSolutionOutputPath>$([System.IO.Path]::GetFullPath($(__RootSolutionOutputPathBase)))</__RootSolutionOutputPath>
+        <BaseIntermediateOutputPath>$(__RootSolutionOutputPath)\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+        <OutputPath>$(__RootSolutionOutputPath)\bin\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</OutputPath>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <PackageOutputPath>$(__RootSolutionOutputPath)\NuGet\</PackageOutputPath>
+        <VSTestResultsDirectory>$(OutputPath)TestResults</VSTestResultsDirectory>
+    </PropertyGroup>
+
+    <Target Name="CleanTestResults" AfterTargets="Clean">
+        <RemoveDir Directories="$(VSTestResultsDirectory)" Condition="Exists($(VSTestResultsDirectory))" ContinueOnError="true" />
+    </Target>
+
+    <PropertyGroup>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <IncludeSource>false</IncludeSource>
+        <IncludeSymbols>false</IncludeSymbols>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <LangVersion>8.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageVersion>$(Version)</PackageVersion>
+        <AssemblyVersion>$(Version).0</AssemblyVersion>
+        <FileVersion>$(Version).$(CI_BuildNumber)</FileVersion>
+        <InformationalVersion>$(FileVersion)$(VersionPrereleaseId)+$(VersionBuildMetadataPrefix)$(Configuration).$(Platform).$([System.String]::Format("{0:yyyyMMdd'T'HHmmss'Z'}", $([System.DateTime]::UtcNow)))</InformationalVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(SolutionDir)' != '' And '$(SolutionName)' != ''">
+        <DelaySign>false</DelaySign>
+        <SignAssembly>false</SignAssembly>
+        <!--<AssemblyOriginatorKeyFile>$(SolutionDir)\Common\$(SolutionName).snk</AssemblyOriginatorKeyFile>-->
+    </PropertyGroup>
+</Project>

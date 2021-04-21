@@ -1,107 +1,32 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F5BB4FAA-85E2-411E-9B53-DA5FAAB83BC9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ChessPlatform.Tests</RootNamespace>
-    <AssemblyName>ChessPlatform.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <LangVersion>8.0</LangVersion>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\..\bin\AnyCpu\Debug\Tests\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <LangVersion>8.0</LangVersion>
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\..\bin\AnyCpu\Release\Tests\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Prefer32Bit>false</Prefer32Bit>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\Solution Items\CommonAssemblyInfo.cs">
-      <Link>Properties\CommonAssemblyInfo.cs</Link>
-    </Compile>
-    <Compile Include="..\Solution Items\Version\Generated.GlobalVersion.cs">
-      <Link>Properties\Generated.GlobalVersion.cs</Link>
-    </Compile>
-    <Compile Include="ChessHelperTests.cs" />
-    <Compile Include="GameBoardTestBase.cs" />
-    <Compile Include="GameBoardMoveGeneratorTests.cs" />
-    <Compile Include="GameBoardTestHelper.cs" />
-    <Compile Include="GameBoardTests.cs" />
-    <Compile Include="BitboardTests.cs" />
-    <Compile Include="GameMoveFlagsExtensionsTests.cs" />
-    <Compile Include="GameMoveTests.cs" />
-    <Compile Include="PgnGameSerializerTests.cs" />
-    <Compile Include="GameSideExtensionsTests.cs" />
-    <Compile Include="PiecePositionTests.cs" />
-    <Compile Include="PieceTypeExtensionsTests.cs" />
-    <Compile Include="SquareExtensionsTests.cs" />
-    <Compile Include="SquareTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="EnginePlayerTests.cs" />
-    <Compile Include="TranspositionTableRelatedTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ChessPlatform.Engine\ChessPlatform.Engine.csproj">
-      <Project>{D46BCEFB-458E-4CFF-A0AA-44BB77AB3834}</Project>
-      <Name>ChessPlatform.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj">
-      <Project>{AA84E743-3651-4436-BD27-CDD81D525D3E}</Project>
-      <Name>ChessPlatform</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Omnifactotum.NUnit">
-      <Version>0.1.0.2</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net48</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
+        <PackageReference Include="NUnit" Version="2.6.4" />
+        <PackageReference Include="NUnitTestAdapter" Version="2.3.0" />
+        <PackageReference Include="Omnifactotum.NUnit" Version="0.1.0.2" />
+        <PackageReference Include="Appveyor.TestLogger" Version="2.0.0" Condition="$(IsAppveyorBuild)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ChessPlatform.Engine\ChessPlatform.Engine.csproj" />
+        <ProjectReference Include="..\ChessPlatform\ChessPlatform.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Properties\Resources.Designer.cs">
+            <AutoGen>True</AutoGen>
+            <DesignTime>True</DesignTime>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+
+        <EmbeddedResource Update="Properties\Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+            <SubType>Designer</SubType>
+        </EmbeddedResource>
+    </ItemGroup>
 </Project>

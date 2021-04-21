@@ -1,0 +1,36 @@
+version: 'build-{build}'
+branches:
+  only:
+  - master
+skip_tags: true
+skip_branch_with_pr: true
+image: Visual Studio 2019
+configuration: Release
+platform: Any CPU
+shallow_clone: true
+build_script:
+- ps: >-
+    $Script:ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
+
+
+    & ./src/build.ps1 `
+        -BuildConfiguration Release `
+        -BuildPlatform 'Any CPU' `
+        -AppveyorBuild `
+        -AppveyorSourceCodeRevisionId $env:APPVEYOR_REPO_COMMIT `
+        -AppveyorSourceControlBranchName $env:APPVEYOR_REPO_BRANCH `
+        -AppveyorBuildNumber $env:APPVEYOR_BUILD_NUMBER
+test: off
+artifacts:
+- path: src/.out/bin/AnyCPU/Release/ChessPlatform.UI.Desktop/
+  name: '${APPVEYOR_PROJECT_NAME}.$(APPVEYOR_BUILD_VERSION)'
+deploy: off
+notifications:
+- provider: Email
+  to:
+  - vitalii.maklai@gmail.com
+  - '{{commitAuthorEmail}}'
+  subject: '[AppVeyor] {{projectName}} {{buildVersion}}: Build {{status}} ({{branch}} @ {{commitId}})'
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: false
