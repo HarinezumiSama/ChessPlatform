@@ -60,6 +60,7 @@ namespace ChessPlatform.UI.Desktop.Controls
                 return true;
             }
 
+            //// ReSharper disable once ConvertIfStatementToReturnStatement
             if (other is null)
             {
                 return false;

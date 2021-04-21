@@ -34,29 +34,20 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(finalBoard));
             }
 
-            var tuple = PopMoves(finalBoard);
-            InitialBoard = tuple.Item1;
-            Moves = tuple.Item2.AsReadOnly();
+            var (initialBoard, moves) = PopMoves(finalBoard);
+            InitialBoard = initialBoard;
+            Moves = moves.AsReadOnly();
             FinalBoard = finalBoard;
         }
 
         [NotNull]
-        public GameBoard InitialBoard
-        {
-            get;
-        }
+        public GameBoard InitialBoard { get; }
 
         [NotNull]
-        public ReadOnlyCollection<GameMove> Moves
-        {
-            get;
-        }
+        public ReadOnlyCollection<GameMove> Moves { get; }
 
         [NotNull]
-        public GameBoard FinalBoard
-        {
-            get;
-        }
+        public GameBoard FinalBoard { get; }
 
         private static GameBoard IterateAndValidateMoves(
             [NotNull] GameBoard initialBoard,
@@ -82,7 +73,7 @@ namespace ChessPlatform
             return currentBoard;
         }
 
-        private static Tuple<GameBoard, GameMove[]> PopMoves([NotNull] GameBoard finalBoard)
+        private static (GameBoard InitialBoard, GameMove[] Moves) PopMoves([NotNull] GameBoard finalBoard)
         {
             var moveStack = new Stack<GameMove>();
 
@@ -93,7 +84,7 @@ namespace ChessPlatform
                 currentBoard = currentBoard.PreviousBoard.EnsureNotNull();
             }
 
-            return Tuple.Create(currentBoard, moveStack.ToArray());
+            return (currentBoard, moveStack.ToArray());
         }
     }
 }

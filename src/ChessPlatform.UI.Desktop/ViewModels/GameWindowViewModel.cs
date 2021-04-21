@@ -551,6 +551,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 previousBoard = board;
             }
 
+            //// ReSharper disable once InvertIf
             if (currentBoard.State.IsGameFinished() || currentBoard.GetAutoDrawType() != AutoDrawType.None)
             {
                 resultBuilder.AppendLine();
@@ -579,8 +580,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 player.Dispose();
             }
 
-            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
-            if (guiHumanChessPlayer != null)
+            if (player is GuiHumanChessPlayer guiHumanChessPlayer)
             {
                 guiHumanChessPlayer.MoveRequested -= GuiHumanChessPlayer_MoveRequested;
                 guiHumanChessPlayer.MoveRequestCancelled -= GuiHumanChessPlayer_MoveRequestCancelled;
@@ -596,8 +596,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             player.FeedbackProvided += Player_FeedbackProvided;
 
-            var guiHumanChessPlayer = player as GuiHumanChessPlayer;
-            if (guiHumanChessPlayer != null)
+            //// ReSharper disable once InvertIf
+            if (player is GuiHumanChessPlayer guiHumanChessPlayer)
             {
                 guiHumanChessPlayer.MoveRequested += GuiHumanChessPlayer_MoveRequested;
                 guiHumanChessPlayer.MoveRequestCancelled += GuiHumanChessPlayer_MoveRequestCancelled;

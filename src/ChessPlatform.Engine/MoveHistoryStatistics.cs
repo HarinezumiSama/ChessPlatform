@@ -63,8 +63,7 @@ namespace ChessPlatform.Engine
                 return;
             }
 
-            GameMoveFlags moveFlags;
-            if (!board.ValidMoves.TryGetValue(move, out moveFlags) || !LocalHelper.IsQuietMove(moveFlags))
+            if (!board.ValidMoves.TryGetValue(move, out var moveFlags) || !LocalHelper.IsQuietMove(moveFlags))
             {
                 return;
             }
@@ -200,8 +199,7 @@ namespace ChessPlatform.Engine
             [NotNull] Dictionary<GameMove, GameMoveFlags> remainingMoves,
             [NotNull] List<OrderedMove> resultList)
         {
-            GameMoveFlags moveFlags;
-            if (killerMove is null || !remainingMoves.TryGetValue(killerMove, out moveFlags)
+            if (killerMove is null || !remainingMoves.TryGetValue(killerMove, out var moveFlags)
                 || !LocalHelper.IsQuietMove(moveFlags))
             {
                 return;

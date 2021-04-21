@@ -92,7 +92,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 }
 
                 var dataValidationResult = value.Value.CreationData?.Validate();
-                if (dataValidationResult != null && !dataValidationResult.IsObjectValid)
+                if (dataValidationResult is { IsObjectValid: false })
                 {
                     dataValidationResult.Errors.DoForEach(
                         error => AddError(validatorContext, error.Context, error.ErrorMessage));

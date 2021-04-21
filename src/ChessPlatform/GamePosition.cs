@@ -164,6 +164,7 @@ namespace ChessPlatform
                     PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
                 }
 
+                //// ReSharper disable once InvertIf
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
                 {
                     var emptySquares = PiecePosition[Piece.None];
@@ -242,6 +243,7 @@ namespace ChessPlatform
                     PopulateSimpleMoves(resultMoves, sourceSquare, captures, GameMoveFlags.IsRegularCapture);
                 }
 
+                //// ReSharper disable once InvertIf
                 if (moveTypes.IsAnySet(GeneratedMoveTypes.Quiet))
                 {
                     var nonCaptures = movesOnTarget & emptySquares;
@@ -303,32 +305,17 @@ namespace ChessPlatform
                 }
             }
 
+            //// ReSharper disable once InvertIf
             if (moveTypes.IsAnySet(GeneratedMoveTypes.Capture))
             {
                 var enemies = PiecePosition[side.Invert()];
                 var enemyTargets = enemies & target;
 
-                var leftCaptureOffset = side == GameSide.White
-                    ? ShiftDirection.NorthWest
-                    : ShiftDirection.SouthEast;
-                PopulatePawnCaptures(
-                    resultMoves,
-                    pawns,
-                    enemyTargets,
-                    leftCaptureOffset,
-                    rank8,
-                    enPassantCaptureTarget);
+                var leftCaptureOffset = side == GameSide.White ? ShiftDirection.NorthWest : ShiftDirection.SouthEast;
+                PopulatePawnCaptures(resultMoves, pawns, enemyTargets, leftCaptureOffset, rank8, enPassantCaptureTarget);
 
-                var rightCaptureOffset = side == GameSide.White
-                    ? ShiftDirection.NorthEast
-                    : ShiftDirection.SouthWest;
-                PopulatePawnCaptures(
-                    resultMoves,
-                    pawns,
-                    enemyTargets,
-                    rightCaptureOffset,
-                    rank8,
-                    enPassantCaptureTarget);
+                var rightCaptureOffset = side == GameSide.White ? ShiftDirection.NorthEast : ShiftDirection.SouthWest;
+                PopulatePawnCaptures(resultMoves, pawns, enemyTargets, rightCaptureOffset, rank8, enPassantCaptureTarget);
             }
         }
 

@@ -1104,6 +1104,7 @@ namespace ChessPlatform
                 throw new ChessPlatformException("One or more pawns are located at the invalid rank.");
             }
 
+            //// ReSharper disable once InvertIf
             if (_castlingOptions != CastlingOptions.None)
             {
                 foreach (var castlingInfo in ChessHelper.CastlingOptionToInfoMap.Values)
@@ -1260,8 +1261,7 @@ namespace ChessPlatform
         {
             Validate(forceValidation);
 
-            Dictionary<GameMove, GameMoveFlags> validMoveMap;
-            InitializeValidMovesAndState(out validMoveMap, out state);
+            InitializeValidMovesAndState(out var validMoveMap, out state);
             validMoves = validMoveMap.AsReadOnly();
 
             zobristKey = _gameBoardData.PiecePosition.ZobristKey
@@ -1273,16 +1273,16 @@ namespace ChessPlatform
                     : 0L)
                 ^ ZobristHashHelper.GetTurnHash(_activeSide);
 
-            if (PreviousBoard != null && PreviousBoard._autoDrawType == AutoDrawType.ThreefoldRepetition)
+            if (PreviousBoard is { _autoDrawType: AutoDrawType.ThreefoldRepetition })
             {
                 autoDrawType = AutoDrawType.ThreefoldRepetition;
                 repetitions = null;
             }
             else
             {
-                if (PreviousBoard != null && PreviousBoard._repetitions is null)
+                if (PreviousBoard is { _repetitions: null })
                 {
-                    throw new InvalidOperationException("Internal logic error: repetition map is not assigned.");
+                    throw new InvalidOperationException(@"Internal logic error: repetition map is not assigned.");
                 }
 
                 var repetitionMap = PreviousBoard is null
@@ -1390,8 +1390,7 @@ namespace ChessPlatform
                 var castlingOptionsSnippetSet = OmnifactotumCollectionExtensions.ToHashSet(castlingOptionsSnippet);
                 foreach (var optionChar in castlingOptionsSnippetSet)
                 {
-                    CastlingOptions option;
-                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out option))
+                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out var option))
                     {
                         throw new ArgumentException(InvalidFenMessage, nameof(fen));
                     }

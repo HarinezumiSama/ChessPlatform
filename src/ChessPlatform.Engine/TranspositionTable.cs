@@ -18,7 +18,6 @@ namespace ChessPlatform.Engine
         private readonly ReaderWriterLockSlim _lockSlim;
         private bool _isDisposed;
         private TranspositionTableBucket[] _buckets;
-        private uint _version;
         private long _probeCount;
         private long _hitCount;
         private long _saveCount;
@@ -37,7 +36,7 @@ namespace ChessPlatform.Engine
 
         public long SaveCount => _saveCount;
 
-        internal uint Version => _version;
+        internal uint Version { get; private set; }
 
         internal int BucketCount => _buckets?.Length ?? 0;
 
@@ -65,10 +64,10 @@ namespace ChessPlatform.Engine
             {
                 unchecked
                 {
-                    _version++;
-                    if (_version == 0)
+                    Version++;
+                    if (Version == 0)
                     {
-                        _version = 1;
+                        Version = 1;
                     }
                 }
 
@@ -154,13 +153,14 @@ namespace ChessPlatform.Engine
                 //// ReSharper restore ArrangeRedundantParentheses
             }
 
+            //// ReSharper disable once InvertIf
             if (match2)
             {
                 Interlocked.Increment(ref _hitCount);
                 return entry2;
             }
 
-            return default(TranspositionTableEntry?);
+            return default;
         }
 
         public void Save(ref TranspositionTableEntry entry)
@@ -193,20 +193,20 @@ namespace ChessPlatform.Engine
                 {
                     shouldOverwriteEntry1 = false;
                 }
-                else if ((oldEntry1.Version == _version || oldEntry1.Bound == ScoreBound.Exact)
-                    == (oldEntry2.Version == _version || oldEntry2.Bound == ScoreBound.Exact))
+                else if ((oldEntry1.Version == Version || oldEntry1.Bound == ScoreBound.Exact)
+                    == (oldEntry2.Version == Version || oldEntry2.Bound == ScoreBound.Exact))
                 {
                     shouldOverwriteEntry1 = oldEntry1.Depth < oldEntry2.Depth;
                 }
                 else
                 {
-                    shouldOverwriteEntry1 = oldEntry1.Version != _version && oldEntry1.Bound != ScoreBound.Exact;
+                    shouldOverwriteEntry1 = oldEntry1.Version != Version && oldEntry1.Bound != ScoreBound.Exact;
                 }
 
                 _lockSlim.EnterWriteLock();
                 try
                 {
-                    entry.Version = _version;
+                    entry.Version = Version;
                     if (shouldOverwriteEntry1)
                     {
                         _buckets[index].Entry1 = entry;
@@ -260,7 +260,7 @@ namespace ChessPlatform.Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ResetVersionUnsafe()
         {
-            _version = 1;
+            Version = 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

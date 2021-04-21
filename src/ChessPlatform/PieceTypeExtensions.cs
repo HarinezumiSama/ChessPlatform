@@ -31,8 +31,7 @@ namespace ChessPlatform
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char GetFenChar(this PieceType pieceType)
         {
-            char result;
-            if (!ChessConstants.PieceTypeToFenCharMap.TryGetValue(pieceType, out result))
+            if (!ChessConstants.PieceTypeToFenCharMap.TryGetValue(pieceType, out var result))
             {
                 throw new ArgumentException($@"Invalid piece type ({pieceType}).", nameof(pieceType));
             }

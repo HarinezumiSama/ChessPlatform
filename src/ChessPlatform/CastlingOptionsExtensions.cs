@@ -16,6 +16,7 @@ namespace ChessPlatform
 
             foreach (var option in ChessConstants.FenRelatedCastlingOptions)
             {
+                //// ReSharper disable once InvertIf
                 if (castlingOptions.IsAnySet(option))
                 {
                     var fenChar = ChessConstants.CastlingOptionToFenCharMap[option];

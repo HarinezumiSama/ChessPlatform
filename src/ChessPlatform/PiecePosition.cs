@@ -284,8 +284,7 @@ namespace ChessPlatform
                     return false;
                 }
 
-                Piece piece;
-                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out piece))
+                if (ChessConstants.FenCharToPieceMap.TryGetValue(ch, out var piece))
                 {
                     var square = new Square(currentFile, currentRank);
                     SetupNewPiece(square, piece);
@@ -302,12 +301,7 @@ namespace ChessPlatform
                 currentFile += emptySquareCount;
             }
 
-            if (currentFile != ChessConstants.FileCount)
-            {
-                return false;
-            }
-
-            return true;
+            return currentFile == ChessConstants.FileCount;
         }
     }
 }

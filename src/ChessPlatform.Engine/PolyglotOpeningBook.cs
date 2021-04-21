@@ -42,9 +42,8 @@ namespace ChessPlatform.Engine
             var capacity = 128; // Guesstimate
             if (stream.CanSeek)
             {
-                long remainder;
                 var streamLength = stream.Length - stream.Position;
-                var quotient = Math.DivRem(streamLength, BookEntry.DataLength, out remainder);
+                var quotient = Math.DivRem(streamLength, BookEntry.DataLength, out var remainder);
 
                 if (remainder != 0)
                 {
@@ -170,10 +169,7 @@ namespace ChessPlatform.Engine
 
             public static BookEntry? ReadEntry([NotNull] Stream stream)
             {
-                if (_buffer is null)
-                {
-                    _buffer = new byte[DataLength];
-                }
+                _buffer ??= new byte[DataLength];
 
                 var bytesRead = stream.Read(_buffer, 0, DataLength);
                 if (bytesRead == 0)

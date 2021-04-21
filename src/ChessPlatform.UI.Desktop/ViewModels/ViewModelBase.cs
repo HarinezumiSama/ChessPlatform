@@ -96,16 +96,14 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             var thisType = GetType();
 
-            var memberExpression = propertyGetterExpression.Body as MemberExpression;
-            if (memberExpression is null || memberExpression.NodeType != ExpressionType.MemberAccess)
+            if (!(propertyGetterExpression.Body is MemberExpression { NodeType: ExpressionType.MemberAccess } memberExpression))
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
                     nameof(propertyGetterExpression));
             }
 
-            var propertyInfo = memberExpression.Member as PropertyInfo;
-            if (propertyInfo is null)
+            if (!(memberExpression.Member is PropertyInfo propertyInfo))
             {
                 throw new ArgumentException(
                     string.Format(InvalidExpressionMessageAutoFormat, thisType, propertyGetterExpression),
@@ -119,6 +117,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     nameof(propertyGetterExpression));
             }
 
+            //// ReSharper disable once InvertIf
             if (memberExpression.Expression is null)
             {
                 var accessor = propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true);

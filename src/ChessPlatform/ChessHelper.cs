@@ -267,8 +267,7 @@ namespace ChessPlatform
 
         internal static PieceType ToPieceType(this char fenChar)
         {
-            PieceType result;
-            if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out result))
+            if (!ChessConstants.FenCharToPieceTypeMap.TryGetValue(fenChar, out var result))
             {
                 throw new ArgumentException($@"Invalid FEN character ({fenChar}).", nameof(fenChar));
             }
@@ -291,8 +290,7 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(move));
             }
 
-            GameMoveFlags moveFlags;
-            if (!board.ValidMoves.TryGetValue(move, out moveFlags))
+            if (!board.ValidMoves.TryGetValue(move, out var moveFlags))
             {
                 throw new ArgumentException($@"Invalid move {move} for the board '{board.GetFen()}'.", nameof(move));
             }
@@ -308,50 +306,61 @@ namespace ChessPlatform
             else
             {
                 var pieceType = board[move.From].GetPieceType();
-                if (pieceType == PieceType.None)
+                switch (pieceType)
                 {
-                    throw new InvalidOperationException(
-                        $@"Invalid move {move} for the board '{board.GetFen()}': no piece at the source square.");
-                }
+                    case PieceType.None:
+                        throw new InvalidOperationException(
+                            $@"Invalid move {move} for the board '{board.GetFen()}': no piece at the source square.");
 
-                if (pieceType == PieceType.Pawn)
-                {
-                    if (moveFlags.IsAnyCapture())
-                    {
-                        resultBuilder.Append(move.From.FileChar);
-                    }
-                }
-                else
-                {
-                    resultBuilder.Append(pieceType.GetFenChar());
-
-                    var competitorSquares = board
-                        .ValidMoves
-                        .Keys
-                        .Where(
-                            obj => obj != move && obj.To == move.To && board[obj.From].GetPieceType() == pieceType)
-                        .Select(obj => obj.From)
-                        .ToArray();
-
-                    if (competitorSquares.Length != 0)
-                    {
-                        var onSameFile = competitorSquares.Any(square => square.File == move.From.File);
-                        var onSameRank = competitorSquares.Any(square => square.Rank == move.From.Rank);
-
-                        if (onSameFile)
+                    case PieceType.Pawn:
                         {
-                            if (onSameRank)
+                            if (moveFlags.IsAnyCapture())
                             {
                                 resultBuilder.Append(move.From.FileChar);
                             }
+                            break;
+                        }
 
-                            resultBuilder.Append(move.From.RankChar);
-                        }
-                        else
+                    case PieceType.Knight:
+                    case PieceType.King:
+                    case PieceType.Bishop:
+                    case PieceType.Rook:
+                    case PieceType.Queen:
                         {
-                            resultBuilder.Append(move.From.FileChar);
+                            resultBuilder.Append(pieceType.GetFenChar());
+
+                            var competitorSquares = board
+                                .ValidMoves
+                                .Keys
+                                .Where(obj => obj != move && obj.To == move.To && board[obj.From].GetPieceType() == pieceType)
+                                .Select(obj => obj.From)
+                                .ToArray();
+
+                            if (competitorSquares.Length != 0)
+                            {
+                                var onSameFile = competitorSquares.Any(square => square.File == move.From.File);
+                                var onSameRank = competitorSquares.Any(square => square.Rank == move.From.Rank);
+
+                                if (onSameFile)
+                                {
+                                    if (onSameRank)
+                                    {
+                                        resultBuilder.Append(move.From.FileChar);
+                                    }
+
+                                    resultBuilder.Append(move.From.RankChar);
+                                }
+                                else
+                                {
+                                    resultBuilder.Append(move.From.FileChar);
+                                }
+                            }
+
+                            break;
                         }
-                    }
+
+                    default:
+                        throw pieceType.CreateEnumValueNotImplementedException();
                 }
 
                 if (moveFlags.IsAnyCapture())

@@ -32,11 +32,6 @@ namespace ChessPlatform
                 throw new ArgumentNullException(nameof(moves));
             }
 
-            if (moves.Any(item => item == null))
-            {
-                throw new ArgumentException(@"The collection contains a null element.", nameof(moves));
-            }
-
             return moves.Select(ToUciNotation).Join(MoveSeparator);
         }
     }

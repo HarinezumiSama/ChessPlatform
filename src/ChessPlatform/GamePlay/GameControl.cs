@@ -27,6 +27,7 @@
         {
             lock (_syncLock)
             {
+                //// ReSharper disable once InvertIf
                 if (IsMoveNowRequested)
                 {
                     IsMoveNowRequested = false;

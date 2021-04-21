@@ -20,15 +20,16 @@ namespace ChessPlatform
             }
 
             var emptySquareCount = new ValueContainer<int>(0);
-            Action writeEmptySquareCount =
-                () =>
+
+            void WriteEmptySquareCount()
+            {
+                //// ReSharper disable once InvertIf
+                if (emptySquareCount.Value > 0)
                 {
-                    if (emptySquareCount.Value > 0)
-                    {
-                        resultBuilder.Append(emptySquareCount.Value);
-                        emptySquareCount.Value = 0;
-                    }
-                };
+                    resultBuilder.Append(emptySquareCount.Value);
+                    emptySquareCount.Value = 0;
+                }
+            }
 
             for (var rank = ChessConstants.RankCount - 1; rank >= 0; rank--)
             {
@@ -47,12 +48,12 @@ namespace ChessPlatform
                         continue;
                     }
 
-                    writeEmptySquareCount();
+                    WriteEmptySquareCount();
                     var fenChar = piece.GetFenChar();
                     resultBuilder.Append(fenChar);
                 }
 
-                writeEmptySquareCount();
+                WriteEmptySquareCount();
             }
         }
 

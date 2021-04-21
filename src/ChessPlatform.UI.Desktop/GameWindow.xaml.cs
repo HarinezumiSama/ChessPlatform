@@ -378,10 +378,10 @@ namespace ChessPlatform.UI.Desktop
                 {
                     _promotionPopup.Closed -= promotionPopupClosed.Value;
 
-                    var promotion = _promotionPopup.Tag as PieceType?;
-                    if (promotion.HasValue && promotion.Value != PieceType.None)
+                    //// ReSharper disable once InvertIf
+                    if (_promotionPopup.Tag is PieceType promotion && promotion != PieceType.None)
                     {
-                        var promotionMove = move.MakePromotion(promotion.Value);
+                        var promotionMove = move.MakePromotion(promotion);
                         MakeMoveInternal(promotionMove);
                     }
                 };
@@ -440,24 +440,23 @@ namespace ChessPlatform.UI.Desktop
                             switch (ViewModel.GameManagerAutoDrawType)
                             {
                                 case AutoDrawType.InsufficientMaterial:
-                                    drawType = "insufficient material";
+                                    drawType = @"insufficient material";
                                     break;
 
                                 case AutoDrawType.ThreefoldRepetition:
-                                    drawType = "threefold repetition";
+                                    drawType = @"threefold repetition";
                                     break;
 
                                 case AutoDrawType.FiftyMoveRule:
-                                    drawType = "50-move rule";
+                                    drawType = @"50-move rule";
                                     break;
 
                                 default:
-                                    drawType = "?";
+                                    drawType = @"?";
                                     break;
                             }
 
                             popupControl.ShowInfoPopup($@"Draw: {drawType}.");
-
                             break;
                     }
 

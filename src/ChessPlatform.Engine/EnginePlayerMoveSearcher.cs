@@ -153,8 +153,7 @@ namespace ChessPlatform.Engine
             var ttBestMove = entryProbe?.BestMove;
             if (ttBestMove != null)
             {
-                GameMoveFlags moveFlags;
-                if (remainingMoves.TryGetValue(ttBestMove, out moveFlags))
+                if (remainingMoves.TryGetValue(ttBestMove, out var moveFlags))
                 {
                     resultList.Add(new OrderedMove(ttBestMove, moveFlags));
                     remainingMoves.Remove(ttBestMove);
@@ -269,6 +268,7 @@ namespace ChessPlatform.Engine
             // Stand pat if local evaluation is at least beta
             if (bestScore.Value >= beta.Value)
             {
+                //// ReSharper disable once InvertIf
                 if (!entryProbe.HasValue && _transpositionTable != null)
                 {
                     var entry = new TranspositionTableEntry(
@@ -321,6 +321,7 @@ namespace ChessPlatform.Engine
                 {
                     // Fail-soft beta-cutoff
 
+                    //// ReSharper disable once InvertIf
                     if (_transpositionTable != null)
                     {
                         var entry = new TranspositionTableEntry(
@@ -342,6 +343,7 @@ namespace ChessPlatform.Engine
                     bestScore = score;
                 }
 
+                //// ReSharper disable once InvertIf
                 if (score.Value > localAlpha.Value)
                 {
                     localAlpha = score;
@@ -349,6 +351,7 @@ namespace ChessPlatform.Engine
                 }
             }
 
+            //// ReSharper disable once InvertIf
             if (_transpositionTable != null)
             {
                 var entry = new TranspositionTableEntry(
@@ -600,6 +603,7 @@ namespace ChessPlatform.Engine
 
             best = best.EnsureNotNull();
 
+            //// ReSharper disable once InvertIf
             if (_transpositionTable != null)
             {
                 var ttEntry = new TranspositionTableEntry(

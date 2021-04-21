@@ -84,8 +84,7 @@ namespace ChessPlatform
             out string errorMessage,
             out StandardGamePosition result)
         {
-            string errorDetails;
-            if (TryCreateInternal(fen, out errorDetails, out result))
+            if (TryCreateInternal(fen, out var errorDetails, out result))
             {
                 errorMessage = null;
                 return true;
@@ -102,9 +101,7 @@ namespace ChessPlatform
 
         public static StandardGamePosition Create([NotNull] string fen)
         {
-            string errorMessage;
-            StandardGamePosition gamePosition;
-            if (!TryCreate(fen, out errorMessage, out gamePosition))
+            if (!TryCreate(fen, out var errorMessage, out var gamePosition))
             {
                 throw new ArgumentException(errorMessage, nameof(fen));
             }
@@ -154,10 +151,6 @@ namespace ChessPlatform
                 return false;
             }
 
-            GameSide activeSide;
-            int halfMovesBy50MoveRule;
-            int fullMoveIndex;
-
             var fenSnippets = fen
                 .Trim()
                 .Split(ChessConstants.FenSnippetSeparator.AsArray(), StringSplitOptions.None);
@@ -169,8 +162,7 @@ namespace ChessPlatform
             }
 
             var piecePositionFen = fenSnippets[0];
-            PiecePosition piecePosition;
-            if (!PiecePosition.TryCreate(piecePositionFen, out piecePosition))
+            if (!PiecePosition.TryCreate(piecePositionFen, out var piecePosition))
             {
                 errorDetails = "Invalid position of pieces.";
                 result = null;
@@ -178,7 +170,7 @@ namespace ChessPlatform
             }
 
             var activeSideSnippet = fenSnippets[1];
-            if (!ChessConstants.FenSnippetToGameSideMap.TryGetValue(activeSideSnippet, out activeSide))
+            if (!ChessConstants.FenSnippetToGameSideMap.TryGetValue(activeSideSnippet, out var activeSide))
             {
                 errorDetails = "Invalid active side.";
                 result = null;
@@ -192,8 +184,7 @@ namespace ChessPlatform
                 var castlingOptionsSnippetSet = OmnifactotumCollectionExtensions.ToHashSet(castlingOptionsSnippet);
                 foreach (var optionChar in castlingOptionsSnippetSet)
                 {
-                    CastlingOptions option;
-                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out option))
+                    if (!ChessConstants.FenCharCastlingOptionMap.TryGetValue(optionChar, out var option))
                     {
                         errorDetails = "Invalid castling options.";
                         result = null;
@@ -235,7 +226,7 @@ namespace ChessPlatform
             }
 
             var halfMovesBy50MoveRuleSnippet = fenSnippets[4];
-            if (!ChessHelper.TryParseInt(halfMovesBy50MoveRuleSnippet, out halfMovesBy50MoveRule)
+            if (!ChessHelper.TryParseInt(halfMovesBy50MoveRuleSnippet, out var halfMovesBy50MoveRule)
                 || halfMovesBy50MoveRule < 0)
             {
                 errorDetails = "Invalid half move counter for the 50 move rule.";
@@ -244,7 +235,7 @@ namespace ChessPlatform
             }
 
             var fullMoveIndexSnippet = fenSnippets[5];
-            if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out fullMoveIndex) || fullMoveIndex <= 0)
+            if (!ChessHelper.TryParseInt(fullMoveIndexSnippet, out var fullMoveIndex) || fullMoveIndex <= 0)
             {
                 errorDetails = "Invalid move index.";
                 result = null;

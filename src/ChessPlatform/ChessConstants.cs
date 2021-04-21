@@ -121,7 +121,7 @@ namespace ChessPlatform
                 .Where(obj => obj.FenChar.HasValue)
                 .ToDictionary(
                     obj => (PieceType)obj.Item.GetValue(null),
-                    obj => obj.FenChar.Value)
+                    obj => obj.FenChar!.Value)
                 .AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
@@ -134,7 +134,7 @@ namespace ChessPlatform
                 .Where(obj => obj.FenChar.HasValue)
                 .ToDictionary(
                     obj => (Piece)obj.Item.GetValue(null),
-                    obj => obj.FenChar.Value)
+                    obj => obj.FenChar!.Value)
                 .AsReadOnly();
 
         public static readonly Omnifactotum.ReadOnlyDictionary<char, Piece> FenCharToPieceMap =

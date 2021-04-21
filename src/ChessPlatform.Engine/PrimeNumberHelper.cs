@@ -48,6 +48,7 @@ namespace ChessPlatform.Engine
                     tester <= limit;
                     index++, tester = index < BasicOddPrimeNumbers.Length ? BasicOddPrimeNumbers[index] : tester + 2)
                 {
+                    //// ReSharper disable once InvertIf
                     if (current % tester == 0)
                     {
                         isComposite = true;
@@ -79,6 +80,7 @@ namespace ChessPlatform.Engine
                     index < oddPrimes.Count && tester <= limit;
                     index++, tester = oddPrimes[index])
                 {
+                    //// ReSharper disable once InvertIf
                     if (current % tester == 0)
                     {
                         isComposite = true;

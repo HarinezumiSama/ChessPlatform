@@ -44,8 +44,7 @@ namespace ChessPlatform
 
         public static char GetFenChar(this Piece piece)
         {
-            char result;
-            if (!ChessConstants.PieceToFenCharMap.TryGetValue(piece, out result))
+            if (!ChessConstants.PieceToFenCharMap.TryGetValue(piece, out var result))
             {
                 throw new ArgumentException($@"Invalid piece '{piece}'.", nameof(piece));
             }

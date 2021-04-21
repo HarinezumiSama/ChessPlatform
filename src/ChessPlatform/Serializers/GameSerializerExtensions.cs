@@ -29,10 +29,8 @@ namespace ChessPlatform.Serializers
                 throw new ArgumentNullException(nameof(stringBuilder));
             }
 
-            using (var writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture))
-            {
-                serializer.Serialize(gameDescriptions, writer);
-            }
+            using var writer = new StringWriter(stringBuilder, CultureInfo.InvariantCulture);
+            serializer.Serialize(gameDescriptions, writer);
         }
 
         public static string Serialize(
@@ -66,10 +64,8 @@ namespace ChessPlatform.Serializers
                 throw new ArgumentNullException(nameof(data));
             }
 
-            using (var reader = new StringReader(data))
-            {
-                return serializer.Deserialize(reader);
-            }
+            using var reader = new StringReader(data);
+            return serializer.Deserialize(reader);
         }
     }
 }

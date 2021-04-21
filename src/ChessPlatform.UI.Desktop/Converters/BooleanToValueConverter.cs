@@ -12,8 +12,8 @@ namespace ChessPlatform.UI.Desktop.Converters
         /// </summary>
         public BooleanToValueConverter()
         {
-            TrueValue = default(T);
-            FalseValue = default(T);
+            TrueValue = default;
+            FalseValue = default;
         }
 
         public T TrueValue { get; set; }

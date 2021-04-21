@@ -40,6 +40,7 @@ namespace ChessPlatform.Engine
                 throw new ArgumentNullException(nameof(killerMove));
             }
 
+            //// ReSharper disable once InvertIf
             if (Primary != killerMove)
             {
                 Secondary = Primary;

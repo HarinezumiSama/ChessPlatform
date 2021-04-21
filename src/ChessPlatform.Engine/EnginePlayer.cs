@@ -148,6 +148,8 @@ namespace ChessPlatform.Engine
                     when (ex.Flatten().InnerException is OperationCanceledException)
                 {
                     var operationCanceledException = (OperationCanceledException)ex.Flatten().InnerException;
+
+                    //// ReSharper disable once InvertIf
                     if (operationCanceledException?.CancellationToken == internalCancellationToken
                         || operationCanceledException?.CancellationToken == request.CancellationToken)
                     {
@@ -331,11 +333,11 @@ namespace ChessPlatform.Engine
 
                 OnFeedbackProvided(feedbackEventArgs);
 
+                //// ReSharper disable once InvertIf
                 if (bestVariationLine.Value.IsCheckmating())
                 {
                     Trace.WriteLine(
-                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {
-                            bestVariationLine}.");
+                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {bestVariationLine}.");
 
                     break;
                 }

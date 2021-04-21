@@ -25,15 +25,14 @@ namespace ChessPlatform.UI.Desktop.Converters
                 throw new ArgumentException($@"Invalid target type ({targetType.GetFullName()}).", nameof(targetType));
             }
 
-            var gameBoard = value as GameBoard;
-            if (gameBoard is null)
+            if (!(value is GameBoard gameBoard))
             {
                 return string.Empty;
             }
 
             var result =
-                $@"Move: {gameBoard.FullMoveIndex}. Side to move: {gameBoard.ActiveSide}. State: {gameBoard.State
-                    }. Valid moves: {gameBoard.ValidMoves.Count}. Result: {gameBoard.ResultString}. Auto draw: {
+                $@"Move: {gameBoard.FullMoveIndex}. Side to move: {gameBoard.ActiveSide}. State: {
+                    gameBoard.State}. Valid moves: {gameBoard.ValidMoves.Count}. Result: {gameBoard.ResultString}. Auto draw: {
                     gameBoard.GetAutoDrawType()}";
 
             return result;

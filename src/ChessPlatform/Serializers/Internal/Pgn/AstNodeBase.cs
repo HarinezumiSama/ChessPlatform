@@ -42,8 +42,7 @@ namespace ChessPlatform.Serializers.Internal.Pgn
         protected static TNode GetChildNode<TNode>([NotNull] ParseTreeNode parseNode, int index)
             where TNode : AstNodeBase
         {
-            var result = parseNode.EnsureNotNull().ChildNodes[index].AstNode as TNode;
-            if (result is null)
+            if (!(parseNode.EnsureNotNull().ChildNodes[index].AstNode is TNode result))
             {
                 throw new InvalidOperationException(
                     $@"The child node at index {index} is expected to be of type '{

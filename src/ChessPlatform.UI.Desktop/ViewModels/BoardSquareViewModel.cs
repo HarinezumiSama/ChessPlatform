@@ -139,6 +139,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                     : SquareMode.ValidMoveTarget;
             }
 
+            //// ReSharper disable once InvertIf
             if (_parentViewModel.ValidMoveTargetSquares.Count != 0)
             {
                 switch (_parentViewModel.SelectionMode)

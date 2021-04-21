@@ -44,8 +44,8 @@ namespace ChessPlatform.Engine
         public void RequestCustomInterruption<TException>()
             where TException : Exception, new()
         {
-            Func<Exception> customInterruptionFactory = () => new TException();
-            Interlocked.CompareExchange(ref _customInterruptionFactory, customInterruptionFactory, null);
+            static Exception CreateException() => new TException();
+            Interlocked.CompareExchange(ref _customInterruptionFactory, CreateException, null);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

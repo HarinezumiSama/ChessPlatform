@@ -4,20 +4,16 @@ using Irony.Parsing;
 
 namespace ChessPlatform.Serializers.Internal.Pgn
 {
-    [DebuggerDisplay("{DebugText,nq}")]
+    [DebuggerDisplay("{ToDebuggerString(),nq}")]
     public sealed class ElementSequenceAstNode : AstNodeBase
     {
-        public ElementAstNode[] Elements
-        {
-            get;
-            private set;
-        }
-
-        public string DebugText => $@"[{GetType().Name}] Elements.Length = {Elements?.Length}";
+        public ElementAstNode[] Elements { get; private set; }
 
         protected override void Initialize(AstContext context, ParseTreeNode parseNode)
         {
             Elements = GetChildren<ElementAstNode>(parseNode);
         }
+
+        private string ToDebuggerString() => $@"[{GetType().Name}] {nameof(Elements)}.{nameof(Elements.Length)} = {Elements?.Length}";
     }
 }

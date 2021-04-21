@@ -64,16 +64,16 @@ namespace ChessPlatform.UI.Desktop
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
         {
-            Action action = () => OnUnhandledExceptionInternal(args);
+            void CallOnUnhandledExceptionInternal() => OnUnhandledExceptionInternal(args);
 
             var dispatcher = Current?.Dispatcher;
             if (dispatcher is null || dispatcher.CheckAccess())
             {
-                action();
+                CallOnUnhandledExceptionInternal();
                 return;
             }
 
-            dispatcher.Invoke(action, DispatcherPriority.Send);
+            dispatcher.Invoke(CallOnUnhandledExceptionInternal, DispatcherPriority.Send);
         }
 
         private static void OnUnhandledExceptionInternal(UnhandledExceptionEventArgs args)
@@ -96,19 +96,11 @@ namespace ChessPlatform.UI.Desktop
         {
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            var task = new Task(
-                () =>
-                {
-                    ////PolyglotOpeningBook.Performance.EnsureNotNull();
-                    PolyglotOpeningBook.Varied.EnsureNotNull();
-                });
+            ////var task = new Task(() => PolyglotOpeningBook.Performance.EnsureNotNull());
+            var task = new Task(() => PolyglotOpeningBook.Varied.EnsureNotNull());
 
             task.ContinueWith(
-                t =>
-                    Trace.TraceError(
-                        "[{0}] Error initializing the default opening book: {1}",
-                        currentMethodName,
-                        t.Exception),
+                t => Trace.TraceError($@"[{currentMethodName}] Error initializing the default opening book: {t.Exception}"),
                 TaskContinuationOptions.OnlyOnFaulted);
 
             task.Start();

@@ -18,29 +18,20 @@ namespace ChessPlatform.UI.Desktop.Converters
                 return value;
             }
 
-            var collection = value as IEnumerable;
-            if (collection != null)
+            switch (value)
             {
-                return GetStringRepresentation(collection);
-            }
+                case IEnumerable collection:
+                    return GetStringRepresentation(collection);
 
-            var routedCommand = value as RoutedCommand;
-            if (routedCommand != null)
-            {
-                return GetStringRepresentation(routedCommand.InputGestures);
-            }
-
-            var menuItem = value as MenuItem;
-            if (menuItem != null)
-            {
-                routedCommand = menuItem.Command as RoutedCommand;
-                if (routedCommand != null)
-                {
+                case RoutedCommand routedCommand:
                     return GetStringRepresentation(routedCommand.InputGestures);
-                }
-            }
 
-            return string.Empty;
+                case MenuItem { Command: RoutedCommand menuItemRoutedCommand }:
+                    return GetStringRepresentation(menuItemRoutedCommand.InputGestures);
+
+                default:
+                    return string.Empty;
+            }
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
