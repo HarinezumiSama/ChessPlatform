@@ -10,10 +10,13 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shell;
+using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using ChessPlatform.UI.Desktop.Converters;
 using ChessPlatform.UI.Desktop.ViewModels;
 using Omnifactotum;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
 {
@@ -28,14 +31,27 @@ namespace ChessPlatform.UI.Desktop
         private bool _canExecuteCopyHistoryToClipboard;
         private Popup _promotionPopup;
 
-        public GameWindow()
+        public GameWindow([NotNull] ILogger logger, [NotNull] IOpeningBookProvider openingBookProvider)
         {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (openingBookProvider is null)
+            {
+                throw new ArgumentNullException(nameof(openingBookProvider));
+            }
+
+            ViewModel = new GameWindowViewModel(logger, openingBookProvider);
+            DataContext = ViewModel;
+
             InitializeComponent();
 
             _canExecuteCopyFenToClipboard = true;
             _canExecuteCopyHistoryToClipboard = true;
 
-            Title = App.Title;
+            Title = AppConstants.FullTitle;
 
             InitializeControls(false);
             InitializePromotionControls();
@@ -46,6 +62,15 @@ namespace ChessPlatform.UI.Desktop
 
             Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
+
+        public GameWindow()
+            : this(FakeLogger.Instance, FakeOpeningBookProvider.Instance)
+        {
+            // Nothing to do
+        }
+
+        [NotNull]
+        public GameWindowViewModel ViewModel { get; }
 
         protected override void OnInitialized(EventArgs e)
         {
@@ -62,7 +87,7 @@ namespace ChessPlatform.UI.Desktop
 
         private void StartNewGame()
         {
-            var newGameWindow = new NewGameWindow { Owner = this };
+            var newGameWindow = new NewGameWindow(ViewModel.Logger, ViewModel.OpeningBookProvider) { Owner = this };
             if (!newGameWindow.ShowDialog().GetValueOrDefault())
             {
                 return;

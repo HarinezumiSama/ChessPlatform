@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ChessPlatform.Logging;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 using ThreadState = System.Threading.ThreadState;
@@ -24,6 +25,8 @@ namespace ChessPlatform.GamePlay
         private static long _instanceCounter;
 
         private readonly object _syncLock = new object();
+
+        private readonly ILogger _logger;
         private readonly long _instanceIndex;
         private readonly Stack<GameBoard> _gameBoards;
         private readonly Thread _thread;
@@ -40,6 +43,7 @@ namespace ChessPlatform.GamePlay
         private AutoDrawType _autoDrawType;
 
         public GameManager(
+            [NotNull] ILogger logger,
             [NotNull] IChessPlayer white,
             [NotNull] IChessPlayer black,
             [NotNull] GameBoard gameBoard)
@@ -48,6 +52,8 @@ namespace ChessPlatform.GamePlay
             {
                 throw new ArgumentNullException(nameof(gameBoard));
             }
+
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _instanceIndex = Interlocked.Increment(ref _instanceCounter);
 
@@ -75,10 +81,11 @@ namespace ChessPlatform.GamePlay
         }
 
         public GameManager(
+            ILogger logger,
             [NotNull] IChessPlayer white,
             [NotNull] IChessPlayer black,
             [NotNull] string initialPositionFen)
-            : this(white, black, new GameBoard(initialPositionFen))
+            : this(logger, white, black, new GameBoard(initialPositionFen))
         {
             // Nothing to do
         }
@@ -327,9 +334,7 @@ namespace ChessPlatform.GamePlay
             catch (Exception ex)
                 when (!ex.IsFatal())
             {
-                Trace.TraceError(
-                    $@"{Environment.NewLine}[{currentMethodName}] Unhandled exception has occurred: {ex}{
-                        Environment.NewLine}");
+                _logger.Error($@"{Environment.NewLine}[{currentMethodName}] Unhandled exception has occurred: {ex}{Environment.NewLine}");
 
                 lock (_syncLock)
                 {
@@ -427,7 +432,7 @@ namespace ChessPlatform.GamePlay
                     task.ContinueWith(
                         t =>
                         {
-                            Trace.TraceError(
+                            _logger.Error(
                                 $@"{Environment.NewLine}{Environment.NewLine}[{currentMethodName
                                     }] Unhandled exception has occurred: {t.Exception}{Environment.NewLine}{
                                     Environment.NewLine}");
@@ -557,15 +562,9 @@ namespace ChessPlatform.GamePlay
                 IsCancelled = new SyncValueContainer<bool>();
             }
 
-            public GameManagerState State
-            {
-                get;
-            }
+            public GameManagerState State { get; }
 
-            public GameBoard ActiveBoard
-            {
-                get;
-            }
+            public GameBoard ActiveBoard { get; }
 
             public CancellationToken CancellationToken
             {
@@ -573,10 +572,7 @@ namespace ChessPlatform.GamePlay
                 get => _cancellationTokenSource.Token;
             }
 
-            public SyncValueContainer<bool> IsCancelled
-            {
-                get;
-            }
+            public SyncValueContainer<bool> IsCancelled { get; }
 
             public void Cancel()
             {

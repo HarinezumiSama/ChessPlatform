@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using ChessPlatform.Engine;
+using ChessPlatform.Logging;
+using Omnifactotum.Annotations;
 using Omnifactotum.Validation;
 using Omnifactotum.Validation.Constraints;
 
@@ -8,13 +12,26 @@ namespace ChessPlatform.UI.Desktop.ViewModels
     {
         private string _fen;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="NewGameWindowViewModel"/> class.
-        /// </summary>
-        public NewGameWindowViewModel()
+        public NewGameWindowViewModel([NotNull] ILogger logger, [NotNull] IOpeningBookProvider openingBookProvider)
         {
-            WhitePlayerViewModel = new PlayerChoiceControlViewModel(GameSide.White);
-            BlackPlayerViewModel = new PlayerChoiceControlViewModel(GameSide.Black);
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (openingBookProvider is null)
+            {
+                throw new ArgumentNullException(nameof(openingBookProvider));
+            }
+
+            WhitePlayerViewModel = new PlayerChoiceControlViewModel(logger, openingBookProvider, GameSide.White);
+            BlackPlayerViewModel = new PlayerChoiceControlViewModel(logger, openingBookProvider, GameSide.Black);
+        }
+
+        public NewGameWindowViewModel()
+            : this(FakeLogger.Instance, FakeOpeningBookProvider.Instance)
+        {
+            // Nothing to do
         }
 
         [ValidatableMember]

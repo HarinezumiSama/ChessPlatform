@@ -1,15 +1,15 @@
 ﻿<Window x:Class="ChessPlatform.UI.Desktop.NewGameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:NewGameWindowViewModel, IsDesignTimeCreatable=True}"
         xmlns:controls="clr-namespace:ChessPlatform.UI.Desktop.Controls"
         xmlns:commands="clr-namespace:ChessPlatform.UI.Desktop.Commands"
         xmlns:viewModels="clr-namespace:ChessPlatform.UI.Desktop.ViewModels"
         Title="New Game" Width="700" ShowInTaskbar="False" ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner" SizeToContent="Height" Loaded="Window_Loaded" x:ClassModifier="internal">
-
-    <Window.DataContext>
-        <viewModels:NewGameWindowViewModel x:Name="ViewModel" />
-    </Window.DataContext>
 
     <Window.CommandBindings>
         <CommandBinding Command="commands:NewGameWindowCommands.Start" CanExecute="Start_CanExecute"

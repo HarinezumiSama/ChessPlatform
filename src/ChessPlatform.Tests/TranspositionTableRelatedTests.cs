@@ -2,6 +2,7 @@
 using System.Runtime.InteropServices;
 using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using NUnit.Framework;
 
 //// ReSharper disable PossibleInvalidOperationException
@@ -86,7 +87,7 @@ namespace ChessPlatform.Tests
         [Test]
         public void TestTranspositionTable()
         {
-            var transpositionTable = new TranspositionTable(TranspositionTableHelper.SizeInMegaBytesRange.Lower);
+            var transpositionTable = new TranspositionTable(FakeLogger.Instance, TranspositionTableHelper.SizeInMegaBytesRange.Lower);
             Assert.That(transpositionTable.Version, Is.Not.EqualTo(0));
 
             const long Key = 0x12345678ABCDEF01L;

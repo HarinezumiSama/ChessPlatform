@@ -3,12 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading;
-using ChessPlatform.Engine.Properties;
-using Omnifactotum;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
@@ -17,17 +12,9 @@ namespace ChessPlatform.Engine
     {
         private static readonly OpeningGameMove[] NoMoves = new OpeningGameMove[0];
 
-        private static readonly Lazy<PolyglotOpeningBook> PerformanceInstance = Lazy.Create(
-            () => InitializeBook(() => Resources.OpeningBook_Performance_Polyglot),
-            LazyThreadSafetyMode.ExecutionAndPublication);
-
-        private static readonly Lazy<PolyglotOpeningBook> VariedInstance = Lazy.Create(
-            () => InitializeBook(() => Resources.OpeningBook_Varied_Polyglot),
-            LazyThreadSafetyMode.ExecutionAndPublication);
-
         private readonly Dictionary<long, BookEntry[]> _entryMap;
 
-        public PolyglotOpeningBook([NotNull] Stream stream)
+        internal PolyglotOpeningBook([NotNull] Stream stream)
         {
             if (stream is null)
             {
@@ -73,10 +60,6 @@ namespace ChessPlatform.Engine
                 .ToDictionary(grouping => grouping.Key, grouping => grouping.ToArray());
         }
 
-        public static PolyglotOpeningBook Performance => PerformanceInstance.Value;
-
-        public static PolyglotOpeningBook Varied => VariedInstance.Value;
-
         public OpeningGameMove[] FindPossibleMoves(GameBoard board)
         {
             if (board is null)
@@ -95,31 +78,6 @@ namespace ChessPlatform.Engine
                 ?? NoMoves;
 
             return result;
-        }
-
-        private static PolyglotOpeningBook InitializeBook(
-            [NotNull] Expression<Func<byte[]>> streamDataGetter)
-        {
-            PolyglotOpeningBook openingBook;
-
-            var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
-
-            var bookName = Factotum.GetPropertyName(streamDataGetter);
-            var data = streamDataGetter.Compile().Invoke();
-
-            Trace.WriteLine($"[{currentMethodName}] Initializing the opening book '{bookName}'...");
-
-            var stopwatch = Stopwatch.StartNew();
-            using (var stream = new MemoryStream(data))
-            {
-                openingBook = new PolyglotOpeningBook(stream);
-            }
-
-            stopwatch.Stop();
-
-            Trace.WriteLine($@"[{currentMethodName}] The opening book has been initialized in {stopwatch.Elapsed}.");
-
-            return openingBook;
         }
 
         [DebuggerDisplay("{GetType().Name,nq}: Key = {Key.ToString(\"X16\"),nq}, Move = {Move}, Weight = {Weight}, Learn = {Learn}")]
@@ -147,25 +105,13 @@ namespace ChessPlatform.Engine
                 Learn = learn;
             }
 
-            public long Key
-            {
-                get;
-            }
+            public long Key { get; }
 
-            public GameMove Move
-            {
-                get;
-            }
+            public GameMove Move { get; }
 
-            public ushort Weight
-            {
-                get;
-            }
+            public ushort Weight { get; }
 
-            public uint Learn
-            {
-                get;
-            }
+            public uint Learn { get; }
 
             public static BookEntry? ReadEntry([NotNull] Stream stream)
             {

@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows.Data;
 using ChessPlatform.Engine;
+using ChessPlatform.Logging;
 using ChessPlatform.UI.Desktop.Controls;
+using Omnifactotum.Annotations;
 using Omnifactotum.Validation;
 using Omnifactotum.Validation.Constraints;
 
@@ -14,8 +16,21 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         /// <summary>
         ///     Initializes a new instance of the <see cref="PlayerChoiceControlViewModel"/> class.
         /// </summary>
-        public PlayerChoiceControlViewModel(GameSide playerSide)
+        public PlayerChoiceControlViewModel(
+            [NotNull] ILogger logger,
+            [NotNull] IOpeningBookProvider openingBookProvider,
+            GameSide playerSide)
         {
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (openingBookProvider is null)
+            {
+                throw new ArgumentNullException(nameof(openingBookProvider));
+            }
+
             PlayerSide = playerSide;
 
             var playerControlItemsInternal =
@@ -29,6 +44,8 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                             new SmartEnoughPlayerCreationData(),
                             (side, data) =>
                                 new EnginePlayer(
+                                    logger,
+                                    openingBookProvider,
                                     side,
                                     new EnginePlayerParameters
                                     {
@@ -49,15 +66,9 @@ namespace ChessPlatform.UI.Desktop.ViewModels
             RaiseSelectedPlayerControlItemChanged();
         }
 
-        public GameSide PlayerSide
-        {
-            get;
-        }
+        public GameSide PlayerSide { get; }
 
-        public ICollectionView PlayerControlItems
-        {
-            get;
-        }
+        public ICollectionView PlayerControlItems { get; }
 
         [MemberConstraint(typeof(ValidPlayerSettingsConstraint))]
         public ControlItem<IPlayerInfo> SelectedPlayerControlItem

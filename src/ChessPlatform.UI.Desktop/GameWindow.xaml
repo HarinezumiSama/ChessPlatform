@@ -1,6 +1,10 @@
 ﻿<Window x:Class="ChessPlatform.UI.Desktop.GameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=viewModels:GameWindowViewModel, IsDesignTimeCreatable=True}"
         xmlns:local="clr-namespace:ChessPlatform.UI.Desktop"
         xmlns:commands="clr-namespace:ChessPlatform.UI.Desktop.Commands"
         xmlns:converters="clr-namespace:ChessPlatform.UI.Desktop.Converters"
@@ -50,10 +54,6 @@
     <Window.TaskbarItemInfo>
         <TaskbarItemInfo x:Name="TaskbarItemInfoInstance" />
     </Window.TaskbarItemInfo>
-
-    <Window.DataContext>
-        <viewModels:GameWindowViewModel x:Name="ViewModel" />
-    </Window.DataContext>
 
     <Grid Name="MainGrid" Margin="5" ShowGridLines="{StaticResource DebugShowGridLines}">
         <Grid.RowDefinitions>

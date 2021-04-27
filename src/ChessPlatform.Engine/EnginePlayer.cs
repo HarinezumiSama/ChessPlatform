@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -16,8 +17,9 @@ namespace ChessPlatform.Engine
         private static readonly string PlayerName =
             $@"{typeof(ChessPlayerBase).Assembly.GetName().Name}:{typeof(EnginePlayer).GetQualifiedName()}";
 
-        private static readonly string TraceSeparator = new string('-', 120);
+        private static readonly string LogSeparator = new string('-', 120);
 
+        private readonly ILogger _logger;
         private readonly Random _openingBookRandom;
         private readonly IOpeningBook _openingBook;
         private readonly TimeSpan? _maxTimePerMove;
@@ -26,9 +28,18 @@ namespace ChessPlatform.Engine
         [CanBeNull]
         private readonly TranspositionTable _transpositionTable;
 
-        public EnginePlayer(GameSide side, [NotNull] EnginePlayerParameters parameters)
+        public EnginePlayer(
+            [NotNull] ILogger logger,
+            [NotNull] IOpeningBookProvider openingBookProvider,
+            GameSide side,
+            [NotNull] EnginePlayerParameters parameters)
             : base(side)
         {
+            if (openingBookProvider is null)
+            {
+                throw new ArgumentNullException(nameof(openingBookProvider));
+            }
+
             if (parameters is null)
             {
                 throw new ArgumentNullException(nameof(parameters));
@@ -50,14 +61,16 @@ namespace ChessPlatform.Engine
                     @"The time per move, if specified, must be positive.");
             }
 
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
             _openingBookRandom = new Random();
             MaxPlyDepth = parameters.MaxPlyDepth;
-            _openingBook = parameters.UseOpeningBook ? PolyglotOpeningBook.Varied : null;
+            _openingBook = parameters.UseOpeningBook ? openingBookProvider.VariedOpeningBook : null;
             _maxTimePerMove = parameters.MaxTimePerMove;
             _useMultipleProcessors = parameters.UseMultipleProcessors;
 
             _transpositionTable = parameters.UseTranspositionTable
-                ? new TranspositionTable(parameters.TranspositionTableSizeInMegaBytes)
+                ? new TranspositionTable(_logger, parameters.TranspositionTableSizeInMegaBytes)
                 : null;
         }
 
@@ -80,15 +93,12 @@ namespace ChessPlatform.Engine
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
             var board = request.Board;
 
-            Trace.WriteLine(string.Empty);
-            Trace.WriteLine(string.Empty);
-            Trace.WriteLine(TraceSeparator);
-
             var useOpeningBook = _openingBook != null;
 
-            Trace.WriteLine(
-                $@"{Environment.NewLine
-                    }*** [{currentMethodName}] BEGIN: {LocalHelper.GetTimestamp()}{Environment.NewLine
+            _logger.Info(LogSeparator);
+
+            _logger.Info(
+                $@"[{currentMethodName}] BEGIN:{Environment.NewLine
                     }  Side: {Side}{Environment.NewLine
                     }  Max depth: {MaxPlyDepth} plies{Environment.NewLine
                     }  Max time: {_maxTimePerMove?.ToString("g") ?? "unlimited"}{Environment.NewLine
@@ -118,7 +128,7 @@ namespace ChessPlatform.Engine
                     internalCancellationToken = linkedTokenSource.Token;
 
                     maxMoveTime = TimeSpan.FromTicks(_maxTimePerMove.Value.Ticks * 99L / 100L);
-                    Trace.WriteLine($@"[{currentMethodName}] Adjusted max time for move: {maxMoveTime.Value}");
+                    _logger.Verbose($@"[{currentMethodName}] Adjusted max time for move: {maxMoveTime.Value}");
                 }
 
                 var gameControlInfo = new GameControlInfo(request.GameControl, internalCancellationToken);
@@ -141,8 +151,7 @@ namespace ChessPlatform.Engine
                 catch (AggregateException ex)
                     when (ex.Flatten().InnerException is MoveNowRequestedException)
                 {
-                    Trace.WriteLine(
-                        $@"[{currentMethodName}] Interrupting the search since the Move Now request was received.");
+                    _logger.Info($@"[{currentMethodName}] Interrupting the search since the Move Now request was received.");
                 }
                 catch (AggregateException ex)
                     when (ex.Flatten().InnerException is OperationCanceledException)
@@ -153,7 +162,7 @@ namespace ChessPlatform.Engine
                     if (operationCanceledException?.CancellationToken == internalCancellationToken
                         || operationCanceledException?.CancellationToken == request.CancellationToken)
                     {
-                        Trace.WriteLine($@"[{currentMethodName}] The search has been canceled by the caller.");
+                        _logger.Info($@"[{currentMethodName}] The search has been canceled by the caller.");
                         request.CancellationToken.ThrowIfCancellationRequested();
                     }
 
@@ -162,13 +171,11 @@ namespace ChessPlatform.Engine
                 catch (OperationCanceledException ex)
                     when (ex.CancellationToken == timeoutCancellationToken)
                 {
-                    Trace.WriteLine(
-                        $@"[{currentMethodName
-                            }] Interrupting the search since maximum time per move has been reached.");
+                    _logger.Info($@"[{currentMethodName}] Interrupting the search since maximum time per move has been reached.");
                 }
                 catch (OperationCanceledException)
                 {
-                    Trace.WriteLine($@"[{currentMethodName}] The search has been canceled by the caller.");
+                    _logger.Info($@"[{currentMethodName}] The search has been canceled by the caller.");
                     throw;
                 }
 
@@ -194,9 +201,8 @@ namespace ChessPlatform.Engine
 
             var depthString = bestMoveData?.PlyDepth.ToString(CultureInfo.InvariantCulture) ?? "?";
 
-            Trace.WriteLine(
-                $@"{Environment.NewLine
-                    }*** [{currentMethodName}] END: {LocalHelper.GetTimestamp()}{Environment.NewLine
+            _logger.Info(
+                $@"[{currentMethodName}] END:{Environment.NewLine
                     }  Result: {principalVariationString}{Environment.NewLine
                     }  Depth: {depthString}{Environment.NewLine
                     }  Time: {stopwatch.Elapsed:g}{Environment.NewLine
@@ -214,8 +220,8 @@ namespace ChessPlatform.Engine
 
                 var hitRatio = probeCount == 0 ? 0 : (decimal)hitCount / probeCount * 100;
 
-                Trace.WriteLine(
-                    $@"{Environment.NewLine}TT statistics:{Environment.NewLine
+                _logger.Info(
+                    $@"TT statistics:{Environment.NewLine
                         }  {nameof(TranspositionTable.BucketCount)}: {bucketCount:#,##0}{Environment.NewLine
                         }  {nameof(TranspositionTable.SaveCount)}: {saveCount:#,##0}{Environment.NewLine
                         }  {nameof(TranspositionTable.ProbeCount)}: {probeCount:#,##0}{Environment.NewLine
@@ -223,9 +229,7 @@ namespace ChessPlatform.Engine
                         }  Hit Ratio: {hitRatio:0.0}%{Environment.NewLine}");
             }
 
-            Trace.WriteLine(TraceSeparator);
-            Trace.WriteLine(string.Empty);
-            Trace.WriteLine(string.Empty);
+            _logger.Info(LogSeparator);
 
             if (principalVariationInfo is null)
             {
@@ -252,7 +256,7 @@ namespace ChessPlatform.Engine
 
             var currentMethodName = MethodBase.GetCurrentMethod().GetQualifiedName();
 
-            Trace.WriteLine($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
+            _logger.Info($@"[{currentMethodName}] Number of available moves: {board.ValidMoves.Count}.");
 
             if (_openingBook != null)
             {
@@ -277,10 +281,10 @@ namespace ChessPlatform.Engine
                             .Select(move => move.ToStandardAlgebraicNotation(boardAfterOpeningMove))
                             .Join(", ");
 
-                    Trace.WriteLine(
+                    _logger.Info(
                         $@"[{currentMethodName}] {selectedOpeningMoveString
-                            } was randomly chosen from the known opening moves [ {openingMovesString
-                            } ]. Further known opening move variants: {furtherOpeningMovesString}.");
+                            } was randomly chosen from the known opening moves [{openingMovesString
+                            }]. Further known opening move variants: {furtherOpeningMovesString}.");
 
                     bestMoveContainer.Value = new BestMoveData(selectedOpeningMove.Move | VariationLine.Zero, 1L, 1);
                     return;
@@ -301,13 +305,12 @@ namespace ChessPlatform.Engine
             {
                 gameControlInfo.CheckInterruptions();
 
-                Trace.WriteLine(
-                    $@"{Environment.NewLine}[{currentMethodName} :: {LocalHelper.GetTimestamp()
-                        }] Iterative deepening: {plyDepth} of {MaxPlyDepth}.");
+                _logger.Info($@"[{currentMethodName}] Iterative deepening: {plyDepth} of {MaxPlyDepth}.");
 
                 boardHelper.ResetLocalMoveCount();
 
                 var moveChooser = new EnginePlayerMoveSearcher(
+                    _logger,
                     board,
                     plyDepth,
                     boardHelper,
@@ -336,9 +339,7 @@ namespace ChessPlatform.Engine
                 //// ReSharper disable once InvertIf
                 if (bestVariationLine.Value.IsCheckmating())
                 {
-                    Trace.WriteLine(
-                        $@"[{currentMethodName} :: {LocalHelper.GetTimestamp()}] Forced checkmate found: {bestVariationLine}.");
-
+                    _logger.Info($@"[{currentMethodName}] Forced checkmate found: {bestVariationLine}.");
                     break;
                 }
             }
@@ -353,20 +354,11 @@ namespace ChessPlatform.Engine
                 PlyDepth = plyDepth;
             }
 
-            public int PlyDepth
-            {
-                get;
-            }
+            public int PlyDepth { get; }
 
-            public VariationLine Variation
-            {
-                get;
-            }
+            public VariationLine Variation { get; }
 
-            public long NodeCount
-            {
-                get;
-            }
+            public long NodeCount { get; }
 
             public override string ToString()
             {

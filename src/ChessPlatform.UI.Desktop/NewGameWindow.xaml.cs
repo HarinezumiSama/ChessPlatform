@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using ChessPlatform.Engine;
+using ChessPlatform.Logging;
+using ChessPlatform.UI.Desktop.ViewModels;
 using Omnifactotum.Annotations;
 
 namespace ChessPlatform.UI.Desktop
@@ -10,11 +13,24 @@ namespace ChessPlatform.UI.Desktop
     /// </summary>
     internal partial class NewGameWindow
     {
-        public NewGameWindow()
+        public NewGameWindow([NotNull] ILogger logger, [NotNull] IOpeningBookProvider openingBookProvider)
         {
-            InitializeComponent();
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
 
-            Title = $@"New Game – {App.Title}";
+            if (openingBookProvider is null)
+            {
+                throw new ArgumentNullException(nameof(openingBookProvider));
+            }
+
+            ViewModel = new NewGameWindowViewModel(logger, openingBookProvider);
+            DataContext = ViewModel;
+
+            Title = $@"New Game – {AppConstants.FullTitle}";
+
+            InitializeComponent();
 
             var clipboardText = Clipboard.GetText();
 
@@ -22,6 +38,15 @@ namespace ChessPlatform.UI.Desktop
                 ? clipboardText
                 : ChessConstants.DefaultInitialFen;
         }
+
+        public NewGameWindow()
+            : this(FakeLogger.Instance, FakeOpeningBookProvider.Instance)
+        {
+            // Nothing to do
+        }
+
+        [NotNull]
+        public NewGameWindowViewModel ViewModel { get; }
 
         [NotNull]
         public IPlayerInfo WhitePlayer

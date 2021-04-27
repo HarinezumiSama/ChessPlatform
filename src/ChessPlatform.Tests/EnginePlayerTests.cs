@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using NUnit.Framework;
 using Omnifactotum.Annotations;
 
@@ -80,7 +81,7 @@ namespace ChessPlatform.Tests
                 UseTranspositionTable = false
             };
 
-            var player = new EnginePlayer(gameBoard.ActiveSide, playerParameters);
+            var player = new EnginePlayer(FakeLogger.Instance, FakeOpeningBookProvider.Instance, gameBoard.ActiveSide, playerParameters);
 
             var stopwatch = Stopwatch.StartNew();
             var gameControlStub = new GameControl();

@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
+using Omnifactotum.Annotations;
 
 namespace ChessPlatform.Engine
 {
@@ -15,6 +16,7 @@ namespace ChessPlatform.Engine
 
         internal static readonly int BucketSizeInBytes = Marshal.SizeOf<TranspositionTableBucket>();
 
+        private readonly ILogger _logger;
         private readonly ReaderWriterLockSlim _lockSlim;
         private bool _isDisposed;
         private TranspositionTableBucket[] _buckets;
@@ -22,8 +24,9 @@ namespace ChessPlatform.Engine
         private long _hitCount;
         private long _saveCount;
 
-        public TranspositionTable(int sizeInMegaBytes)
+        public TranspositionTable([NotNull] ILogger logger, int sizeInMegaBytes)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _lockSlim = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             ResetVersionUnsafe();
 
@@ -111,9 +114,8 @@ namespace ChessPlatform.Engine
                 _lockSlim.ExitWriteLock();
             }
 
-            Trace.WriteLine(
-                $@"[{nameof(TranspositionTable)}.{nameof(Resize)}] Requested size: {
-                    sizeInMegaBytes:#,##0} MB. Bucket count: {count:#,##0}.");
+            _logger.Verbose(
+                $@"[{nameof(TranspositionTable)}.{nameof(Resize)}] Requested size: {sizeInMegaBytes:N0} MB. Bucket count: {count:N0}.");
         }
 
         public TranspositionTableEntry? Probe(long key)

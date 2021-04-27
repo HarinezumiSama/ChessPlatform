@@ -6,5 +6,23 @@
     <ItemGroup>
         <PackageReference Include="Irony" Version="0.9.1" />
         <PackageReference Include="Omnifactotum" Version="0.3.0.119" />
+        <PackageReference Include="System.Management" Version="5.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="Logging\LoggerExtensions.tt">
+            <Generator>TextTemplatingFileGenerator</Generator>
+            <LastGenOutput>LoggerExtensions.Generated.cs</LastGenOutput>
+        </None>
+
+        <Compile Update="Logging\LoggerExtensions.Generated.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>LoggerExtensions.tt</DependentUpon>
+        </Compile>
     </ItemGroup>
 </Project>

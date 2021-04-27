@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ChessPlatform.Engine;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using Omnifactotum;
 using Omnifactotum.Annotations;
 
@@ -39,11 +41,11 @@ namespace ChessPlatform.UI.Desktop.ViewModels
         private string _blackLastMoveElapsedString;
         private bool _shouldShowPlayersTimers;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GameWindowViewModel"/> class.
-        /// </summary>
-        public GameWindowViewModel()
+        public GameWindowViewModel([NotNull] ILogger logger, [NotNull] IOpeningBookProvider openingBookProvider)
         {
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            OpeningBookProvider = openingBookProvider ?? throw new ArgumentNullException(nameof(openingBookProvider));
+
             _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
             _validMoveTargetSquaresInternal = new HashSet<Square>();
@@ -73,6 +75,18 @@ namespace ChessPlatform.UI.Desktop.ViewModels
                 ViewModelHelper.CreateGuiHumanChessPlayerInfo(),
                 ViewModelHelper.CreateGuiHumanChessPlayerInfo());
         }
+
+        public GameWindowViewModel()
+            : this(FakeLogger.Instance, FakeOpeningBookProvider.Instance)
+        {
+            // Nothing to do
+        }
+
+        [NotNull]
+        public ILogger Logger { get; }
+
+        [NotNull]
+        public IOpeningBookProvider OpeningBookProvider { get; }
 
         [NotNull]
         public ReadOnlyDictionary<Square, BoardSquareViewModel> SquareViewModels { get; }
@@ -258,7 +272,7 @@ namespace ChessPlatform.UI.Desktop.ViewModels
 
             ResetSelectionMode();
 
-            _gameManager = new GameManager(_whitePlayer, _blackPlayer, fen);
+            _gameManager = new GameManager(Logger, _whitePlayer, _blackPlayer, fen);
             _gameManager.GameBoardChanged += GameManager_GameBoardChanged;
             _gameManager.PlayerThinkingStarted += GameManager_PlayerThinkingStarted;
             _gameManager.UnhandledExceptionOccurred += GameManager_UnhandledExceptionOccurred;

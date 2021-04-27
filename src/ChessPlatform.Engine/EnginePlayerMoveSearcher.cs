@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using ChessPlatform.GamePlay;
+using ChessPlatform.Logging;
 using Omnifactotum.Annotations;
 
 //// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
@@ -22,6 +23,7 @@ namespace ChessPlatform.Engine
 
         private static readonly EvaluationScore NullWindowOffset = new EvaluationScore(1);
 
+        private readonly ILogger _logger;
         private readonly GameBoard _rootBoard;
         private readonly int _plyDepth;
         private readonly BoardHelper _boardHelper;
@@ -40,6 +42,7 @@ namespace ChessPlatform.Engine
         ///     using the specified parameters.
         /// </summary>
         internal EnginePlayerMoveSearcher(
+            [NotNull] ILogger logger,
             [NotNull] GameBoard rootBoard,
             int plyDepth,
             [NotNull] BoardHelper boardHelper,
@@ -57,6 +60,7 @@ namespace ChessPlatform.Engine
                     $@"The value must be at least {CommonEngineConstants.MaxPlyDepthLowerLimit}.");
             }
 
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _rootBoard = rootBoard ?? throw new ArgumentNullException(nameof(rootBoard));
             _plyDepth = plyDepth;
             _boardHelper = boardHelper;
@@ -92,9 +96,8 @@ namespace ChessPlatform.Engine
             var result = GetBestMoveInternal(_rootBoard);
             stopwatch.Stop();
 
-            Trace.WriteLine(
-                $@"{Environment.NewLine
-                    }[{currentMethodName}] {LocalHelper.GetTimestamp()}{Environment.NewLine
+            _logger.Verbose(
+                $@"[{currentMethodName}]{Environment.NewLine
                     }  Depth: {_plyDepth}{Environment.NewLine
                     }  Result: {result.ToStandardAlgebraicNotationString(_rootBoard)}{Environment.NewLine
                     }  Time: {stopwatch.Elapsed}{Environment.NewLine
@@ -694,7 +697,7 @@ namespace ChessPlatform.Engine
             var variationLine = (move | innerVariationLine).WithLocalValue(localScore);
             stopwatch.Stop();
 
-            Trace.WriteLine(
+            _logger.Verbose(
                 $@"[{CurrentMethodName} #{moveOrderNumber:D2}/{moveCount:D2}] {move.ToStandardAlgebraicNotation(board)
                     }: {variationLine.ValueString} : L({variationLine.LocalValueString}), line: {{ {
                     board.GetStandardAlgebraicNotation(variationLine.Moves)} }}, time: {
@@ -747,8 +750,8 @@ namespace ChessPlatform.Engine
 
             var scoreValue = bestVariation.Value.Value.ToString(CultureInfo.InvariantCulture);
 
-            Trace.WriteLine(
-                $@"{Environment.NewLine}[{currentMethodName}] Best move {
+            _logger.Verbose(
+                $@"[{currentMethodName}] Best move {
                     board.GetStandardAlgebraicNotation(bestVariation.FirstMove.EnsureNotNull())}: {scoreValue}.{
                     Environment.NewLine}{Environment.NewLine}Variation Lines ordered by score:{Environment.NewLine}{
                     orderedVariationsString}{Environment.NewLine}{Environment.NewLine}Killer move stats:{
