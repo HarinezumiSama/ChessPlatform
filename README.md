@@ -1,4 +1,5 @@
 ﻿# ChessPlatform
+ 
 .NET based chess engine and GUI application.
 
 ### Status and Statistics
