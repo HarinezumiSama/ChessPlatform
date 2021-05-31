@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using ChessPlatform.GamePlay;
 using ChessPlatform.Logging;
+using ChessPlatform.Native;
 using Omnifactotum.Annotations;
 
 //// ReSharper disable LoopCanBeConvertedToQuery - Using simpler loops for speed optimization
@@ -719,7 +720,7 @@ namespace ChessPlatform.Engine
                 throw new InvalidOperationException(@"No moves to evaluate.");
             }
 
-            var threadCount = _useMultipleProcessors ? Math.Max(Environment.ProcessorCount - 1, 1) : 1;
+            var threadCount = _useMultipleProcessors ? Math.Max(NativeHelper.GetProcessorInformation().TotalCoreCount - 1, 1) : 1;
 
             var tasks = orderedMoves
                 .Select(
