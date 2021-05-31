@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
@@ -53,7 +52,7 @@ namespace ChessPlatform
         public static readonly ReadOnlySet<PieceType> PieceTypesExceptNone =
             OmnifactotumCollectionExtensions.ToHashSet(PieceTypes.Where(item => item != PieceType.None)).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<Piece>> GameSideToPiecesMap =
+        public static readonly ReadOnlyDictionary<GameSide, ReadOnlySet<Piece>> GameSideToPiecesMap =
             GameSides
                 .ToDictionary(
                     Factotum.Identity,
@@ -77,17 +76,17 @@ namespace ChessPlatform
         public static readonly Square WhiteKingInitialSquare = "e1";
         public static readonly Square BlackKingInitialSquare = "e8";
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, DoublePushInfo> GameSideToDoublePushInfoMap =
+        public static readonly ReadOnlyDictionary<GameSide, DoublePushInfo> GameSideToDoublePushInfoMap =
             GameSides.ToDictionary(Factotum.Identity, item => new DoublePushInfo(item)).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, string> GameSideToFenSnippetMap =
+        public static readonly ReadOnlyDictionary<GameSide, string> GameSideToFenSnippetMap =
             GameSides
                 .ToDictionary(
                     Factotum.Identity,
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture))
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<string, GameSide> FenSnippetToGameSideMap =
+        public static readonly ReadOnlyDictionary<string, GameSide> FenSnippetToGameSideMap =
             GameSides
                 .ToDictionary(
                     item => FenCharAttribute.Get(item).ToString(CultureInfo.InvariantCulture),
@@ -104,17 +103,17 @@ namespace ChessPlatform
                     CastlingOptions.BlackQueenSide
                 });
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
+        public static readonly ReadOnlyDictionary<CastlingOptions, char> CastlingOptionToFenCharMap =
             FenRelatedCastlingOptions
                 .ToDictionary(Factotum.Identity, item => FenCharAttribute.Get(item))
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
+        public static readonly ReadOnlyDictionary<char, CastlingOptions> FenCharCastlingOptionMap =
             FenRelatedCastlingOptions
                 .ToDictionary(item => FenCharAttribute.Get(item), Factotum.Identity)
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<PieceType, char> PieceTypeToFenCharMap =
+        public static readonly ReadOnlyDictionary<PieceType, char> PieceTypeToFenCharMap =
             typeof(PieceType)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
@@ -124,10 +123,10 @@ namespace ChessPlatform
                     obj => obj.FenChar!.Value)
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
+        public static readonly ReadOnlyDictionary<char, PieceType> FenCharToPieceTypeMap =
             PieceTypeToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
+        public static readonly ReadOnlyDictionary<Piece, char> PieceToFenCharMap =
             typeof(Piece)
                 .GetFields(BindingFlags.Static | BindingFlags.Public)
                 .Select(item => new { Item = item, FenChar = FenCharAttribute.TryGet(item) })
@@ -137,7 +136,7 @@ namespace ChessPlatform
                     obj => obj.FenChar!.Value)
                 .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
+        public static readonly ReadOnlyDictionary<char, Piece> FenCharToPieceMap =
             PieceToFenCharMap.ToDictionary(pair => pair.Value, pair => pair.Key).AsReadOnly();
 
         public static readonly ReadOnlyCollection<CastlingInfo> AllCastlingInfos =

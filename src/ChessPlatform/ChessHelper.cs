@@ -21,22 +21,22 @@ namespace ChessPlatform
             .GetSingleCustomAttribute<AssemblyInformationalVersionAttribute>(false)
             .InformationalVersion;
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
+        public static readonly ReadOnlyDictionary<CastlingType, CastlingInfo> CastlingTypeToInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingType, CastlingInfo2> CastlingTypeToInfoMap2 =
+        public static readonly ReadOnlyDictionary<CastlingType, CastlingInfo2> CastlingTypeToInfoMap2 =
             ChessConstants.AllCastlingInfos2.ToDictionary(obj => obj.CastlingType).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<CastlingOptions, CastlingInfo>
+        public static readonly ReadOnlyDictionary<CastlingOptions, CastlingInfo>
             CastlingOptionToInfoMap =
                 ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.CastlingType.ToOption()).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
+        public static readonly ReadOnlyDictionary<GameMove, CastlingInfo> KingMoveToCastlingInfoMap =
             ChessConstants.AllCastlingInfos.ToDictionary(obj => obj.KingMove).AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>
+        public static readonly ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>
             GameSideToCastlingOptionSetMap =
-                new Omnifactotum.ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>(
+                new ReadOnlyDictionary<GameSide, ReadOnlySet<CastlingOptions>>(
                     new Dictionary<GameSide, ReadOnlySet<CastlingOptions>>
                     {
                         {
@@ -53,7 +53,7 @@ namespace ChessPlatform
                         }
                     });
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, CastlingOptions>
+        public static readonly ReadOnlyDictionary<GameSide, CastlingOptions>
             GameSideToCastlingOptionsMap =
                 GameSideToCastlingOptionSetMap
                     .ToDictionary(
@@ -61,8 +61,8 @@ namespace ChessPlatform
                         pair => pair.Value.Aggregate(CastlingOptions.None, (a, item) => a | item))
                     .AsReadOnly();
 
-        public static readonly Omnifactotum.ReadOnlyDictionary<GameSide, int> GameSideToPawnPromotionRankMap =
-            new Omnifactotum.ReadOnlyDictionary<GameSide, int>(
+        public static readonly ReadOnlyDictionary<GameSide, int> GameSideToPawnPromotionRankMap =
+            new ReadOnlyDictionary<GameSide, int>(
                 new EnumFixedSizeDictionary<GameSide, int>
                 {
                     { GameSide.White, ChessConstants.WhitePawnPromotionRank },
@@ -123,7 +123,7 @@ namespace ChessPlatform
         internal static readonly ReadOnlyCollection<PieceType> NonDefaultPromotions =
             ChessConstants.ValidPromotions.Except(DefaultPromotion.AsArray()).ToArray().AsReadOnly();
 
-        internal static readonly Omnifactotum.ReadOnlyDictionary<SquareBridgeKey, Bitboard> SquareBridgeMap =
+        internal static readonly ReadOnlyDictionary<SquareBridgeKey, Bitboard> SquareBridgeMap =
             GenerateSquareBridgeMap();
 
         internal static readonly Bitboard InvalidPawnSquaresBitboard =
@@ -133,7 +133,7 @@ namespace ChessPlatform
 
         private const string MoveSeparator = ", ";
 
-        private static readonly Omnifactotum.ReadOnlyDictionary<Square, Square[]>
+        private static readonly ReadOnlyDictionary<Square, Square[]>
             KnightMoveSquareMap =
                 AllSquares
                     .ToDictionary(Factotum.Identity, GetKnightMoveSquaresNonCached)
@@ -416,7 +416,7 @@ namespace ChessPlatform
             return resultList.ToArray();
         }
 
-        private static Omnifactotum.ReadOnlyDictionary<SquareBridgeKey, Bitboard> GenerateSquareBridgeMap()
+        private static ReadOnlyDictionary<SquareBridgeKey, Bitboard> GenerateSquareBridgeMap()
         {
             var resultMap = new Dictionary<SquareBridgeKey, Bitboard>(AllSquares.Count * AllSquares.Count);
 

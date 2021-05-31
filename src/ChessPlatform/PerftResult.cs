@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Omnifactotum;
+using System.Collections.ObjectModel;
 
 namespace ChessPlatform
 {
